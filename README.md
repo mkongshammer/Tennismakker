@@ -130,3 +130,33 @@ Nogle ting er bevidst holdt simple i denne version og bør på plads, før rigti
 - Trænernes ledige tider redigeres som JSON i trænerprofilen. Det virker, men en kalender-UI er næste skridt.
 - Klubber og baner oprettes via seed-scriptet; der er endnu ingen selvbetjening til at oprette en ny klub.
 - Aflysning giver ikke automatisk pengene retur — refunderingen skal håndteres, når rigtig betaling sættes på.
+
+---
+
+## API til mobilappen
+
+Websitet bruger server actions og har ikke selv brug for et API. `/api/v1` findes udelukkende, så mobilappen (og på sigt andre klienter) kan tale med platformen.
+
+Appen ligger i sit eget repo: [Tennismakker-app](https://github.com/mkongshammer/Tennismakker-app).
+
+Auth sker med et Bearer-token i stedet for cookien, men det er samme JWT og samme `AUTH_SECRET`.
+
+| Endpoint | Metode | Kræver login |
+|---|---|---|
+| `/api/v1/auth/signup` | POST | nej |
+| `/api/v1/auth/login` | POST | nej |
+| `/api/v1/me` | GET | ja |
+| `/api/v1/clubs` | GET | nej |
+| `/api/v1/clubs/[slug]?dage=7` | GET | nej |
+| `/api/v1/coaches?omraade=` | GET | nej |
+| `/api/v1/coaches/[id]` | GET | nej |
+| `/api/v1/matches?omraade=&niveau=` | GET | valgfrit |
+| `/api/v1/matches` | POST | ja |
+| `/api/v1/matches/[id]/accept` | POST | ja |
+| `/api/v1/bookings` | GET, POST | ja |
+
+Ledige tider hentes gennem samme adapter-lag som websitet, så appen automatisk viser det rigtige, uanset om klubben kører manuel frigivelse, kalenderfeed eller native.
+
+`POST /api/v1/bookings` opretter en reservation og returnerer en `checkoutUrl`. Appen åbner den i browseren, så den aldrig rører kortdata.
+
+**Bemærk:** CORS står på `*`, hvilket er fint for en mobilapp, men skal strammes, hvis der senere kommer en webklient på et andet domæne.
