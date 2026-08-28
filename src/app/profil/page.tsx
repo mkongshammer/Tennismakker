@@ -2,10 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { cancelBooking, closeMatchRequest } from "@/lib/actions";
-import { LevelBadge } from "@/components/LevelBadge";
+import { db } from "../../lib/db";
+import { getCurrentUser } from "../../lib/session";
+import { cancelBooking, closeMatchRequest } from "../../lib/actions";
+import { LevelBadge } from "../../components/LevelBadge";
 
 export const dynamic = "force-dynamic";
 

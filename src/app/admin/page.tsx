@@ -3,9 +3,9 @@
 import { redirect } from "next/navigation";
 import { addDays, format, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { SURFACES } from "@/lib/levels";
+import { db } from "../../lib/db";
+import { getCurrentUser } from "../../lib/session";
+import { SURFACES } from "../../lib/levels";
 
 export const dynamic = "force-dynamic";
 

@@ -5,12 +5,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { bookCourtSlot } from "@/lib/actions";
-import { releaseExpiredHolds } from "@/lib/payments";
-import { hourDate } from "@/lib/slots";
-import { SURFACES } from "@/lib/levels";
+import { db } from "../../../lib/db";
+import { getCurrentUser } from "../../../lib/session";
+import { bookCourtSlot } from "../../../lib/actions";
+import { releaseExpiredHolds } from "../../../lib/payments";
+import { hourDate } from "../../../lib/slots";
+import { SURFACES } from "../../../lib/levels";
 
 export const dynamic = "force-dynamic";
 

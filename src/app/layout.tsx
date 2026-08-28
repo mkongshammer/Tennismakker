@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
-import { getCurrentUser } from "@/lib/session";
-import { logout } from "@/lib/actions";
+import { getCurrentUser } from "../lib/session";
+import { logout } from "../lib/actions";
 
 export const metadata: Metadata = {
   title: "Tennis Makker — find makker, træner og bane",

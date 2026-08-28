@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { acceptMatchRequest } from "@/lib/actions";
-import { LevelBadge } from "@/components/LevelBadge";
-import { MATCH_TYPES } from "@/lib/levels";
+import { db } from "../../lib/db";
+import { getCurrentUser } from "../../lib/session";
+import { acceptMatchRequest } from "../../lib/actions";
+import { LevelBadge } from "../../components/LevelBadge";
+import { MATCH_TYPES } from "../../lib/levels";
 
 export const dynamic = "force-dynamic";
 

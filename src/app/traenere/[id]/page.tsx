@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { bookCoachSlot } from "@/lib/actions";
-import { releaseExpiredHolds } from "@/lib/payments";
-import { parseWeeklySlots, upcomingSlotsFromWeekly } from "@/lib/slots";
+import { db } from "../../../lib/db";
+import { getCurrentUser } from "../../../lib/session";
+import { bookCoachSlot } from "../../../lib/actions";
+import { releaseExpiredHolds } from "../../../lib/payments";
+import { parseWeeklySlots, upcomingSlotsFromWeekly } from "../../../lib/slots";
 
 export const dynamic = "force-dynamic";
 

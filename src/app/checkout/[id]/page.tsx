@@ -3,9 +3,9 @@
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
-import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { confirmBookingPayment, platformFee } from "@/lib/payments";
+import { db } from "../../../lib/db";
+import { getCurrentUser } from "../../../lib/session";
+import { confirmBookingPayment, platformFee } from "../../../lib/payments";
 
 export const dynamic = "force-dynamic";
 

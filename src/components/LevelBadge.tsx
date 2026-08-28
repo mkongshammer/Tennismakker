@@ -1,4 +1,4 @@
-import { levelLabel } from "@/lib/levels";
+import { levelLabel } from "../lib/levels";
 
 export function LevelBadge({ level }: { level: number }) {
   return (
