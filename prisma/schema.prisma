@@ -36,6 +36,11 @@ model User {
 }
 
 // ---------- Modul C: Klubber ----------
+// integrationType afgør, hvor ledige tider kommer fra:
+//   NATIVE  — Tennis Makker ER klubbens bookingsystem (fallback for klubber uden system)
+//   MANUAL  — klubben frigiver selv enkelte gæstetider (virker uden aftale med nogen)
+//   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
+//   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
   id          String   @id @default(cuid())
   slug        String   @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
@@ -47,6 +52,12 @@ model Club {
   openHour    Int      @default(7)
   closeHour   Int      @default(22)
   createdAt   DateTime @default(now())
+
+  integrationType String    @default("NATIVE")
+  icalUrl         String? // feed-URL når integrationType = ICAL
+  externalSystem  String? // fri tekst, fx "Halbooking (Globus Data)" — vises til klubben
+  lastSyncAt      DateTime?
+  lastSyncError   String?
 
   courts  Court[]
   members User[]
@@ -60,7 +71,40 @@ model Court {
   clubId  String
   club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  bookings Booking[]
+  bookings     Booking[]
+  guestSlots   GuestSlot[]
+  externalBusy ExternalBusy[]
+}
+
+// ---------- Integration: manuelt frigivne gæstetider (integrationType = MANUAL) ----------
+// Klubben bestemmer selv præcis hvilke tider udefrakommende spillere må se og booke.
+// Tider der ikke ligger her, findes ikke for gæster.
+model GuestSlot {
+  id        String   @id @default(cuid())
+  courtId   String
+  court     Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+  priceKr   Int
+  createdAt DateTime @default(now())
+
+  @@unique([courtId, startsAt])
+  @@index([startsAt])
+}
+
+// ---------- Integration: spejlet optaget-tid fra klubbens eget system (integrationType = ICAL) ----------
+// Cache af klubbens kalenderfeed. Vi ejer ikke disse bookinger — vi læser dem kun,
+// for at kunne vise hvad der ER ledigt. Ryddes og genopbygges ved hver synkronisering.
+model ExternalBusy {
+  id       String   @id @default(cuid())
+  courtId  String
+  court    Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  startsAt DateTime
+  endsAt   DateTime
+  label    String? // titel fra kalenderfeed, fx "Holdtræning U14"
+  syncedAt DateTime @default(now())
+
+  @@index([courtId, startsAt])
 }
 
 // ---------- Bookinger (baner + trænere) ----------
@@ -75,6 +119,12 @@ model Booking {
   priceKr       Int
   holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
   createdAt     DateTime  @default(now())
+
+  // True når klubben bruger sit eget bookingsystem (MANUAL/ICAL/API): bookingen
+  // findes hos os, men skal også ind i klubbens system. Vises i klub-admin som
+  // "skal indtastes", indtil klubben markerer den som ført ind.
+  needsClubEntry Boolean   @default(false)
+  clubEnteredAt  DateTime?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

@@ -4,9 +4,17 @@ Dansk tennisplatform der samler tre ting i ét system:
 
 - **Modul A — Makker-matching:** spillere slår op og finder modstandere på deres eget niveau i deres område.
 - **Modul B — Trænerbooking:** trænere har profil, priser og kalender; elever booker og betaler i samme flow.
-- **Modul C — Klub plug-n-play:** klubben får sin egen side, banebooking-kalender, betaling og et admin-overblik.
+- **Modul C — Gæstebooking i klubber:** udefrakommende spillere finder ledige baner i klubber, der beholder deres eget bookingsystem.
 
 Bygget som én Next.js-app (App Router) med Prisma og server actions.
+
+## Produktmodellen: et lag ovenpå, ikke en erstatning
+
+De fleste danske tennisklubber kører allerede et bookingsystem — typisk Halbooking fra Globus Data. Vi forsøger ikke at skifte det ud. Vi løser et andet problem: at en spiller uden medlemskab ikke kan se, om der er en ledig bane.
+
+Klubben beholder sit system. Vi viser det, der er ledigt, til folk udefra, og sender pengene videre til klubben minus vores andel.
+
+Det er også en anden salgsproces: klubben skal ikke skifte system, bare sige ja til at vise sine tomme tider. Til gengæld konkurrerer vi med Wannasport, som gør noget lignende på tværs af sportsgrene — vores kant er, at vi er tennis-specifikke og har makker-matchingen med.
 
 ---
 
@@ -30,9 +38,10 @@ Alle bruger adgangskoden `tennis123`.
 | `mads@demo.dk` | Spiller (har et åbent makker-opslag) |
 | `sofie@demo.dk` | Spiller |
 | `traener@demo.dk` | Træner med ledige tider man/ons/lør |
-| `admin@demo.dk` | Klub-admin for Søndermark Tennisklub |
+| `admin@demo.dk` | Klub-admin, Søndermark (NATIVE — vi er systemet) |
+| `nordhavn@demo.dk` | Klub-admin, Nordhavn (MANUAL — eget system + frigivne gæstetider) |
 
-Klubsiden ligger på `/klub/soendermark-tennis`.
+Klubsider: `/klub/soendermark-tennis` og `/klub/nordhavn-tennis`. Log ind som `nordhavn@demo.dk` og gå til `/admin` for at se integrationsopsætningen og frigive gæstetider.
 
 ---
 
@@ -53,6 +62,25 @@ src/app/klub/[slug]/      Modul C — klubside + banebooking
 src/app/admin/            Modul C — klub-administration
 src/app/checkout/[id]/    Betalingsside (demo)
 ```
+
+## Integration mod klubbens bookingsystem
+
+Hele integrationen ligger bag ét interface i `src/lib/integrations`. Klubsiden, booking og betaling ved ikke, hvilken type klubben bruger — det gør det billigt at tilføje en ny.
+
+| Type | Sådan virker den | Hvornår |
+|---|---|---|
+| `MANUAL` | Klubben frigiver selv præcis de tider, gæster må booke | Virker med ethvert system. Start her. |
+| `ICAL` | Vi henter klubbens kalenderfeed og viser det, der ikke er optaget | Når klubbens system kan udstille en `.ics` |
+| `NATIVE` | Tennis Makker *er* klubbens bookingsystem | Klubber uden eget system |
+| `API` | Direkte opslag i klubbens system | Kræver partneraftale — ikke bygget |
+
+**Halbooking har ingen offentlig API.** Globus Data har partnerintegrationer til adgangskontrol, betaling og bogføring, men intet tredjeparter kan læse ledighed fra. Så `API`-adapteren er bevidst kun en tom skal: kontrakten er på plads, implementeringen venter på en aftale med leverandøren. Indtil da er `MANUAL` den model, der faktisk kan sælges.
+
+Vi skriver aldrig i klubbens system. Når en gæst booker hos os, markeres bookingen `needsClubEntry`, og klubben ser den øverst i admin, indtil de har ført den ind hos sig selv. Det er den svage del af modellen — se begrænsninger nedenfor.
+
+### iCal-parseren
+
+`src/lib/ical.ts` er skrevet i hånden og bevidst begrænset: `DTSTART`, `DTEND`, `SUMMARY`, `LOCATION` og simple ugentlige `RRULE`'er. Et event knyttes til den bane, hvis navn står i eventets tekst (fx "Bane 2"). Nævner eventet ingen bane, tolkes det som optaget på **alle** baner — vi skjuler hellere en ledig tid end sælger en optaget.
 
 ## Betaling
 
@@ -96,6 +124,8 @@ Nogle ting er bevidst holdt simple i denne version og bør på plads, før rigti
 
 ## Kendte begrænsninger
 
+- **Dobbeltbooking er ikke teknisk umulig.** Ved `MANUAL` og `ICAL` ejer klubben stadig sandheden. Frigiver klubben en tid hos os og sælger den samtidig i sit eget system, opdager vi det ikke. `MANUAL` er mindst risikabelt, fordi klubben bevidst tager tiden ud af eget system først. Ved `ICAL` afhænger sikkerheden af, hvor tit der synkroniseres.
+- Synkronisering af kalenderfeeds sker kun, når klubben trykker "Synkronisér nu". Et cron-job, der kører fx hvert 15. minut, er næste skridt — `syncClubCalendar()` er allerede skrevet til at kunne kaldes udefra.
 - Bookinger er altid på hele timer.
 - Trænernes ledige tider redigeres som JSON i trænerprofilen. Det virker, men en kalender-UI er næste skridt.
 - Klubber og baner oprettes via seed-scriptet; der er endnu ingen selvbetjening til at oprette en ny klub.

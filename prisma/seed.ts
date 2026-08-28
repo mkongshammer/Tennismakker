@@ -120,6 +120,67 @@ async function main() {
     });
   }
 
+  // Klub nr. 2: har sit eget bookingsystem (Halbooking) og frigiver kun
+  // udvalgte gæstetider — det er den model, de fleste klubber vil bruge.
+  const guestClub = await db.club.upsert({
+    where: { slug: "nordhavn-tennis" },
+    update: {},
+    create: {
+      slug: "nordhavn-tennis",
+      name: "Nordhavn Tennisklub",
+      city: "København Ø",
+      description:
+        "Vi har vores eget bookingsystem til medlemmer. Her på Tennis Makker frigiver vi de tider, hvor banerne alligevel står tomme — så gæster kan spille.",
+      color: "#8F3510",
+      priceHour: 120,
+      openHour: 7,
+      closeHour: 22,
+      integrationType: "MANUAL",
+      externalSystem: "Halbooking (Globus Data)",
+    },
+  });
+
+  for (const name of ["Bane 1", "Bane 2", "Bane 3"]) {
+    const exists = await db.court.findFirst({ where: { clubId: guestClub.id, name } });
+    if (!exists) {
+      await db.court.create({ data: { name, surface: "GRUS", clubId: guestClub.id } });
+    }
+  }
+
+  await db.user.upsert({
+    where: { email: "nordhavn@demo.dk" },
+    update: {},
+    create: {
+      email: "nordhavn@demo.dk",
+      name: "Niels Nordhavn",
+      passwordHash: password,
+      role: "CLUB_ADMIN",
+      clubId: guestClub.id,
+      level: 4,
+      area: "København Ø",
+    },
+  });
+
+  // Frigiv et par aftentider de næste dage, så klubben ikke står tom i demoen
+  const guestCourts = await db.court.findMany({ where: { clubId: guestClub.id } });
+  for (let dayOffset = 1; dayOffset <= 4; dayOffset++) {
+    for (const court of guestCourts.slice(0, 2)) {
+      for (const hour of [17, 18, 19]) {
+        const startsAt = new Date();
+        startsAt.setDate(startsAt.getDate() + dayOffset);
+        startsAt.setHours(hour, 0, 0, 0);
+        const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
+        try {
+          await db.guestSlot.create({
+            data: { courtId: court.id, startsAt, endsAt, priceKr: guestClub.priceHour },
+          });
+        } catch {
+          // allerede frigivet
+        }
+      }
+    }
+  }
+
   console.log("Seed færdig ✔");
   console.log("Log ind med fx mads@demo.dk / tennis123 (alle demo-konti bruger tennis123)");
 }
