@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useFormState } from "react-dom";
-import { signup } from "@/lib/actions";
-import { LEVELS } from "@/lib/levels";
+import { signup } from "../../lib/actions";
+import { LEVELS } from "../../lib/levels";
 
 export default function SignupPage() {
   const [state, action] = useFormState(signup, null);

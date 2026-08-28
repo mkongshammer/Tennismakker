@@ -1,8 +1,8 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { createMatchRequest } from "@/lib/actions";
-import { LEVELS, MATCH_TYPES } from "@/lib/levels";
+import { createMatchRequest } from "../../../lib/actions";
+import { LEVELS, MATCH_TYPES } from "../../../lib/levels";
 
 export default function NytOpslagPage() {
   const [state, action] = useFormState(createMatchRequest, null);

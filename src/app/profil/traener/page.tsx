@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
-import { updateCoachProfile } from "@/lib/actions";
+import { updateCoachProfile } from "../../../lib/actions";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
 export default function TraenerProfilPage() {
