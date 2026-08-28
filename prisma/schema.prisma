@@ -1,0 +1,139 @@
+// Tennis Makker — datamodel
+// PostgreSQL (Render). Enums er gemt som String, oprindeligt af hensyn til
+// SQLite-kompatibilitet i lokal udvikling — kan konverteres til rigtige
+// Prisma-enums når al lokal udvikling også er på Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Brugere ----------
+// role: "PLAYER" | "COACH" | "CLUB_ADMIN"
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         String   @default("PLAYER")
+  level        Int      @default(3) // 1-7, se src/lib/levels.ts
+  area         String? // fx "København NV", "Aarhus C"
+  bio          String?
+  createdAt    DateTime @default(now())
+
+  clubId String? // klub-admins og medlemmer kan være tilknyttet en klub
+  club   Club?   @relation(fields: [clubId], references: [id])
+
+  coachProfile    CoachProfile?
+  bookings        Booking[]
+  matchRequests   MatchRequest[] @relation("requester")
+  matchResponses  MatchRequest[] @relation("acceptedBy")
+}
+
+// ---------- Modul C: Klubber ----------
+model Club {
+  id          String   @id @default(cuid())
+  slug        String   @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
+  name        String
+  city        String
+  description String?
+  color       String   @default("#1E3D2F") // klubbens egen farve på klubsiden
+  priceHour   Int      @default(80) // banepris i kr pr. time
+  openHour    Int      @default(7)
+  closeHour   Int      @default(22)
+  createdAt   DateTime @default(now())
+
+  courts  Court[]
+  members User[]
+}
+
+// surface: "GRUS" | "HARD" | "INDE"
+model Court {
+  id      String @id @default(cuid())
+  name    String // fx "Bane 1"
+  surface String @default("GRUS")
+  clubId  String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  bookings Booking[]
+}
+
+// ---------- Bookinger (baner + trænere) ----------
+// kind: "COURT" | "COACH"
+// status: "HOLD" | "CONFIRMED" | "CANCELLED"
+model Booking {
+  id            String    @id @default(cuid())
+  kind          String
+  status        String    @default("HOLD")
+  startsAt      DateTime
+  endsAt        DateTime
+  priceKr       Int
+  holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
+  createdAt     DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  courtId String?
+  court   Court?  @relation(fields: [courtId], references: [id])
+
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
+
+  payment Payment?
+
+  @@index([courtId, startsAt])
+  @@index([coachProfileId, startsAt])
+}
+
+// ---------- Modul B: Trænere ----------
+model CoachProfile {
+  id          String @id @default(cuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline    String // fx "DTF-uddannet træner, speciale i serv"
+  priceHour   Int // kr pr. time
+  specialties String // kommasepareret, fx "Serv,Baghånd,Junior"
+  area        String
+  // Ledige tider som ugentligt mønster: JSON [{ "day": 1, "from": 16, "to": 20 }] (day: 0=søn ... 6=lør)
+  weeklySlots String @default("[]")
+
+  bookings Booking[]
+}
+
+// ---------- Modul A: Makker-matching ----------
+// status: "OPEN" | "MATCHED" | "CLOSED"
+model MatchRequest {
+  id        String   @id @default(cuid())
+  status    String   @default("OPEN")
+  message   String // fx "Søger single-makker tirsdag aften"
+  area      String
+  level     Int
+  matchType String   @default("SINGLE") // "SINGLE" | "DOUBLE" | "TRAENING"
+  createdAt DateTime @default(now())
+
+  requesterId  String
+  requester    User    @relation("requester", fields: [requesterId], references: [id])
+  acceptedById String?
+  acceptedBy   User?   @relation("acceptedBy", fields: [acceptedById], references: [id])
+}
+
+// ---------- Betalinger ----------
+// Abstraktion over betalingsudbyder (mock i udvikling, Stripe Connect i produktion).
+// status: "PENDING" | "PAID" | "REFUNDED" | "FAILED"
+model Payment {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  amountKr    Int
+  platformFee Int // Tennis Makkers andel (kommission/transaktionsgebyr)
+  provider    String   @default("mock") // "mock" | "stripe"
+  providerRef String? // fx Stripe PaymentIntent-id
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
