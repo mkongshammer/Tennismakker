@@ -25,6 +25,9 @@
     },
     "extra": {
       "apiUrl": "https://tennis-makker.onrender.com"
+    },
+    "experiments": {
+      "baseUrl": "/app"
     }
   }
 }

@@ -59,3 +59,16 @@ Når du booker, oprettes en reservation gennem API'et, og appen åbner betalings
 - Ingen offline-tilstand. Uden netværk viser appen en fejl.
 - Faneikoner er emojis, ikke rigtige ikoner.
 - Første kald kan tage op mod et minut, hvis serveren kører på Renders gratis plan og er gået i dvale.
+
+## Web-forhåndsvisning
+
+Appen er også bygget som web og ligger på `/app` på serveren, så den kan prøves fra en telefon uden Expo Go og uden en computer.
+
+Sådan opdateres den efter kodeændringer:
+
+```bash
+cd mobile
+npx expo export --platform web --output-dir ../public/app
+```
+
+Forhåndsvisningen er ikke det samme som appen. React Native Web oversætter komponenterne til HTML, så layout og opførsel ligner, men er ikke identisk — og der er ingen push-beskeder, ingen app-ikon og ingen adgang til telefonens funktioner. Brug den til at se flowet og finde fejl i API-kaldene, ikke til at bedømme, hvordan den færdige app føles.

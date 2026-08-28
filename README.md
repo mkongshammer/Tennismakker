@@ -63,6 +63,7 @@ src/app/admin/            Modul C — klub-administration
 src/app/checkout/[id]/    Betalingsside (demo)
 src/app/api/v1/           JSON-API som mobilappen bruger
 mobile/                   iOS- og Android-app (React Native + Expo)
+public/app/               web-bygget udgave af appen, ligger på /app
 ```
 
 ## Integration mod klubbens bookingsystem
