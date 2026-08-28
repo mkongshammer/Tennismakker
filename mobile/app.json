@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Tennis Makker",
+    "slug": "tennis-makker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "tennismakker",
+    "splash": {
+      "backgroundColor": "#1E3D2F",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dk.tennismakker.app"
+    },
+    "android": {
+      "package": "dk.tennismakker.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#1E3D2F"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "apiUrl": "https://tennis-makker.onrender.com"
+    }
+  }
+}

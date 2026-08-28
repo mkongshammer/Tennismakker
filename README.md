@@ -61,6 +61,8 @@ src/app/traenere/         Modul B
 src/app/klub/[slug]/      Modul C — klubside + banebooking
 src/app/admin/            Modul C — klub-administration
 src/app/checkout/[id]/    Betalingsside (demo)
+src/app/api/v1/           JSON-API som mobilappen bruger
+mobile/                   iOS- og Android-app (React Native + Expo)
 ```
 
 ## Integration mod klubbens bookingsystem
@@ -137,7 +139,7 @@ Nogle ting er bevidst holdt simple i denne version og bør på plads, før rigti
 
 Websitet bruger server actions og har ikke selv brug for et API. `/api/v1` findes udelukkende, så mobilappen (og på sigt andre klienter) kan tale med platformen.
 
-Appen ligger i sit eget repo: [Tennismakker-app](https://github.com/mkongshammer/Tennismakker-app).
+Appen ligger i `mobile/` i dette repo — se `mobile/README.md`.
 
 Auth sker med et Bearer-token i stedet for cookien, men det er samme JWT og samme `AUTH_SECRET`.
 
