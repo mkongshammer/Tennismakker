@@ -59,7 +59,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
         })}
       </div>
 
-      <form action={sendMessage} className="flex gap-2">
+      <form action={sendMessage} className="sticky bottom-0 flex gap-2 bg-kridt pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
         <input type="hidden" name="matchRequestId" value={params.id} />
         <input
           className="input flex-1"

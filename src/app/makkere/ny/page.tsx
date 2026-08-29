@@ -16,7 +16,7 @@ export default function NytOpslagPage() {
           <textarea className="input" id="message" name="message" rows={3}
             placeholder="fx: Søger single-modstander tirsdag eller torsdag aften i Valby" required />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="matchType">Type</label>
             <select className="input" id="matchType" name="matchType" defaultValue="SINGLE">

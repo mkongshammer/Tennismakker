@@ -86,3 +86,59 @@ body {
     transition: none;
   }
 }
+
+/* ---------------------------------------------------------------
+   Mobil
+   --------------------------------------------------------------- */
+
+/* iOS zoomer ind på et felt, hvis skriften er under 16px. Det river
+   layoutet skævt og kræver, at man selv zoomer ud igen bagefter. */
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+/* Fingre er upræcise. 44px er Apples anbefalede mindstemål for noget,
+   man skal kunne ramme. Knapper og felter var ~36px høje. */
+@media (max-width: 640px) {
+  .btn,
+  .input,
+  select,
+  button[type="submit"] {
+    min-height: 44px;
+  }
+
+  .btn {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+}
+
+/* Lange klubnavne og e-mailadresser må hellere brydes end skubbe
+   siden bredere end skærmen. */
+body {
+  overflow-wrap: break-word;
+}
+
+/* Vandret rullende rækker (dagsvælger, faneblade) skal kunne
+   svippes uden at ende midt mellem to punkter. */
+.snap-row {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-row > * {
+  scroll-snap-align: start;
+}
+
+/* Skjul rullepanelet på vandrette rækker — det fylder på telefon */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

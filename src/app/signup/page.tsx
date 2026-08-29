@@ -31,7 +31,7 @@ export default function SignupPage() {
             <option value="COACH">Træner — jeg vil tage imod bookinger</option>
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="level">Niveau</label>
             <select className="input" id="level" name="level" defaultValue="3">

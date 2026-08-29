@@ -30,7 +30,7 @@ export function ReleaseForm({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label className="label" htmlFor="fromHour">Fra kl.</label>
           <input className="input" id="fromHour" name="fromHour" type="number" min={0} max={23} defaultValue={17} required />

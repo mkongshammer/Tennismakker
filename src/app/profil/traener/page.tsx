@@ -24,7 +24,7 @@ export default function TraenerProfilPage() {
           <label className="label" htmlFor="headline">Overskrift</label>
           <input className="input" id="headline" name="headline" defaultValue={profile.headline} required />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="priceHour">Pris (kr/time)</label>
             <input className="input" id="priceHour" name="priceHour" type="number" min={0} defaultValue={profile.priceHour} required />

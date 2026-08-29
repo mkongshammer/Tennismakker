@@ -249,3 +249,19 @@ Liste og kort peger på hinanden: peger man på et kort i listen, vokser boblen 
 Kortet bruger Leaflet og kræver hverken API-nøgle eller betalingskort — der er ingen risiko for en uventet regning og ingen nøgle at lække. Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel og mangler bare på kortet.
 
 **Ikke bygget:** klubber kan ikke rette deres adresse i admin bagefter, og der er ingen søgning på afstand ("klubber inden for 10 km"). Kortet i mobilappen mangler også — appen viser stadig kun en liste.
+
+## Mobil
+
+Websitet er bygget til at fungere på en telefon, ikke bare skaleret ned. De væsentlige valg:
+
+**Menuen** foldes til en skuffe under 768 px. Otte punkter i en række brød før over tre linjer og skubbede indholdet ned. Skuffen lukker af sig selv ved navigation og låser baggrunden, mens den er åben.
+
+**Banebooking vendes om.** På bred skærm er et gitter med baner som kolonner rigtigt — man overskuer hele dagen. På telefon krævede det samme gitter vandret scroll for at nå den sidste bane. Derfor står tiderne under hinanden på telefon, og hver tid folder ud og viser hvilke baner der er ledige. Det passer også bedre til, hvordan man vælger: man ved hvornår man kan spille, og er mindre optaget af hvilken bane det bliver.
+
+**Felter er mindst 16 px.** iOS zoomer ind på et inputfelt med mindre skrift, og så sidder man og zoomer ud igen efter hvert felt.
+
+**Trykflader er mindst 44 px høje** under 640 px. Knapperne var omkring 36 px, hvilket er under Apples anbefaling og mærkbart i praksis.
+
+**Sikkerhedszoner respekteres.** Sidefoden, kort-knappen på klublisten og beskedfeltet i chatten bruger `env(safe-area-inset-bottom)`, så de ikke havner under hjemmeindikatoren.
+
+Todelte formularer stakker under 640 px, dagsvælgeren ruller vandret med snap i stedet for at brydes, og lange klubnavne brydes frem for at skubbe siden bredere end skærmen.

@@ -80,11 +80,11 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
             <Link
               href={`/klub/${club.slug}`}
               onFocus={() => setActiveId(club.id)}
-              className={`flex gap-4 rounded-xl border bg-white p-3 transition-shadow ${
+              className={`flex gap-3 rounded-xl border bg-white p-3 transition-shadow sm:gap-4 ${
                 active ? "border-grus shadow-md" : "border-net/10"
               }`}
             >
-              <div className="h-[72px] w-[120px] shrink-0 overflow-hidden rounded-lg">
+              <div className="h-[64px] w-[96px] shrink-0 overflow-hidden rounded-lg sm:h-[72px] sm:w-[120px]">
                 <CourtGraphic color={club.color} />
               </div>
 
@@ -150,10 +150,10 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
           list
         )}
 
-        <div className="sticky bottom-5 mt-5 flex justify-center">
+        <div className="sticky bottom-[max(1.25rem,env(safe-area-inset-bottom))] mt-5 flex justify-center">
           <button
             onClick={() => setShowMap((v) => !v)}
-            className="rounded-full bg-bane px-5 py-2.5 font-semibold text-kridt shadow-lg"
+            className="min-h-[44px] rounded-full bg-bane px-6 py-3 font-semibold text-kridt shadow-lg"
           >
             {showMap ? "Vis liste" : "Vis kort"}
           </button>

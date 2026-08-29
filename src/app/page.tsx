@@ -13,13 +13,13 @@ export default async function Home() {
   return (
     <div className="space-y-14">
       {/* Hero: banen som scene */}
-      <section className="relative overflow-hidden rounded-xl bg-grus px-6 py-14 text-kridt sm:px-12">
+      <section className="relative overflow-hidden rounded-xl bg-grus px-5 py-10 text-kridt sm:px-12 sm:py-14">
         <div className="pointer-events-none absolute inset-x-0 top-1/2 chalk-line" />
         <div className="relative max-w-2xl">
           <p className="mb-2 text-sm font-bold uppercase tracking-widest text-kridt/80">
             Dansk tennis, samlet ét sted
           </p>
-          <h1 className="display text-4xl leading-tight sm:text-6xl">
+          <h1 className="display text-3xl leading-tight sm:text-6xl">
             Find din næste modstander, træner eller banetid
           </h1>
           <p className="mt-4 max-w-xl text-lg text-kridt/90">
@@ -28,10 +28,10 @@ export default async function Home() {
             uden papirlister og forældede systemer.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/spillere" className="btn bg-kridt text-grus-deep hover:bg-white">
+            <Link href="/spillere" className="btn w-full text-center bg-kridt text-grus-deep hover:bg-white sm:w-auto">
               Find en makker
             </Link>
-            <Link href="/klubber" className="btn border-2 border-kridt text-kridt hover:bg-kridt/10">
+            <Link href="/klubber" className="btn w-full text-center border-2 border-kridt text-kridt hover:bg-kridt/10 sm:w-auto">
               Book en bane
             </Link>
           </div>
@@ -66,7 +66,7 @@ export default async function Home() {
       </section>
 
       {/* Klub-pitch */}
-      <section className="rounded-xl bg-bane px-6 py-10 text-kridt sm:px-12">
+      <section className="rounded-xl bg-bane px-5 py-8 text-kridt sm:px-12 sm:py-10">
         <h2 className="display text-3xl">Sidder du i en klubbestyrelse?</h2>
         <p className="mt-3 max-w-2xl text-kridt/85">
           Få en færdig klub-hjemmeside med banebooking og MobilePay/kort-betaling

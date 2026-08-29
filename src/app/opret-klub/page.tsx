@@ -34,7 +34,7 @@ export default function OpretKlubPage() {
                 Bruges til at vise klubben på kortet og hjælpe gæster med at finde vej.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="city">By</label>
                 <input className="input" id="city" name="city" required />
@@ -53,7 +53,7 @@ export default function OpretKlubPage() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="priceHour">Gæstepris pr. time</label>
                 <input
