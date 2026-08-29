@@ -12,6 +12,7 @@ import { matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 import { recordSwipe } from "./swipe";
 import { createReview } from "./reviews";
+import { geocode } from "./geocode";
 
 // ---------------- Auth ----------------
 
@@ -412,6 +413,7 @@ function slugify(name: string): string {
 export async function createClub(_prev: unknown, formData: FormData) {
   const clubName = String(formData.get("clubName") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
+  const address = String(formData.get("address") ?? "").trim();
   const courtCount = Number(formData.get("courtCount") ?? 0);
   const priceHour = Number(formData.get("priceHour") ?? 0);
   const externalSystem = String(formData.get("externalSystem") ?? "").trim();
@@ -442,11 +444,18 @@ export async function createClub(_prev: unknown, formData: FormData) {
     slug = `${base}-${i}`;
   }
 
+  // Slå adressen op, så klubben kan vises på kortet. Lykkes det ikke,
+  // oprettes klubben alligevel — den mangler bare på kortet indtil videre.
+  const coords = address ? await geocode(address, city) : null;
+
   const club = await db.club.create({
     data: {
       slug,
       name: clubName,
       city,
+      address: address || null,
+      latitude: coords?.latitude ?? null,
+      longitude: coords?.longitude ?? null,
       priceHour,
       // Nye klubber starter altid manuelt: det virker uanset hvilket system
       // de kører, og kræver ingen teknisk opsætning fra deres side.

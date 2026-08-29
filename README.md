@@ -231,3 +231,15 @@ Efter en overstået booking dukker anmeldelsen op øverst på `/profil`. Gennems
 Instagram-delen er fravalgt bevidst. Et feed med få brugere er tomt, og tomme feeds får folk til at holde op med at åbne appen. Brugeruploadede billeder udløser desuden moderationspligt, lagringsomkostninger og ansvar for indhold, platformen ikke kontrollerer.
 
 Profilbilleder vises som initialer. Vil I have rigtige billeder senere, kræver det en lagringsudbyder og en plan for moderation — ikke bare et upload-felt.
+
+## Kort over klubber
+
+`/klubber` viser et interaktivt kort med alle klubber, der har koordinater. Markørerne bruger klubbens egen farve, og et klik viser pris, antal baner, bedømmelse og et link til de ledige tider.
+
+Kortet bruger **Leaflet med OpenStreetMap-fliser**. Det kræver hverken API-nøgle eller betalingskort, hvilket er grunden til valget frem for Google Maps — der er ingen risiko for en uventet regning, og ingen nøgle at lække. Til gengæld er kortdata og adressesøgning ikke helt så præcise som Googles i Danmark.
+
+Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel — den mangler bare på kortet, indtil adressen rettes. Nominatims brugspolitik tillader ét opslag i sekundet, hvilket er rigeligt, når vi kun slår op ved oprettelse.
+
+Skal det skaleres, eller bliver præcisionen et problem, skiftes kun `geocode.ts` ud med et betalt API.
+
+**Ikke bygget:** klubber kan ikke rette deres adresse i admin bagefter, og der er ingen søgning på afstand ("klubber inden for 10 km"). Kortet i mobilappen mangler også — appen viser stadig kun en liste.

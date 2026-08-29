@@ -57,6 +57,10 @@ model Club {
   closeHour   Int      @default(22)
   createdAt   DateTime @default(now())
 
+  address   String? // gadeadresse, bruges til kortet og til at finde vej
+  latitude  Float?
+  longitude Float?
+
   integrationType String    @default("NATIVE")
   icalUrl         String? // feed-URL når integrationType = ICAL
   externalSystem  String? // fri tekst, fx "Halbooking (Globus Data)" — vises til klubben

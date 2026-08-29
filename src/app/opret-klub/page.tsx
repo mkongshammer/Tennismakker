@@ -22,6 +22,18 @@ export default function OpretKlubPage() {
               <label className="label" htmlFor="clubName">Klubbens navn</label>
               <input className="input" id="clubName" name="clubName" required />
             </div>
+            <div>
+              <label className="label" htmlFor="address">Adresse</label>
+              <input
+                className="input"
+                id="address"
+                name="address"
+                placeholder="fx Tennisvej 12"
+              />
+              <p className="mt-1 text-xs text-net/50">
+                Bruges til at vise klubben på kortet og hjælpe gæster med at finde vej.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="label" htmlFor="city">By</label>

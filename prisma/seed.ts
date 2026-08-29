@@ -19,6 +19,9 @@ async function main() {
       description:
         "Hyggelig klub med fire grusbaner og én indendørs bane. Alle niveauer er velkomne — book en bane online og kom forbi.",
       color: "#1E3D2F",
+      address: "Sønderjyllands Allé 8",
+      latitude: 55.6721,
+      longitude: 12.5133,
       priceHour: 90,
       openHour: 7,
       closeHour: 22,
@@ -132,6 +135,9 @@ async function main() {
       description:
         "Vi har vores eget bookingsystem til medlemmer. Her på Tennis Makker frigiver vi de tider, hvor banerne alligevel står tomme — så gæster kan spille.",
       color: "#8F3510",
+      address: "Sundkrogsgade 21",
+      latitude: 55.7093,
+      longitude: 12.5946,
       priceHour: 120,
       openHour: 7,
       closeHour: 22,
