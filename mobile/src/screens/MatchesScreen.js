@@ -22,12 +22,13 @@ export default function MatchesScreen({ navigation }) {
 
   const accept = async (id) => {
     try {
-      const { contact } = await api.acceptMatch(id);
-      Alert.alert(
-        "I er matchet",
-        `Kontakt ${contact.name}:\n${contact.email}${contact.phone ? `\n${contact.phone}` : ""}`
-      );
+      const { threadId, otherName } = await api.acceptMatch(id);
       load();
+      // Send brugeren direkte ind i samtalen, så de kan aftale en tid med det samme
+      navigation.navigate("BeskederTab", {
+        screen: "Samtale",
+        params: { id: threadId, name: otherName },
+      });
     } catch (e) {
       Alert.alert("Kunne ikke svare", e.message);
     }

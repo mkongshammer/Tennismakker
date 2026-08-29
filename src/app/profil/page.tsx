@@ -105,9 +105,16 @@ export default async function ProfilPage({
               <div>
                 <p>{r.message}</p>
                 <p className="text-sm text-net/60">
-                  {r.status === "MATCHED" && r.acceptedBy
-                    ? `Matchet med ${r.acceptedBy.name} (${r.acceptedBy.email}${r.acceptedBy.phone ? ", " + r.acceptedBy.phone : ""}) — aftal tid direkte.`
-                    : "Åbent — venter på svar"}
+                  {r.status === "MATCHED" && r.acceptedBy ? (
+                    <>
+                      Matchet med {r.acceptedBy.name} —{" "}
+                      <Link href={`/beskeder/${r.id}`} className="font-semibold text-grus underline">
+                        skriv til {r.acceptedBy.name.split(" ")[0]}
+                      </Link>
+                    </>
+                  ) : (
+                    "Åbent — venter på svar"
+                  )}
                 </p>
               </div>
               <form action={closeMatchRequest}>
@@ -120,8 +127,10 @@ export default async function ProfilPage({
             <li key={r.id} className="card">
               <p>Du slog til på: “{r.message}”</p>
               <p className="text-sm text-net/60">
-                Kontakt {r.requester.name} på {r.requester.email}
-                {r.requester.phone ? ` / ${r.requester.phone}` : ""} og aftal kampen.
+                <Link href={`/beskeder/${r.id}`} className="font-semibold text-grus underline">
+                  Skriv til {r.requester.name.split(" ")[0]}
+                </Link>{" "}
+                og aftal kampen.
               </p>
             </li>
           ))}

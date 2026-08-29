@@ -171,9 +171,8 @@ export function matchAcceptedNotice(opts: {
   to: string;
   requesterName: string;
   accepterName: string;
-  accepterEmail: string;
-  accepterPhone: string | null;
   message: string;
+  threadId: string;
 }): Mail {
   return {
     to: opts.to,
@@ -184,16 +183,11 @@ export function matchAcceptedNotice(opts: {
       `${opts.accepterName} har slået til på dit opslag:`,
       `"${opts.message}"`,
       ``,
-      `Kontakt:`,
-      `${opts.accepterEmail}`,
-      opts.accepterPhone ? `${opts.accepterPhone}` : ``,
-      ``,
-      `Aftal tid og sted direkte med hinanden.`,
+      `Skriv sammen og aftal tid og sted her:`,
+      `${baseUrl()}/beskeder/${opts.threadId}`,
       ``,
       `Tennis Makker`,
-    ]
-      .filter((l) => l !== undefined)
-      .join("\n"),
+    ].join("\n"),
   };
 }
 

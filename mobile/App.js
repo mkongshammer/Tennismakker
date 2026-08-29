@@ -18,11 +18,14 @@ import ClubScreen from "./src/screens/ClubScreen";
 import CoachesScreen from "./src/screens/CoachesScreen";
 import CoachScreen from "./src/screens/CoachScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
+import ThreadsScreen from "./src/screens/ThreadsScreen";
+import ChatScreen from "./src/screens/ChatScreen";
 
 const Tabs = createBottomTabNavigator();
 const MatchStack = createNativeStackNavigator();
 const ClubStack = createNativeStackNavigator();
 const CoachStack = createNativeStackNavigator();
+const ChatStack = createNativeStackNavigator();
 
 const screenOptions = {
   headerStyle: { backgroundColor: colors.bane },
@@ -74,6 +77,19 @@ function CoachesStack() {
   );
 }
 
+function MessagesStack() {
+  return (
+    <ChatStack.Navigator screenOptions={screenOptions}>
+      <ChatStack.Screen name="Beskeder" component={ThreadsScreen} options={{ title: "Beskeder" }} />
+      <ChatStack.Screen
+        name="Samtale"
+        component={ChatScreen}
+        options={({ route }) => ({ title: route.params?.name ?? "Samtale" })}
+      />
+    </ChatStack.Navigator>
+  );
+}
+
 function Root() {
   const { user, loading } = useAuth();
 
@@ -103,6 +119,14 @@ function Root() {
         options={{
           title: "Baner",
           tabBarIcon: ({ focused }) => <TabIcon label="📍" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="BeskederTab"
+        component={MessagesStack}
+        options={{
+          title: "Beskeder",
+          tabBarIcon: ({ focused }) => <TabIcon label="💬" focused={focused} />,
         }}
       />
       <Tabs.Screen

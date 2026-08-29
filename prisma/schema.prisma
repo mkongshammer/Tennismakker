@@ -33,6 +33,7 @@ model User {
   bookings        Booking[]
   matchRequests   MatchRequest[] @relation("requester")
   matchResponses  MatchRequest[] @relation("acceptedBy")
+  messages        Message[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -171,6 +172,24 @@ model MatchRequest {
   requester    User    @relation("requester", fields: [requesterId], references: [id])
   acceptedById String?
   acceptedBy   User?   @relation("acceptedBy", fields: [acceptedById], references: [id])
+
+  messages Message[]
+}
+
+// ---------- Beskeder mellem matchede spillere ----------
+// En tråd hænger på et makker-opslag: kun opslagets ejer og den, der slog
+// til, kan læse og skrive i den.
+model Message {
+  id             String       @id @default(cuid())
+  matchRequestId String
+  matchRequest   MatchRequest @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([matchRequestId, createdAt])
 }
 
 // ---------- Betalinger ----------

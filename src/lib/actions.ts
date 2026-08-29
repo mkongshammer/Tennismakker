@@ -9,6 +9,7 @@ import { createSession, destroySession, getCurrentUser } from "./session";
 import { startCheckout, releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, syncClubCalendar } from "./integrations";
 import { matchAcceptedNotice, sendMail } from "./email";
+import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 
 // ---------------- Auth ----------------
 
@@ -120,14 +121,14 @@ export async function acceptMatchRequest(formData: FormData) {
         to: owner.email,
         requesterName: owner.name,
         accepterName: user.name,
-        accepterEmail: user.email,
-        accepterPhone: user.phone,
         message: request.message,
+        threadId: request.id,
       })
     );
   }
 
   revalidatePath("/makkere");
+  redirect(`/beskeder/${request.id}`);
 }
 
 export async function closeMatchRequest(formData: FormData) {
@@ -471,4 +472,26 @@ export async function createClub(_prev: unknown, formData: FormData) {
 
   await createSession(admin.id);
   redirect("/admin");
+}
+
+// ---------------- Beskeder ----------------
+
+export async function sendMessage(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const matchRequestId = String(formData.get("matchRequestId"));
+  const body = String(formData.get("body") ?? "").trim();
+  if (!body) return;
+  if (body.length > MAX_MESSAGE_LENGTH) return;
+
+  const access = await loadThread(matchRequestId, user.id);
+  if (!access.ok) return;
+
+  await db.message.create({
+    data: { matchRequestId, senderId: user.id, body },
+  });
+
+  revalidatePath(`/beskeder/${matchRequestId}`);
+  revalidatePath("/beskeder");
 }

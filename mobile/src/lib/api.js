@@ -66,6 +66,11 @@ export const api = {
   createMatch: (payload) => request("/matches", { method: "POST", body: payload }),
   acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
 
+  threads: () => request("/threads"),
+  thread: (id) => request(`/threads/${id}`),
+  sendMessage: (id, body) =>
+    request(`/threads/${id}`, { method: "POST", body: { body } }),
+
   bookings: () => request("/bookings"),
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
 };

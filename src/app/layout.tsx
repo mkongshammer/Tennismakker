@@ -33,6 +33,7 @@ export default async function RootLayout({
             <div className="flex items-center gap-3 text-sm">
               {user ? (
                 <>
+                  <Link href="/beskeder" className="hover:underline">Beskeder</Link>
                   <Link href="/profil" className="font-semibold hover:underline">
                     {user.name.split(" ")[0]}
                   </Link>

@@ -201,3 +201,11 @@ Ligger på `/vilkaar`, `/privatliv` og `/databehandleraftale`.
 Aflyser en spiller senest 24 timer før spilletidspunktet, refunderes hele beløbet, og betalingen markeres `REFUNDED`. Senere aflysninger refunderes ikke. Fristen står i `REFUND_WINDOW_HOURS` i `src/lib/payments.ts` og skal stemme overens med teksten i handelsbetingelserne.
 
 Når Stripe sættes på, skal `cancelAndRefund()` også kalde Stripes refunderings-API — stedet er markeret med en kommentar.
+
+## Beskeder
+
+Når nogen slår til på et makker-opslag, åbnes en samtale mellem de to. Kontaktoplysninger deles ikke længere automatisk — det er bedre for privatlivet, og samtalen bliver et sted, folk kommer tilbage til.
+
+Adgangskontrollen ligger samlet i `src/lib/messages.ts`: kun opslagets ejer og den, der slog til, kan læse eller skrive i tråden. Både websitet og API'et bruger den samme funktion, så reglen kun findes ét sted.
+
+Beskeder hentes ved sideindlæsning. Der er ingen realtidsopdatering endnu — man skal hente siden igen for at se nye beskeder. Push-beskeder er heller ikke bygget, så modtageren får kun besked pr. e-mail, når samtalen starter.

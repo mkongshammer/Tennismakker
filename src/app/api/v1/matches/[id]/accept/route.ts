@@ -27,11 +27,9 @@ export async function POST(
     data: { status: "MATCHED", acceptedById: auth.user.id },
   });
 
+  // Kontaktoplysninger deles ikke længere automatisk — samtalen sker i appen
   return json({
-    contact: {
-      name: request.requester.name,
-      email: request.requester.email,
-      phone: request.requester.phone,
-    },
+    threadId: request.id,
+    otherName: request.requester.name,
   });
 }
