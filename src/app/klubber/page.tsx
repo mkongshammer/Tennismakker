@@ -32,9 +32,10 @@ export default async function KlubberPage() {
       <div className="card mt-10 border-grus/30 bg-grus/5">
         <p className="display text-xl text-grus-deep">Mangler din klub?</p>
         <p className="mt-1 text-sm">
-          Tennis Makker giver klubben en færdig hjemmeside, banebooking og betaling
-          uden opsætningsarbejde. Skriv til os, så sætter vi en pilot op.
+          I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
+          frigiver, til spillere udefra — og sender betalingen videre til jer.
         </p>
+        <Link href="/opret-klub" className="btn-grus mt-4">Opret jeres klub</Link>
       </div>
     </div>
   );

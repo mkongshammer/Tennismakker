@@ -56,9 +56,18 @@ export default async function RootLayout({
           <div className="chalk-line" />
         </header>
         <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
-        <footer className="mt-16 bg-bane-dyb py-8 text-center text-sm text-kridt/70">
+        <footer className="mt-16 bg-bane-dyb py-8 text-kridt/70">
           <div className="chalk-line mb-6" />
-          Tennis Makker · Én platform til spillere, trænere og klubber
+          <div className="mx-auto max-w-5xl px-4 text-center text-sm">
+            <div className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-2">
+              <Link href="/opret-klub" className="hover:underline">Få jeres klub med</Link>
+              <Link href="/app" className="hover:underline">Prøv appen</Link>
+              <Link href="/vilkaar" className="hover:underline">Handelsbetingelser</Link>
+              <Link href="/privatliv" className="hover:underline">Privatliv</Link>
+              <Link href="/databehandleraftale" className="hover:underline">Databehandleraftale</Link>
+            </div>
+            Tennis Makker · Én platform til spillere, trænere og klubber
+          </div>
         </footer>
       </body>
     </html>

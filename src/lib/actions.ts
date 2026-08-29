@@ -6,8 +6,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { createSession, destroySession, getCurrentUser } from "./session";
-import { startCheckout, releaseExpiredHolds } from "./payments";
+import { startCheckout, releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, syncClubCalendar } from "./integrations";
+import { matchAcceptedNotice, sendMail } from "./email";
 
 // ---------------- Auth ----------------
 
@@ -111,6 +112,21 @@ export async function acceptMatchRequest(formData: FormData) {
     where: { id },
     data: { status: "MATCHED", acceptedById: user.id },
   });
+
+  const owner = await db.user.findUnique({ where: { id: request.requesterId } });
+  if (owner) {
+    await sendMail(
+      matchAcceptedNotice({
+        to: owner.email,
+        requesterName: owner.name,
+        accepterName: user.name,
+        accepterEmail: user.email,
+        accepterPhone: user.phone,
+        message: request.message,
+      })
+    );
+  }
+
   revalidatePath("/makkere");
 }
 
@@ -224,10 +240,14 @@ export async function cancelBooking(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const id = String(formData.get("id"));
-  await db.booking.updateMany({
+
+  // Kun egne bookinger, og kun dem der stadig er aktive
+  const booking = await db.booking.findFirst({
     where: { id, userId: user.id, status: { in: ["HOLD", "CONFIRMED"] } },
-    data: { status: "CANCELLED" },
   });
+  if (!booking) return;
+
+  await cancelAndRefund(id);
   revalidatePath("/profil");
 }
 
@@ -367,4 +387,88 @@ export async function markClubEntered(formData: FormData) {
     data: { clubEnteredAt: new Date() },
   });
   revalidatePath("/admin");
+}
+
+// ---------------- Klub-selvbetjening ----------------
+
+/** Laver et URL-venligt slug ud fra klubnavnet. */
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/æ/g, "ae").replace(/ø/g, "oe").replace(/å/g, "aa")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 50);
+}
+
+/**
+ * Opretter en klub og en admin-konto i én omgang, så en bestyrelse kan
+ * komme i gang uden at vi skal ind over.
+ */
+export async function createClub(_prev: unknown, formData: FormData) {
+  const clubName = String(formData.get("clubName") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const courtCount = Number(formData.get("courtCount") ?? 0);
+  const priceHour = Number(formData.get("priceHour") ?? 0);
+  const externalSystem = String(formData.get("externalSystem") ?? "").trim();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  if (!clubName || !city) return { error: "Udfyld klubbens navn og by." };
+  if (!(courtCount >= 1 && courtCount <= 40)) {
+    return { error: "Antal baner skal være mellem 1 og 40." };
+  }
+  if (!(priceHour >= 0)) return { error: "Angiv en pris på 0 kr eller derover." };
+  if (!name || !email.includes("@")) {
+    return { error: "Udfyld dit navn og en gyldig e-mail." };
+  }
+  if (password.length < 8) {
+    return { error: "Adgangskoden skal være mindst 8 tegn." };
+  }
+  if (await db.user.findUnique({ where: { email } })) {
+    return { error: "Der findes allerede en konto med den e-mail." };
+  }
+
+  // Sikr et unikt slug
+  const base = slugify(clubName) || "klub";
+  let slug = base;
+  for (let i = 2; await db.club.findUnique({ where: { slug } }); i++) {
+    slug = `${base}-${i}`;
+  }
+
+  const club = await db.club.create({
+    data: {
+      slug,
+      name: clubName,
+      city,
+      priceHour,
+      // Nye klubber starter altid manuelt: det virker uanset hvilket system
+      // de kører, og kræver ingen teknisk opsætning fra deres side.
+      integrationType: "MANUAL",
+      externalSystem: externalSystem || null,
+      courts: {
+        create: Array.from({ length: courtCount }, (_, i) => ({
+          name: `Bane ${i + 1}`,
+          surface: "GRUS",
+        })),
+      },
+    },
+  });
+
+  const admin = await db.user.create({
+    data: {
+      email,
+      name,
+      passwordHash: await bcrypt.hash(password, 10),
+      role: "CLUB_ADMIN",
+      clubId: club.id,
+      area: city,
+    },
+  });
+
+  await createSession(admin.id);
+  redirect("/admin");
 }

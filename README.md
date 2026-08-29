@@ -163,3 +163,41 @@ Ledige tider hentes gennem samme adapter-lag som websitet, så appen automatisk 
 `POST /api/v1/bookings` opretter en reservation og returnerer en `checkoutUrl`. Appen åbner den i browseren, så den aldrig rører kortdata.
 
 **Bemærk:** CORS står på `*`, hvilket er fint for en mobilapp, men skal strammes, hvis der senere kommer en webklient på et andet domæne.
+
+---
+
+## Miljøvariabler
+
+| Variabel | Kræves | Hvad den gør |
+|---|---|---|
+| `DATABASE_URL` | ja | Forbindelse til Postgres |
+| `AUTH_SECRET` | ja | Signerer login-sessioner og API-tokens |
+| `PAYMENT_PROVIDER` | ja | `mock` eller `stripe` |
+| `EMAIL_API_KEY` | nej | Resend-nøgle. Mangler den, logges e-mails i stedet for at blive sendt |
+| `EMAIL_FROM` | nej | Afsenderadresse |
+| `APP_URL` | nej | Bruges i links i e-mails |
+| `CRON_SECRET` | nej | Beskytter `/api/cron/sync`. Uden den er baggrundsjobbet slået fra |
+
+## Baggrundsjob
+
+`GET /api/cron/sync` synkroniserer alle klubber med kalenderfeed og rydder udløbne reservationer. Den kræver `Authorization: Bearer $CRON_SECRET`.
+
+På Render sættes den op som et Cron Job med kommandoen:
+
+```bash
+curl -sS -H "Authorization: Bearer $CRON_SECRET" https://tennis-makker.onrender.com/api/cron/sync
+```
+
+Hvert 15. minut (`*/15 * * * *`) er et fornuftigt udgangspunkt.
+
+## Juridiske dokumenter
+
+Ligger på `/vilkaar`, `/privatliv` og `/databehandleraftale`.
+
+**De er udkast.** Alle tre viser en tydelig advarsel øverst, og felter der mangler rigtige oplysninger er markeret med firkantede parenteser. De skal gennemgås af en advokat, og advarslen fjernes ved at sætte `draft={false}` i den enkelte side.
+
+## Aflysning og refundering
+
+Aflyser en spiller senest 24 timer før spilletidspunktet, refunderes hele beløbet, og betalingen markeres `REFUNDED`. Senere aflysninger refunderes ikke. Fristen står i `REFUND_WINDOW_HOURS` i `src/lib/payments.ts` og skal stemme overens med teksten i handelsbetingelserne.
+
+Når Stripe sættes på, skal `cancelAndRefund()` også kalde Stripes refunderings-API — stedet er markeret med en kommentar.

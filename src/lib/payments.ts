@@ -18,6 +18,13 @@
 // 3. Webhook (payment_intent.succeeded) kalder confirmBookingPayment() nedenfor.
 
 import { db } from "./db";
+import {
+  bookingReceipt,
+  cancellationNotice,
+  clubBookingNotice,
+  coachBookingNotice,
+  sendMail,
+} from "./email";
 
 // Platformens andel af hver transaktion
 const COURT_FEE_PCT = 0.03; // 3% af banebooking går til platformen
@@ -52,7 +59,14 @@ export async function startCheckout(bookingId: string): Promise<string> {
  * Kaldes af mock-checkout i udvikling og af Stripe-webhook i produktion.
  */
 export async function confirmBookingPayment(bookingId: string, providerRef?: string) {
-  const booking = await db.booking.findUnique({ where: { id: bookingId } });
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      user: true,
+      court: { include: { club: { include: { members: true } } } },
+      coachProfile: { include: { user: true } },
+    },
+  });
   if (!booking) throw new Error("Booking findes ikke");
   if (booking.status === "CONFIRMED") return booking; // idempotent
 
@@ -76,7 +90,122 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
       update: { status: "PAID", providerRef: providerRef ?? undefined },
     }),
   ]);
+
+  await notifyBookingConfirmed(booking);
   return updated;
+}
+
+/** Sender kvittering til spilleren og besked til klub eller træner. */
+async function notifyBookingConfirmed(booking: any) {
+  const what =
+    booking.kind === "COURT"
+      ? `${booking.court?.club.name} — ${booking.court?.name}`
+      : `Trænertime hos ${booking.coachProfile?.user.name}`;
+
+  await sendMail(
+    bookingReceipt({
+      to: booking.user.email,
+      name: booking.user.name,
+      what,
+      startsAt: booking.startsAt,
+      priceKr: booking.priceKr,
+      bookingId: booking.id,
+    })
+  );
+
+  if (booking.kind === "COURT" && booking.court) {
+    // Besked til klubbens administratorer
+    const admins = booking.court.club.members.filter(
+      (m: any) => m.role === "CLUB_ADMIN"
+    );
+    for (const admin of admins) {
+      await sendMail(
+        clubBookingNotice({
+          to: admin.email,
+          clubName: booking.court.club.name,
+          courtName: booking.court.name,
+          playerName: booking.user.name,
+          playerEmail: booking.user.email,
+          startsAt: booking.startsAt,
+          priceKr: booking.priceKr,
+          needsClubEntry: booking.needsClubEntry,
+          externalSystem: booking.court.club.externalSystem,
+        })
+      );
+    }
+  }
+
+  if (booking.kind === "COACH" && booking.coachProfile) {
+    await sendMail(
+      coachBookingNotice({
+        to: booking.coachProfile.user.email,
+        coachName: booking.coachProfile.user.name,
+        playerName: booking.user.name,
+        playerEmail: booking.user.email,
+        startsAt: booking.startsAt,
+        priceKr: booking.priceKr,
+      })
+    );
+  }
+}
+
+/** Timer før spilletidspunktet hvor aflysning stadig giver pengene retur. */
+export const REFUND_WINDOW_HOURS = 24;
+
+/**
+ * Aflyser en booking og refunderer, hvis den ligger mere end 24 timer ude
+ * i fremtiden. Returnerer det refunderede beløb, eller null hvis fristen
+ * var overskredet.
+ */
+export async function cancelAndRefund(bookingId: string): Promise<number | null> {
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      user: true,
+      payment: true,
+      court: { include: { club: true } },
+      coachProfile: { include: { user: true } },
+    },
+  });
+  if (!booking) throw new Error("Booking findes ikke");
+
+  const hoursUntil =
+    (booking.startsAt.getTime() - Date.now()) / (1000 * 60 * 60);
+  const eligible = hoursUntil >= REFUND_WINDOW_HOURS;
+  const paid = booking.payment?.status === "PAID";
+
+  await db.booking.update({
+    where: { id: bookingId },
+    data: { status: "CANCELLED" },
+  });
+
+  let refunded: number | null = null;
+  if (paid && eligible) {
+    // I produktion udløser dette også en refundering hos betalingsudbyderen.
+    // Med Stripe: stripe.refunds.create({ payment_intent: payment.providerRef })
+    await db.payment.update({
+      where: { bookingId },
+      data: { status: "REFUNDED" },
+    });
+    refunded = booking.payment!.amountKr;
+  }
+
+  const what =
+    booking.kind === "COURT"
+      ? `${booking.court?.club.name} — ${booking.court?.name}`
+      : `Trænertime hos ${booking.coachProfile?.user.name}`;
+
+  await sendMail(
+    cancellationNotice({
+      to: booking.user.email,
+      name: booking.user.name,
+      what,
+      startsAt: booking.startsAt,
+      refundKr: paid ? refunded : 0,
+    })
+  );
+
+  return refunded;
 }
 
 /** Rydder udløbne midlertidige reservationer (kaldes lazily før slot-visning). */

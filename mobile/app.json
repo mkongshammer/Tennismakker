@@ -7,8 +7,9 @@
     "userInterfaceStyle": "light",
     "scheme": "tennismakker",
     "splash": {
-      "backgroundColor": "#1E3D2F",
-      "resizeMode": "contain"
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1E3D2F"
     },
     "ios": {
       "supportsTablet": true,
@@ -17,17 +18,20 @@
     "android": {
       "package": "dk.tennismakker.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1E3D2F"
       }
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "apiUrl": "https://tennis-makker.onrender.com"
     },
     "experiments": {
       "baseUrl": "/app"
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }
