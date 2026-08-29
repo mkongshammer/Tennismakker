@@ -265,3 +265,20 @@ Websitet er bygget til at fungere på en telefon, ikke bare skaleret ned. De væ
 **Sikkerhedszoner respekteres.** Sidefoden, kort-knappen på klublisten og beskedfeltet i chatten bruger `env(safe-area-inset-bottom)`, så de ikke havner under hjemmeindikatoren.
 
 Todelte formularer stakker under 640 px, dagsvælgeren ruller vandret med snap i stedet for at brydes, og lange klubnavne brydes frem for at skubbe siden bredere end skærmen.
+
+## Dobbeltbooking på tværs af kanaler
+
+En klub kan sælge de samme baner tre steder: eget system til medlemmer, Wannasport til gæster, og os. Ingen af systemerne kan se hinandens bookinger, og vi kan ikke skrive tilbage til Halbooking. **Der findes derfor ingen teknisk garanti mod dobbeltbooking.**
+
+Det, koden gør:
+
+- **Ledighed valideres på ny, når nogen booker** — ikke kun når siden vises. Er tiden forsvundet i mellemtiden, afvises bookingen.
+- **`refreshBeforeBooking()`** henter ICAL-klubbers kalender igen, hvis spejlet er over et minut gammelt. Det skærer vinduet ned fra 15 minutter (cron-intervallet) til under et minut.
+- **Reservationen holdes i 10 minutter** under betaling, så to af vores egne brugere ikke kan tage den samme tid.
+- **`needsClubEntry`** markerer bookinger, klubben skal føre ind i eget system, og de vises øverst i admin, indtil det er gjort.
+
+Det lukker hullet mod klubbens eget system. Det lukker det ikke mod en anden platform, der ikke skriver tilbage til klubbens system — den er usynlig for os, uanset hvor tit vi synkroniserer.
+
+**Den eneste robuste løsning er organisatorisk:** klubben afsætter forskellige tider — eller en hel bane — til hver kanal. Så kan den samme time ikke sælges to gange, uanset hvad systemerne ved om hinanden. Det står som en note i klub-admin ved frigivelse af tider.
+
+Før der er rigtige penge i systemet, bør der desuden ligge en aftale med klubben om, hvem der honorerer bookingen, og hvem der refunderer, hvis det alligevel sker. Det er et forretningsspørgsmål, ikke et teknisk.

@@ -1,6 +1,6 @@
 import { addHours, addMinutes } from "date-fns";
 import { db } from "../../../../lib/db";
-import { getClubAvailability } from "../../../../lib/integrations";
+import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
 import { releaseExpiredHolds } from "../../../../lib/payments";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 
@@ -62,6 +62,8 @@ export async function POST(req: Request) {
   if (body.courtId) {
     const court = await db.court.findUnique({ where: { id: String(body.courtId) } });
     if (!court) return apiError("Banen findes ikke.", 404);
+
+    await refreshBeforeBooking(court.clubId);
 
     const { slots, needsClubEntry } = await getClubAvailability(
       court.clubId,

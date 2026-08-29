@@ -149,9 +149,21 @@ export default async function AdminPage() {
       {club.integrationType === "MANUAL" && (
         <section>
           <h2 className="display mb-1 text-2xl">Frigiv tider til gæster</h2>
-          <p className="mb-4 text-sm text-net/60">
+          <p className="mb-3 text-sm text-net/60">
             Kun tider, I frigiver her, kan ses og bookes af spillere udefra.
           </p>
+
+          <div className="mb-4 rounded-lg border border-net/15 bg-white p-4 text-sm">
+            <p className="font-bold">Sælger I også baner et andet sted?</p>
+            <p className="mt-1 text-net/70">
+              Bruger I både os og en anden platform, kan vi ikke se hinandens
+              bookinger. Frigiv derfor forskellige tider til hver kanal — eller
+              afsæt en bane til hver. Så kan den samme time ikke sælges to gange.
+            </p>
+            <p className="mt-2 text-net/70">
+              Tag altid tiden ud af jeres eget system, når I frigiver den her.
+            </p>
+          </div>
           <ReleaseForm
             courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
             defaultPrice={club.priceHour}

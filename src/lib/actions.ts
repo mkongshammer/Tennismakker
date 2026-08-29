@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { startCheckout, releaseExpiredHolds, cancelAndRefund } from "./payments";
-import { getClubAvailability, syncClubCalendar } from "./integrations";
+import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
 import { matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 import { recordSwipe } from "./swipe";
@@ -173,6 +173,8 @@ export async function bookCourtSlot(formData: FormData) {
   if (startsAt < new Date()) throw new Error("Tidspunktet er passeret");
 
   await releaseExpiredHolds();
+  // Hent klubbens kalender på ny, hvis spejlet er mere end et minut gammelt
+  await refreshBeforeBooking(court.clubId);
 
   const { slots, needsClubEntry } = await getClubAvailability(
     court.clubId,

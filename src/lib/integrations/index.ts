@@ -17,7 +17,9 @@ export function adapterFor(type: string): BookingSystemAdapter {
   return ADAPTERS[(type as IntegrationType) ?? "NATIVE"] ?? nativeAdapter;
 }
 
-/** Henter ledige tider for en klub gennem den adapter klubben er sat op med. */
+/**
+ * Henter ledige tider for en klub gennem den adapter klubben er sat op med.
+ */
 export async function getClubAvailability(
   clubId: string,
   from: Date,
@@ -26,6 +28,34 @@ export async function getClubAvailability(
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) return { slots: [], needsClubEntry: false };
   return adapterFor(club.integrationType).getAvailability({ clubId, from, until });
+}
+
+/** Hvor gammelt et spejl må være, når nogen er ved at booke. */
+const BOOKING_FRESHNESS_MS = 60_000;
+
+/**
+ * Henter klubbens kalender på ny lige inden en booking gennemføres.
+ *
+ * Baggrund: en ICAL-klub spejles normalt hvert kvarter af cron-jobbet. Har
+ * klubben solgt tiden ad en anden kanal i mellemtiden — i deres eget system
+ * eller på en anden platform, der skriver tilbage til det — ville vi sælge
+ * en optaget bane. Et enkelt opslag her skærer vinduet ned fra 15 minutter
+ * til under et minut.
+ *
+ * Det fjerner ikke risikoen. En kanal, der ikke skriver tilbage til klubbens
+ * system, kan vi stadig ikke se. Se afsnittet om dobbeltbooking i README.
+ */
+export async function refreshBeforeBooking(clubId: string): Promise<void> {
+  const club = await db.club.findUnique({
+    where: { id: clubId },
+    select: { integrationType: true, icalUrl: true, lastSyncAt: true },
+  });
+  if (!club || club.integrationType !== "ICAL" || !club.icalUrl) return;
+
+  const age = club.lastSyncAt ? Date.now() - club.lastSyncAt.getTime() : Infinity;
+  if (age < BOOKING_FRESHNESS_MS) return;
+
+  await syncClubCalendar(clubId);
 }
 
 /**
