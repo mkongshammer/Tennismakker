@@ -98,7 +98,7 @@ export default async function AdminPage() {
         </section>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="card">
           <p className="text-sm text-net/60">Baner</p>
           <p className="display text-3xl">{club.courts.length}</p>
@@ -112,9 +112,39 @@ export default async function AdminPage() {
           <p className="display text-3xl">{gross} kr</p>
         </div>
         <div className="card">
-          <p className="text-sm text-net/60">Udbetales til klubben</p>
+          <p className="text-sm text-net/60">Udbetalt til jer</p>
           <p className="display text-3xl text-bane">{gross - fees} kr</p>
         </div>
+      </section>
+
+      <section className="card">
+        <p className="display text-xl">Jeres aftale</p>
+        {club.billingModel === "SUBSCRIPTION" ? (
+          <>
+            <p className="mt-2">
+              <span className="font-bold">Abonnement — {club.subscriptionKr} kr/md.</span>{" "}
+              I beholder hele beløbet for hver gæstebooking.
+            </p>
+            <p className="mt-1 text-sm text-net/60">
+              Fast pris uanset hvor mange bookinger der kommer ind. Bedst når I
+              har mange ledige tider at fylde.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="mt-2">
+              <span className="font-bold">Provision — 10% af hver gæstebooking.</span>{" "}
+              Ingen fast betaling.
+            </p>
+            <p className="mt-1 text-sm text-net/60">
+              I betaler kun, når I tjener penge. Kommer der ingen bookinger,
+              koster det jer ingenting.
+            </p>
+          </>
+        )}
+        <p className="mt-3 text-sm text-net/60">
+          Vil I skifte model, så skriv til os.
+        </p>
       </section>
 
       <section>

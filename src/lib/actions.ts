@@ -419,6 +419,8 @@ export async function createClub(_prev: unknown, formData: FormData) {
   const courtCount = Number(formData.get("courtCount") ?? 0);
   const priceHour = Number(formData.get("priceHour") ?? 0);
   const externalSystem = String(formData.get("externalSystem") ?? "").trim();
+  const billingModel =
+    String(formData.get("billingModel")) === "SUBSCRIPTION" ? "SUBSCRIPTION" : "COMMISSION";
 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -463,6 +465,7 @@ export async function createClub(_prev: unknown, formData: FormData) {
       // de kører, og kræver ingen teknisk opsætning fra deres side.
       integrationType: "MANUAL",
       externalSystem: externalSystem || null,
+      billingModel,
       courts: {
         create: Array.from({ length: courtCount }, (_, i) => ({
           name: `Bane ${i + 1}`,

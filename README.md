@@ -89,7 +89,13 @@ Vi skriver aldrig i klubbens system. Når en gæst booker hos os, markeres booki
 
 Betalingslaget er bygget som en marketplace-abstraktion fra dag ét, fordi penge skal splittes tre veje: til klubben (banebooking), til træneren (trænertimer) og til platformen (kommission). Det er dyrt at eftermontere, så det ligger i arkitekturen fra start.
 
-Satserne står i `src/lib/payments.ts`: 3 % af banebookinger og 12 % af trænertimer.
+Satserne står i `src/lib/payments.ts`: **10% af hver booking**, både baner og trænertimer.
+
+En sats er lettere at forklare i et klubmøde end to, og den holder over Stripes gebyr. En indenlandsk betaling koster 1,5% + 1,80 kr, så en banetime til 100 kr giver 10,00 − 3,30 = 6,70 kr tilbage. Ved 3% ville den samme booking koste os 30 øre — det faste gebyr æder alt, når beløbet er lille.
+
+**Klubber kan vælge abonnement i stedet.** `Club.billingModel` er enten `COMMISSION` (10% pr. booking) eller `SUBSCRIPTION` (fast beløb pr. måned, klubben beholder hele bookingen). `platformFeeForBooking()` returnerer 0 for abonnementsklubbers banebookinger. Trænertimer er altid på provision — træneren er selvstændig og har ikke et abonnement.
+
+Opkrævningen af selve abonnementet er ikke bygget. `subscriptionKr` er indtil videre kun et tal, der vises i admin.
 
 I udvikling kører `PAYMENT_PROVIDER=mock`, hvor `/checkout/[id]` simulerer betalingen. Hele flowet er ellers identisk med produktion:
 

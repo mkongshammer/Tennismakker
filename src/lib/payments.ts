@@ -26,13 +26,44 @@ import {
   sendMail,
 } from "./email";
 
-// Platformens andel af hver transaktion
-const COURT_FEE_PCT = 0.03; // 3% af banebooking går til platformen
-const COACH_FEE_PCT = 0.12; // 12% kommission på trænertimer
+// Platformens andel af hver transaktion.
+//
+// 10% på både baner og trænertimer. Én sats er lettere at forklare i et
+// klubmøde end to, og den holder over Stripes gebyr: en indenlandsk
+// betaling koster 1,5% + 1,80 kr, så en banetime til 100 kr giver
+// 10,00 − 3,30 = 6,70 kr tilbage. Ved en lavere sats ville små bookinger
+// koste os penge frem for at tjene dem.
+export const COMMISSION_PCT = 0.10;
 
-export function platformFee(kind: "COURT" | "COACH", amountKr: number): number {
-  const pct = kind === "COURT" ? COURT_FEE_PCT : COACH_FEE_PCT;
-  return Math.round(amountKr * pct);
+/** Provisionen af et beløb, afrundet til hele kroner. */
+export function commission(amountKr: number): number {
+  return Math.round(amountKr * COMMISSION_PCT);
+}
+
+/**
+ * Hvad platformen tjener på en konkret booking.
+ *
+ * Klubber på abonnement betaler et fast beløb om måneden i stedet for
+ * provision, så deres banebookinger giver 0 her — hele beløbet går til
+ * klubben. Trænertimer er altid på provision: træneren er selvstændig og
+ * har ikke et abonnement.
+ */
+export async function platformFeeForBooking(booking: {
+  kind: string;
+  priceKr: number;
+  courtId?: string | null;
+}): Promise<number> {
+  if (booking.kind === "COACH") return commission(booking.priceKr);
+
+  if (!booking.courtId) return commission(booking.priceKr);
+
+  const court = await db.court.findUnique({
+    where: { id: booking.courtId },
+    include: { club: { select: { billingModel: true } } },
+  });
+  if (court?.club.billingModel === "SUBSCRIPTION") return 0;
+
+  return commission(booking.priceKr);
 }
 
 /**
@@ -70,7 +101,7 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
   if (!booking) throw new Error("Booking findes ikke");
   if (booking.status === "CONFIRMED") return booking; // idempotent
 
-  const fee = platformFee(booking.kind as "COURT" | "COACH", booking.priceKr);
+  const fee = await platformFeeForBooking(booking);
 
   const [updated] = await db.$transaction([
     db.booking.update({

@@ -143,6 +143,7 @@ async function main() {
       closeHour: 22,
       integrationType: "MANUAL",
       externalSystem: "Halbooking (Globus Data)",
+      billingModel: "SUBSCRIPTION",
     },
   });
 

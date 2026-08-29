@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
-import { confirmBookingPayment, platformFee } from "../../../lib/payments";
+import { confirmBookingPayment, platformFeeForBooking } from "../../../lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +32,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
     booking.kind === "COURT"
       ? `${booking.court?.club.name} — ${booking.court?.name}`
       : `Trænertime hos ${booking.coachProfile?.user.name}`;
-  const fee = platformFee(booking.kind as "COURT" | "COACH", booking.priceKr);
+  const fee = await platformFeeForBooking(booking);
 
   async function pay() {
     "use server";
@@ -54,8 +54,9 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
           <span className="font-bold">{booking.priceKr} kr</span>
         </div>
         <p className="text-xs text-net/50">
-          Heraf går {fee} kr til platformen — resten udbetales automatisk til{" "}
-          {booking.kind === "COURT" ? "klubben" : "træneren"}.
+          {fee > 0
+            ? `Heraf går ${fee} kr til Tennis Makker — de resterende ${booking.priceKr - fee} kr udbetales automatisk til ${booking.kind === "COURT" ? "klubben" : "træneren"}.`
+            : `Hele beløbet udbetales til klubben. Klubben betaler et fast abonnement i stedet for provision.`}
         </p>
         <form action={pay}>
           <button className="btn-grus w-full">Betal {booking.priceKr} kr (demo)</button>

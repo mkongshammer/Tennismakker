@@ -57,6 +57,11 @@ model Club {
   closeHour   Int      @default(22)
   createdAt   DateTime @default(now())
 
+  // Klubben vælger: COMMISSION (vi tager 10% af hver gæstebooking) eller
+  // SUBSCRIPTION (fast beløb pr. måned, klubben beholder hele bookingen).
+  billingModel   String @default("COMMISSION")
+  subscriptionKr Int    @default(199)
+
   address   String? // gadeadresse, bruges til kortet og til at finde vej
   latitude  Float?
   longitude Float?

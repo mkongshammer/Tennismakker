@@ -80,6 +80,32 @@ export default function OpretKlubPage() {
         </div>
 
         <div className="border-t border-net/10 pt-5">
+          <h2 className="mb-3 font-bold">Hvad vil I betale?</h2>
+          <div className="space-y-2">
+            <label className="flex cursor-pointer gap-3 rounded-md border border-net/15 p-3">
+              <input type="radio" name="billingModel" value="COMMISSION" defaultChecked className="mt-1" />
+              <span>
+                <span className="block font-semibold">10% af hver gæstebooking</span>
+                <span className="block text-sm text-net/60">
+                  Ingen fast betaling. Kommer der ingen bookinger, koster det jer
+                  ingenting.
+                </span>
+              </span>
+            </label>
+            <label className="flex cursor-pointer gap-3 rounded-md border border-net/15 p-3">
+              <input type="radio" name="billingModel" value="SUBSCRIPTION" className="mt-1" />
+              <span>
+                <span className="block font-semibold">199 kr om måneden</span>
+                <span className="block text-sm text-net/60">
+                  Fast pris, og I beholder hele beløbet for hver booking. Bedst
+                  når I har mange ledige tider at fylde.
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div className="border-t border-net/10 pt-5">
           <h2 className="mb-3 font-bold">Din konto</h2>
           <p className="mb-3 text-sm text-net/60">
             Du bliver administrator og kan tilføje flere fra klubben bagefter.
