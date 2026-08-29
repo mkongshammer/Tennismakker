@@ -234,12 +234,18 @@ Profilbilleder vises som initialer. Vil I have rigtige billeder senere, kræver 
 
 ## Kort over klubber
 
-`/klubber` viser et interaktivt kort med alle klubber, der har koordinater. Markørerne bruger klubbens egen farve, og et klik viser pris, antal baner, bedømmelse og et link til de ledige tider.
+`/klubber` er en delt visning: listen til venstre, kortet hængende til højre. På telefon vises listen med en "Vis kort"-knap, der bliver siddende nederst.
 
-Kortet bruger **Leaflet med OpenStreetMap-fliser**. Det kræver hverken API-nøgle eller betalingskort, hvilket er grunden til valget frem for Google Maps — der er ingen risiko for en uventet regning, og ingen nøgle at lække. Til gengæld er kortdata og adressesøgning ikke helt så præcise som Googles i Danmark.
+Tre designvalg der bærer siden:
 
-Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel — den mangler bare på kortet, indtil adressen rettes. Nominatims brugspolitik tillader ét opslag i sekundet, hvilket er rigeligt, når vi kun slår op ved oprettelse.
+**Prisbobler frem for nåle.** En nål fortæller kun "her ligger noget". En boble med prisen svarer på det spørgsmål, folk faktisk har, før de klikker. Boblen er mørkegrøn som vindskærmen og bliver lergrus-rød, når klubben er valgt.
 
-Skal det skaleres, eller bliver præcisionen et problem, skiftes kun `geocode.ts` ud med et betalt API.
+**Dæmpede kortfliser** (CARTO Positron). Standardfliserne fra OpenStreetMap er fulde af farve og tekst, og så forsvinder boblerne i støjen.
+
+**Banemotiv i stedet for foto.** Klubberne har ingen billeder, og et gråt pladsholderfelt ser forladt ud. I stedet tegnes en tennisbane i klubbens egen farve — det gør listen genkendelig og undgår hele billedhåndteringen.
+
+Liste og kort peger på hinanden: peger man på et kort i listen, vokser boblen på kortet, og klikker man på en boble, ruller det tilhørende kort frem.
+
+Kortet bruger Leaflet og kræver hverken API-nøgle eller betalingskort — der er ingen risiko for en uventet regning og ingen nøgle at lække. Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel og mangler bare på kortet.
 
 **Ikke bygget:** klubber kan ikke rette deres adresse i admin bagefter, og der er ingen søgning på afstand ("klubber inden for 10 km"). Kortet i mobilappen mangler også — appen viser stadig kun en liste.

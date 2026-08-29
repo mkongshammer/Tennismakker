@@ -41,3 +41,48 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* --- Kortmarkører ---
+   Prisboblen er formet som en scoretavle-brik: afrundet, med en lille
+   spids nedad mod klubbens position. */
+.tm-pill-wrap {
+  background: none !important;
+  border: none !important;
+}
+
+.tm-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 5px 11px;
+  border-radius: 999px;
+  color: #faf7f0;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  border: 2px solid #faf7f0;
+  box-shadow: 0 2px 8px rgba(23, 27, 25, 0.28);
+  transition: transform 140ms ease, background-color 140ms ease;
+  transform-origin: bottom center;
+  cursor: pointer;
+}
+
+.tm-pill:hover {
+  transform: scale(1.12) !important;
+}
+
+/* Leaflets egne kontroller skal matche resten af siden */
+.leaflet-container {
+  font-family: var(--font-body);
+}
+.leaflet-control-attribution {
+  background: rgba(250, 247, 240, 0.85) !important;
+  font-size: 10px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tm-pill {
+    transition: none;
+  }
+}
