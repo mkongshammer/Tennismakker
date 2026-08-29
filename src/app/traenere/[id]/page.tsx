@@ -7,6 +7,8 @@ import { getCurrentUser } from "../../../lib/session";
 import { bookCoachSlot } from "../../../lib/actions";
 import { releaseExpiredHolds } from "../../../lib/payments";
 import { parseWeeklySlots, upcomingSlotsFromWeekly } from "../../../lib/slots";
+import { coachRatings, recentReviews } from "../../../lib/reviews";
+import { Stars } from "../../../components/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +21,12 @@ export default async function TraenerPage({ params }: { params: { id: string } }
 
   const user = await getCurrentUser();
   await releaseExpiredHolds();
+
+  const [ratings, reviews] = await Promise.all([
+    coachRatings([coach.id]),
+    recentReviews({ coachProfileId: coach.id }),
+  ]);
+  const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
 
   const slots = upcomingSlotsFromWeekly(parseWeeklySlots(coach.weeklySlots), 7);
   const taken = await db.booking.findMany({
@@ -46,9 +54,27 @@ export default async function TraenerPage({ params }: { params: { id: string } }
           <h1 className="display text-3xl">{coach.user.name}</h1>
           <p className="display text-2xl text-grus">{coach.priceHour} kr/t</p>
         </div>
+        <div className="mt-2">
+          <Stars average={rating.average} count={rating.count} />
+        </div>
         <p className="mt-2">{coach.headline}</p>
         <p className="mt-1 text-sm text-net/60">{coach.area}</p>
       </div>
+
+      {reviews.length > 0 && (
+        <div className="mt-6">
+          <h2 className="display mb-3 text-xl">Hvad elever siger</h2>
+          <ul className="space-y-3">
+            {reviews.map((r: any) => (
+              <li key={r.id} className="card">
+                <p className="text-grus">{"\u2605".repeat(r.rating)}</p>
+                <p className="mt-1">{r.comment}</p>
+                <p className="mt-1 text-sm text-net/50">{r.author.name}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <h2 className="display mb-3 mt-8 text-2xl">Ledige tider (næste 7 dage)</h2>
 

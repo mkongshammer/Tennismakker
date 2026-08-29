@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { db } from "../../lib/db";
+import { clubRatings } from "../../lib/reviews";
+import { Stars } from "../../components/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +10,8 @@ export default async function KlubberPage() {
     include: { _count: { select: { courts: true, members: true } } },
     orderBy: { name: "asc" },
   });
+
+  const ratings = await clubRatings(clubs.map((c: any) => c.id));
 
   return (
     <div>
@@ -21,6 +25,12 @@ export default async function KlubberPage() {
           <li key={c.id} className="card">
             <p className="text-lg font-bold">{c.name}</p>
             <p className="text-sm text-net/60">{c.city}</p>
+            <div className="mt-1">
+              <Stars
+                average={ratings.get(c.id)?.average ?? 0}
+                count={ratings.get(c.id)?.count ?? 0}
+              />
+            </div>
             <p className="mt-2 text-sm">
               {c._count.courts} baner · {c.priceHour} kr/time · {c._count.members} medlemmer
             </p>

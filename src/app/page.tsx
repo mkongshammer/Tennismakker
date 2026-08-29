@@ -28,7 +28,7 @@ export default async function Home() {
             uden papirlister og forældede systemer.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/makkere" className="btn bg-kridt text-grus-deep hover:bg-white">
+            <Link href="/spillere" className="btn bg-kridt text-grus-deep hover:bg-white">
               Find en makker
             </Link>
             <Link href="/klubber" className="btn border-2 border-kridt text-kridt hover:bg-kridt/10">
@@ -40,11 +40,11 @@ export default async function Home() {
 
       {/* De tre moduler */}
       <section className="grid gap-6 sm:grid-cols-3">
-        <Link href="/makkere" className="card hover:border-grus">
+        <Link href="/spillere" className="card hover:border-grus">
           <p className="display text-2xl text-grus">Makkere</p>
           <p className="mt-2 text-sm text-net/70">
-            Opslag fra spillere i dit område, filtreret på niveau. Accepter et
-            opslag og aftal kampen direkte.
+            Se spillere på dit niveau i dit område, én ad gangen. Siger I begge
+            ja, åbner der en samtale.
           </p>
           <p className="mt-4 text-sm font-bold">{players} spillere på platformen</p>
         </Link>

@@ -34,6 +34,9 @@ model User {
   matchRequests   MatchRequest[] @relation("requester")
   matchResponses  MatchRequest[] @relation("acceptedBy")
   messages        Message[]
+  swipesGiven     Swipe[]        @relation("swipesGiven")
+  swipesReceived  Swipe[]        @relation("swipesReceived")
+  reviews         Review[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -62,6 +65,7 @@ model Club {
 
   courts  Court[]
   members User[]
+  reviews Review[]
 }
 
 // surface: "GRUS" | "HARD" | "INDE"
@@ -137,6 +141,7 @@ model Booking {
   coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
 
   payment Payment?
+  review  Review?
 
   @@index([courtId, startsAt])
   @@index([coachProfileId, startsAt])
@@ -155,6 +160,7 @@ model CoachProfile {
   weeklySlots String @default("[]")
 
   bookings Booking[]
+  reviews  Review[]
 }
 
 // ---------- Modul A: Makker-matching ----------
@@ -166,6 +172,7 @@ model MatchRequest {
   area      String
   level     Int
   matchType String   @default("SINGLE") // "SINGLE" | "DOUBLE" | "TRAENING"
+  source    String   @default("POST") // "POST" = opslag, "SWIPE" = gensidigt like
   createdAt DateTime @default(now())
 
   requesterId  String
@@ -205,4 +212,43 @@ model Payment {
   providerRef String? // fx Stripe PaymentIntent-id
   status      String   @default("PENDING")
   createdAt   DateTime @default(now())
+}
+
+
+// ---------- Swipe-matching ----------
+// Spillere gennemgår kort med andre spillere i deres område og på deres
+// niveau. To likes den samme vej åbner automatisk en samtale.
+model Swipe {
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("swipesGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("swipesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  liked      Boolean
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, liked])
+}
+
+// ---------- Anmeldelser ----------
+// Kan kun skrives efter en gennemført booking, så vurderinger er knyttet til
+// et reelt møde og ikke bare en holdning.
+model Review {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  clubId         String?
+  club           Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([coachProfileId])
+  @@index([clubId])
 }

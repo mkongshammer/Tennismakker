@@ -6,6 +6,8 @@ import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { cancelBooking, closeMatchRequest } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
+import { ReviewForm } from "../../components/ReviewForm";
+import { pendingReviews } from "../../lib/reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +19,7 @@ export default async function ProfilPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [bookings, myRequests, myMatches, coachBookings] = await Promise.all([
+  const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
     db.booking.findMany({
       where: { userId: user.id, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { gte: new Date() } },
       include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
@@ -40,6 +42,7 @@ export default async function ProfilPage({
           orderBy: { startsAt: "asc" },
         })
       : Promise.resolve([]),
+    pendingReviews(user.id),
   ]);
 
   return (
@@ -55,6 +58,23 @@ export default async function ProfilPage({
         <LevelBadge level={user.level} />
         {user.area && <span className="text-net/60">{user.area}</span>}
       </div>
+
+      {toReview.length > 0 && (
+        <section>
+          <h2 className="display mb-3 text-2xl">Hvordan gik det?</h2>
+          <ul className="space-y-3">
+            {toReview.map((r: any) => (
+              <li key={r.bookingId} className="card">
+                <p className="font-bold">{r.what}</p>
+                <p className="text-sm text-net/60">
+                  {format(r.startsAt, "d. MMMM", { locale: da })}
+                </p>
+                <ReviewForm bookingId={r.bookingId} what={r.what} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section>
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>

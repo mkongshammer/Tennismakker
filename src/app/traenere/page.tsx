@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { db } from "../../lib/db";
+import { coachRatings } from "../../lib/reviews";
+import { Stars } from "../../components/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,8 @@ export default async function TraenerePage({
     include: { user: true },
     orderBy: { priceHour: "asc" },
   });
+
+  const ratings = await coachRatings(coaches.map((c: any) => c.id));
 
   return (
     <div>
@@ -41,7 +45,13 @@ export default async function TraenerePage({
               <p className="text-lg font-bold">{c.user.name}</p>
               <p className="display text-xl text-grus">{c.priceHour} kr/t</p>
             </div>
-            <p className="mt-1 text-sm">{c.headline}</p>
+            <div className="mt-1">
+              <Stars
+                average={ratings.get(c.id)?.average ?? 0}
+                count={ratings.get(c.id)?.count ?? 0}
+              />
+            </div>
+            <p className="mt-2 text-sm">{c.headline}</p>
             <p className="mt-1 text-sm text-net/60">{c.area}</p>
             {c.specialties && (
               <div className="mt-2 flex flex-wrap gap-1.5">

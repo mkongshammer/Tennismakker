@@ -209,3 +209,25 @@ Når nogen slår til på et makker-opslag, åbnes en samtale mellem de to. Konta
 Adgangskontrollen ligger samlet i `src/lib/messages.ts`: kun opslagets ejer og den, der slog til, kan læse eller skrive i tråden. Både websitet og API'et bruger den samme funktion, så reglen kun findes ét sted.
 
 Beskeder hentes ved sideindlæsning. Der er ingen realtidsopdatering endnu — man skal hente siden igen for at se nye beskeder. Push-beskeder er heller ikke bygget, så modtageren får kun besked pr. e-mail, når samtalen starter.
+
+## Swipe-matching
+
+`/spillere` viser én spiller ad gangen inden for ±1 niveau og samme område. Siger begge ja, oprettes automatisk en samtale, og begge sendes derind.
+
+Hvorfor swipe frem for opslagstavlen: en tavle kræver, at nogen gider skrive et opslag, og at andre gider læse det. Swipe fungerer også, når folk er passive — man skal bare sige ja eller nej til én ad gangen. Det virker ved langt færre brugere, end en tavle gør. Opslagstavlen findes stadig på `/makkere` for dem, der vil beskrive noget specifikt.
+
+Et nej er privat: den anden får aldrig at vide, at man sprang over.
+
+## Anmeldelser
+
+Kun personer med en gennemført booking kan anmelde, og kun én gang pr. booking. Det er hele grunden til, at anmeldelserne er værd at stole på — de kan ikke skrives af nogen, der aldrig har været der. Logikken ligger i `src/lib/reviews.ts`, og både web og API bruger den samme funktion.
+
+Efter en overstået booking dukker anmeldelsen op øverst på `/profil`. Gennemsnit vises på klub- og trænerlisterne.
+
+**Ikke bygget:** der er ingen moderation af anmeldelsestekster og ingen mulighed for at en klub eller træner kan svare. Begge dele bør på plads, før der er rigtige brugere — en enkelt urimelig anmeldelse uden svarmulighed kan koste dig en klub.
+
+## Hvorfor der ikke er et socialt feed
+
+Instagram-delen er fravalgt bevidst. Et feed med få brugere er tomt, og tomme feeds får folk til at holde op med at åbne appen. Brugeruploadede billeder udløser desuden moderationspligt, lagringsomkostninger og ansvar for indhold, platformen ikke kontrollerer.
+
+Profilbilleder vises som initialer. Vil I have rigtige billeder senere, kræver det en lagringsudbyder og en plan for moderation — ikke bare et upload-felt.

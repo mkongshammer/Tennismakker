@@ -20,6 +20,7 @@ import CoachScreen from "./src/screens/CoachScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import ThreadsScreen from "./src/screens/ThreadsScreen";
 import ChatScreen from "./src/screens/ChatScreen";
+import SwipeScreen from "./src/screens/SwipeScreen";
 
 const Tabs = createBottomTabNavigator();
 const MatchStack = createNativeStackNavigator();
@@ -45,7 +46,22 @@ function TabIcon({ label, focused }) {
 function MatchesStack() {
   return (
     <MatchStack.Navigator screenOptions={screenOptions}>
-      <MatchStack.Screen name="Makkere" component={MatchesScreen} options={{ title: "Find makker" }} />
+      <MatchStack.Screen
+        name="Spillere"
+        component={SwipeScreen}
+        options={({ navigation }) => ({
+          title: "Find spillere",
+          headerRight: () => (
+            <Text
+              onPress={() => navigation.navigate("Makkere")}
+              style={{ color: colors.kridt, fontWeight: "700" }}
+            >
+              Opslag
+            </Text>
+          ),
+        })}
+      />
+      <MatchStack.Screen name="Makkere" component={MatchesScreen} options={{ title: "Opslag" }} />
       <MatchStack.Screen name="NytOpslag" component={NewMatchScreen} options={{ title: "Opret opslag" }} />
     </MatchStack.Navigator>
   );

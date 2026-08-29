@@ -66,6 +66,14 @@ export const api = {
   createMatch: (payload) => request("/matches", { method: "POST", body: payload }),
   acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
 
+  swipeQueue: () => request("/swipe"),
+  swipe: (toUserId, liked) =>
+    request("/swipe", { method: "POST", body: { toUserId, liked } }),
+
+  pendingReviews: () => request("/reviews"),
+  review: (bookingId, rating, comment) =>
+    request("/reviews", { method: "POST", body: { bookingId, rating, comment } }),
+
   threads: () => request("/threads"),
   thread: (id) => request(`/threads/${id}`),
   sendMessage: (id, body) =>

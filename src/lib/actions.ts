@@ -10,6 +10,8 @@ import { startCheckout, releaseExpiredHolds, cancelAndRefund } from "./payments"
 import { getClubAvailability, syncClubCalendar } from "./integrations";
 import { matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
+import { recordSwipe } from "./swipe";
+import { createReview } from "./reviews";
 
 // ---------------- Auth ----------------
 
@@ -494,4 +496,41 @@ export async function sendMessage(formData: FormData) {
 
   revalidatePath(`/beskeder/${matchRequestId}`);
   revalidatePath("/beskeder");
+}
+
+// ---------------- Swipe ----------------
+
+export async function submitSwipe(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const toUserId = String(formData.get("toUserId"));
+  const liked = String(formData.get("liked")) === "1";
+
+  const result = await recordSwipe(user.id, toUserId, liked);
+  if (result.matched && result.threadId) {
+    redirect(`/beskeder/${result.threadId}?nyt=1`);
+  }
+  revalidatePath("/spillere");
+}
+
+// ---------------- Anmeldelser ----------------
+
+export async function submitReview(_prev: unknown, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const result = await createReview(
+    user.id,
+    String(formData.get("bookingId")),
+    Number(formData.get("rating") ?? 0),
+    String(formData.get("comment") ?? "")
+  );
+
+  if (!result.ok) return { error: result.error };
+
+  revalidatePath("/profil");
+  revalidatePath("/traenere");
+  revalidatePath("/klubber");
+  return { ok: "Tak for din anmeldelse." };
 }

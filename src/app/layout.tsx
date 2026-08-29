@@ -26,7 +26,8 @@ export default async function RootLayout({
               Tennis&nbsp;Makker
             </Link>
             <div className="flex flex-1 flex-wrap items-center gap-x-5 gap-y-1 text-sm font-medium">
-              <Link href="/makkere" className="hover:underline">Find makker</Link>
+              <Link href="/spillere" className="hover:underline">Find spillere</Link>
+              <Link href="/makkere" className="hover:underline">Opslag</Link>
               <Link href="/traenere" className="hover:underline">Trænere</Link>
               <Link href="/klubber" className="hover:underline">Klubber</Link>
             </div>
