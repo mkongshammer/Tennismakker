@@ -66,7 +66,26 @@ function IconPlayers({ active }: { active: boolean }) {
   );
 }
 
-export function TabBar({ locale }: { locale: Locale }) {
+function IconMessages({ active }: { active: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden="true">
+      <path
+        d="M4 5.5h16v11H9.5L4.5 20V5.5Z"
+        stroke="currentColor"
+        strokeWidth={active ? 2.2 : 1.7}
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TabBar({
+  locale,
+  unread = 0,
+}: {
+  locale: Locale;
+  unread?: number;
+}) {
   const pathname = usePathname();
   const t = translator(locale);
 
@@ -74,9 +93,10 @@ export function TabBar({ locale }: { locale: Locale }) {
   // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det
   // tydeligere, hvad appen er til.
   const tabs = [
-    { href: "/book", label: t("nav.book"), Icon: IconCourt },
-    { href: "/traenere", label: t("nav.coaches"), Icon: IconCoach },
-    { href: "/spillere", label: t("nav.players"), Icon: IconPlayers },
+    { href: "/book", label: t("nav.book"), Icon: IconCourt, badge: 0 },
+    { href: "/traenere", label: t("nav.coaches"), Icon: IconCoach, badge: 0 },
+    { href: "/spillere", label: t("nav.players"), Icon: IconPlayers, badge: 0 },
+    { href: "/beskeder", label: t("nav.messages"), Icon: IconMessages, badge: unread },
   ];
 
   const isActive = (href: string) =>
@@ -88,7 +108,7 @@ export function TabBar({ locale }: { locale: Locale }) {
       className="fixed inset-x-0 bottom-0 z-40 border-t border-slate/10 bg-chalk/95 pb-[env(safe-area-inset-bottom)] shadow-tab backdrop-blur md:hidden"
     >
       <ul className="flex">
-        {tabs.map(({ href, label, Icon }) => {
+        {tabs.map(({ href, label, Icon, badge }) => {
           const active = isActive(href);
           return (
             <li key={href} className="flex-1">
@@ -106,7 +126,17 @@ export function TabBar({ locale }: { locale: Locale }) {
                     active ? "bg-court opacity-100" : "opacity-0"
                   }`}
                 />
-                <Icon active={active} />
+                <span className="relative">
+                  <Icon active={active} />
+                  {badge > 0 && (
+                    <span
+                      className="absolute -right-2 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-court px-1 text-[10px] font-bold text-chalk"
+                      aria-label={`${badge} ulæste`}
+                    >
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  )}
+                </span>
                 <span className={`text-[11px] ${active ? "font-bold" : "font-medium"}`}>
                   {label}
                 </span>

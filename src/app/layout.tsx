@@ -7,6 +7,7 @@ import { logout } from "../lib/actions";
 import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
 import { translator } from "../lib/i18n";
+import { unreadCount } from "../lib/messages";
 
 export const metadata: Metadata = {
   title: "RacketBuddy — book bane, find træner og medspiller",
@@ -28,6 +29,7 @@ export default async function RootLayout({
 }) {
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   const t = translator(prefs.locale);
+  const unread = user ? await unreadCount(user.id) : 0;
 
   return (
     <html lang={prefs.locale}>
@@ -68,7 +70,7 @@ export default async function RootLayout({
           </div>
         </footer>
 
-        <TabBar locale={prefs.locale} />
+        <TabBar locale={prefs.locale} unread={unread} />
       </body>
     </html>
   );

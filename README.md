@@ -366,4 +366,6 @@ Tallene på forsiden og i klublisten er faktiske optællinger af ledige tider. D
 
 ## Navigation
 
-Tre punkter i bundlinjen: Book bane, Find træner, Find medspiller. Profilen ligger som initialer i øverste højre hjørne — den er noget man besøger, ikke noget man kommer for. Klub-administration og klubgodkendelser nås fra profilen.
+Fire punkter i bundlinjen: Book bane, Find træner, Find medspiller, Beskeder. Profilen ligger som initialer i øverste højre hjørne — den er noget man besøger, ikke noget man kommer for. Klub-administration og klubgodkendelser nås fra profilen.
+
+Beskeder har et tal med ulæste. Det er et ægte tal, ikke en pyntet prik: har man ingen ulæste, er der ingenting at se. Et badge, der lyser uden grund, holder op med at betyde noget efter anden gang.

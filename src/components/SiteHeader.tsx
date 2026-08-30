@@ -22,6 +22,7 @@ export function SiteHeader({ user, locale, logout }: Props) {
     { href: "/book", label: t("nav.book") },
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },
+    { href: "/beskeder", label: t("nav.messages") },
   ];
 
   const active = (href: string) =>
@@ -52,21 +53,6 @@ export function SiteHeader({ user, locale, logout }: Props) {
         <div className="ml-auto flex items-center gap-2 text-sm">
           {user ? (
             <>
-              <Link
-                href="/beskeder"
-                aria-label={t("nav.messages")}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-slate hover:bg-mist hover:text-ink"
-              >
-                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 5.5h16v11H9l-5 3.5V5.5Z"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </Link>
-
               {/* Profilen: initialer i hjørnet, som man kender det fra en app */}
               <Link
                 href="/profil"
