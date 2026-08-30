@@ -66,48 +66,86 @@ export default async function KlubPage({
 
   return (
     <div className="space-y-12">
-      {/* Klubbens hoved */}
-      <section
-        className="relative overflow-hidden rounded-2xl px-6 py-10 text-chalk sm:px-10 sm:py-14"
-        style={{ backgroundColor: club.color }}
-      >
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.15]"
-          viewBox="0 0 400 200"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <g stroke="#fff" strokeWidth="1.5" fill="none">
-            <rect x="30" y="18" width="340" height="164" />
-            <line x1="30" y1="44" x2="370" y2="44" />
-            <line x1="30" y1="156" x2="370" y2="156" />
-            <line x1="118" y1="44" x2="118" y2="156" />
-            <line x1="282" y1="44" x2="282" y2="156" />
-            <line x1="118" y1="100" x2="282" y2="100" />
-          </g>
-          <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
-        </svg>
-
-        <div className="relative">
-          <p className="eyebrow text-chalk/70">
+      {/* Klubbens hoved — udseendet følger klubbens valgte tema */}
+      {club.theme === "MARKANT" ? (
+        <section className="rounded-2xl bg-ink px-6 py-14 text-chalk sm:px-10 sm:py-20">
+          <p className="eyebrow text-chalk/60">
             {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
           </p>
-          <h1 className="display mt-2 text-3xl sm:text-5xl">{club.name}</h1>
+          <h1
+            className="display mt-3 text-4xl leading-[0.95] sm:text-7xl"
+            style={{ color: club.color }}
+          >
+            {club.name}
+          </h1>
           {club.tagline && (
-            <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
+            <p className="mt-5 max-w-xl text-lg text-chalk/80">{club.tagline}</p>
           )}
-          <p className="mt-4 text-sm font-semibold text-chalk/85">
+          <p className="data mt-8 text-sm text-chalk/60">
             {club.address ? `${club.address}, ` : ""}
             {club.city} · {club.courts.length} baner
             {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
           </p>
-          {isMember && (
-            <p className="data mt-4 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
-              Du er medlem — medlemspris
-            </p>
+        </section>
+      ) : club.theme === "ENKEL" ? (
+        <section className="border-b border-slate/15 pb-8">
+          <div
+            className="mb-5 h-1.5 w-16 rounded-full"
+            style={{ backgroundColor: club.color }}
+          />
+          <h1 className="display text-3xl sm:text-5xl">{club.name}</h1>
+          {club.tagline && (
+            <p className="mt-2 max-w-xl text-lg text-slate">{club.tagline}</p>
           )}
-        </div>
-      </section>
+          <p className="mt-4 text-sm text-slate">
+            {club.address ? `${club.address}, ` : ""}
+            {club.city} · {club.courts.length} baner
+            {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+          </p>
+        </section>
+      ) : (
+        <section
+          className="relative overflow-hidden rounded-2xl px-6 py-10 text-chalk sm:px-10 sm:py-14"
+          style={{ backgroundColor: club.color }}
+        >
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.15]"
+            viewBox="0 0 400 200"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <g stroke="#fff" strokeWidth="1.5" fill="none">
+              <rect x="30" y="18" width="340" height="164" />
+              <line x1="30" y1="44" x2="370" y2="44" />
+              <line x1="30" y1="156" x2="370" y2="156" />
+              <line x1="118" y1="44" x2="118" y2="156" />
+              <line x1="282" y1="44" x2="282" y2="156" />
+              <line x1="118" y1="100" x2="282" y2="100" />
+            </g>
+            <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
+          </svg>
+
+          <div className="relative">
+            <p className="eyebrow text-chalk/70">
+              {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
+            </p>
+            <h1 className="display mt-2 text-3xl sm:text-5xl">{club.name}</h1>
+            {club.tagline && (
+              <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
+            )}
+            <p className="mt-4 text-sm font-semibold text-chalk/85">
+              {club.address ? `${club.address}, ` : ""}
+              {club.city} · {club.courts.length} baner
+              {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+            </p>
+            {isMember && (
+              <p className="data mt-4 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
+                Du er medlem — medlemspris
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       {searchParams.optaget && (
         <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">

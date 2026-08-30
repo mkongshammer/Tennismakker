@@ -927,3 +927,138 @@ export async function joinClub(_prev: unknown, formData: FormData) {
   revalidatePath(`/klub/${club.slug}`);
   redirect(`/klub/${club.slug}`);
 }
+
+// ---------------- Hjemmeside som ydelse ----------------
+
+export async function orderWebsite(_prev: unknown, formData: FormData) {
+  const clubName = String(formData.get("clubName") ?? "").trim();
+  const contactName = String(formData.get("contactName") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const domain = String(formData.get("domain") ?? "").trim().toLowerCase();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  if (!clubName || !contactName) return { error: "Udfyld klubbens navn og dit navn." };
+  if (!email.includes("@")) return { error: "Skriv en gyldig e-mail." };
+
+  const order = await db.websiteOrder.create({
+    data: {
+      clubName,
+      contactName,
+      email,
+      phone: phone || null,
+      domain: domain.replace(/^https?:\/\//, "").replace(/\/$/, "") || null,
+      notes: notes || null,
+    },
+  });
+
+  // Kvittering til klubben, så de ved at den er landet
+  await sendMail({
+    to: email,
+    subject: `Vi har jeres bestilling — ${clubName}`,
+    body: [
+      `Hej ${contactName}`,
+      ``,
+      `Tak for bestillingen. Vi ringer inden for et par hverdage og taler om,`,
+      `hvad klubben har brug for.`,
+      ``,
+      `Opsætningen koster 5.000 kr, og vi opkræver først, når I har set et`,
+      `udkast og sagt ja.`,
+      ``,
+      `RacketBuddy`,
+    ].join("\n"),
+  });
+
+  // Besked til os
+  const inbox = process.env.ORDERS_EMAIL;
+  if (inbox) {
+    await sendMail({
+      to: inbox,
+      subject: `Ny hjemmesidebestilling: ${clubName}`,
+      body: [
+        `${clubName}`,
+        `${contactName} · ${email}${phone ? ` · ${phone}` : ""}`,
+        domain ? `Domæne: ${domain}` : `Domæne: har ikke et`,
+        ``,
+        notes || "Ingen bemærkninger.",
+        ``,
+        `${process.env.APP_URL ?? ""}/superadmin`,
+      ].join("\n"),
+    });
+  }
+
+  return {
+    ok: `Vi ringer til ${contactName} inden for et par hverdage. Bestillingsnummer ${order.id.slice(-6).toUpperCase()}.`,
+  };
+}
+
+export async function updateOrderStatus(formData: FormData) {
+  await requireSuperadmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!["NEW", "CONTACTED", "BUILDING", "LIVE", "CANCELLED"].includes(status)) return;
+
+  await db.websiteOrder.update({ where: { id }, data: { status } });
+  revalidatePath("/superadmin");
+}
+
+/**
+ * Kobler et domæne på en klub.
+ *
+ * Domænet virker først, når klubben har peget sit DNS mod os, og når
+ * domænet er tilføjet hos hostingudbyderen. Begge dele er manuelt arbejde
+ * — det er blandt andet det, opsætningsgebyret dækker.
+ */
+export async function setCustomDomain(_prev: unknown, formData: FormData) {
+  await requireSuperadmin();
+
+  const clubId = String(formData.get("clubId") ?? "").trim();
+  const domain = String(formData.get("domain") ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, "")
+    .replace(/\/$/, "");
+
+  if (!clubId) return { error: "Vælg en klub." };
+  if (domain && !/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
+    return { error: "Det ser ikke ud som et gyldigt domæne." };
+  }
+
+  const taken = domain
+    ? await db.club.findFirst({ where: { customDomain: domain, NOT: { id: clubId } } })
+    : null;
+  if (taken) return { error: "Domænet er allerede knyttet til en anden klub." };
+
+  await db.club.update({
+    where: { id: clubId },
+    data: {
+      customDomain: domain || null,
+      domainStatus: domain ? "PENDING_DNS" : "NONE",
+    },
+  });
+
+  revalidatePath("/superadmin");
+  return {
+    ok: domain
+      ? `${domain} er registreret. Peg klubbens DNS mod os, tilføj domænet hos hostingudbyderen, og sæt status til aktiv.`
+      : "Domænet er fjernet.",
+  };
+}
+
+export async function markDomainLive(formData: FormData) {
+  await requireSuperadmin();
+  await db.club.update({
+    where: { id: String(formData.get("clubId")) },
+    data: { domainStatus: "LIVE" },
+  });
+  revalidatePath("/superadmin");
+}
+
+/** Skifter klubbens tema. */
+export async function setTheme(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const theme = String(formData.get("theme"));
+  if (!["KLASSISK", "MARKANT", "ENKEL"].includes(theme)) return;
+  await db.club.update({ where: { id: clubId }, data: { theme } });
+  revalidatePath("/admin");
+}

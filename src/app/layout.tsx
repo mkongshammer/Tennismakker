@@ -62,6 +62,7 @@ export default async function RootLayout({
             <p className="mt-1 text-sm text-slate">Ketsjersport samlet ét sted</p>
             <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
               <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
+              <Link href="/hjemmeside" className="hover:text-ink">Hjemmeside til klubben</Link>
               <Link href="/app" className="hover:text-ink">App</Link>
               <Link href="/vilkaar" className="hover:text-ink">Handelsbetingelser</Link>
               <Link href="/privatliv" className="hover:text-ink">Privatliv</Link>

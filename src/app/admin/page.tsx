@@ -5,7 +5,7 @@ import { addDays, format, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost } from "../../lib/actions";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme } from "../../lib/actions";
 import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
@@ -166,6 +166,59 @@ export default async function AdminPage() {
           Bruger I os som jeres eneste system, er det her jeres hjemmeside.
         </p>
         <SiteForm club={club} />
+
+        <div className="card mt-4">
+          <p className="font-bold">Udseende</p>
+          <p className="mt-1 text-sm text-slate">
+            Tre måder at vise klubben på. Skift frit — det ændrer kun
+            forsiden, ikke indholdet.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              ["KLASSISK", "Klassisk", "Farvet hoved med banemotiv"],
+              ["MARKANT", "Markant", "Mørkt hoved, stort klubnavn"],
+              ["ENKEL", "Enkel", "Lyst og roligt"],
+            ].map(([value, label, hint]) => (
+              <form action={setTheme} key={value}>
+                <input type="hidden" name="theme" value={value} />
+                <button
+                  className={`rounded-xl border px-4 py-3 text-left ${
+                    club.theme === value
+                      ? "border-court bg-court/5"
+                      : "border-slate/20"
+                  }`}
+                >
+                  <span className="block font-semibold">{label}</span>
+                  <span className="block text-xs text-slate">{hint}</span>
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
+
+        <div className="card mt-4">
+          <p className="font-bold">Eget domæne</p>
+          {club.customDomain ? (
+            <>
+              <p className="data mt-1">{club.customDomain}</p>
+              <p className="mt-1 text-sm text-slate">
+                {club.domainStatus === "LIVE"
+                  ? "Aktivt. Jeres side ligger på jeres eget domæne."
+                  : "Registreret. Vi giver besked, når det er slået igennem."}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1 text-sm text-slate">
+                Jeres side kan ligge på klubbens eget domæne i stedet for hos
+                os. Vi sætter det op for jer.
+              </p>
+              <Link href="/hjemmeside" className="btn-ghost mt-3">
+                Læs om det
+              </Link>
+            </>
+          )}
+        </div>
       </section>
 
       <section>

@@ -407,3 +407,30 @@ Laver klubben en ny kode, holder den gamle op med at virke, men eksisterende med
 - **Billeder.** Der er ingen logo- eller fotoupload. Det kræver en lagringsudbyder og en beslutning om, hvem der rydder op i det.
 - **Kontingent.** Medlemskab giver adgang til medlemspris, men der opkræves ikke kontingent. Det er en anden slags betaling end en booking og hører sammen med Stripe Billing.
 - **Hold og turneringer.** Nyheder dækker det løseste behov. Rigtig holdadministration er et selvstændigt produkt.
+
+## Hjemmeside som betalt ydelse
+
+Salgssiden ligger på `/hjemmeside`: fast pris på 5.000 kr for opsætning, hvad klubben får, hvad vi skal bruge fra dem, og en bestillingsformular. Bestillingen lander i `WebsiteOrder` og dukker op i `/superadmin` med en simpel kø: Ringet op → Bygger → Færdig.
+
+Klubben får en kvittering på mail. Sættes `ORDERS_EMAIL`, får I selv en besked med det samme.
+
+### Egne domæner
+
+`src/middleware.ts` kigger på værtsnavnet. Er det ikke et af vores egne, omskrives roden til `/domaene/[host]`, som slår klubben op på `customDomain` og viser klubbens side. Alt andet — login, betaling, beskeder — bliver på vores eget domæne, så der ikke skal håndteres sessioner på tværs af mange domæner.
+
+**To skridt er manuelle og bliver ved med at være det:**
+
+1. Domænet skal tilføjes under Custom Domains hos hostingudbyderen.
+2. Klubben skal pege sit DNS mod os.
+
+Certifikatet udstedes automatisk, når DNS er slået igennem. Det manuelle arbejde er ikke en mangel — det er blandt andet det, opsætningsgebyret dækker. Superadmin har en formular til at knytte domænet og markere det som aktivt, når det virker.
+
+### Temaer
+
+Tre udseender, klubben kan skifte mellem i admin: **Klassisk** (farvet hoved med banemotiv), **Markant** (mørkt hoved, stort klubnavn i klubfarven) og **Enkel** (lyst, med en farvet streg som eneste markering). De ændrer kun forsiden, ikke indholdet — så et skift kan ikke ødelægge noget.
+
+### Hvad der stadig mangler for at kalde det Shopify
+
+- **Betaling af selve gebyret.** De 5.000 kr opkræves manuelt. En engangsbetaling gennem Stripe hører sammen med resten af betalingsopsætningen.
+- **Billeder.** Stadig ingen logo- eller fotoupload. Det er den enkelte ting, der tydeligst adskiller siderne fra en rigtig klubhjemmeside, og det kræver en lagringsudbyder.
+- **Flere sider.** Klubben har én side. Vil de have "Hold", "Kontingent" og "Bestyrelsen" som selvstændige sider, er det en sidemodel, ikke et felt mere.

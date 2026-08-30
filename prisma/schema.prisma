@@ -83,6 +83,13 @@ model Club {
   contactEmail   String?
   websiteUrl     String?
   joinCode       String? @unique // medlemmer melder sig ind med denne kode
+
+  // Hjemmesiden som betalt ydelse.
+  // theme: "KLASSISK" | "MARKANT" | "ENKEL"
+  theme        String  @default("KLASSISK")
+  customDomain String? @unique // fx "soendermarktennis.dk"
+  // "NONE" | "REQUESTED" | "PENDING_DNS" | "LIVE"
+  domainStatus String  @default("NONE")
   memberPriceHour Int? // medlemspris; er den sat, betaler medlemmer den
 
   address   String? // gadeadresse, bruges til kortet og til at finde vej
@@ -348,4 +355,27 @@ model CoachPackage {
   createdAt      DateTime     @default(now())
 
   @@index([coachProfileId])
+}
+
+
+// ---------- Bestilling af hjemmeside ----------
+// Den betalte opsætningsydelse: klubben får en færdig side på deres eget
+// domæne, bygget af os. Bestillingen kommer typisk før klubben findes i
+// systemet, så den står for sig selv og kobles på bagefter.
+model WebsiteOrder {
+  id          String   @id @default(cuid())
+  clubName    String
+  contactName String
+  email       String
+  phone       String?
+  domain      String? // ønsket domæne, hvis de har et
+  notes       String?
+  // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
+  status      String   @default("NEW")
+  priceKr     Int      @default(5000)
+  internalNote String?
+  clubId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([status, createdAt])
 }

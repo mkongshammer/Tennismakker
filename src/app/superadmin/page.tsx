@@ -8,7 +8,8 @@ import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { approveClub, rejectClub } from "../../lib/actions";
+import { approveClub, rejectClub, updateOrderStatus, markDomainLive } from "../../lib/actions";
+import { DomainForm } from "./OrderTools";
 import { sportLabel } from "../../lib/sports";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function SuperadminPage() {
     );
   }
 
-  const [pending, decided] = await Promise.all([
+  const [pending, decided, orders, domainClubs] = await Promise.all([
     db.club.findMany({
       where: { status: "PENDING" },
       include: { courts: true, members: true },
@@ -37,6 +38,15 @@ export default async function SuperadminPage() {
       where: { status: { in: ["APPROVED", "REJECTED"] } },
       orderBy: { createdAt: "desc" },
       take: 20,
+    }),
+    db.websiteOrder.findMany({
+      where: { status: { notIn: ["LIVE", "CANCELLED"] } },
+      orderBy: { createdAt: "asc" },
+    }),
+    db.club.findMany({
+      where: { status: "APPROVED" },
+      select: { id: true, name: true, customDomain: true, domainStatus: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
@@ -131,6 +141,91 @@ export default async function SuperadminPage() {
             );
           })}
         </ul>
+      </section>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Hjemmesidebestillinger</h2>
+        <p className="mb-4 text-sm text-slate">
+          {orders.length === 0
+            ? "Ingen åbne bestillinger."
+            : `${orders.length} i gang. 5.000 kr pr. opsætning.`}
+        </p>
+
+        <ul className="space-y-3">
+          {orders.map((o: any) => (
+            <li key={o.id} className="card">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <p className="font-bold">{o.clubName}</p>
+                <p className="data text-xs text-slate">
+                  {format(o.createdAt, "d. MMM", { locale: da })} ·{" "}
+                  {o.id.slice(-6).toUpperCase()}
+                </p>
+              </div>
+              <p className="mt-1 text-sm">
+                {o.contactName} · {o.email}
+                {o.phone ? ` · ${o.phone}` : ""}
+              </p>
+              <p className="text-sm text-slate">
+                {o.domain ? `Domæne: ${o.domain}` : "Har ikke et domæne endnu"}
+              </p>
+              {o.notes && <p className="mt-2 text-sm">{o.notes}</p>}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[
+                  ["CONTACTED", "Ringet op"],
+                  ["BUILDING", "Bygger"],
+                  ["LIVE", "Færdig"],
+                  ["CANCELLED", "Aflyst"],
+                ].map(([value, label]) => (
+                  <form action={updateOrderStatus} key={value}>
+                    <input type="hidden" name="id" value={o.id} />
+                    <input type="hidden" name="status" value={value} />
+                    <button
+                      className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                        o.status === value
+                          ? "bg-ink text-chalk"
+                          : "border border-slate/20 text-slate"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  </form>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Egne domæner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Knyt et domæne til en klub. Det virker først, når DNS peger på os.
+        </p>
+        <DomainForm clubs={domainClubs} />
+
+        {domainClubs.filter((c: any) => c.customDomain).length > 0 && (
+          <ul className="card mt-4 divide-y divide-slate/10">
+            {domainClubs
+              .filter((c: any) => c.customDomain)
+              .map((c: any) => (
+                <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                  <span className="font-semibold">{c.name}</span>
+                  <span className="data text-slate">{c.customDomain}</span>
+                  {c.domainStatus === "LIVE" ? (
+                    <span className="font-bold text-court">Aktivt</span>
+                  ) : (
+                    <form action={markDomainLive}>
+                      <input type="hidden" name="clubId" value={c.id} />
+                      <button className="text-sm font-semibold text-court underline">
+                        Marker som aktivt
+                      </button>
+                    </form>
+                  )}
+                </li>
+              ))}
+          </ul>
+        )}
       </section>
 
       <section>
