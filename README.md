@@ -468,3 +468,18 @@ Billeder serveres fra `/api/billeder/[id]` med et års cache. Et billede ændrer
 **Kunne ikke testes direkte fra udviklingsmiljøet.** Sandkassen, koden er udviklet i, har en netværksspærring, der blokerer `*.r2.cloudflarestorage.com` — det gav i første omgang et 403-svar, der så ud som et rettighedsproblem hos Cloudflare, men var reelt kun sandkassens egen spærring. Første upload i produktion bør derfor kontrolleres manuelt: virker den ikke, falder billedet automatisk tilbage i databasen, og den egentlige fejl står i serverloggen.
 
 **Ikke bygget:** klubben kan ikke ændre rækkefølgen på gallerifotos eller beskære et billede. Beskæringen sker automatisk fra midten, hvilket rammer skævt på billeder med motivet i kanten.
+
+## Belastningstest af beskeder
+
+Kørt lokalt mod en rigtig Postgres-database — samme forespørgsler og adgangskontrol som `src/lib/messages.ts` og `src/lib/actions.ts` bruger, men uden Prisma som mellemled (Prismas motorfil kunne ikke hentes i udviklingsmiljøet). **Ikke kørt mod jeres server:** sandkassen her kan ikke nå Render direkte, så testen viser, at logikken holder under belastning — ikke hvordan Renders netværk eller serverkapacitet opfører sig.
+
+**Test 1 — 200 samtidige afsendere, 100 samtaler, 5.000 beskeder:**
+- 2.300 beskeder i sekundet, ingen tabt eller duplikeret
+- Svartid: median 60 ms, værste tilfælde 356 ms
+- 0 uautoriserede beskeder slap igennem, på trods af forsøg fra udenforstående i hver samtale
+
+**Test 2 — én samtale med over 200 beskeder fandt en reel fejl:** `readMessages()` hentede de 200 *ældste* beskeder i stedet for de nyeste. En samtale, der voksede forbi 200 beskeder, ville derfor fryse permanent på den ældste halvdel — nye beskeder blev gemt i databasen, men blev aldrig vist, uden nogen fejlmeddelelse nogen steder. Rettet ved at hente de seneste 200 og vende dem om, så visningen stadig er kronologisk, men altid viser det nyeste.
+
+**Test 3 — 50 samtidige opslag af ulæst-tælleren** (den der vises i bundlinjen): 73 ms samlet.
+
+Konklusion: beskedlogikken holder til langt mere belastning, end platformen får brug for i overskuelig fremtid. Fejlen i Test 2 ville til gengæld ramme jeres mest aktive brugere først — dem der skriver mest sammen — hvilket er præcis dem, I ikke har råd til at miste.

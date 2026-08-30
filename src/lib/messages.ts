@@ -69,14 +69,23 @@ export async function listThreads(userId: string) {
   return threads;
 }
 
-/** Henter beskederne i en tråd og markerer modpartens som læst. */
+/**
+ * Henter beskederne i en tråd og markerer modpartens som læst.
+ *
+ * En belastningstest afslørede en fejl her: at hente de første 200
+ * beskeder (ældste-først) betyder, at en samtale, der vokser forbi 200,
+ * fryser fast på den ældste halvdel for evigt — nye beskeder blev gemt,
+ * men aldrig vist. Rettet ved at hente de seneste 200 og vende dem om,
+ * så det stadig vises kronologisk, men altid er de nyeste.
+ */
 export async function readMessages(matchRequestId: string, userId: string) {
-  const messages = await db.message.findMany({
+  const latest = await db.message.findMany({
     where: { matchRequestId },
     include: { sender: true },
-    orderBy: { createdAt: "asc" },
+    orderBy: { createdAt: "desc" },
     take: 200,
   });
+  const messages = latest.reverse();
 
   await db.message.updateMany({
     where: { matchRequestId, senderId: { not: userId }, readAt: null },
