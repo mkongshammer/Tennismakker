@@ -369,3 +369,17 @@ Tallene på forsiden og i klublisten er faktiske optællinger af ledige tider. D
 Fire punkter i bundlinjen: Book bane, Find træner, Find medspiller, Beskeder. Profilen ligger som initialer i øverste højre hjørne — den er noget man besøger, ikke noget man kommer for. Klub-administration og klubgodkendelser nås fra profilen.
 
 Beskeder har et tal med ulæste. Det er et ægte tal, ikke en pyntet prik: har man ingen ulæste, er der ingenting at se. Et badge, der lyser uden grund, holder op med at betyde noget efter anden gang.
+
+## Sådan kommer en klub i gang
+
+Den tungeste del af at være klub hos os var, at man skulle frigive hver enkelt time i hånden — tyve klik om ugen, hver uge. Det er skiftet ud med tre ting:
+
+**Regler i stedet for enkelttider.** Klubben sætter én regel op: "mandag til fredag, 9-15, bane 3 og 4, 120 kr". Reglen genererer løbende ledige tider, indtil den slås fra. Enkelttider findes stadig, men er nu til undtagelser.
+
+**Sidste øjeblik.** Klubben kan sætte et antal timer — er en bane stadig ledig så tæt på start, frigives den automatisk. En tom bane om en time er tabt indtægt uanset hvad.
+
+**Systemgenkendelse ved oprettelse.** Klubben skriver sin hjemmeside, og vi henter siden og gætter på bookingsystemet ud fra indholdet (`src/lib/detect.ts`). Vi leder samtidig efter et `.ics`-link og fisker klubnavnet ud af sidens titel, så formularen kan udfyldes på forhånd.
+
+**Det er genkendelse, ikke integration.** Halbooking har ingen offentlig grænseflade, så selv når vi genkender det, kan vi ikke hente ledighed derfra uden en aftale med Globus Data. Det siger opsætningen rent ud i stedet for at love noget, den ikke kan holde — og foreslår en regel i stedet.
+
+Finder vi et kalenderfeed, kan klubben teste det med en knap, der fortæller hvor mange bookinger vi kan se i det. Et feed der "ser rigtigt ud" er ikke det samme som et feed der virker.

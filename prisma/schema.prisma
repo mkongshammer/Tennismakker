@@ -84,9 +84,14 @@ model Club {
   lastSyncAt      DateTime?
   lastSyncError   String?
 
+  // Frigiv automatisk en ledig tid, når der er under så mange timer til
+  // start. En bane der står tom om en time er tabt indtægt uanset hvad.
+  lastMinuteHours Int @default(0)
+
   courts  Court[]
   members User[]
   reviews Review[]
+  rules   GuestRule[]
 }
 
 // surface: "GRUS" | "HARD" | "INDE"
@@ -101,6 +106,28 @@ model Court {
   bookings     Booking[]
   guestSlots   GuestSlot[]
   externalBusy ExternalBusy[]
+}
+
+// ---------- Frigivelsesregler ----------
+// I stedet for at klubben skal frigive hver enkelt time, sætter de en regel
+// op én gang: "bane 3 og 4, hverdage 9-15, 120 kr". Reglen genererer
+// løbende ledige tider, indtil den slås fra.
+//
+// Det var den tungeste del af at være klub hos os: 20 timer om ugen
+// skulle klikkes ind i hånden hver uge.
+model GuestRule {
+  id        String  @id @default(cuid())
+  clubId    String
+  club      Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  courtIds  String // kommasepareret, tom = alle klubbens baner
+  daysOfWeek String // kommasepareret 0-6, 0 = søndag
+  fromHour  Int
+  toHour    Int
+  priceKr   Int
+  active    Boolean @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, active])
 }
 
 // ---------- Integration: manuelt frigivne gæstetider (integrationType = MANUAL) ----------

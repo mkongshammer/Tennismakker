@@ -2,6 +2,7 @@
 
 import { useFormState } from "react-dom";
 import { createClub } from "../../lib/actions";
+import { DetectStep } from "./DetectStep";
 
 export default function OpretKlubPage() {
   const [state, action] = useFormState(createClub, null);
@@ -10,11 +11,16 @@ export default function OpretKlubPage() {
     <div className="mx-auto max-w-lg">
       <h1 className="display text-3xl">Få jeres klub på RacketBuddy</h1>
       <p className="mt-2 text-slate/70">
-        I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
-        frigiver, til spillere udefra — og sender betalingen videre til jer.
+        I beholder jeres eget bookingsystem. I sætter én regel op for de tider,
+        gæster må booke — fx “bane 3 og 4, hverdage 9-15” — og vi sender
+        betalingen videre til jer.
       </p>
 
-      <form action={action} className="card mt-6 space-y-5">
+      <div className="mt-6">
+        <DetectStep />
+      </div>
+
+      <form action={action} className="card mt-4 space-y-5">
         <div>
           <h2 className="mb-3 font-bold">Om klubben</h2>
           <div className="space-y-4">

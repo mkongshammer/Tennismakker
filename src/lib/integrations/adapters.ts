@@ -77,37 +77,105 @@ export const nativeAdapter: BookingSystemAdapter = {
 // ---------------------------------------------------------------------------
 export const manualAdapter: BookingSystemAdapter = {
   type: "MANUAL",
-  label: "Manuelt frigivne gæstetider",
+  label: "Frigivne gæstetider",
   async getAvailability({ clubId, from, until }: AdapterInput): Promise<AvailabilityResult> {
     const now = new Date();
-    const released = await db.guestSlot.findMany({
-      where: {
-        court: { clubId },
-        startsAt: { gte: now > from ? now : from, lte: until },
-      },
-      include: { court: true },
-      orderBy: { startsAt: "asc" },
+    const start = now > from ? now : from;
+
+    const club = await db.club.findUnique({
+      where: { id: clubId },
+      include: { courts: { orderBy: { name: "asc" } }, rules: { where: { active: true } } },
     });
+    if (!club) return { slots: [], needsClubEntry: true };
 
-    const taken = await ownBookingKeys(
-      released.map((r: any) => r.courtId),
-      from,
-      until
-    );
+    const slots: AvailableSlot[] = [];
+    const seen = new Set<string>();
+    const add = (s: AvailableSlot) => {
+      const key = `${s.courtId}_${s.startsAt.getTime()}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      slots.push(s);
+    };
 
-    const slots: AvailableSlot[] = released
-      .filter((r: any) => !taken.has(`${r.courtId}_${r.startsAt.getTime()}`))
-      .map((r: any) => ({
+    // 1. Tider klubben har frigivet enkeltvis
+    const released = await db.guestSlot.findMany({
+      where: { court: { clubId }, startsAt: { gte: start, lte: until } },
+      include: { court: true },
+    });
+    for (const r of released) {
+      add({
         courtId: r.courtId,
         courtName: r.court.name,
         surface: r.court.surface,
         startsAt: r.startsAt,
         endsAt: r.endsAt,
         priceKr: r.priceKr,
-      }));
+      });
+    }
+
+    // 2. Tider der følger af klubbens regler
+    for (const rule of club.rules) {
+      const days = rule.daysOfWeek
+        .split(",")
+        .map((d) => Number(d.trim()))
+        .filter((d) => d >= 0 && d <= 6);
+      const courtIds = rule.courtIds
+        ? rule.courtIds.split(",").map((c) => c.trim()).filter(Boolean)
+        : club.courts.map((c: any) => c.id);
+
+      for (let day = new Date(start); day <= until; day = addDays(day, 1)) {
+        if (!days.includes(day.getDay())) continue;
+        for (let h = rule.fromHour; h < rule.toHour; h++) {
+          const startsAt = hourDate(day, h);
+          if (startsAt < now || startsAt > until) continue;
+          for (const id of courtIds) {
+            const court = club.courts.find((c: any) => c.id === id);
+            if (!court) continue;
+            add({
+              courtId: court.id,
+              courtName: court.name,
+              surface: court.surface,
+              startsAt,
+              endsAt: addHours(startsAt, 1),
+              priceKr: rule.priceKr,
+            });
+          }
+        }
+      }
+    }
+
+    // 3. Sidste-øjebliks-frigivelse: en tom bane om en time er tabt indtægt
+    if (club.lastMinuteHours > 0) {
+      const cutoff = addHours(now, club.lastMinuteHours);
+      for (let day = new Date(start); day <= until; day = addDays(day, 1)) {
+        for (let h = club.openHour; h < club.closeHour; h++) {
+          const startsAt = hourDate(day, h);
+          if (startsAt < now || startsAt > cutoff || startsAt > until) continue;
+          for (const court of club.courts) {
+            add({
+              courtId: court.id,
+              courtName: court.name,
+              surface: court.surface,
+              startsAt,
+              endsAt: addHours(startsAt, 1),
+              priceKr: club.priceHour,
+            });
+          }
+        }
+      }
+    }
+
+    // Træk vores egne bookinger fra
+    const taken = await ownBookingKeys(
+      club.courts.map((c: any) => c.id),
+      from,
+      until
+    );
 
     return {
-      slots,
+      slots: slots
+        .filter((s) => !taken.has(`${s.courtId}_${s.startsAt.getTime()}`))
+        .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime()),
       needsClubEntry: true,
       note: "Bookinger skal føres ind i klubbens eget system.",
     };

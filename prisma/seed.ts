@@ -178,24 +178,20 @@ async function main() {
     },
   });
 
-  // Frigiv et par aftentider de næste dage, så klubben ikke står tom i demoen
+  // En frigivelsesregel i stedet for håndplukkede timer: hverdage 17-20
+  // på de to første baner. Det er sådan en klub reelt vil bruge det.
   const guestCourts = await db.court.findMany({ where: { clubId: guestClub.id } });
-  for (let dayOffset = 1; dayOffset <= 4; dayOffset++) {
-    for (const court of guestCourts.slice(0, 2)) {
-      for (const hour of [17, 18, 19]) {
-        const startsAt = new Date();
-        startsAt.setDate(startsAt.getDate() + dayOffset);
-        startsAt.setHours(hour, 0, 0, 0);
-        const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
-        try {
-          await db.guestSlot.create({
-            data: { courtId: court.id, startsAt, endsAt, priceKr: guestClub.priceHour },
-          });
-        } catch {
-          // allerede frigivet
-        }
-      }
-    }
+  if ((await db.guestRule.count({ where: { clubId: guestClub.id } })) === 0) {
+    await db.guestRule.create({
+      data: {
+        clubId: guestClub.id,
+        courtIds: guestCourts.slice(0, 2).map((c) => c.id).join(","),
+        daysOfWeek: "1,2,3,4,5",
+        fromHour: 17,
+        toHour: 20,
+        priceKr: guestClub.priceHour,
+      },
+    });
   }
 
   // RacketBuddys egen administrator — godkender klubber

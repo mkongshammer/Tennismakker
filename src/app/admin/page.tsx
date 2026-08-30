@@ -5,11 +5,12 @@ import { addDays, format, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { markClubEntered, syncNow, withdrawGuestSlot } from "../../lib/actions";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute } from "../../lib/actions";
 import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
 import { ReleaseForm } from "./ReleaseForm";
+import { RuleForm } from "./RuleForm";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function AdminPage() {
   const courtIds = club.courts.map((c: any) => c.id);
   const today = startOfDay(new Date());
 
-  const [upcoming, payments, guestSlots] = await Promise.all([
+  const [upcoming, payments, rules, guestSlots] = await Promise.all([
     db.booking.findMany({
       where: {
         courtId: { in: courtIds },
@@ -49,6 +50,7 @@ export default async function AdminPage() {
     db.payment.findMany({
       where: { status: "PAID", booking: { courtId: { in: courtIds } } },
     }),
+    db.guestRule.findMany({ where: { clubId: club.id }, orderBy: { createdAt: "desc" } }),
     db.guestSlot.findMany({
       where: { courtId: { in: courtIds }, startsAt: { gte: new Date() } },
       include: { court: true },
@@ -194,12 +196,89 @@ export default async function AdminPage() {
               Tag altid tiden ud af jeres eget system, når I frigiver den her.
             </p>
           </div>
+          <RuleForm
+            courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+            defaultPrice={club.priceHour}
+          />
+
+          {rules.length > 0 && (
+            <>
+              <h3 className="mb-2 mt-6 font-bold">Jeres regler</h3>
+              <ul className="space-y-2">
+                {rules.map((r: any) => {
+                  const dayNames = ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
+                  const days = r.daysOfWeek
+                    .split(",")
+                    .map((d: string) => dayNames[Number(d)])
+                    .join(", ");
+                  const courtNames = r.courtIds
+                    ? r.courtIds
+                        .split(",")
+                        .map((id: string) => club.courts.find((c: any) => c.id === id)?.name)
+                        .filter(Boolean)
+                        .join(", ")
+                    : "alle baner";
+                  return (
+                    <li key={r.id} className="card flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className={`font-semibold ${r.active ? "" : "text-slate line-through"}`}>
+                          {days} · {r.fromHour}–{r.toHour} · {courtNames}
+                        </p>
+                        <p className="data text-sm text-slate">{r.priceKr} kr/time</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <form action={toggleRule}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button className="text-sm font-semibold text-court underline">
+                            {r.active ? "Sæt på pause" : "Aktivér"}
+                          </button>
+                        </form>
+                        <form action={deleteRule}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button className="text-sm text-slate underline">Slet</button>
+                        </form>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+
+          <div className="card mt-6">
+            <p className="font-bold">Sidste øjeblik</p>
+            <p className="mt-1 text-sm text-slate">
+              Frigiv automatisk alt, der stadig står tomt tæt på spilletidspunktet.
+              En bane der er ledig om en time er tabt indtægt uanset hvad.
+            </p>
+            <form action={setLastMinute} className="mt-3 flex flex-wrap items-end gap-3">
+              <div>
+                <label className="label" htmlFor="hours">Timer før start</label>
+                <input
+                  className="input w-32"
+                  id="hours"
+                  name="hours"
+                  type="number"
+                  min={0}
+                  max={72}
+                  defaultValue={club.lastMinuteHours}
+                />
+              </div>
+              <button className="btn-ghost">Gem</button>
+            </form>
+            <p className="mt-2 text-xs text-slate">0 slår det fra.</p>
+          </div>
+
+          <h3 className="mb-2 mt-6 font-bold">Enkelte tider</h3>
+          <p className="mb-3 text-sm text-slate">
+            Til undtagelser — en enkelt aften der alligevel blev fri.
+          </p>
           <ReleaseForm
             courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
             defaultPrice={club.priceHour}
           />
 
-          <h3 className="mb-2 mt-6 font-bold">Frigivne tider</h3>
+          <h3 className="mb-2 mt-6 font-bold">Frigivne enkelttider</h3>
           {guestSlots.length === 0 ? (
             <p className="text-sm text-slate/60">Ingen tider er frigivet endnu.</p>
           ) : (

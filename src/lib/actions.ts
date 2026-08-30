@@ -14,6 +14,7 @@ import { recordSwipe } from "./swipe";
 import { createReview } from "./reviews";
 import { geocode } from "./geocode";
 import { setPreferenceCookies } from "./preferences";
+import { detectBookingSystem, testFeed } from "./detect";
 
 // ---------------- Auth ----------------
 
@@ -747,4 +748,76 @@ export async function rebookNextWeek(formData: FormData) {
   });
 
   redirect(await startCheckout(booking.id));
+}
+
+// ---------------- Klubopsætning: find systemet, sæt regler ----------------
+
+export async function detectClubSystem(_prev: unknown, formData: FormData) {
+  const url = String(formData.get("website") ?? "").trim();
+  if (!url) return { error: "Skriv jeres hjemmeside." };
+  return { detection: await detectBookingSystem(url) };
+}
+
+export async function testClubFeed(_prev: unknown, formData: FormData) {
+  await requireClubAdmin();
+  const url = String(formData.get("icalUrl") ?? "").trim();
+  if (!url) return { error: "Skriv feedets adresse." };
+  const result = await testFeed(url);
+  return result.ok ? { ok: result.message } : { error: result.message };
+}
+
+/** Opretter en frigivelsesregel: baner, ugedage, tidsrum og pris. */
+export async function createRule(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const days = formData.getAll("days").map(String).filter(Boolean);
+  const courtIds = formData.getAll("courts").map(String).filter(Boolean);
+  const fromHour = Number(formData.get("fromHour") ?? 0);
+  const toHour = Number(formData.get("toHour") ?? 0);
+  const priceKr = Number(formData.get("priceKr") ?? 0);
+
+  if (days.length === 0) return { error: "Vælg mindst én ugedag." };
+  if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
+    return { error: "Sluttidspunktet skal ligge efter starttidspunktet." };
+  }
+  if (!(priceKr >= 0)) return { error: "Angiv en pris." };
+
+  await db.guestRule.create({
+    data: {
+      clubId,
+      // Tom liste betyder alle baner — så behøver klubben ikke vælge hver gang
+      courtIds: courtIds.join(","),
+      daysOfWeek: days.join(","),
+      fromHour,
+      toHour,
+      priceKr,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: "Reglen er aktiv. Tiderne er nu synlige for gæster." };
+}
+
+export async function toggleRule(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("id"));
+  const rule = await db.guestRule.findFirst({ where: { id, clubId } });
+  if (!rule) return;
+  await db.guestRule.update({ where: { id }, data: { active: !rule.active } });
+  revalidatePath("/admin");
+}
+
+export async function deleteRule(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("id"));
+  await db.guestRule.deleteMany({ where: { id, clubId } });
+  revalidatePath("/admin");
+}
+
+/** Frigiv automatisk alt der stadig er ledigt tæt på spilletidspunktet. */
+export async function setLastMinute(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const hours = Math.max(0, Math.min(72, Number(formData.get("hours") ?? 0)));
+  await db.club.update({ where: { id: clubId }, data: { lastMinuteHours: hours } });
+  revalidatePath("/admin");
 }
