@@ -8,7 +8,7 @@ export default function OpretKlubPage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="display text-3xl">Få jeres klub på Tennis Makker</h1>
+      <h1 className="display text-3xl">Få jeres klub på RacketBuddy</h1>
       <p className="mt-2 text-net/70">
         I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
         frigiver, til spillere udefra — og sender betalingen videre til jer.

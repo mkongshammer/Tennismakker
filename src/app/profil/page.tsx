@@ -80,7 +80,7 @@ export default async function ProfilPage({
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
           <p className="text-net/60">
-            Ingen bookinger endnu — <Link href="/klubber" className="font-semibold text-grus underline">book en bane</Link> eller{" "}
+            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-grus underline">book en bane</Link> eller{" "}
             <Link href="/traenere" className="font-semibold text-grus underline">en træner</Link>.
           </p>
         )}

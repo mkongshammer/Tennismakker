@@ -25,6 +25,9 @@ async function main() {
       priceHour: 90,
       openHour: 7,
       closeHour: 22,
+      country: "DK",
+      status: "APPROVED",
+      approvedAt: new Date(),
     },
   });
 
@@ -33,7 +36,9 @@ async function main() {
     const name = `Bane ${i + 1}`;
     const exists = await db.court.findFirst({ where: { clubId: club.id, name } });
     if (!exists) {
-      await db.court.create({ data: { name, surface: surfaces[i], clubId: club.id } });
+      await db.court.create({
+        data: { name, sport: "TENNIS", surface: surfaces[i], clubId: club.id },
+      });
     }
   }
 
@@ -133,7 +138,7 @@ async function main() {
       name: "Nordhavn Tennisklub",
       city: "København Ø",
       description:
-        "Vi har vores eget bookingsystem til medlemmer. Her på Tennis Makker frigiver vi de tider, hvor banerne alligevel står tomme — så gæster kan spille.",
+        "Vi har vores eget bookingsystem til medlemmer. Her på RacketBuddy frigiver vi de tider, hvor banerne alligevel står tomme — så gæster kan spille.",
       color: "#8F3510",
       address: "Sundkrogsgade 21",
       latitude: 55.7093,
@@ -144,13 +149,18 @@ async function main() {
       integrationType: "MANUAL",
       externalSystem: "Halbooking (Globus Data)",
       billingModel: "SUBSCRIPTION",
+      country: "DK",
+      status: "APPROVED",
+      approvedAt: new Date(),
     },
   });
 
   for (const name of ["Bane 1", "Bane 2", "Bane 3"]) {
     const exists = await db.court.findFirst({ where: { clubId: guestClub.id, name } });
     if (!exists) {
-      await db.court.create({ data: { name, surface: "GRUS", clubId: guestClub.id } });
+      await db.court.create({
+        data: { name, sport: "TENNIS", surface: "GRUS", clubId: guestClub.id },
+      });
     }
   }
 
@@ -187,6 +197,86 @@ async function main() {
       }
     }
   }
+
+  // RacketBuddys egen administrator — godkender klubber
+  await db.user.upsert({
+    where: { email: "super@demo.dk" },
+    update: {},
+    create: {
+      email: "super@demo.dk",
+      name: "Rikke RacketBuddy",
+      passwordHash: password,
+      role: "SUPERADMIN",
+      level: 5,
+      area: "København",
+    },
+  });
+
+  // En pakke hos træneren, så pakkevisningen kan afprøves
+  const coachProfile = await db.coachProfile.findUnique({
+    where: { userId: coachUser.id },
+  });
+  if (coachProfile && (await db.coachPackage.count({ where: { coachProfileId: coachProfile.id } })) === 0) {
+    await db.coachPackage.createMany({
+      data: [
+        {
+          coachProfileId: coachProfile.id,
+          name: "10-turskort",
+          sessions: 10,
+          priceKr: 3400,
+          description: "Ti timer til brug over et halvt år. Spar 600 kr mod enkelttimer.",
+        },
+        {
+          coachProfileId: coachProfile.id,
+          name: "Begynderforløb",
+          sessions: 6,
+          priceKr: 1800,
+          description: "Seks uger med grundslag, serv og kampforståelse. For nye spillere.",
+        },
+      ],
+    });
+  }
+
+  // En klub der venter på godkendelse, så godkendelsessiden kan afprøves
+  const pending = await db.club.upsert({
+    where: { slug: "vestegnens-padelcenter" },
+    update: {},
+    create: {
+      slug: "vestegnens-padelcenter",
+      name: "Vestegnens Padelcenter",
+      city: "Glostrup",
+      address: "Hovedvejen 140",
+      country: "DK",
+      status: "PENDING",
+      priceHour: 240,
+      color: "#2C5743",
+      externalSystem: "Matchi",
+      integrationType: "MANUAL",
+    },
+  });
+  if ((await db.court.count({ where: { clubId: pending.id } })) === 0) {
+    await db.court.createMany({
+      data: [1, 2, 3, 4].map((n) => ({
+        name: `Bane ${n}`,
+        sport: "PADEL",
+        surface: "KUNSTGRAES",
+        clubId: pending.id,
+      })),
+    });
+  }
+  await db.user.upsert({
+    where: { email: "padel@demo.dk" },
+    update: {},
+    create: {
+      email: "padel@demo.dk",
+      name: "Peter Padel",
+      passwordHash: password,
+      role: "CLUB_ADMIN",
+      clubId: pending.id,
+      area: "Glostrup",
+      sports: "PADEL",
+    },
+  });
 
   console.log("Seed færdig ✔");
   console.log("Log ind med fx mads@demo.dk / tennis123 (alle demo-konti bruger tennis123)");

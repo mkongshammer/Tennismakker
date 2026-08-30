@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default async function TraenerPage({ params }: { params: { id: string } }) {
   const coach = await db.coachProfile.findUnique({
     where: { id: params.id },
-    include: { user: true },
+    include: { user: true, packages: { where: { active: true } } },
   });
   if (!coach) notFound();
 
@@ -70,6 +70,29 @@ export default async function TraenerPage({ params }: { params: { id: string } }
                 <p className="text-grus">{"\u2605".repeat(r.rating)}</p>
                 <p className="mt-1">{r.comment}</p>
                 <p className="mt-1 text-sm text-net/50">{r.author.name}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {coach.packages.length > 0 && (
+        <div className="mt-6">
+          <h2 className="display mb-1 text-xl">Pakkeforløb</h2>
+          <p className="mb-3 text-sm text-net/60">
+            Aftales direkte med træneren — skriv eller book en enkelt time først.
+          </p>
+          <ul className="space-y-3">
+            {coach.packages.map((p: any) => (
+              <li key={p.id} className="card">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="font-bold">{p.name}</p>
+                  <p className="display text-xl text-grus">{p.priceKr} kr</p>
+                </div>
+                <p className="text-sm text-net/60">
+                  {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
+                </p>
+                {p.description && <p className="mt-2 text-sm">{p.description}</p>}
               </li>
             ))}
           </ul>

@@ -55,7 +55,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
         </div>
         <p className="text-xs text-net/50">
           {fee > 0
-            ? `Heraf går ${fee} kr til Tennis Makker — de resterende ${booking.priceKr - fee} kr udbetales automatisk til ${booking.kind === "COURT" ? "klubben" : "træneren"}.`
+            ? `Heraf går ${fee} kr til RacketBuddy — de resterende ${booking.priceKr - fee} kr udbetales automatisk til ${booking.kind === "COURT" ? "klubben" : "træneren"}.`
             : `Hele beløbet udbetales til klubben. Klubben betaler et fast abonnement i stedet for provision.`}
         </p>
         <form action={pay}>

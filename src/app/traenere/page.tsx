@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { db } from "../../lib/db";
 import { coachRatings } from "../../lib/reviews";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
+import { SportPicker } from "../../components/SportPicker";
 import { Stars } from "../../components/ReviewForm";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +13,16 @@ export default async function TraenerePage({
 }: {
   searchParams: { omraade?: string };
 }) {
+  const prefs = await getPreferences();
+  const t = translator(prefs.locale);
   const area = searchParams.omraade?.trim();
+
   const coaches = await db.coachProfile.findMany({
-    where: area ? { area: { contains: area } } : {},
-    include: { user: true },
+    where: {
+      sports: { contains: prefs.sport },
+      ...(area ? { area: { contains: area } } : {}),
+    },
+    include: { user: true, packages: { where: { active: true } } },
     orderBy: { priceHour: "asc" },
   });
 
@@ -22,9 +31,11 @@ export default async function TraenerePage({
   return (
     <div>
       <div className="mb-6">
-        <h1 className="display text-3xl">Trænere</h1>
-        <p className="text-net/70">Book en time direkte — betaling sker ved bookingen.</p>
+        <h1 className="display text-3xl">{t("coach.title")}</h1>
+        <p className="text-net/70">{t("coach.intro")}</p>
       </div>
+
+      <SportPicker active={prefs.sport} locale={prefs.locale} />
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
@@ -61,6 +72,13 @@ export default async function TraenerePage({
                   </span>
                 ))}
               </div>
+            )}
+            {c.packages.length > 0 && (
+              <p className="mt-3 text-sm font-semibold text-bane">
+                {c.packages.length === 1
+                  ? `Tilbyder også ${c.packages[0].name}`
+                  : `Tilbyder også ${c.packages.length} pakkeforløb`}
+              </p>
             )}
             <Link href={`/traenere/${c.id}`} className="btn-grus mt-4">
               Se ledige tider

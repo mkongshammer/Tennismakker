@@ -109,7 +109,7 @@ function MessagesStack() {
 function Root() {
   const { user, loading } = useAuth();
 
-  if (loading) return <Loading label="Starter Tennis Makker…" />;
+  if (loading) return <Loading label="Starter RacketBuddy…" />;
   if (!user) return <LoginScreen />;
 
   return (
@@ -125,7 +125,7 @@ function Root() {
         name="MakkereTab"
         component={MatchesStack}
         options={{
-          title: "Makkere",
+          title: "Medspillere",
           tabBarIcon: ({ focused }) => <TabIcon label="🎾" focused={focused} />,
         }}
       />
@@ -133,7 +133,7 @@ function Root() {
         name="KlubberTab"
         component={ClubsStack}
         options={{
-          title: "Baner",
+          title: "Book bane",
           tabBarIcon: ({ focused }) => <TabIcon label="📍" focused={focused} />,
         }}
       />

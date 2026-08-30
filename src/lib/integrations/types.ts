@@ -42,7 +42,7 @@ export interface BookingSystemAdapter {
 }
 
 export const INTEGRATION_LABELS: Record<IntegrationType, string> = {
-  NATIVE: "Tennis Makker er klubbens bookingsystem",
+  NATIVE: "RacketBuddy er klubbens bookingsystem",
   MANUAL: "Klubben frigiver selv gæstetider",
   ICAL: "Kalenderfeed fra klubbens eget system",
   API: "Direkte API-integration",

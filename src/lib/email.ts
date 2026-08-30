@@ -1,4 +1,4 @@
-// E-mail-lag for Tennis Makker.
+// E-mail-lag for RacketBuddy.
 //
 // Samme mønster som betalingslaget: én abstraktion, så udbyderen kan skiftes
 // uden at røre resten af koden. Uden EMAIL_API_KEY logges e-mails til konsollen
@@ -11,7 +11,7 @@ type Mail = {
   body: string; // ren tekst, én besked pr. linje
 };
 
-const FROM = process.env.EMAIL_FROM ?? "Tennis Makker <ingen-svar@tennismakker.dk>";
+const FROM = process.env.EMAIL_FROM ?? "RacketBuddy <ingen-svar@tennismakker.dk>";
 
 /**
  * Sender en e-mail. Fejler aldrig hårdt: en booking må ikke gå tabt,
@@ -98,7 +98,7 @@ export function bookingReceipt(opts: {
       `Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.`,
       ``,
       `Venlig hilsen`,
-      `Tennis Makker`,
+      `RacketBuddy`,
     ].join("\n"),
   };
 }
@@ -131,7 +131,7 @@ export function clubBookingNotice(opts: {
     );
   }
 
-  lines.push(`Overblik: ${baseUrl()}/admin`, ``, `Tennis Makker`);
+  lines.push(`Overblik: ${baseUrl()}/admin`, ``, `RacketBuddy`);
 
   return {
     to: opts.to,
@@ -162,7 +162,7 @@ export function coachBookingNotice(opts: {
       ``,
       `Din kalender: ${baseUrl()}/profil`,
       ``,
-      `Tennis Makker`,
+      `RacketBuddy`,
     ].join("\n"),
   };
 }
@@ -186,7 +186,7 @@ export function matchAcceptedNotice(opts: {
       `Skriv sammen og aftal tid og sted her:`,
       `${baseUrl()}/beskeder/${opts.threadId}`,
       ``,
-      `Tennis Makker`,
+      `RacketBuddy`,
     ].join("\n"),
   };
 }
@@ -213,7 +213,7 @@ export function cancellationNotice(opts: {
         ? `Du får ${opts.refundKr} kr retur. Beløbet er typisk på din konto inden for 5-10 hverdage.`
         : `Aflysningen skete mindre end 24 timer før spilletidspunktet, så beløbet refunderes ikke.`,
       ``,
-      `Tennis Makker`,
+      `RacketBuddy`,
     ].join("\n"),
   };
 }

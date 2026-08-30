@@ -1,4 +1,4 @@
-// Klient mod Tennis Makker-API'et (/api/v1 i web-repoet).
+// Klient mod RacketBuddy-API'et (/api/v1 i web-repoet).
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 

@@ -1,4 +1,4 @@
-// Tennis Makker — datamodel
+// RacketBuddy — datamodel
 // PostgreSQL (Render). Enums er gemt som String, oprindeligt af hensyn til
 // SQLite-kompatibilitet i lokal udvikling — kan konverteres til rigtige
 // Prisma-enums når al lokal udvikling også er på Postgres.
@@ -23,6 +23,9 @@ model User {
   role         String   @default("PLAYER")
   level        Int      @default(3) // 1-7, se src/lib/levels.ts
   area         String? // fx "København NV", "Aarhus C"
+  country      String   @default("DK") // ISO-landekode, styrer hvad man ser
+  locale       String   @default("da") // "da" | "en"
+  sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
   bio          String?
   createdAt    DateTime @default(now())
 
@@ -41,7 +44,7 @@ model User {
 
 // ---------- Modul C: Klubber ----------
 // integrationType afgør, hvor ledige tider kommer fra:
-//   NATIVE  — Tennis Makker ER klubbens bookingsystem (fallback for klubber uden system)
+//   NATIVE  — RacketBuddy ER klubbens bookingsystem (fallback for klubber uden system)
 //   MANUAL  — klubben frigiver selv enkelte gæstetider (virker uden aftale med nogen)
 //   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
@@ -62,6 +65,15 @@ model Club {
   billingModel   String @default("COMMISSION")
   subscriptionKr Int    @default(199)
 
+  country String @default("DK")
+
+  // Klubber godkendes manuelt, før de bliver synlige. En klub der påstår
+  // at have baner, den ikke har, ødelægger tilliden for alle andre.
+  status       String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  approvedAt   DateTime?
+  reviewNote   String? // intern note, vises ikke for klubben
+  contactPhone String?
+
   address   String? // gadeadresse, bruges til kortet og til at finde vej
   latitude  Float?
   longitude Float?
@@ -81,6 +93,7 @@ model Club {
 model Court {
   id      String @id @default(cuid())
   name    String // fx "Bane 1"
+  sport   String @default("TENNIS")
   surface String @default("GRUS")
   clubId  String
   club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
@@ -162,6 +175,7 @@ model CoachProfile {
   userId      String @unique
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   headline    String // fx "DTF-uddannet træner, speciale i serv"
+  sports      String @default("TENNIS") // kommasepareret
   priceHour   Int // kr pr. time
   specialties String // kommasepareret, fx "Serv,Baghånd,Junior"
   area        String
@@ -170,6 +184,7 @@ model CoachProfile {
 
   bookings Booking[]
   reviews  Review[]
+  packages CoachPackage[]
 }
 
 // ---------- Modul A: Makker-matching ----------
@@ -180,6 +195,7 @@ model MatchRequest {
   message   String // fx "Søger single-makker tirsdag aften"
   area      String
   level     Int
+  sport     String   @default("TENNIS")
   matchType String   @default("SINGLE") // "SINGLE" | "DOUBLE" | "TRAENING"
   source    String   @default("POST") // "POST" = opslag, "SWIPE" = gensidigt like
   createdAt DateTime @default(now())
@@ -216,7 +232,7 @@ model Payment {
   bookingId   String   @unique
   booking     Booking  @relation(fields: [bookingId], references: [id])
   amountKr    Int
-  platformFee Int // Tennis Makkers andel (kommission/transaktionsgebyr)
+  platformFee Int // RacketBuddys andel (kommission/transaktionsgebyr)
   provider    String   @default("mock") // "mock" | "stripe"
   providerRef String? // fx Stripe PaymentIntent-id
   status      String   @default("PENDING")
@@ -260,4 +276,22 @@ model Review {
 
   @@index([coachProfileId])
   @@index([clubId])
+}
+
+
+// ---------- Trænerpakker ----------
+// Ud over en enkelt time kan træneren sælge forløb: fx 10 timer til
+// rabat, eller et begynderkursus over seks uger.
+model CoachPackage {
+  id             String       @id @default(cuid())
+  coachProfileId String
+  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  name           String // fx "10-turskort"
+  description    String?
+  sessions       Int // antal timer i pakken
+  priceKr        Int // samlet pris
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  @@index([coachProfileId])
 }

@@ -13,6 +13,7 @@ import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 import { recordSwipe } from "./swipe";
 import { createReview } from "./reviews";
 import { geocode } from "./geocode";
+import { setPreferenceCookies } from "./preferences";
 
 // ---------------- Auth ----------------
 
@@ -49,7 +50,7 @@ export async function signup(_prev: unknown, formData: FormData) {
     await db.coachProfile.create({
       data: {
         userId: user.id,
-        headline: "Ny træner på Tennis Makker",
+        headline: "Ny træner på RacketBuddy",
         priceHour: 350,
         specialties: "",
         area: area || "Ukendt område",
@@ -547,4 +548,137 @@ export async function submitReview(_prev: unknown, formData: FormData) {
   revalidatePath("/traenere");
   revalidatePath("/klubber");
   return { ok: "Tak for din anmeldelse." };
+}
+
+// ---------------- Klubgodkendelse (superadmin) ----------------
+
+async function requireSuperadmin() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (user.role !== "SUPERADMIN") {
+    throw new Error("Kun RacketBuddy-administratorer har adgang til dette.");
+  }
+  return user;
+}
+
+export async function approveClub(formData: FormData) {
+  await requireSuperadmin();
+  const id = String(formData.get("id"));
+
+  const club = await db.club.update({
+    where: { id },
+    data: { status: "APPROVED", approvedAt: new Date(), reviewNote: null },
+    include: { members: true },
+  });
+
+  // Fortæl klubben at de er på
+  for (const admin of club.members.filter((m: any) => m.role === "CLUB_ADMIN")) {
+    await sendMail({
+      to: admin.email,
+      subject: `${club.name} er nu på RacketBuddy`,
+      body: [
+        `Hej ${admin.name}`,
+        ``,
+        `${club.name} er godkendt og synlig for spillere.`,
+        ``,
+        `Næste skridt: frigiv de tider, gæster må booke.`,
+        `${process.env.APP_URL ?? "https://tennis-makker.onrender.com"}/admin`,
+        ``,
+        `RacketBuddy`,
+      ].join("\n"),
+    });
+  }
+
+  revalidatePath("/superadmin");
+  revalidatePath("/book");
+}
+
+export async function rejectClub(formData: FormData) {
+  await requireSuperadmin();
+  const id = String(formData.get("id"));
+  const note = String(formData.get("note") ?? "").trim();
+
+  await db.club.update({
+    where: { id },
+    data: { status: "REJECTED", reviewNote: note || null },
+  });
+
+  revalidatePath("/superadmin");
+}
+
+// ---------------- Trænerpakker ----------------
+
+export async function createPackage(_prev: unknown, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user?.coachProfile) redirect("/login");
+
+  const name = String(formData.get("name") ?? "").trim();
+  const sessions = Number(formData.get("sessions") ?? 0);
+  const priceKr = Number(formData.get("priceKr") ?? 0);
+  const description = String(formData.get("description") ?? "").trim();
+
+  if (!name) return { error: "Giv pakken et navn." };
+  if (!(sessions >= 1 && sessions <= 100)) {
+    return { error: "Antal timer skal være mellem 1 og 100." };
+  }
+  if (!(priceKr > 0)) return { error: "Angiv en samlet pris." };
+
+  await db.coachPackage.create({
+    data: {
+      coachProfileId: user.coachProfile.id,
+      name,
+      sessions,
+      priceKr,
+      description: description || null,
+    },
+  });
+
+  revalidatePath("/profil/traener");
+  revalidatePath("/traenere");
+  return { ok: "Pakken er oprettet." };
+}
+
+export async function togglePackage(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user?.coachProfile) redirect("/login");
+
+  const id = String(formData.get("id"));
+  const pkg = await db.coachPackage.findFirst({
+    where: { id, coachProfileId: user.coachProfile.id },
+  });
+  if (!pkg) return;
+
+  await db.coachPackage.update({
+    where: { id },
+    data: { active: !pkg.active },
+  });
+  revalidatePath("/profil/traener");
+  revalidatePath("/traenere");
+}
+
+// ---------------- Opsætning: land, sprog, sportsgren ----------------
+
+export async function updatePreferences(formData: FormData) {
+  const country = String(formData.get("country") ?? "DK");
+  const locale = String(formData.get("locale") ?? "da");
+  const sport = String(formData.get("sport") ?? "TENNIS");
+
+  setPreferenceCookies({ country, locale: locale as any, sport: sport as any });
+
+  const user = await getCurrentUser();
+  if (user) {
+    await db.user.update({
+      where: { id: user.id },
+      data: { country, locale },
+    });
+  }
+
+  revalidatePath("/", "layout");
+}
+
+/** Skifter valgt sportsgren. Gemmes i cookie, så det følger med rundt. */
+export async function setSport(formData: FormData) {
+  const sport = String(formData.get("sport") ?? "TENNIS");
+  setPreferenceCookies({ sport: sport as any });
+  revalidatePath("/", "layout");
 }

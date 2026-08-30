@@ -37,7 +37,7 @@ function CourtGraphic({ color }: { color: string }) {
 }
 
 function Rating({ average, count }: { average: number; count: number }) {
-  if (count === 0) return <span className="text-sm text-net/45">Ny på Tennis Makker</span>;
+  if (count === 0) return <span className="text-sm text-net/45">Ny på RacketBuddy</span>;
   return (
     <span className="text-sm">
       <span className="text-grus">★</span> {average.toFixed(1)}{" "}

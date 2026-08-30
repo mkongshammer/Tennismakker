@@ -1,6 +1,6 @@
 import { Fill, LegalPage, Section } from "../LegalPage";
 
-export const metadata = { title: "Databehandleraftale — Tennis Makker" };
+export const metadata = { title: "Databehandleraftale — RacketBuddy" };
 
 export default function DatabehandleraftalePage() {
   return (
@@ -15,7 +15,7 @@ export default function DatabehandleraftalePage() {
 
       <Section n="1" title="Baggrund og formål">
         <p>
-          Klubben bruger Tennis Makker til at vise ledige banetider til spillere
+          Klubben bruger RacketBuddy til at vise ledige banetider til spillere
           uden medlemskab og til at modtage betaling for dem. I den forbindelse
           behandler vi personoplysninger på klubbens vegne.
         </p>

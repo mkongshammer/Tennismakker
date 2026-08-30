@@ -1,6 +1,6 @@
-# Tennis Makker — mobilapp
+# RacketBuddy — mobilapp
 
-iOS- og Android-app til Tennis Makker, bygget med React Native og Expo. Én kodebase til begge platforme.
+iOS- og Android-app til RacketBuddy, bygget med React Native og Expo. Én kodebase til begge platforme.
 
 Appen har ingen egen database. Den taler med web-platformen over HTTP.
 

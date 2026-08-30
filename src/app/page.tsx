@@ -17,21 +17,21 @@ export default async function Home() {
         <div className="pointer-events-none absolute inset-x-0 top-1/2 chalk-line" />
         <div className="relative max-w-2xl">
           <p className="mb-2 text-sm font-bold uppercase tracking-widest text-kridt/80">
-            Dansk tennis, samlet ét sted
+            Ketsjersport, samlet ét sted
           </p>
           <h1 className="display text-3xl leading-tight sm:text-6xl">
-            Find din næste modstander, træner eller banetid
+            Book en bane. Find en træner. Find en medspiller.
           </h1>
           <p className="mt-4 max-w-xl text-lg text-kridt/90">
-            Tennis Makker matcher dig med spillere på dit niveau, lader dig booke
-            certificerede trænere, og giver din klub banebooking med betaling —
-            uden papirlister og forældede systemer.
+            RacketBuddy samler ketsjersport ét sted: ledige baner i klubber nær
+            dig, trænere du kan booke direkte, og spillere på dit niveau at
+            spille imod. Tennis, padel, badminton, squash og mere.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/spillere" className="btn w-full text-center bg-kridt text-grus-deep hover:bg-white sm:w-auto">
               Find en makker
             </Link>
-            <Link href="/klubber" className="btn w-full text-center border-2 border-kridt text-kridt hover:bg-kridt/10 sm:w-auto">
+            <Link href="/book" className="btn w-full text-center border-2 border-kridt text-kridt hover:bg-kridt/10 sm:w-auto">
               Book en bane
             </Link>
           </div>
@@ -55,7 +55,7 @@ export default async function Home() {
           </p>
           <p className="mt-4 text-sm font-bold">{coaches} trænere klar til booking</p>
         </Link>
-        <Link href="/klubber" className="card hover:border-grus">
+        <Link href="/book" className="card hover:border-grus">
           <p className="display text-2xl text-grus">Klubber</p>
           <p className="mt-2 text-sm text-net/70">
             Klubside, banebooking og betaling ud af boksen. Plug-n-play for

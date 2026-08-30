@@ -2,20 +2,21 @@ import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { getCurrentUser } from "../lib/session";
+import { getPreferences } from "../lib/preferences";
 import { logout } from "../lib/actions";
 import { SiteHeader } from "../components/SiteHeader";
+import { translator } from "../lib/i18n";
 
 export const metadata: Metadata = {
-  title: "Tennis Makker — find makker, træner og bane",
+  title: "RacketBuddy — book bane, find træner og medspiller",
   description:
-    "Dansk tennisplatform: find en makker på dit niveau, book en træner, og find en ledig bane i en klub nær dig.",
+    "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
 };
 
-// Uden dette skalerer telefoner siden ned som var den et skrivebord
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  viewportFit: "cover", // så indhold kan tage højde for hak og hjemmeindikator
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({
@@ -23,13 +24,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
+  const t = translator(prefs.locale);
 
   return (
-    <html lang="da">
+    <html lang={prefs.locale}>
       <body className="min-h-screen">
         <SiteHeader
           user={user ? { name: user.name, role: user.role } : null}
+          locale={prefs.locale}
           logout={logout}
         />
 
@@ -39,13 +42,13 @@ export default async function RootLayout({
           <div className="chalk-line mb-6" />
           <div className="mx-auto max-w-5xl px-4 text-center text-sm">
             <div className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-3">
-              <Link href="/opret-klub" className="hover:underline">Få jeres klub med</Link>
-              <Link href="/app" className="hover:underline">Prøv appen</Link>
+              <Link href="/opret-klub" className="hover:underline">{t("club.signup")}</Link>
+              <Link href="/app" className="hover:underline">App</Link>
               <Link href="/vilkaar" className="hover:underline">Handelsbetingelser</Link>
               <Link href="/privatliv" className="hover:underline">Privatliv</Link>
               <Link href="/databehandleraftale" className="hover:underline">Databehandleraftale</Link>
             </div>
-            Tennis Makker · Én platform til spillere, trænere og klubber
+            RacketBuddy · Ketsjersport samlet ét sted
           </div>
         </footer>
       </body>

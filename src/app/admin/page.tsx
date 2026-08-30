@@ -1,4 +1,4 @@
-// Klub-administration: her styrer klubben, hvordan Tennis Makker henter
+// Klub-administration: her styrer klubben, hvordan RacketBuddy henter
 // ledighed, og hvilke tider udefrakommende spillere må booke.
 import { redirect } from "next/navigation";
 import { addDays, format, startOfDay } from "date-fns";
@@ -21,7 +21,7 @@ export default async function AdminPage() {
       <div className="card mx-auto max-w-md text-center">
         <p className="font-bold">Kun for klub-administratorer</p>
         <p className="mt-1 text-sm text-net/60">
-          Din konto er ikke tilknyttet en klub. Kontakt Tennis Makker for at få jeres klub med.
+          Din konto er ikke tilknyttet en klub. Kontakt RacketBuddy for at få jeres klub med.
         </p>
       </div>
     );

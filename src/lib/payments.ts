@@ -1,4 +1,4 @@
-// Betalingslag for Tennis Makker.
+// Betalingslag for RacketBuddy.
 //
 // Arkitektur-princip (vigtigt, jf. forretningsplanen):
 // Penge skal kunne splittes mellem klub/træner og platformen (kommission).

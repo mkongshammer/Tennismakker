@@ -51,11 +51,11 @@ async function ownBookingKeys(courtIds: string[], from: Date, until: Date) {
 }
 
 // ---------------------------------------------------------------------------
-// NATIVE — Tennis Makker ER bookingsystemet (fallback for klubber uden system)
+// NATIVE — RacketBuddy ER bookingsystemet (fallback for klubber uden system)
 // ---------------------------------------------------------------------------
 export const nativeAdapter: BookingSystemAdapter = {
   type: "NATIVE",
-  label: "Tennis Makker",
+  label: "RacketBuddy",
   async getAvailability({ clubId, from, until }: AdapterInput): Promise<AvailabilityResult> {
     const base = await openingHourSlots(clubId, from, until);
     if (!base) return { slots: [], needsClubEntry: false };

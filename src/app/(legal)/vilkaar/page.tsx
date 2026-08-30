@@ -1,18 +1,18 @@
 import { Fill, LegalPage, Section } from "../LegalPage";
 
-export const metadata = { title: "Handelsbetingelser — Tennis Makker" };
+export const metadata = { title: "Handelsbetingelser — RacketBuddy" };
 
 export default function VilkaarPage() {
   return (
     <LegalPage title="Handelsbetingelser" updated="29. august 2026">
       <Section n="1" title="Hvem du handler med">
         <p>
-          Tennis Makker drives af <Fill>virksomhedsnavn</Fill>, CVR{" "}
+          RacketBuddy drives af <Fill>virksomhedsnavn</Fill>, CVR{" "}
           <Fill>CVR-nummer</Fill>, <Fill>adresse</Fill>. Du kan kontakte os på{" "}
           <Fill>e-mail</Fill>.
         </p>
         <p>
-          Tennis Makker er en formidlingsplatform. Når du booker en bane, indgår
+          RacketBuddy er en formidlingsplatform. Når du booker en bane, indgår
           du aftalen om selve banetiden med klubben. Når du booker en trænertime,
           indgår du aftalen med træneren. Vi formidler kontakten og håndterer
           betalingen, men leverer ikke selve ydelsen.
@@ -101,7 +101,7 @@ export default function VilkaarPage() {
       <Section n="8" title="Makker-funktionen">
         <p>
           Slår du til på et opslag, udveksles jeres kontaktoplysninger, så I selv
-          kan aftale nærmere. Tennis Makker er ikke part i den aftale og har
+          kan aftale nærmere. RacketBuddy er ikke part i den aftale og har
           ikke kontrolleret de oplysninger, brugere angiver om sig selv.
         </p>
         <p>
@@ -112,7 +112,7 @@ export default function VilkaarPage() {
 
       <Section n="9" title="Ansvar">
         <p>
-          Tennis Makker er ansvarlig efter dansk rets almindelige regler. Vi er
+          RacketBuddy er ansvarlig efter dansk rets almindelige regler. Vi er
           ikke ansvarlige for skader, der opstår under spillet, for klubbens
           eller trænerens ydelse, eller for aftaler brugere indgår indbyrdes via
           makker-funktionen.

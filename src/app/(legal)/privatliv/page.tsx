@@ -1,6 +1,6 @@
 import { Fill, LegalPage, Section } from "../LegalPage";
 
-export const metadata = { title: "Privatlivspolitik — Tennis Makker" };
+export const metadata = { title: "Privatlivspolitik — RacketBuddy" };
 
 export default function PrivatlivPage() {
   return (

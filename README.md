@@ -1,4 +1,4 @@
-# Tennis Makker
+# RacketBuddy
 
 Dansk tennisplatform der samler tre ting i ét system:
 
@@ -74,7 +74,7 @@ Hele integrationen ligger bag ét interface i `src/lib/integrations`. Klubsiden,
 |---|---|---|
 | `MANUAL` | Klubben frigiver selv præcis de tider, gæster må booke | Virker med ethvert system. Start her. |
 | `ICAL` | Vi henter klubbens kalenderfeed og viser det, der ikke er optaget | Når klubbens system kan udstille en `.ics` |
-| `NATIVE` | Tennis Makker *er* klubbens bookingsystem | Klubber uden eget system |
+| `NATIVE` | RacketBuddy *er* klubbens bookingsystem | Klubber uden eget system |
 | `API` | Direkte opslag i klubbens system | Kræver partneraftale — ikke bygget |
 
 **Halbooking har ingen offentlig API.** Globus Data har partnerintegrationer til adgangskontrol, betaling og bogføring, men intet tredjeparter kan læse ledighed fra. Så `API`-adapteren er bevidst kun en tom skal: kontrakten er på plads, implementeringen venter på en aftale med leverandøren. Indtil da er `MANUAL` den model, der faktisk kan sælges.
@@ -288,3 +288,39 @@ Det lukker hullet mod klubbens eget system. Det lukker det ikke mod en anden pla
 **Den eneste robuste løsning er organisatorisk:** klubben afsætter forskellige tider — eller en hel bane — til hver kanal. Så kan den samme time ikke sælges to gange, uanset hvad systemerne ved om hinanden. Det står som en note i klub-admin ved frigivelse af tider.
 
 Før der er rigtige penge i systemet, bør der desuden ligge en aftale med klubben om, hvem der honorerer bookingen, og hvem der refunderer, hvis det alligevel sker. Det er et forretningsspørgsmål, ikke et teknisk.
+
+
+---
+
+## RacketBuddy: sportsgrene, lande og sprog
+
+Platformen dækker ketsjersport bredt — tennis, padel, badminton, squash, bordtennis og pickleball — men **tennis er hovedsporet**. Det er der, banerne og efterspørgslen er, og det er tennis der afgør, om produktet holder. De øvrige grene skal fungere, men får ikke lov at trække opsætningen skæv.
+
+Sportsgrenen vælges øverst på "Book bane" og "Find træner" og gemmes i en cookie, så den følger med rundt. Land og sprog gemmes på profilen for indloggede og i en cookie for gæster (`src/lib/preferences.ts`).
+
+Oversættelser ligger i `src/lib/i18n.ts` som en almindelig ordbog med dansk og engelsk. Det er bevidst ikke et i18n-bibliotek: der er to sprog og et par hundrede strenge, og en manglende nøgle skal fejle synligt. Kommer der flere sprog eller oversættere udefra, er det tid til et rigtigt bibliotek.
+
+**Delvist oversat.** Navigationen og overskrifterne på hovedsiderne bruger ordbogen. Mange sider har stadig dansk tekst direkte i koden. Det skal ryddes op, før engelsk kan markedsføres som understøttet.
+
+## De fire indgange
+
+| Sti | Hvad |
+|---|---|
+| `/book` | Book bane — godkendte klubber i dit land, filtreret på sportsgren |
+| `/traenere` | Find træner — profil, timepris og pakkeforløb |
+| `/spillere` | Find medspiller — swipe, gensidigt ja åbner en samtale |
+| `/profil` | Min profil — bookinger, opslag, indstillinger |
+
+## Klubgodkendelse
+
+Klubber opretter sig selv på `/opret-klub`, men oprettes med status `PENDING` og er **ikke synlige** for spillere. En RacketBuddy-administrator (rolle `SUPERADMIN`) godkender dem på `/superadmin`.
+
+Det er bevidst manuelt. En klub der påstår at have baner, den ikke har, koster tilliden hos alle andre — og hos den gæst der står foran en låst låge. Godkenderen ser adresse, antal baner, sportsgren, prismodel og kontaktperson, og bør ringe klubben op, før der trykkes godkend.
+
+Ved godkendelse sendes en mail til klubbens administrator. Ved afvisning gemmes en intern note, som klubben ikke ser.
+
+## Trænerpakker
+
+Ud over en enkelt time kan trænere sælge forløb — fx et 10-turskort eller et begynderkursus over seks uger (`CoachPackage`). Pakker vises på trænerens profil med pris pr. time udregnet, så man kan sammenligne med enkelttimen.
+
+**Pakker kan ikke købes online endnu.** De vises og aftales direkte med træneren. Onlinekøb af pakker kræver et klippekortsystem — hvor mange timer er brugt, hvornår udløber de, hvad sker der ved aflysning — og det bør bygges sammen med den rigtige betaling, ikke før.
