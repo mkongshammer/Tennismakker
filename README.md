@@ -252,7 +252,9 @@ Tre designvalg der bærer siden:
 
 Liste og kort peger på hinanden: peger man på et kort i listen, vokser boblen på kortet, og klikker man på en boble, ruller det tilhørende kort frem.
 
-Kortet bruger Leaflet og kræver hverken API-nøgle eller betalingskort — der er ingen risiko for en uventet regning og ingen nøgle at lække. Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel og mangler bare på kortet.
+Kortet bruger Leaflet med almindelige OpenStreetMap-fliser — ingen API-nøgle, intet betalingskort. Fliserne dæmpes med et CSS-filter (`.leaflet-tile-pane` i `globals.css`) i stedet for at bruge en fortonet flisetjeneste, fordi CARTO i slutningen af august 2026 begyndte at kræve en API-nøgle til netop den slags fliser. Filteret giver et lignende, roligt udtryk uden afhængighed af endnu en udbyder og endnu en nøgle at holde styr på.
+
+Adresser slås op med OpenStreetMaps Nominatim, når en klub oprettes (`src/lib/geocode.ts`). Kan adressen ikke findes, oprettes klubben alligevel og mangler bare på kortet.
 
 **Ikke bygget:** klubber kan ikke rette deres adresse i admin bagefter, og der er ingen søgning på afstand ("klubber inden for 10 km"). Kortet i mobilappen mangler også — appen viser stadig kun en liste.
 

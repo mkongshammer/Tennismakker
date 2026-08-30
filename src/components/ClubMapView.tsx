@@ -82,8 +82,13 @@ export default function ClubMapView({ clubs, activeId, onSelect }: Props) {
       style={{ height: "100%", width: "100%", background: "#EDEBE5" }}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        // CARTOs dæmpede fliser krævede indtil for nylig ingen nøgle, men
+        // CARTO indførte i slutningen af august 2026 et krav om API-nøgle
+        // for netop den flisetype. Almindelige OpenStreetMap-fliser er
+        // stadig gratis uden nøgle; det dæmpede udseende laves i stedet
+        // med et CSS-filter (se .leaflet-tile-pane i globals.css).
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <Viewport clubs={clubs} activeId={activeId} />
 

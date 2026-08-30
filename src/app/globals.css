@@ -167,6 +167,13 @@ body {
 .leaflet-container {
   font-family: var(--font-body, system-ui);
 }
+/* Almindelige OpenStreetMap-fliser er fulde af farve og tekst.
+   CARTOs dæmpede fliser krævede indtil for nylig ingen nøgle, men det
+   ændrede sig i slutningen af august 2026 (se ClubMapView.tsx). Dette
+   filter giver et lignende, roligt udtryk uden en nøgle. */
+.leaflet-tile-pane {
+  filter: grayscale(35%) brightness(1.06) contrast(0.92) saturate(0.85);
+}
 .leaflet-control-attribution {
   background: rgba(255, 255, 255, 0.88) !important;
   font-size: 10px !important;
