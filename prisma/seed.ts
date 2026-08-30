@@ -11,7 +11,7 @@ async function main() {
   // Demo-klub
   const club = await db.club.upsert({
     where: { slug: "soendermark-tennis" },
-    update: {},
+    update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
     create: {
       slug: "soendermark-tennis",
       name: "Søndermark Tennisklub",
@@ -141,7 +141,7 @@ async function main() {
   // udvalgte gæstetider — det er den model, de fleste klubber vil bruge.
   const guestClub = await db.club.upsert({
     where: { slug: "nordhavn-tennis" },
-    update: {},
+    update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
     create: {
       slug: "nordhavn-tennis",
       name: "Nordhavn Tennisklub",
