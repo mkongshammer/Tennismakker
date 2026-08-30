@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "RacketBuddy — book bane, find træner og medspiller",
   description:
     "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
+  // icon.png, apple-icon.png og opengraph-image.png i denne mappe
+  // opsamles automatisk af Next.js — ingen <link>-tags nødvendige.
+  metadataBase: new URL(process.env.APP_URL ?? "https://tennis-makker.onrender.com"),
 };
 
 export const viewport: Viewport = {
