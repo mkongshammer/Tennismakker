@@ -124,13 +124,10 @@ body {
   padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
 }
 
-.snap-row {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.snap-row > * {
-  scroll-snap-align: start;
-}
+/* scroll-snap-type: mandatory blev fjernet herfra: på korte rækker
+   (sportsvælger, dagsvælger) kunne det sidste punkt blive "fanget" i et
+   snap-hop, der aldrig lander — bl.a. Pickleball var umulig at nå på
+   telefon. Ren fri scroll er mere pålideligt for korte filterrækker. */
 .no-scrollbar {
   scrollbar-width: none;
 }

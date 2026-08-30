@@ -215,7 +215,7 @@ export default async function KlubPage({
             : "Tiden holdes i 10 minutter, mens du betaler."}
         </p>
 
-        <div className="snap-row no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
+        <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
           <div className="flex w-max gap-2">
             {Array.from({ length: 7 }, (_, i) => {
               const d = addDays(today, i);

@@ -12,7 +12,7 @@ export function SportPicker({
   locale: Locale;
 }) {
   return (
-    <div className="snap-row no-scrollbar -mx-4 mb-6 overflow-x-auto px-4 pb-1">
+    <div className="no-scrollbar -mx-4 mb-6 overflow-x-auto px-4 pb-1">
       <div className="flex w-max gap-2">
         {SPORTS.map((s) => (
           <form action={setSport} key={s}>
