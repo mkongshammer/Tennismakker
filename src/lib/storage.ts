@@ -42,6 +42,12 @@ function s3(): S3Client {
       region: process.env.S3_REGION ?? "auto",
       endpoint,
       credentials: { accessKeyId: accessKeyId!, secretAccessKey: secretAccessKey! },
+      // Nyere udgaver af AWS's SDK sender som standard ekstra tjeksum-headers,
+      // som R2 ikke forstår. Det ødelægger signaturen og viser sig som en
+      // 403 "adgang nægtet" — selvom nøgler og rettigheder er korrekte.
+      // Kendt inkompatibilitet, løses ved at slå det fra her.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
   }
   return client;

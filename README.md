@@ -461,6 +461,8 @@ Billeder serveres fra `/api/billeder/[id]` med et års cache. Et billede ændrer
 
 `imageUrl()` ligger i sin egen fil (`src/lib/imageUrl.ts`), fordi klientkomponenter har brug for den. Lå den i `images.ts`, blev billedbiblioteket trukket med ind i browser-bundlet, og det kan ikke køre der.
 
-**Utestet mod en rigtig bucket.** S3-vejen er skrevet og typetjekket, men jeg har ikke haft nøgler til at afprøve den mod Cloudflare. Første upload efter opsætning bør kontrolleres manuelt: virker den ikke, falder billedet tilbage i databasen, og fejlen står i serverloggen.
+**Kendt kompatibilitetsproblem med R2 er rettet.** Nyere udgaver af `@aws-sdk/client-s3` sender som standard ekstra tjeksum-headers, som R2 ikke forstår — det ødelægger signaturen og viser sig som en 403 "adgang nægtet", selv med korrekte nøgler og rettigheder. Løst ved at sætte `requestChecksumCalculation` og `responseChecksumValidation` til `"WHEN_REQUIRED"` i `src/lib/storage.ts`.
+
+**Kunne ikke testes direkte fra udviklingsmiljøet.** Sandkassen, koden er udviklet i, har en netværksspærring, der blokerer `*.r2.cloudflarestorage.com` — det gav i første omgang et 403-svar, der så ud som et rettighedsproblem hos Cloudflare, men var reelt kun sandkassens egen spærring. Første upload i produktion bør derfor kontrolleres manuelt: virker den ikke, falder billedet automatisk tilbage i databasen, og den egentlige fejl står i serverloggen.
 
 **Ikke bygget:** klubben kan ikke ændre rækkefølgen på gallerifotos eller beskære et billede. Beskæringen sker automatisk fra midten, hvilket rammer skævt på billeder med motivet i kanten.
