@@ -11,6 +11,8 @@
 
 import sharp from "sharp";
 import { db } from "./db";
+import { put, del } from "./storage";
+import { randomUUID } from "crypto";
 
 export type ImageKind = "LOGO" | "HERO" | "PHOTO";
 
@@ -87,17 +89,28 @@ export async function store(
     return { ok: false, error: "Filen kunne ikke læses som et billede." };
   }
 
-  // Kun ét logo og ét forsidebillede pr. klub
+  // Kun ét logo og ét forsidebillede pr. klub — det gamle ryddes væk
   if (kind === "LOGO" || kind === "HERO") {
+    const old = await db.image.findMany({ where: { clubId, kind } });
+    for (const o of old) await del(o.storageKey);
     await db.image.deleteMany({ where: { clubId, kind } });
   }
+
+  const ext = mime === "image/png" ? "png" : "jpg";
+  const stored = await put(
+    `klubber/${clubId}/${kind.toLowerCase()}-${randomUUID()}.${ext}`,
+    processed,
+    mime
+  );
 
   const image = await db.image.create({
     data: {
       clubId,
       kind,
       mime,
-      bytes: processed,
+      storageKey: stored.storageKey,
+      publicUrl: stored.publicUrl,
+      bytes: stored.bytes,
       width,
       height,
       alt: alt?.trim() || null,
@@ -118,7 +131,7 @@ export async function store(
 export async function load(id: string) {
   return db.image.findUnique({
     where: { id },
-    select: { bytes: true, mime: true },
+    select: { bytes: true, mime: true, publicUrl: true },
   });
 }
 
@@ -126,6 +139,7 @@ export async function remove(clubId: string, imageId: string) {
   const image = await db.image.findFirst({ where: { id: imageId, clubId } });
   if (!image) return;
 
+  await del(image.storageKey);
   await db.image.delete({ where: { id: imageId } });
 
   if (image.kind === "LOGO") {

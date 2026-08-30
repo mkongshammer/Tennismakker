@@ -127,12 +127,19 @@ model Club {
 // Vokser det, flyttes lagringen til S3 eller lignende: alt, der læser og
 // skriver billeder, går gennem src/lib/images.ts, så det er ét sted.
 model Image {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  kind      String   @default("PHOTO") // "LOGO" | "HERO" | "PHOTO"
-  mime      String
-  bytes     Bytes
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  kind   String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO"
+  mime   String
+
+  // Ét af to: enten ligger filen hos en lagringstjeneste (storageKey +
+  // publicUrl), eller også ligger den i databasen (bytes). Databasen er
+  // fallback, så platformen virker uden en lagringskonto.
+  storageKey String?
+  publicUrl  String?
+  bytes      Bytes?
+
   width     Int
   height    Int
   alt       String?

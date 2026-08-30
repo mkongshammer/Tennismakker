@@ -439,7 +439,19 @@ Tre udseender, klubben kan skifte mellem i admin: **Klassisk** (farvet hoved med
 
 Klubber kan uploade et **forsidebillede**, et **logo** og op til **otte billeder af anlægget**. Det er den enkelte ting, der tydeligst løfter en klubside — tekst alene ser tynd ud ved siden af den hjemmeside, klubben har i forvejen.
 
-Billederne ligger **i databasen**, ikke hos en lagringsudbyder. Det er et bevidst valg for at komme i gang: ingen konto, ingen nøgler, ingen udgift, og billederne følger med i en databasesikkerhedskopi. Alt der læser og skriver går gennem `src/lib/images.ts`, så en flytning til S3 senere kun rører den ene fil.
+Lagringen har to udbydere bag samme kontrakt (`src/lib/storage.ts`):
+
+**`s3`** — Cloudflare R2 eller enhver anden S3-kompatibel tjeneste. Sæt `S3_BUCKET`, `S3_ENDPOINT`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` og `S3_PUBLIC_URL`, så bruges den automatisk.
+
+**`database`** — fallback, når nøglerne ikke er sat. Virker uden konti, så platformen kan køre fra dag ét.
+
+R2 er anbefalingen, fordi den ikke tager betaling for trafik ud. S3 og Cloudinary opkræver pr. visning, og en klubside med ti billeder bliver dyr, når den ses tit. R2 giver 10 GB gratis.
+
+Fejler en upload til lagringstjenesten, gemmes billedet i databasen i stedet. En klub skal ikke miste sit forsidebillede, fordi en tjeneste har en dårlig dag.
+
+**Flytning af eksisterende billeder:** `npm run images:migrate` flytter alt, der ligger i databasen, op til lagringstjenesten. Den er sikker at køre flere gange, og databasekopien slettes først, når filen er lagt op — så et afbrudt kørsel ikke kan tabe et billede.
+
+Alle billeder hentes via `/api/billeder/[id]`, uanset hvor filen ligger. Ligger den eksternt, sendes browseren videre dertil. Det koster ét ekstra kald første gang, men til gengæld ved resten af koden aldrig, hvor filen er — og et skifte af udbyder ændrer ingen sider.
 
 **De skaleres og komprimeres, før de gemmes.** Et testfoto på 2 MB i telefonopløsning bliver til 326 kB som forsidebillede. Uden det ville en klubside være ubrugelig på mobildata. Billeder taget på højkant rettes automatisk.
 
@@ -449,6 +461,6 @@ Billeder serveres fra `/api/billeder/[id]` med et års cache. Et billede ændrer
 
 `imageUrl()` ligger i sin egen fil (`src/lib/imageUrl.ts`), fordi klientkomponenter har brug for den. Lå den i `images.ts`, blev billedbiblioteket trukket med ind i browser-bundlet, og det kan ikke køre der.
 
-**Værd at holde øje med:** den gratis database rummer 1 GB. Ved omkring 3 MB pr. klub er der plads til et par hundrede klubber, men billeder i databasen gør også sikkerhedskopier tungere. Det er tidspunktet at flytte til rigtig fillagring — ikke før.
+**Utestet mod en rigtig bucket.** S3-vejen er skrevet og typetjekket, men jeg har ikke haft nøgler til at afprøve den mod Cloudflare. Første upload efter opsætning bør kontrolleres manuelt: virker den ikke, falder billedet tilbage i databasen, og fejlen står i serverloggen.
 
 **Ikke bygget:** klubben kan ikke ændre rækkefølgen på gallerifotos eller beskære et billede. Beskæringen sker automatisk fra midten, hvilket rammer skævt på billeder med motivet i kanten.

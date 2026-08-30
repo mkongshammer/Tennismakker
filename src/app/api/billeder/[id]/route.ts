@@ -1,14 +1,22 @@
 import { load } from "../../../../lib/images";
 
-// Billederne ligger i databasen, men skal opføre sig som statiske filer.
-// Et billede ændrer sig aldrig — uploader klubben et nyt, får det et nyt
-// id — så det kan caches så længe som muligt.
+// Alle billeder hentes via denne adresse, uanset hvor filen ligger.
+//
+// Ligger den hos en lagringstjeneste, sender vi browseren derhen. Det
+// koster ét ekstra kald første gang, men til gengæld skal resten af koden
+// aldrig vide, hvor filen er — og et skifte af udbyder ændrer ingen sider.
 export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
   const image = await load(params.id);
   if (!image) return new Response("Not found", { status: 404 });
+
+  if (image.publicUrl) {
+    return Response.redirect(image.publicUrl, 308);
+  }
+
+  if (!image.bytes) return new Response("Not found", { status: 404 });
 
   return new Response(new Uint8Array(image.bytes), {
     headers: {
