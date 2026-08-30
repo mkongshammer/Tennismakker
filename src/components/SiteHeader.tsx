@@ -11,10 +11,11 @@ import type { Locale } from "../lib/sports";
 type Props = {
   user: { name: string; role: string } | null;
   locale: Locale;
-  logout: () => Promise<void>;
 };
 
-export function SiteHeader({ user, locale, logout }: Props) {
+// Log ud-knappen ligger på /profil, ikke her — profilen er kun et
+// hjørne-ikon i headeren, og det er der, kontoen i øvrigt styres fra.
+export function SiteHeader({ user, locale }: Props) {
   const pathname = usePathname();
   const t = translator(locale);
 

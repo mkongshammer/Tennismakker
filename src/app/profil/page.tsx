@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { cancelBooking, closeMatchRequest } from "../../lib/actions";
+import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
@@ -87,10 +87,15 @@ export default async function ProfilPage({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="display text-3xl">{user.name}</h1>
-        <LevelBadge level={user.level} />
-        {user.area && <span className="text-slate/60">{user.area}</span>}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="display text-3xl">{user.name}</h1>
+          <LevelBadge level={user.level} />
+          {user.area && <span className="text-slate/60">{user.area}</span>}
+        </div>
+        <form action={logout}>
+          <button className="btn-ghost">Log ud</button>
+        </form>
       </div>
 
       <PlayAgain items={repeatable} />

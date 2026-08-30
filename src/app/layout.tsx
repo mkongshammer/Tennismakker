@@ -3,7 +3,6 @@ import Link from "next/link";
 import "./globals.css";
 import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
-import { logout } from "../lib/actions";
 import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
 import { translator } from "../lib/i18n";
@@ -47,7 +46,6 @@ export default async function RootLayout({
         <SiteHeader
           user={user ? { name: user.name, role: user.role } : null}
           locale={prefs.locale}
-          logout={logout}
         />
 
         <main className="has-tabbar mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10">
