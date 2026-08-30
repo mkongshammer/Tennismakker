@@ -12,6 +12,7 @@ import { IntegrationForm } from "./IntegrationForm";
 import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
+import { ImageForms } from "./ImageForms";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,7 @@ export default async function AdminPage() {
       courts: { orderBy: { name: "asc" } },
       members: true,
       posts: { orderBy: { createdAt: "desc" }, take: 10 },
+      images: { orderBy: { sortOrder: "asc" } },
     },
   });
   if (!club) redirect("/");
@@ -165,7 +167,17 @@ export default async function AdminPage() {
         <p className="mb-4 text-sm text-slate">
           Bruger I os som jeres eneste system, er det her jeres hjemmeside.
         </p>
-        <SiteForm club={club} />
+        <ImageForms
+          logoId={club.logoId}
+          heroId={club.heroId}
+          photos={club.images
+            .filter((i: any) => i.kind === "PHOTO")
+            .map((i: any) => ({ id: i.id, alt: i.alt }))}
+        />
+
+        <div className="mt-4">
+          <SiteForm club={club} />
+        </div>
 
         <div className="card mt-4">
           <p className="font-bold">Udseende</p>

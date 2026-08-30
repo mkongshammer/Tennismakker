@@ -16,6 +16,7 @@ import { getClubAvailability } from "../../../lib/integrations";
 import { BookingGrid } from "../../../components/BookingGrid";
 import { clubRatings } from "../../../lib/reviews";
 import { sportLabel } from "../../../lib/sports";
+import { imageUrl } from "../../../lib/imageUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,7 @@ export default async function KlubPage({
     include: {
       courts: { orderBy: { name: "asc" } },
       posts: { orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], take: 3 },
+      images: { where: { kind: "PHOTO" }, orderBy: { sortOrder: "asc" }, take: 8 },
       _count: { select: { members: true } },
     },
   });
@@ -104,42 +106,71 @@ export default async function KlubPage({
           </p>
         </section>
       ) : (
-        <section
-          className="relative overflow-hidden rounded-2xl px-6 py-10 text-chalk sm:px-10 sm:py-14"
-          style={{ backgroundColor: club.color }}
-        >
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.15]"
-            viewBox="0 0 400 200"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <g stroke="#fff" strokeWidth="1.5" fill="none">
-              <rect x="30" y="18" width="340" height="164" />
-              <line x1="30" y1="44" x2="370" y2="44" />
-              <line x1="30" y1="156" x2="370" y2="156" />
-              <line x1="118" y1="44" x2="118" y2="156" />
-              <line x1="282" y1="44" x2="282" y2="156" />
-              <line x1="118" y1="100" x2="282" y2="100" />
-            </g>
-            <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
-          </svg>
+        <section className="relative overflow-hidden rounded-2xl">
+          {club.heroId ? (
+            <>
+              {/* Klubbens eget billede. Et mørkt lag ovenpå, så teksten kan
+                  læses uanset hvor lyst billedet er. */}
+              <img
+                src={imageUrl(club.heroId)}
+                alt=""
+                className="h-[300px] w-full object-cover sm:h-[420px]"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(to top, ${club.color}f2 0%, ${club.color}99 45%, ${club.color}33 100%)`,
+                }}
+              />
+            </>
+          ) : (
+            <div
+              className="h-[260px] w-full sm:h-[340px]"
+              style={{ backgroundColor: club.color }}
+            >
+              <svg
+                className="h-full w-full opacity-[0.15]"
+                viewBox="0 0 400 200"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <g stroke="#fff" strokeWidth="1.5" fill="none">
+                  <rect x="30" y="18" width="340" height="164" />
+                  <line x1="30" y1="44" x2="370" y2="44" />
+                  <line x1="30" y1="156" x2="370" y2="156" />
+                  <line x1="118" y1="44" x2="118" y2="156" />
+                  <line x1="282" y1="44" x2="282" y2="156" />
+                  <line x1="118" y1="100" x2="282" y2="100" />
+                </g>
+                <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
+              </svg>
+            </div>
+          )}
 
-          <div className="relative">
-            <p className="eyebrow text-chalk/70">
+          <div className="absolute inset-x-0 bottom-0 p-6 text-chalk sm:p-10">
+            {club.logoId && (
+              <img
+                src={imageUrl(club.logoId)}
+                alt={`${club.name} logo`}
+                className="mb-4 h-16 w-16 rounded-xl bg-chalk/95 object-contain p-1.5 sm:h-20 sm:w-20"
+              />
+            )}
+            <p className="eyebrow text-chalk/75">
               {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
             </p>
-            <h1 className="display mt-2 text-3xl sm:text-5xl">{club.name}</h1>
+            <h1 className="display mt-1 text-3xl drop-shadow-sm sm:text-5xl">
+              {club.name}
+            </h1>
             {club.tagline && (
               <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
             )}
-            <p className="mt-4 text-sm font-semibold text-chalk/85">
+            <p className="mt-3 text-sm font-semibold text-chalk/85">
               {club.address ? `${club.address}, ` : ""}
               {club.city} · {club.courts.length} baner
               {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
             </p>
             {isMember && (
-              <p className="data mt-4 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
+              <p className="data mt-3 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
                 Du er medlem — medlemspris
               </p>
             )}
@@ -268,6 +299,24 @@ export default async function KlubPage({
           <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">
             Indløs kode
           </Link>
+        </section>
+      )}
+
+      {/* Galleri */}
+      {club.images.length > 0 && (
+        <section>
+          <h2 className="display mb-3 text-2xl">Anlægget</h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {club.images.map((img: any) => (
+              <img
+                key={img.id}
+                src={imageUrl(img.id)}
+                alt={img.alt ?? `${club.name}`}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-xl object-cover"
+              />
+            ))}
+          </div>
         </section>
       )}
 

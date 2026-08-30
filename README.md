@@ -434,3 +434,21 @@ Tre udseender, klubben kan skifte mellem i admin: **Klassisk** (farvet hoved med
 - **Betaling af selve gebyret.** De 5.000 kr opkræves manuelt. En engangsbetaling gennem Stripe hører sammen med resten af betalingsopsætningen.
 - **Billeder.** Stadig ingen logo- eller fotoupload. Det er den enkelte ting, der tydeligst adskiller siderne fra en rigtig klubhjemmeside, og det kræver en lagringsudbyder.
 - **Flere sider.** Klubben har én side. Vil de have "Hold", "Kontingent" og "Bestyrelsen" som selvstændige sider, er det en sidemodel, ikke et felt mere.
+
+## Billeder
+
+Klubber kan uploade et **forsidebillede**, et **logo** og op til **otte billeder af anlægget**. Det er den enkelte ting, der tydeligst løfter en klubside — tekst alene ser tynd ud ved siden af den hjemmeside, klubben har i forvejen.
+
+Billederne ligger **i databasen**, ikke hos en lagringsudbyder. Det er et bevidst valg for at komme i gang: ingen konto, ingen nøgler, ingen udgift, og billederne følger med i en databasesikkerhedskopi. Alt der læser og skriver går gennem `src/lib/images.ts`, så en flytning til S3 senere kun rører den ene fil.
+
+**De skaleres og komprimeres, før de gemmes.** Et testfoto på 2 MB i telefonopløsning bliver til 326 kB som forsidebillede. Uden det ville en klubside være ubrugelig på mobildata. Billeder taget på højkant rettes automatisk.
+
+Grænser: 12 MB pr. upload, JPEG/PNG/WebP/HEIC, otte gallerifotos pr. klub. En klub med det hele fylder omkring 3 MB.
+
+Billeder serveres fra `/api/billeder/[id]` med et års cache. Et billede ændrer sig aldrig — uploader klubben et nyt, får det et nyt id.
+
+`imageUrl()` ligger i sin egen fil (`src/lib/imageUrl.ts`), fordi klientkomponenter har brug for den. Lå den i `images.ts`, blev billedbiblioteket trukket med ind i browser-bundlet, og det kan ikke køre der.
+
+**Værd at holde øje med:** den gratis database rummer 1 GB. Ved omkring 3 MB pr. klub er der plads til et par hundrede klubber, men billeder i databasen gør også sikkerhedskopier tungere. Det er tidspunktet at flytte til rigtig fillagring — ikke før.
+
+**Ikke bygget:** klubben kan ikke ændre rækkefølgen på gallerifotos eller beskære et billede. Beskæringen sker automatisk fra midten, hvilket rammer skævt på billeder med motivet i kanten.

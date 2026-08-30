@@ -87,6 +87,8 @@ model Club {
   // Hjemmesiden som betalt ydelse.
   // theme: "KLASSISK" | "MARKANT" | "ENKEL"
   theme        String  @default("KLASSISK")
+  logoId       String? // Image.id — vises i klubbens hoved
+  heroId       String? // Image.id — stort billede øverst på klubbens side
   customDomain String? @unique // fx "soendermarktennis.dk"
   // "NONE" | "REQUESTED" | "PENDING_DNS" | "LIVE"
   domainStatus String  @default("NONE")
@@ -111,6 +113,33 @@ model Club {
   reviews Review[]
   rules   GuestRule[]
   posts   ClubPost[]
+  images  Image[]
+}
+
+// ---------- Billeder ----------
+// Gemmes i databasen frem for hos en lagringsudbyder.
+//
+// Det er et bevidst valg for at komme i gang: ingen konto, ingen nøgler,
+// ingen udgift, og billederne følger med i en databasesikkerhedskopi.
+// Billeder skaleres og komprimeres før de gemmes, så en klub med logo,
+// forsidebillede og et galleri fylder omkring en megabyte.
+//
+// Vokser det, flyttes lagringen til S3 eller lignende: alt, der læser og
+// skriver billeder, går gennem src/lib/images.ts, så det er ét sted.
+model Image {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  kind      String   @default("PHOTO") // "LOGO" | "HERO" | "PHOTO"
+  mime      String
+  bytes     Bytes
+  width     Int
+  height    Int
+  alt       String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, kind])
 }
 
 // ---------- Klubbens nyheder ----------

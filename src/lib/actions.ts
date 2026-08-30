@@ -15,6 +15,7 @@ import { createReview } from "./reviews";
 import { geocode } from "./geocode";
 import { setPreferenceCookies } from "./preferences";
 import { detectBookingSystem, testFeed } from "./detect";
+import { store as storeImage, remove as removeImage } from "./images";
 
 // ---------------- Auth ----------------
 
@@ -1061,4 +1062,41 @@ export async function setTheme(formData: FormData) {
   if (!["KLASSISK", "MARKANT", "ENKEL"].includes(theme)) return;
   await db.club.update({ where: { id: clubId }, data: { theme } });
   revalidatePath("/admin");
+}
+
+// ---------------- Billeder ----------------
+
+export async function uploadImage(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const kind = String(formData.get("kind") ?? "PHOTO");
+  if (!["LOGO", "HERO", "PHOTO"].includes(kind)) {
+    return { error: "Ukendt billedtype." };
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return { error: "Vælg en fil." };
+
+  const result = await storeImage(
+    clubId,
+    kind as "LOGO" | "HERO" | "PHOTO",
+    file,
+    String(formData.get("alt") ?? "")
+  );
+  if (!result.ok) return { error: result.error };
+
+  revalidatePath("/admin");
+  const club = await db.club.findUnique({ where: { id: clubId } });
+  if (club) revalidatePath(`/klub/${club.slug}`);
+
+  return { ok: "Billedet er uploadet." };
+}
+
+export async function deleteImage(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  await removeImage(clubId, String(formData.get("id")));
+
+  revalidatePath("/admin");
+  const club = await db.club.findUnique({ where: { id: clubId } });
+  if (club) revalidatePath(`/klub/${club.slug}`);
 }
