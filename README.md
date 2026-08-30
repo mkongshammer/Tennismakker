@@ -483,3 +483,51 @@ Kørt lokalt mod en rigtig Postgres-database — samme forespørgsler og adgangs
 **Test 3 — 50 samtidige opslag af ulæst-tælleren** (den der vises i bundlinjen): 73 ms samlet.
 
 Konklusion: beskedlogikken holder til langt mere belastning, end platformen får brug for i overskuelig fremtid. Fejlen i Test 2 ville til gengæld ramme jeres mest aktive brugere først — dem der skriver mest sammen — hvilket er præcis dem, I ikke har råd til at miste.
+
+## Rigtig betaling med Stripe Connect
+
+Betalingen er nu bygget færdig — ikke bare skitseret. Sådan hænger den sammen.
+
+### Pengestrømmen
+
+Det er en **destination charge**: kunden betaler det fulde beløb til Stripe, og Stripe sender automatisk `priceKr − platformFee` videre til klubbens eller trænerens egen konto med det samme. Vores andel (`platformFee`, 10%) bliver stående hos os.
+
+**Stripes eget transaktionsgebyr trækkes fra vores andel, ikke oveni klubbens.** Det er derfor provisionen er sat til 10% i `COMMISSION_PCT` og ikke lavere — en indenlandsk betaling koster Stripe 1,5% + 1,80 kr, så på en banetime til 100 kr får vi 10,00 − 3,30 = 6,70 kr, og klubben får de fulde 90 kr uden fradrag. Klubben mærker aldrig Stripes gebyr.
+
+### Hvem penge sendes til
+
+Både klubber og trænere skal have deres egen **Stripe Express-konto** (`src/lib/connect.ts`), før de kan modtage betaling. Express er den lette model — Stripe står for hele registreringen (identitet, bankkonto), vi sender dem bare derhen:
+
+- Klubben sætter det op i `/admin` under "Udbetalinger"
+- Træneren sætter det op i `/profil/traener` under samme overskrift
+
+Ingen af delene kan modtage en bane- eller trænerbooking, før Stripe siger `charges_enabled`. Prøver en gæst at booke en klub uden det, får de en tydelig fejl i stedet for en betaling, der ikke kan gennemføres.
+
+### Webhooken er kilden til sandhed
+
+`/api/webhooks/stripe` lytter på to ting:
+
+- **`checkout.session.completed`** — bekræfter bookingen og sender kvitteringer. Dette sker uafhængigt af, om kunden bliver hængende på siden efter betaling. Kunden kan lukke browseren i samme sekund, betalingen tælles stadig.
+- **`account.updated`** — opdaterer om en klub eller træner kan modtage penge endnu, hver gang de ændrer noget i deres Stripe-opsætning.
+
+**Sæt webhooken op i Stripe Dashboard → Developers → Webhooks**, med adressen `https://<dit-domæne>/api/webhooks/stripe`, og kopiér den hemmelige nøgle over i `STRIPE_WEBHOOK_SECRET`.
+
+### Refundering
+
+Aflyser en spiller rettidigt (se afsnittet om aflysning), kalder `cancelAndRefund()` nu Stripes rigtige refunderings-API — med `reverse_transfer: true` og `refund_application_fee: true`, så pengene trækkes tilbage fra klubbens konto, og vores egen andel gives også tilbage. Vi har jo ikke leveret noget, når bookingen annulleres.
+
+### Sådan slår du det til
+
+1. `STRIPE_SECRET_KEY` og `STRIPE_WEBHOOK_SECRET` i miljøvariablerne — se `.env.example`
+2. `PAYMENT_PROVIDER=stripe`
+3. Slå MobilePay til under Stripe Dashboard → Settings → Payment methods — det kræver ingen kodeændring, det dukker automatisk op i checkout, når det er aktiveret
+4. Kør `npx prisma db push` (eller lad byggeprocessen gøre det), så de nye Stripe-felter kommer med i databasen
+
+### Ikke testet mod en rigtig Stripe-konto
+
+Alt er skrevet efter Stripes dokumentation og typetjekket, men jeg har ingen Stripe-nøgler at teste imod — hverken test- eller livenøgler. **Det kan du selv løse på fem minutter:** opret en gratis Stripe-konto (kræver hverken bankkonto eller CVR i test-tilstand) og send mig testnøglerne (starter med `sk_test_`), så kan jeg lave en ægte gennemkørsel med Stripes testkort, ligesom jeg gjorde med R2 — i stedet for kun at stole på, at koden ligner det, dokumentationen beskriver.
+
+### Ikke bygget
+
+- **Abonnementsopkrævning** for klubber på fastprismodellen og for de 5.000 kr til hjemmesideydelsen. Begge er stadig manuelle. Stripe Billing er det naturlige næste skridt, når Connect-delen er bekræftet at virke.
+- **Retry ved mislykket webhook.** Stripe forsøger selv igen i timevis ved fejl, men der er ingen egen overvågning af, om en booking er "hængt" i HOLD, fordi en webhook aldrig kom igennem.

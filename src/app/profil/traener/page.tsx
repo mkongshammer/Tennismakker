@@ -2,16 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
-import { updateCoachProfile } from "../../../lib/actions";
+import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions";
+import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
 export default function TraenerProfilPage() {
   const [state, action] = useFormState(updateCoachProfile, null);
   const [profile, setProfile] = useState<any>(null);
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    fetch("/api/me/coach").then((r) => r.json()).then(setProfile);
-  }, []);
+    async function load() {
+      // Kommer træneren tilbage fra Stripe, genopfriskes status først, så
+      // kortet nedenfor viser det rigtige med det samme.
+      if (searchParams.get("stripe")) {
+        await fetch("/api/me/coach/stripe-refresh", { method: "POST" }).catch(() => null);
+      }
+      const res = await fetch("/api/me/coach");
+      setProfile(await res.json());
+    }
+    load();
+  }, [searchParams]);
 
   if (!profile) return <p className="text-slate/60">Henter…</p>;
   if (profile.error) return <p className="text-court font-semibold">{profile.error}</p>;
@@ -19,6 +30,29 @@ export default function TraenerProfilPage() {
   return (
     <div className="mx-auto max-w-md">
       <h1 className="display mb-6 text-3xl">Trænerprofil</h1>
+
+      <div className="card mb-4">
+        <p className="font-bold">Udbetalinger</p>
+        {profile.stripeChargesEnabled ? (
+          <p className="mt-2 text-sm">
+            <span className="font-bold text-court">Aktivt.</span> Elever kan betale
+            direkte til dig, minus vores andel.
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-slate">
+              Du skal have en Stripe-konto, før elever kan booke og betale.
+              Tager typisk 5-10 minutter.
+            </p>
+            <form action={startCoachPayoutSetup} className="mt-3">
+              <button className="btn-court">
+                {profile.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+
       <form action={action} className="card space-y-4">
         <div>
           <label className="label" htmlFor="headline">Overskrift</label>

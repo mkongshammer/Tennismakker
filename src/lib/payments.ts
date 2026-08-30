@@ -18,6 +18,8 @@
 // 3. Webhook (payment_intent.succeeded) kalder confirmBookingPayment() nedenfor.
 
 import { db } from "./db";
+import { stripe } from "./stripe";
+import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
   cancellationNotice,
@@ -69,20 +71,78 @@ export async function platformFeeForBooking(booking: {
 /**
  * Starter en betaling for en booking der er i HOLD-status.
  * Returnerer en checkout-URL som brugeren sendes til.
+ *
+ * Med Stripe er dette en "destination charge": kunden betaler det fulde
+ * beløb, Stripe sender automatisk (priceKr − platformFee) videre til
+ * klubbens eller trænerens egen konto, og vores andel (platformFee) bliver
+ * stående hos os. Stripes eget transaktionsgebyr trækkes fra VORES andel,
+ * ikke oveni klubbens — det er derfor provisionen er sat til 10% og ikke
+ * lavere, se COMMISSION_PCT ovenfor.
  */
 export async function startCheckout(bookingId: string): Promise<string> {
   const provider = process.env.PAYMENT_PROVIDER ?? "mock";
+  if (provider !== "stripe") return `/checkout/${bookingId}`;
 
-  if (provider === "stripe") {
-    // TODO (produktion): opret Stripe Checkout Session / PaymentIntent her
-    // og returnér session.url. Se skitsen øverst i filen.
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      court: { include: { club: true } },
+      coachProfile: { include: { user: true } },
+    },
+  });
+  if (!booking) throw new Error("Booking findes ikke");
+
+  const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
+  const recipientId =
+    kind === "COACH" ? booking.coachProfileId! : booking.court!.clubId;
+
+  const account = await stripe().accounts.retrieve(
+    (kind === "COACH" ? booking.coachProfile?.stripeAccountId : booking.court?.club.stripeAccountId) ?? ""
+  ).catch(() => null);
+
+  if (!account?.charges_enabled) {
+    const who = kind === "COACH" ? "Træneren" : "Klubben";
     throw new Error(
-      "Stripe er ikke konfigureret endnu. Sæt PAYMENT_PROVIDER=mock i .env, eller implementér Stripe i src/lib/payments.ts."
+      `${who} har ikke fuldført opsætningen af udbetalinger endnu. Prøv igen senere, eller vælg en anden tid.`
     );
   }
 
-  // Mock: send brugeren til en intern checkout-side der simulerer betaling
-  return `/checkout/${bookingId}`;
+  const fee = await platformFeeForBooking(booking);
+  const what =
+    kind === "COACH"
+      ? `Trænertime hos ${booking.coachProfile?.user.name}`
+      : `${booking.court?.club.name} — ${booking.court?.name}`;
+
+  const base = process.env.APP_URL ?? "https://tennis-makker.onrender.com";
+
+  const session = await stripe().checkout.sessions.create({
+    mode: "payment",
+    // MobilePay slås til i Stripe Dashboard under Payment methods — når
+    // det er gjort, dukker det automatisk op her uden kodeændringer.
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "dkk",
+          product_data: { name: what },
+          unit_amount: booking.priceKr * 100, // Stripe regner i øre
+        },
+        quantity: 1,
+      },
+    ],
+    payment_intent_data: {
+      application_fee_amount: fee * 100,
+      transfer_data: { destination: account.id },
+      metadata: { bookingId },
+    },
+    metadata: { bookingId },
+    success_url: `${base}/profil?betalt=1`,
+    cancel_url: `${base}/profil`,
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // matcher HOLD-vinduet med god margen
+  });
+
+  if (!session.url) throw new Error("Stripe returnerede ingen betalingsside.");
+  return session.url;
 }
 
 /**
@@ -212,8 +272,17 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
 
   let refunded: number | null = null;
   if (paid && eligible) {
-    // I produktion udløser dette også en refundering hos betalingsudbyderen.
-    // Med Stripe: stripe.refunds.create({ payment_intent: payment.providerRef })
+    if (booking.payment?.provider === "stripe" && booking.payment.providerRef) {
+      // reverse_transfer trækker pengene tilbage fra klubbens/trænerens
+      // konto (destination charge sender dem derud automatisk ved betaling).
+      // refund_application_fee giver også vores egen andel tilbage — vi har
+      // jo ikke leveret noget, når bookingen aflyses.
+      await stripe().refunds.create({
+        payment_intent: booking.payment.providerRef,
+        reverse_transfer: true,
+        refund_application_fee: true,
+      });
+    }
     await db.payment.update({
       where: { bookingId },
       data: { status: "REFUNDED" },

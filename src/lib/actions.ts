@@ -16,6 +16,7 @@ import { geocode } from "./geocode";
 import { setPreferenceCookies } from "./preferences";
 import { detectBookingSystem, testFeed } from "./detect";
 import { store as storeImage, remove as removeImage } from "./images";
+import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from "./connect";
 
 // ---------------- Auth ----------------
 
@@ -1099,4 +1100,31 @@ export async function deleteImage(formData: FormData) {
   revalidatePath("/admin");
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (club) revalidatePath(`/klub/${club.slug}`);
+}
+
+// ---------------- Stripe Connect: udbetalinger til klub og træner ----------------
+
+/** Opretter (om nødvendigt) en Stripe-konto og sender klubben videre til opsætning. */
+export async function startClubPayoutSetup() {
+  const { clubId } = await requireClubAdmin();
+  const accountId = await ensureConnectAccount("CLUB", clubId);
+  const url = await createOnboardingLink(
+    accountId,
+    "/admin?stripe=return",
+    "/admin?stripe=refresh"
+  );
+  redirect(url);
+}
+
+/** Samme som ovenfor, for trænere. */
+export async function startCoachPayoutSetup() {
+  const user = await getCurrentUser();
+  if (!user?.coachProfile) redirect("/login");
+  const accountId = await ensureConnectAccount("COACH", user.coachProfile.id);
+  const url = await createOnboardingLink(
+    accountId,
+    "/profil/traener?stripe=return",
+    "/profil/traener?stripe=refresh"
+  );
+  redirect(url);
 }

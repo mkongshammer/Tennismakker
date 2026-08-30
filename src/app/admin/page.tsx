@@ -13,11 +13,18 @@ import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { ImageForms } from "./ImageForms";
+import { startClubPayoutSetup } from "../../lib/actions";
+import { refreshAccountStatus } from "../../lib/connect";
+import { stripeEnabled } from "../../lib/stripe";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: { stripe?: string };
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
@@ -29,6 +36,11 @@ export default async function AdminPage() {
         </p>
       </div>
     );
+  }
+
+  if (searchParams.stripe === "return" || searchParams.stripe === "refresh") {
+    const admin = await getCurrentUser();
+    if (admin?.clubId) await refreshAccountStatus("CLUB", admin.clubId).catch(() => null);
   }
 
   const club = await db.club.findUnique({
@@ -105,6 +117,31 @@ export default async function AdminPage() {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {stripeEnabled() && (
+        <section className="card">
+          <p className="display text-xl">Udbetalinger</p>
+          {club.stripeChargesEnabled ? (
+            <p className="mt-2 text-sm">
+              <span className="font-bold text-court">Aktivt.</span> Gæster kan betale,
+              og pengene sendes automatisk til jeres konto minus vores andel.
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-slate">
+                Klubben skal have en Stripe-konto, før gæster kan booke og betale.
+                Det tager typisk 5-10 minutter — I skal bruge NemID/MitID og
+                klubbens kontonummer.
+              </p>
+              <form action={startClubPayoutSetup} className="mt-3">
+                <button className="btn-court">
+                  {club.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
+                </button>
+              </form>
+            </>
+          )}
         </section>
       )}
 
