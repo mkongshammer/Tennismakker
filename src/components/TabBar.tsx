@@ -66,30 +66,17 @@ function IconPlayers({ active }: { active: boolean }) {
   );
 }
 
-function IconProfile({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} />
-      <path
-        d="M6.2 18.4c.9-2.3 3.1-3.6 5.8-3.6s4.9 1.3 5.8 3.6"
-        stroke="currentColor"
-        strokeWidth={active ? 2.2 : 1.7}
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="10" r="2.6" stroke="currentColor" strokeWidth={active ? 2.2 : 1.7} />
-    </svg>
-  );
-}
-
 export function TabBar({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const t = translator(locale);
 
+  // Tre punkter, ikke fire. Profilen ligger i hjørnet: den er noget man
+  // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det
+  // tydeligere, hvad appen er til.
   const tabs = [
     { href: "/book", label: t("nav.book"), Icon: IconCourt },
     { href: "/traenere", label: t("nav.coaches"), Icon: IconCoach },
     { href: "/spillere", label: t("nav.players"), Icon: IconPlayers },
-    { href: "/profil", label: t("nav.profile"), Icon: IconProfile },
   ];
 
   const isActive = (href: string) =>

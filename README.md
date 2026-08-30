@@ -344,3 +344,26 @@ Skrifterne hentes i browseren via `<link>`, og `optimizeFonts` er slået fra i `
 **Navigation nederst på telefon.** De fire punkter er hele produktet og skal nås med tommelfingeren uden at åbne en menu først. En skuffe koster to tryk for noget, folk gør hver gang. På bred skærm ligger navigationen øverst, hvor der er plads.
 
 Forsiden åbner med antallet af ledige banetimer i dag frem for et slogan. Et tomt tidsrum på en bane er den vare, platformen handler med, og tallet ændrer sig time for time — det er mere ærligt end et løfte.
+
+## Hvad der får folk tilbage
+
+Den udbredte opskrift fra Booking.com — "kun 1 tilbage", nedtællinger, "5 kigger på den lige nu" — er fravalgt bevidst. Tre grunde:
+
+1. **Det er ulovligt, hvis det ikke er sandt.** EU's regler om urimelig handelspraksis forbyder opdigtet knaphed, og Kommissionens undersøgelse af dark patterns peger direkte på den slags. Den britiske konkurrencemyndighed har grebet ind over for netop de formuleringer.
+2. **Forskningen peger på en bagside.** Studier af knapheds- og flertalsbudskaber i rejsebooking finder, at de flytter beslutninger — men at aggressive udgaver undergraver tilliden.
+3. **Det passer ikke til produktet.** Et hotelværelse bookes én gang. En bane bookes hver tirsdag kl. 18.
+
+**Vanen er mekanismen her.** Ketsjersport er en tilbagevendende aftale mellem de samme mennesker på det samme tidspunkt. Derfor:
+
+- **"Spil igen"** øverst på profilen: samme bane, samme ugedag, næste uge, med ét tryk. Det er appens vigtigste knap.
+- **Efter betaling** foreslås den samme tid næste uge, mens beslutningen stadig er varm.
+- **I samtalen** ligger "Book en bane" øverst. En aftale uden en bane bliver sjældent til noget — det er dér, kæden ellers knækker.
+- **Er tiden taget**, sendes man til klubbens kalender på den dag i stedet for at få en fejl. Man skal videre, ikke stoppes.
+
+Tallene på forsiden og i klublisten er faktiske optællinger af ledige tider. De virker som knaphed, når der er få — men de er sande, og de falder til nul, når der ikke er noget.
+
+**Ikke bygget:** påmindelse dagen før en booking, og et forslag om at booke, når ens faste tid bliver ledig. Begge kræver push-beskeder eller e-mail-udsendelse på et tidspunkt, og bør bygges, når der er brugere at sende til.
+
+## Navigation
+
+Tre punkter i bundlinjen: Book bane, Find træner, Find medspiller. Profilen ligger som initialer i øverste højre hjørne — den er noget man besøger, ikke noget man kommer for. Klub-administration og klubgodkendelser nås fra profilen.

@@ -22,7 +22,6 @@ export function SiteHeader({ user, locale, logout }: Props) {
     { href: "/book", label: t("nav.book") },
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },
-    { href: "/profil", label: t("nav.profile") },
   ];
 
   const active = (href: string) =>
@@ -50,32 +49,13 @@ export function SiteHeader({ user, locale, logout }: Props) {
           ))}
         </div>
 
-        <div className="ml-auto flex items-center gap-3 text-sm">
+        <div className="ml-auto flex items-center gap-2 text-sm">
           {user ? (
             <>
-              <Link href="/beskeder" className="hidden font-semibold text-slate hover:text-ink md:block">
-                {t("nav.messages")}
-              </Link>
-              {user.role === "CLUB_ADMIN" && (
-                <Link href="/admin" className="hidden font-semibold text-slate hover:text-ink md:block">
-                  {t("nav.admin")}
-                </Link>
-              )}
-              {user.role === "SUPERADMIN" && (
-                <Link href="/superadmin" className="hidden font-semibold text-slate hover:text-ink md:block">
-                  Godkendelser
-                </Link>
-              )}
-              <form action={logout} className="hidden md:block">
-                <button className="font-semibold text-slate hover:text-ink">
-                  {t("nav.logout")}
-                </button>
-              </form>
-              {/* Telefon: kontoen nås via profilfanen, så her er kun beskeder */}
               <Link
                 href="/beskeder"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-mist md:hidden"
                 aria-label={t("nav.messages")}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-slate hover:bg-mist hover:text-ink"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
                   <path
@@ -86,13 +66,33 @@ export function SiteHeader({ user, locale, logout }: Props) {
                   />
                 </svg>
               </Link>
+
+              {/* Profilen: initialer i hjørnet, som man kender det fra en app */}
+              <Link
+                href="/profil"
+                aria-label={t("nav.profile")}
+                className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                  active("/profil")
+                    ? "bg-court text-chalk"
+                    : "bg-ink text-chalk hover:bg-ink-soft"
+                }`}
+              >
+                {user.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("")}
+              </Link>
             </>
           ) : (
             <>
               <Link href="/login" className="font-semibold text-slate hover:text-ink">
                 {t("nav.login")}
               </Link>
-              <Link href="/signup" className="rounded-xl bg-court px-4 py-2.5 font-semibold text-chalk hover:bg-court-dark">
+              <Link
+                href="/signup"
+                className="rounded-xl bg-court px-4 py-2.5 font-semibold text-chalk hover:bg-court-dark"
+              >
                 {t("nav.signup")}
               </Link>
             </>

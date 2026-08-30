@@ -34,6 +34,18 @@ export default async function SamtalePage({ params }: { params: { id: string } }
       <h1 className="display mt-2 text-2xl">{access.otherUser.name}</h1>
       <p className="text-sm text-slate/60">Om: {access.thread.message}</p>
 
+      {/* Sløjfen lukkes her: en aftale uden en bane bliver sjældent til noget.
+          Knappen står øverst i samtalen, ikke gemt i en menu. */}
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-court/25 bg-court/5 p-4">
+        <div>
+          <p className="font-bold">Har I aftalt en tid?</p>
+          <p className="text-sm text-slate">Book banen, så er den jeres.</p>
+        </div>
+        <Link href="/book" className="btn-court">
+          Book en bane
+        </Link>
+      </div>
+
       <div className="my-6 space-y-3">
         {messages.length === 0 && (
           <p className="text-center text-sm text-slate/50">

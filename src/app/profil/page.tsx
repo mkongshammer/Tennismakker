@@ -8,6 +8,7 @@ import { cancelBooking, closeMatchRequest } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
+import { PlayAgain } from "../../components/PlayAgain";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,7 @@ export default async function ProfilPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
+  const [bookings, myRequests, myMatches, coachBookings, toReview, pastCourts] = await Promise.all([
     db.booking.findMany({
       where: { userId: user.id, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { gte: new Date() } },
       include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
@@ -43,13 +44,46 @@ export default async function ProfilPage({
         })
       : Promise.resolve([]),
     pendingReviews(user.id),
+    // Tidligere banebookinger, nyeste først, én pr. bane+tidspunkt
+    db.booking.findMany({
+      where: {
+        userId: user.id,
+        kind: "COURT",
+        status: "CONFIRMED",
+        endsAt: { lt: new Date() },
+      },
+      include: { court: { include: { club: true } } },
+      orderBy: { startsAt: "desc" },
+      take: 12,
+    }),
   ]);
+
+  // Vis hver ugedag+tid én gang — ellers fylder den samme tirsdag hele siden
+  const seen = new Set<string>();
+  const repeatable = pastCourts
+    .filter((b: any) => {
+      const key = `${b.courtId}_${b.startsAt.getDay()}_${b.startsAt.getHours()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3)
+    .map((b: any) => ({
+      bookingId: b.id,
+      what: `${b.court?.club.name} — ${b.court?.name}`,
+      startsAt: b.startsAt,
+      withName: null,
+    }));
 
   return (
     <div className="space-y-10">
       {searchParams.betalt && (
-        <div className="rounded-md bg-ink px-4 py-3 font-semibold text-chalk">
-          Betaling gennemført — din tid er booket. Kvittering er sendt til {user.email}.
+        <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
+          <p className="display text-xl">Tiden er din</p>
+          <p className="mt-1 text-sm text-slate">
+            Kvittering er sendt til {user.email}. Spiller du fast? Book den samme
+            tid næste uge nedenfor, så er den ikke væk.
+          </p>
         </div>
       )}
 
@@ -58,6 +92,8 @@ export default async function ProfilPage({
         <LevelBadge level={user.level} />
         {user.area && <span className="text-slate/60">{user.area}</span>}
       </div>
+
+      <PlayAgain items={repeatable} />
 
       {toReview.length > 0 && (
         <section>
@@ -73,6 +109,17 @@ export default async function ProfilPage({
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {(user.role === "CLUB_ADMIN" || user.role === "SUPERADMIN") && (
+        <section className="flex flex-wrap gap-3">
+          {user.role === "CLUB_ADMIN" && (
+            <Link href="/admin" className="btn-ghost">Klub-administration</Link>
+          )}
+          {user.role === "SUPERADMIN" && (
+            <Link href="/superadmin" className="btn-ghost">Klubgodkendelser</Link>
+          )}
         </section>
       )}
 

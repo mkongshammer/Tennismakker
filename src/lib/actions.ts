@@ -1,7 +1,7 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { addMinutes, addHours } from "date-fns";
+import { addDays, addHours, addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
@@ -681,4 +681,70 @@ export async function setSport(formData: FormData) {
   const sport = String(formData.get("sport") ?? "TENNIS");
   setPreferenceCookies({ sport: sport as any });
   revalidatePath("/", "layout");
+}
+
+// ---------------- Gentag en booking ----------------
+//
+// Ketsjersport er en vane, ikke et impulskøb: folk spiller samme ugedag,
+// samme tid, ofte mod den samme. Det er dér fastholdelsen ligger — ikke i
+// nedtællinger og "kun 1 tilbage".
+//
+// Derfor gør vi den gentagelse til ét tryk. Alt andet — knaphed, hastværk,
+// notifikationer der lokker — koster tillid og er i EU ulovligt, hvis det
+// ikke er sandt.
+
+/** Finder samme ugedag og klokkeslæt næste uge. */
+export async function rebookNextWeek(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const bookingId = String(formData.get("bookingId"));
+  const previous = await db.booking.findFirst({
+    where: { id: bookingId, userId: user.id },
+    include: { court: true },
+  });
+  if (!previous?.courtId) redirect("/book");
+
+  // Find den næste forekomst af samme ugedag og tid, som ligger i fremtiden
+  let startsAt = new Date(previous.startsAt);
+  while (startsAt <= new Date()) {
+    startsAt = addDays(startsAt, 7);
+  }
+  const endsAt = addHours(startsAt, 1);
+
+  await releaseExpiredHolds();
+  await refreshBeforeBooking(previous.court!.clubId);
+
+  const { slots, needsClubEntry } = await getClubAvailability(
+    previous.court!.clubId,
+    startsAt,
+    endsAt
+  );
+  const slot = slots.find(
+    (s) => s.courtId === previous.courtId && s.startsAt.getTime() === startsAt.getTime()
+  );
+
+  // Er tiden taget, sendes man til klubbens side på den dag i stedet for
+  // at få en fejl. Man skal videre, ikke stoppes.
+  if (!slot) {
+    const club = await db.club.findUnique({ where: { id: previous.court!.clubId } });
+    const days = Math.round((startsAt.getTime() - Date.now()) / 86400000);
+    redirect(`/klub/${club?.slug}?dag=${Math.min(6, Math.max(0, days))}&optaget=1`);
+  }
+
+  const booking = await db.booking.create({
+    data: {
+      kind: "COURT",
+      status: "HOLD",
+      startsAt,
+      endsAt,
+      priceKr: slot.priceKr,
+      holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
+      userId: user.id,
+      courtId: previous.courtId,
+      needsClubEntry,
+    },
+  });
+
+  redirect(await startCheckout(booking.id));
 }
