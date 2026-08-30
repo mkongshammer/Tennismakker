@@ -2,131 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Skrifterne hentes i browseren, ikke ved bygning — så et fejlende
+   font-CDN aldrig kan vælte et deploy. Se <link> i layout.tsx. */
+
 :root {
-  /* Farverne kommer fra grusbanen: rødt grus, mørkegrøn vindskærm, kridtlinjer */
-  --font-display: "Avenir Next Condensed", "Arial Narrow", ui-sans-serif, system-ui, sans-serif;
-  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tab-bar-h: 68px;
 }
 
 body {
-  @apply bg-kridt text-net font-body antialiased;
-}
-
-.display {
-  font-family: var(--font-display);
-  @apply font-extrabold uppercase tracking-tight;
-}
-
-/* Kridtlinje: platformens signatur — en hvid banelinje som divider */
-.chalk-line {
-  height: 3px;
-  background: repeating-linear-gradient(90deg, #fff 0 40px, transparent 40px 48px);
-  opacity: 0.9;
-}
-
-.btn {
-  @apply inline-block rounded-md px-4 py-2 font-semibold transition-colors;
-}
-.btn-grus { @apply btn bg-grus text-kridt hover:bg-grus-dark; }
-.btn-bane { @apply btn bg-bane text-kridt hover:bg-bane-lys; }
-.btn-ghost { @apply btn border border-net/20 hover:border-net/50; }
-
-.card { @apply rounded-lg border border-net/10 bg-white p-5 shadow-sm; }
-
-.input {
-  @apply w-full rounded-md border border-net/20 bg-white px-3 py-2 outline-none focus:border-bane focus:ring-2 focus:ring-bane/20;
-}
-.label { @apply mb-1 block text-sm font-semibold text-net/70; }
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-}
-
-/* --- Kortmarkører ---
-   Prisboblen er formet som en scoretavle-brik: afrundet, med en lille
-   spids nedad mod klubbens position. */
-.tm-pill-wrap {
-  background: none !important;
-  border: none !important;
-}
-
-.tm-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  padding: 5px 11px;
-  border-radius: 999px;
-  color: #faf7f0;
-  font-weight: 700;
-  font-size: 13px;
-  line-height: 1;
-  border: 2px solid #faf7f0;
-  box-shadow: 0 2px 8px rgba(23, 27, 25, 0.28);
-  transition: transform 140ms ease, background-color 140ms ease;
-  transform-origin: bottom center;
-  cursor: pointer;
-}
-
-.tm-pill:hover {
-  transform: scale(1.12) !important;
-}
-
-/* Leaflets egne kontroller skal matche resten af siden */
-.leaflet-container {
-  font-family: var(--font-body);
-}
-.leaflet-control-attribution {
-  background: rgba(250, 247, 240, 0.85) !important;
-  font-size: 10px !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tm-pill {
-    transition: none;
-  }
+  @apply bg-mist text-ink font-body antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ---------------------------------------------------------------
-   Mobil
+   Typografi
+   Display er bred og lidt egensindig; brødtekst er stram og neutral;
+   tal står i mono, fordi tider og priser skal kunne skimmes i kolonne.
    --------------------------------------------------------------- */
+.display {
+  @apply font-display font-extrabold tracking-[-0.02em];
+}
+.data {
+  @apply font-data tabular-nums tracking-[-0.04em];
+}
 
-/* iOS zoomer ind på et felt, hvis skriften er under 16px. Det river
-   layoutet skævt og kræver, at man selv zoomer ud igen bagefter. */
+h1,
+h2,
+h3 {
+  @apply font-display font-extrabold tracking-[-0.02em];
+}
+
+/* ---------------------------------------------------------------
+   Signatur: banefeltet
+   Hver bookbar tid er en flise med en kridtlinje tværs over — et
+   stykke bane. Farven kommer fra sportsgrenens rigtige underlag,
+   så farve bærer information i stedet for at pynte.
+   --------------------------------------------------------------- */
+.court-tile {
+  @apply relative overflow-hidden rounded-xl text-chalk transition-transform;
+  background: var(--sport, #1b62c4);
+}
+/* Linjen ligger som en baglinje langs bunden. Tidligere lå den midt i
+   flisen og skar tværs gennem prisen, så beløbet så overstreget ud. */
+.court-tile::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 7px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.45);
+}
+.court-tile:active {
+  transform: scale(0.98);
+}
+
+/* Kridtlinje som skillelinje — banens markering, ikke en streg for stregens skyld */
+.chalk-line {
+  height: 2px;
+  background: repeating-linear-gradient(90deg, #fff 0 44px, transparent 44px 52px);
+  opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------
+   Komponenter
+   --------------------------------------------------------------- */
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-colors;
+  min-height: 48px;
+}
+.btn-court {
+  @apply btn bg-court text-chalk hover:bg-court-dark;
+}
+.btn-ink {
+  @apply btn bg-ink text-chalk hover:bg-ink-soft;
+}
+.btn-ghost {
+  @apply btn border border-slate/25 bg-chalk text-ink hover:border-ink;
+}
+
+.card {
+  @apply rounded-2xl border border-slate/10 bg-chalk p-5 shadow-card;
+}
+
+.input {
+  @apply w-full rounded-xl border border-slate/25 bg-chalk px-4 py-3 text-ink outline-none;
+  min-height: 48px;
+}
+.input:focus {
+  @apply border-court ring-4 ring-court/15;
+}
+.label {
+  @apply mb-1.5 block text-sm font-semibold text-slate;
+}
+
+/* Etiket over en overskrift: fortæller hvor man er, ikke hvad man skal føle */
+.eyebrow {
+  @apply text-xs font-bold uppercase tracking-[0.14em] text-court;
+}
+
+/* Synligt fokus overalt — man skal kunne se hvor man er uden mus */
+:focus-visible {
+  outline: 3px solid #1b62c4;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* iOS zoomer på felter under 16px */
 input,
 select,
 textarea {
   font-size: 16px;
 }
 
-/* Fingre er upræcise. 44px er Apples anbefalede mindstemål for noget,
-   man skal kunne ramme. Knapper og felter var ~36px høje. */
-@media (max-width: 640px) {
-  .btn,
-  .input,
-  select,
-  button[type="submit"] {
-    min-height: 44px;
-  }
-
-  .btn {
-    padding-top: 0.7rem;
-    padding-bottom: 0.7rem;
-  }
-
-  .card {
-    padding: 1rem;
-  }
-}
-
-/* Lange klubnavne og e-mailadresser må hellere brydes end skubbe
-   siden bredere end skærmen. */
 body {
   overflow-wrap: break-word;
 }
 
-/* Vandret rullende rækker (dagsvælger, faneblade) skal kunne
-   svippes uden at ende midt mellem to punkter. */
+/* Plads til bundlinjen på telefon */
+.has-tabbar {
+  padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
+}
+
 .snap-row {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -134,11 +131,52 @@ body {
 .snap-row > * {
   scroll-snap-align: start;
 }
-
-/* Skjul rullepanelet på vandrette rækker — det fylder på telefon */
 .no-scrollbar {
   scrollbar-width: none;
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Kortmarkører */
+.tm-pill-wrap {
+  background: none !important;
+  border: none !important;
+}
+.tm-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 10px rgba(15, 33, 56, 0.3);
+  transition: transform 140ms ease, background-color 140ms ease;
+  transform-origin: bottom center;
+  cursor: pointer;
+}
+.tm-pill:hover {
+  transform: scale(1.1) !important;
+}
+
+.leaflet-container {
+  font-family: var(--font-body, system-ui);
+}
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.88) !important;
+  font-size: 10px !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

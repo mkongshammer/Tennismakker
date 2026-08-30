@@ -45,9 +45,9 @@ export function ReleaseForm({
         </div>
       </div>
 
-      {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-bane">{state.ok}</p>}
-      <button className="btn-grus">Frigiv tider</button>
+      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-ink">{state.ok}</p>}
+      <button className="btn-court">Frigiv tider</button>
     </form>
   );
 }

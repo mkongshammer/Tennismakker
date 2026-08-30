@@ -13,8 +13,8 @@ export default function TraenerProfilPage() {
     fetch("/api/me/coach").then((r) => r.json()).then(setProfile);
   }, []);
 
-  if (!profile) return <p className="text-net/60">Henter…</p>;
-  if (profile.error) return <p className="text-grus font-semibold">{profile.error}</p>;
+  if (!profile) return <p className="text-slate/60">Henter…</p>;
+  if (profile.error) return <p className="text-court font-semibold">{profile.error}</p>;
 
   return (
     <div className="mx-auto max-w-md">
@@ -41,12 +41,12 @@ export default function TraenerProfilPage() {
         <div>
           <label className="label" htmlFor="weeklySlots">Ugentlige ledige tider (JSON)</label>
           <textarea className="input font-mono text-sm" id="weeklySlots" name="weeklySlots" rows={3} defaultValue={profile.weeklySlots} />
-          <p className="mt-1 text-xs text-net/50">
+          <p className="mt-1 text-xs text-slate/50">
             {'Format: [{"day":2,"from":16,"to":20}] — day: 0=søndag … 6=lørdag. Her: tirsdage 16-20.'}
           </p>
         </div>
-        {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-        <button className="btn-grus w-full">Gem profil</button>
+        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+        <button className="btn-court w-full">Gem profil</button>
       </form>
     </div>
   );

@@ -45,10 +45,10 @@ export default function SignupPage() {
             <input className="input" id="area" name="area" placeholder="fx Odense C" />
           </div>
         </div>
-        {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-        <button className="btn-grus w-full">Opret profil</button>
-        <p className="text-center text-sm text-net/60">
-          Har du en konto? <Link href="/login" className="font-semibold text-grus underline">Log ind</Link>
+        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+        <button className="btn-court w-full">Opret profil</button>
+        <p className="text-center text-sm text-slate/60">
+          Har du en konto? <Link href="/login" className="font-semibold text-court underline">Log ind</Link>
         </p>
       </form>
     </div>

@@ -324,3 +324,23 @@ Ved godkendelse sendes en mail til klubbens administrator. Ved afvisning gemmes 
 Ud over en enkelt time kan trænere sælge forløb — fx et 10-turskort eller et begynderkursus over seks uger (`CoachPackage`). Pakker vises på trænerens profil med pris pr. time udregnet, så man kan sammenligne med enkelttimen.
 
 **Pakker kan ikke købes online endnu.** De vises og aftales direkte med træneren. Onlinekøb af pakker kræver et klippekortsystem — hvor mange timer er brugt, hvornår udløber de, hvad sker der ved aflysning — og det bør bygges sammen med den rigtige betaling, ikke før.
+
+---
+
+## Designsystem
+
+Den tidligere palet — cremehvid baggrund med lerfarvet accent — blev skiftet ud. Ikke fordi den var grim, men fordi den er den default, AI-genereret design altid lander på. Den var ikke et valg.
+
+**Retningen er hardcourt, ikke grus.** Kølig grå-blå baggrund (`mist #F1F5F9`), dyb marineblå til mørke flader (`ink #0F2138`), banens blå som primær handling (`court #1B62C4`), kridhvide linjer. `optic #D8FF3E` er boldens farve og er reserveret til enkeltstående fremhævninger — den mister sin virkning, hvis den bruges to steder på samme skærm.
+
+**Typografi:** Bricolage Grotesque til overskrifter (bred og lidt egensindig), Inter Tight til brødtekst, Martian Mono til tider, priser og antal. Tal står i mono, fordi de skal kunne skimmes i kolonne — det er hele pointen i en bookingkalender.
+
+Skrifterne hentes i browseren via `<link>`, og `optimizeFonts` er slået fra i `next.config.mjs`. Ellers ville Next hente dem ved bygning, og et fejlende font-CDN kunne vælte et deploy.
+
+**Signaturen er banefliserne.** Hver bookbar tid er en flise, der ser ud som et stykke bane: sportsgrenens rigtige farve med en kridhvid baglinje langs bunden. Første udgave havde linjen midt i flisen — den skar tværs gennem prisen, så beløbet så overstreget ud. Den ligger nu i bunden, hvor den læses som banemarkering.
+
+**Farve er data.** Hver sportsgren har sin rigtige banefarve (`SPORT_COLORS` i `src/lib/sports.ts`): tennis hardcourt-blå, padel kunstgræs-turkis, badminton måttegrøn, squash rødbrun, bordtennis mørkeblå, pickleball lilla. Kan man kende grenen på farven, behøver man ikke læse etiketten.
+
+**Navigation nederst på telefon.** De fire punkter er hele produktet og skal nås med tommelfingeren uden at åbne en menu først. En skuffe koster to tryk for noget, folk gør hver gang. På bred skærm ligger navigationen øverst, hvor der er plads.
+
+Forsiden åbner med antallet af ledige banetimer i dag frem for et slogan. Et tomt tidsrum på en bane er den vare, platformen handler med, og tallet ændrer sig time for time — det er mere ærligt end et løfte.

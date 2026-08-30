@@ -26,7 +26,7 @@ export function IntegrationForm({
           <label
             key={t}
             className={`flex cursor-pointer gap-3 rounded-md border p-3 ${
-              selected === t ? "border-bane bg-bane/5" : "border-net/15"
+              selected === t ? "border-ink bg-ink/5" : "border-slate/15"
             }`}
           >
             <input
@@ -41,9 +41,9 @@ export function IntegrationForm({
             <span>
               <span className="block font-semibold">
                 {INTEGRATION_LABELS[t]}
-                {t === "API" && <span className="ml-2 text-xs text-net/50">(kommer senere)</span>}
+                {t === "API" && <span className="ml-2 text-xs text-slate/50">(kommer senere)</span>}
               </span>
-              <span className="block text-sm text-net/60">{INTEGRATION_HELP[t]}</span>
+              <span className="block text-sm text-slate/60">{INTEGRATION_HELP[t]}</span>
             </span>
           </label>
         ))}
@@ -74,16 +74,16 @@ export function IntegrationForm({
             defaultValue={icalUrl}
             placeholder="https://..."
           />
-          <p className="mt-1 text-xs text-net/50">
+          <p className="mt-1 text-xs text-slate/50">
             Find eksport- eller abonnér-linket i jeres bookingsystem. Vi læser kun fra det — vi
             skriver aldrig i jeres kalender.
           </p>
         </div>
       )}
 
-      {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-bane">{state.ok}</p>}
-      <button className="btn-grus">Gem</button>
+      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-ink">{state.ok}</p>}
+      <button className="btn-court">Gem</button>
     </form>
   );
 }

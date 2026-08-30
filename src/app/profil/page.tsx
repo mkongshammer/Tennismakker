@@ -48,7 +48,7 @@ export default async function ProfilPage({
   return (
     <div className="space-y-10">
       {searchParams.betalt && (
-        <div className="rounded-md bg-bane px-4 py-3 font-semibold text-kridt">
+        <div className="rounded-md bg-ink px-4 py-3 font-semibold text-chalk">
           Betaling gennemført — din tid er booket. Kvittering er sendt til {user.email}.
         </div>
       )}
@@ -56,7 +56,7 @@ export default async function ProfilPage({
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="display text-3xl">{user.name}</h1>
         <LevelBadge level={user.level} />
-        {user.area && <span className="text-net/60">{user.area}</span>}
+        {user.area && <span className="text-slate/60">{user.area}</span>}
       </div>
 
       {toReview.length > 0 && (
@@ -66,7 +66,7 @@ export default async function ProfilPage({
             {toReview.map((r: any) => (
               <li key={r.bookingId} className="card">
                 <p className="font-bold">{r.what}</p>
-                <p className="text-sm text-net/60">
+                <p className="text-sm text-slate/60">
                   {format(r.startsAt, "d. MMMM", { locale: da })}
                 </p>
                 <ReviewForm bookingId={r.bookingId} what={r.what} />
@@ -79,9 +79,9 @@ export default async function ProfilPage({
       <section>
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
-          <p className="text-net/60">
-            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-grus underline">book en bane</Link> eller{" "}
-            <Link href="/traenere" className="font-semibold text-grus underline">en træner</Link>.
+          <p className="text-slate/60">
+            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-court underline">book en ink</Link> eller{" "}
+            <Link href="/traenere" className="font-semibold text-court underline">en træner</Link>.
           </p>
         )}
         <ul className="space-y-3">
@@ -93,14 +93,14 @@ export default async function ProfilPage({
                     ? `${b.court?.club.name} — ${b.court?.name}`
                     : `Trænertime: ${b.coachProfile?.user.name}`}
                 </p>
-                <p className="text-sm capitalize text-net/60">
+                <p className="text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
                   {b.status === "HOLD" ? "Afventer betaling" : "Bekræftet"}
                 </p>
               </div>
               <div className="flex gap-2">
                 {b.status === "HOLD" && (
-                  <Link href={`/checkout/${b.id}`} className="btn-grus text-sm">Betal nu</Link>
+                  <Link href={`/checkout/${b.id}`} className="btn-court text-sm">Betal nu</Link>
                 )}
                 <form action={cancelBooking}>
                   <input type="hidden" name="id" value={b.id} />
@@ -115,8 +115,8 @@ export default async function ProfilPage({
       <section>
         <h2 className="display mb-3 text-2xl">Dine makker-opslag</h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
-          <p className="text-net/60">
-            Ingen opslag — <Link href="/makkere/ny" className="font-semibold text-grus underline">opret et</Link>.
+          <p className="text-slate/60">
+            Ingen opslag — <Link href="/makkere/ny" className="font-semibold text-court underline">opret et</Link>.
           </p>
         )}
         <ul className="space-y-3">
@@ -124,11 +124,11 @@ export default async function ProfilPage({
             <li key={r.id} className="card flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p>{r.message}</p>
-                <p className="text-sm text-net/60">
+                <p className="text-sm text-slate/60">
                   {r.status === "MATCHED" && r.acceptedBy ? (
                     <>
                       Matchet med {r.acceptedBy.name} —{" "}
-                      <Link href={`/beskeder/${r.id}`} className="font-semibold text-grus underline">
+                      <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
                         skriv til {r.acceptedBy.name.split(" ")[0]}
                       </Link>
                     </>
@@ -146,8 +146,8 @@ export default async function ProfilPage({
           {myMatches.map((r) => (
             <li key={r.id} className="card">
               <p>Du slog til på: “{r.message}”</p>
-              <p className="text-sm text-net/60">
-                <Link href={`/beskeder/${r.id}`} className="font-semibold text-grus underline">
+              <p className="text-sm text-slate/60">
+                <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
                   Skriv til {r.requester.name.split(" ")[0]}
                 </Link>{" "}
                 og aftal kampen.
@@ -163,12 +163,12 @@ export default async function ProfilPage({
             <h2 className="display text-2xl">Din trænerkalender</h2>
             <Link href="/profil/traener" className="btn-ghost text-sm">Redigér trænerprofil</Link>
           </div>
-          {coachBookings.length === 0 && <p className="text-net/60">Ingen bookede elever endnu.</p>}
+          {coachBookings.length === 0 && <p className="text-slate/60">Ingen bookede elever endnu.</p>}
           <ul className="space-y-3">
             {coachBookings.map((b) => (
               <li key={b.id} className="card">
                 <p className="font-bold">{b.user.name}</p>
-                <p className="text-sm capitalize text-net/60">
+                <p className="text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr (din andel udbetales automatisk)
                 </p>
               </li>

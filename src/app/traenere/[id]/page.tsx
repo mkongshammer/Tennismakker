@@ -52,13 +52,13 @@ export default async function TraenerPage({ params }: { params: { id: string } }
       <div className="card">
         <div className="flex items-baseline justify-between">
           <h1 className="display text-3xl">{coach.user.name}</h1>
-          <p className="display text-2xl text-grus">{coach.priceHour} kr/t</p>
+          <p className="display text-2xl text-court">{coach.priceHour} kr/t</p>
         </div>
         <div className="mt-2">
           <Stars average={rating.average} count={rating.count} />
         </div>
         <p className="mt-2">{coach.headline}</p>
-        <p className="mt-1 text-sm text-net/60">{coach.area}</p>
+        <p className="mt-1 text-sm text-slate/60">{coach.area}</p>
       </div>
 
       {reviews.length > 0 && (
@@ -67,9 +67,9 @@ export default async function TraenerPage({ params }: { params: { id: string } }
           <ul className="space-y-3">
             {reviews.map((r: any) => (
               <li key={r.id} className="card">
-                <p className="text-grus">{"\u2605".repeat(r.rating)}</p>
+                <p className="text-court">{"\u2605".repeat(r.rating)}</p>
                 <p className="mt-1">{r.comment}</p>
-                <p className="mt-1 text-sm text-net/50">{r.author.name}</p>
+                <p className="mt-1 text-sm text-slate/50">{r.author.name}</p>
               </li>
             ))}
           </ul>
@@ -79,7 +79,7 @@ export default async function TraenerPage({ params }: { params: { id: string } }
       {coach.packages.length > 0 && (
         <div className="mt-6">
           <h2 className="display mb-1 text-xl">Pakkeforløb</h2>
-          <p className="mb-3 text-sm text-net/60">
+          <p className="mb-3 text-sm text-slate/60">
             Aftales direkte med træneren — skriv eller book en enkelt time først.
           </p>
           <ul className="space-y-3">
@@ -87,9 +87,9 @@ export default async function TraenerPage({ params }: { params: { id: string } }
               <li key={p.id} className="card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-bold">{p.name}</p>
-                  <p className="display text-xl text-grus">{p.priceKr} kr</p>
+                  <p className="display text-xl text-court">{p.priceKr} kr</p>
                 </div>
-                <p className="text-sm text-net/60">
+                <p className="text-sm text-slate/60">
                   {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
                 </p>
                 {p.description && <p className="mt-2 text-sm">{p.description}</p>}
@@ -102,7 +102,7 @@ export default async function TraenerPage({ params }: { params: { id: string } }
       <h2 className="display mb-3 mt-8 text-2xl">Ledige tider (næste 7 dage)</h2>
 
       {byDay.size === 0 && (
-        <div className="card text-net/60">
+        <div className="card text-slate/60">
           Ingen ledige tider lige nu — træneren har ikke åbnet flere tider denne uge.
         </div>
       )}
@@ -117,13 +117,13 @@ export default async function TraenerPage({ params }: { params: { id: string } }
                   <form key={s.toISOString()} action={bookCoachSlot}>
                     <input type="hidden" name="coachProfileId" value={coach.id} />
                     <input type="hidden" name="startsAt" value={s.toISOString()} />
-                    <button className="rounded-md border border-bane px-3 py-1.5 text-sm font-semibold text-bane hover:bg-bane hover:text-kridt">
+                    <button className="rounded-md border border-ink px-3 py-1.5 text-sm font-semibold text-ink hover:bg-ink hover:text-chalk">
                       {format(s, "HH:mm")}
                     </button>
                   </form>
                 ) : (
                   <Link key={s.toISOString()} href="/login"
-                    className="rounded-md border border-net/20 px-3 py-1.5 text-sm text-net/50">
+                    className="rounded-md border border-slate/20 px-3 py-1.5 text-sm text-slate/50">
                     {format(s, "HH:mm")}
                   </Link>
                 )
@@ -133,8 +133,8 @@ export default async function TraenerPage({ params }: { params: { id: string } }
         ))}
       </div>
       {!user && (
-        <p className="mt-4 text-sm text-net/60">
-          <Link href="/login" className="font-semibold text-grus underline">Log ind</Link> for at booke en tid.
+        <p className="mt-4 text-sm text-slate/60">
+          <Link href="/login" className="font-semibold text-court underline">Log ind</Link> for at booke en tid.
         </p>
       )}
     </div>

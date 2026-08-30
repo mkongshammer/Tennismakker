@@ -5,6 +5,7 @@ import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
 import { logout } from "../lib/actions";
 import { SiteHeader } from "../components/SiteHeader";
+import { TabBar } from "../components/TabBar";
 import { translator } from "../lib/i18n";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  themeColor: "#0F2138",
 };
 
 export default async function RootLayout({
@@ -29,6 +31,16 @@ export default async function RootLayout({
 
   return (
     <html lang={prefs.locale}>
+      <head>
+        {/* Skrifterne hentes i browseren, ikke ved bygning — et fejlende
+            font-CDN må aldrig kunne vælte et deploy. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@500;700&display=swap"
+        />
+      </head>
       <body className="min-h-screen">
         <SiteHeader
           user={user ? { name: user.name, role: user.role } : null}
@@ -36,21 +48,27 @@ export default async function RootLayout({
           logout={logout}
         />
 
-        <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">{children}</main>
+        <main className="has-tabbar mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10">
+          {children}
+        </main>
 
-        <footer className="mt-16 bg-bane-dyb pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-kridt/70">
-          <div className="chalk-line mb-6" />
-          <div className="mx-auto max-w-5xl px-4 text-center text-sm">
-            <div className="mb-3 flex flex-wrap justify-center gap-x-5 gap-y-3">
-              <Link href="/opret-klub" className="hover:underline">{t("club.signup")}</Link>
-              <Link href="/app" className="hover:underline">App</Link>
-              <Link href="/vilkaar" className="hover:underline">Handelsbetingelser</Link>
-              <Link href="/privatliv" className="hover:underline">Privatliv</Link>
-              <Link href="/databehandleraftale" className="hover:underline">Databehandleraftale</Link>
+        <footer className="has-tabbar mt-20 border-t border-slate/10 bg-chalk md:pb-0">
+          <div className="mx-auto max-w-6xl px-4 py-10">
+            <p className="display text-lg">
+              Racket<span className="text-court">Buddy</span>
+            </p>
+            <p className="mt-1 text-sm text-slate">Ketsjersport samlet ét sted</p>
+            <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
+              <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
+              <Link href="/app" className="hover:text-ink">App</Link>
+              <Link href="/vilkaar" className="hover:text-ink">Handelsbetingelser</Link>
+              <Link href="/privatliv" className="hover:text-ink">Privatliv</Link>
+              <Link href="/databehandleraftale" className="hover:text-ink">Databehandleraftale</Link>
             </div>
-            RacketBuddy · Ketsjersport samlet ét sted
           </div>
         </footer>
+
+        <TabBar locale={prefs.locale} />
       </body>
     </html>
   );

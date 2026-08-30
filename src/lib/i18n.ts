@@ -11,7 +11,7 @@ type Dict = Record<string, { da: string; en: string }>;
 
 const T: Dict = {
   // Navigation
-  "nav.book": { da: "Book bane", en: "Book court" },
+  "nav.book": { da: "Book ink", en: "Book court" },
   "nav.coaches": { da: "Find træner", en: "Find coach" },
   "nav.players": { da: "Find medspiller", en: "Find co-player" },
   "nav.profile": { da: "Min profil", en: "My profile" },
@@ -40,10 +40,10 @@ const T: Dict = {
   "common.level": { da: "Niveau", en: "Level" },
   "common.price": { da: "Pris", en: "Price" },
 
-  // Book bane
-  "book.title": { da: "Book bane", en: "Book a court" },
+  // Book ink
+  "book.title": { da: "Book ink", en: "Book a court" },
   "book.intro": {
-    da: "Find en ledig bane i en klub nær dig.",
+    da: "Find en ledig ink i en klub nær dig.",
     en: "Find an available court at a club near you.",
   },
   "book.noClubs": {

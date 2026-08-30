@@ -1,21 +1,20 @@
 "use client";
 
-// Visning af ledige banetider.
+// Ledige banetider.
 //
-// På bred skærm er et gitter med baner som kolonner det rigtige — man kan
-// overskue hele dagen på én gang. På telefon var det samme gitter tvunget
-// til 560 px bredde og krævede vandret scroll for at nå den sidste bane.
+// Signaturen: hver bookbar tid er en flise, der ser ud som et stykke bane —
+// sportsgrenens rigtige farve med en kridtlinje tværs over. Tiden står i
+// mono, fordi tider skal kunne skimmes i kolonne.
 //
-// Derfor vender vi det om på telefon: tiderne står under hinanden, og hver
-// tid viser hvilke baner der er ledige. Det passer til, hvordan man i
-// virkeligheden vælger — man ved hvornår man kan spille, og er mindre
-// optaget af hvilken bane det bliver.
+// På telefon står tiderne under hinanden og folder ud. På bred skærm er
+// gitteret med baner som kolonner rigtigt: man overskuer hele dagen.
 
 import { useState } from "react";
 import { bookCourtSlot } from "../lib/actions";
-import { SURFACES } from "../lib/levels";
+import { sportColor, surfaceLabel } from "../lib/sports";
+import type { Locale } from "../lib/sports";
 
-export type Court = { id: string; name: string; surface: string };
+export type Court = { id: string; name: string; surface: string; sport: string };
 export type Slot = { courtId: string; startsAt: string; priceKr: number };
 
 function clock(iso: string) {
@@ -23,22 +22,24 @@ function clock(iso: string) {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function BookButton({
+function Book({
   courtId,
   startsAt,
-  children,
   className,
+  style,
+  children,
   loggedIn,
 }: {
   courtId: string;
   startsAt: string;
-  children: React.ReactNode;
   className: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
   loggedIn: boolean;
 }) {
   if (!loggedIn) {
     return (
-      <a href="/login" className={className}>
+      <a href="/login" className={className} style={style}>
         {children}
       </a>
     );
@@ -47,7 +48,9 @@ function BookButton({
     <form action={bookCourtSlot}>
       <input type="hidden" name="courtId" value={courtId} />
       <input type="hidden" name="startsAt" value={startsAt} />
-      <button className={className}>{children}</button>
+      <button className={className} style={style}>
+        {children}
+      </button>
     </form>
   );
 }
@@ -56,14 +59,14 @@ export function BookingGrid({
   courts,
   slots,
   hours,
-  day,
   loggedIn,
+  locale,
 }: {
   courts: Court[];
   slots: Slot[];
   hours: number[];
-  day: string; // ISO-dato for den viste dag
   loggedIn: boolean;
+  locale: Locale;
 }) {
   const [openHour, setOpenHour] = useState<number | null>(null);
 
@@ -74,151 +77,165 @@ export function BookingGrid({
   }
 
   const freeAt = (hour: number) =>
-    courts
-      .map((c) => byKey.get(key(c.id, hour)))
-      .filter((s): s is Slot => Boolean(s));
+    courts.map((c) => byKey.get(key(c.id, hour))).filter((s): s is Slot => Boolean(s));
 
   const hoursWithSlots = hours.filter((h) => freeAt(h).length > 0);
+  const sport = courts[0]?.sport ?? "TENNIS";
+  const tint = sportColor(sport);
+
+  if (hoursWithSlots.length === 0) {
+    return (
+      <div className="card text-center">
+        <p className="font-semibold">Ingen ledige tider denne dag</p>
+        <p className="mt-1 text-sm text-slate">Prøv en anden dag i vælgeren ovenfor.</p>
+      </div>
+    );
+  }
 
   return (
     <>
-      {/* Telefon: én tid pr. række, baner foldes ud ved tryk */}
-      <div className="sm:hidden">
-        {hoursWithSlots.length === 0 ? (
-          <p className="card text-net/60">
-            Ingen ledige tider denne dag. Prøv en anden dag ovenfor.
-          </p>
-        ) : (
-          <ul className="space-y-2">
-            {hoursWithSlots.map((hour) => {
-              const free = freeAt(hour);
-              const expanded = openHour === hour;
-              const cheapest = Math.min(...free.map((s) => s.priceKr));
+      {/* Telefon */}
+      <div className="space-y-2.5 sm:hidden">
+        {hoursWithSlots.map((hour) => {
+          const free = freeAt(hour);
+          const expanded = openHour === hour;
+          const cheapest = Math.min(...free.map((s) => s.priceKr));
 
-              // Er der kun én ledig bane, springer vi udfoldningen over
-              if (free.length === 1) {
-                const slot = free[0];
-                const court = courts.find((c) => c.id === slot.courtId)!;
-                return (
-                  <li key={hour}>
-                    <BookButton
-                      courtId={slot.courtId}
-                      startsAt={slot.startsAt}
-                      loggedIn={loggedIn}
-                      className="flex w-full items-center justify-between rounded-lg border border-net/15 bg-white px-4 py-4 text-left"
-                    >
-                      <span>
-                        <span className="text-lg font-bold">{clock(slot.startsAt)}</span>
-                        <span className="ml-2 text-sm text-net/60">{court.name}</span>
-                      </span>
-                      <span className="font-bold text-grus">{slot.priceKr} kr</span>
-                    </BookButton>
-                  </li>
-                );
-              }
+          if (free.length === 1) {
+            const slot = free[0];
+            const court = courts.find((c) => c.id === slot.courtId)!;
+            return (
+              <Book
+                key={hour}
+                courtId={slot.courtId}
+                startsAt={slot.startsAt}
+                loggedIn={loggedIn}
+                style={{ ["--sport" as any]: tint }}
+                className="court-tile flex w-full items-center justify-between px-4 pb-6 pt-4 text-left"
+              >
+                <span className="relative z-10">
+                  <span className="data block text-xl font-bold">{clock(slot.startsAt)}</span>
+                  <span className="text-sm text-chalk/80">{court.name}</span>
+                </span>
+                <span className="data relative z-10 text-lg font-bold">{slot.priceKr} kr</span>
+              </Book>
+            );
+          }
 
-              return (
-                <li key={hour} className="overflow-hidden rounded-lg border border-net/15 bg-white">
-                  <button
-                    onClick={() => setOpenHour(expanded ? null : hour)}
-                    aria-expanded={expanded}
-                    className="flex w-full items-center justify-between px-4 py-4 text-left"
-                  >
-                    <span>
-                      <span className="text-lg font-bold">
-                        {String(hour).padStart(2, "0")}:00
-                      </span>
-                      <span className="ml-2 text-sm text-net/60">
-                        {free.length} baner ledige
-                      </span>
-                    </span>
-                    <span className="font-bold text-grus">fra {cheapest} kr</span>
-                  </button>
-
-                  {expanded && (
-                    <ul className="border-t border-net/10">
-                      {free.map((slot) => {
-                        const court = courts.find((c) => c.id === slot.courtId)!;
-                        return (
-                          <li key={slot.courtId}>
-                            <BookButton
-                              courtId={slot.courtId}
-                              startsAt={slot.startsAt}
-                              loggedIn={loggedIn}
-                              className="flex w-full items-center justify-between px-4 py-3.5 text-left"
-                            >
-                              <span>
-                                <span className="font-semibold">{court.name}</span>
-                                <span className="ml-2 text-sm text-net/60">
-                                  {SURFACES[court.surface] ?? court.surface}
-                                </span>
-                              </span>
-                              <span className="font-semibold text-grus">
-                                {slot.priceKr} kr
-                              </span>
-                            </BookButton>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
-
-      {/* Bred skærm: gitter med baner som kolonner */}
-      <div className="hidden sm:block">
-        <table className="w-full border-separate border-spacing-1">
-          <thead>
-            <tr>
-              <th className="w-16" />
-              {courts.map((c) => (
-                <th key={c.id} className="rounded-md bg-bane px-2 py-2 text-sm text-kridt">
-                  {c.name}
-                  <span className="block text-xs font-normal text-kridt/70">
-                    {SURFACES[c.surface] ?? c.surface}
+          return (
+            <div key={hour} className="overflow-hidden rounded-2xl border border-slate/10 bg-chalk shadow-card">
+              <button
+                onClick={() => setOpenHour(expanded ? null : hour)}
+                aria-expanded={expanded}
+                className="flex w-full items-center gap-3 px-4 py-4 text-left"
+              >
+                <span
+                  aria-hidden="true"
+                  className="h-10 w-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: tint }}
+                />
+                <span className="flex-1">
+                  <span className="data block text-xl font-bold">
+                    {String(hour).padStart(2, "0")}:00
                   </span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {hours.map((hour) => (
-              <tr key={hour}>
-                <td className="pr-2 text-right text-sm font-semibold text-net/60">
-                  {hour}:00
-                </td>
-                {courts.map((c) => {
-                  const slot = byKey.get(key(c.id, hour));
-                  if (!slot) {
+                  <span className="text-sm text-slate">{free.length} baner ledige</span>
+                </span>
+                <span className="data text-base font-bold text-court">fra {cheapest} kr</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  className={`h-5 w-5 text-slate transition-transform ${expanded ? "rotate-180" : ""}`}
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {expanded && (
+                <div className="grid grid-cols-2 gap-2 border-t border-slate/10 p-3">
+                  {free.map((slot) => {
+                    const court = courts.find((c) => c.id === slot.courtId)!;
                     return (
-                      <td key={c.id}>
-                        <div className="rounded-md bg-net/5 py-2 text-center text-xs font-semibold text-net/40">
-                          —
-                        </div>
-                      </td>
-                    );
-                  }
-                  return (
-                    <td key={c.id}>
-                      <BookButton
-                        courtId={c.id}
+                      <Book
+                        key={slot.courtId}
+                        courtId={slot.courtId}
                         startsAt={slot.startsAt}
                         loggedIn={loggedIn}
-                        className="block w-full rounded-md border border-bane/40 py-2 text-center text-xs font-semibold text-bane hover:bg-bane hover:text-kridt"
+                        style={{ ["--sport" as any]: tint }}
+                        className="court-tile px-3 pb-6 pt-3 text-left"
                       >
-                        {slot.priceKr} kr
-                      </BookButton>
-                    </td>
-                  );
-                })}
+                        <span className="relative z-10 block font-semibold">{court.name}</span>
+                        <span className="relative z-10 block text-xs text-chalk/80">
+                          {surfaceLabel(court.surface, locale)}
+                        </span>
+                        <span className="data relative z-10 mt-1 block font-bold">
+                          {slot.priceKr} kr
+                        </span>
+                      </Book>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Bred skærm */}
+      <div className="hidden sm:block">
+        <div className="overflow-hidden rounded-2xl border border-slate/10 bg-chalk shadow-card">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate/10">
+                <th className="w-20" />
+                {courts.map((c) => (
+                  <th key={c.id} className="px-2 py-3 text-sm">
+                    <span className="block font-bold text-ink">{c.name}</span>
+                    <span className="block text-xs font-normal text-slate">
+                      {surfaceLabel(c.surface, locale)}
+                    </span>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {hours.map((hour) => (
+                <tr key={hour} className="border-b border-slate/5 last:border-0">
+                  <td className="data py-1.5 pr-3 text-right text-sm font-bold text-slate">
+                    {String(hour).padStart(2, "0")}
+                  </td>
+                  {courts.map((c) => {
+                    const slot = byKey.get(key(c.id, hour));
+                    if (!slot) {
+                      return (
+                        <td key={c.id} className="p-1">
+                          <div className="rounded-lg bg-mist py-2.5 text-center text-xs text-slate-light">
+                            —
+                          </div>
+                        </td>
+                      );
+                    }
+                    return (
+                      <td key={c.id} className="p-1">
+                        <Book
+                          courtId={c.id}
+                          startsAt={slot.startsAt}
+                          loggedIn={loggedIn}
+                          style={{ ["--sport" as any]: tint }}
+                          className="court-tile block w-full pb-4 pt-2.5 text-center hover:opacity-90"
+                        >
+                          <span className="data relative z-10 text-sm font-bold">
+                            {slot.priceKr} kr
+                          </span>
+                        </Book>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   );

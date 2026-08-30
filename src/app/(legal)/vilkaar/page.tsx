@@ -12,7 +12,7 @@ export default function VilkaarPage() {
           <Fill>e-mail</Fill>.
         </p>
         <p>
-          RacketBuddy er en formidlingsplatform. Når du booker en bane, indgår
+          RacketBuddy er en formidlingsplatform. Når du booker en ink, indgår
           du aftalen om selve banetiden med klubben. Når du booker en trænertime,
           indgår du aftalen med træneren. Vi formidler kontakten og håndterer
           betalingen, men leverer ikke selve ydelsen.
@@ -89,7 +89,7 @@ export default function VilkaarPage() {
 
       <Section n="7" title="Adgang til klubbens faciliteter">
         <p>
-          Din booking giver adgang til den bookede bane i det bookede tidsrum.
+          Din booking giver adgang til den bookede ink i det bookede tidsrum.
           Klubbens ordensregler gælder, mens du er på anlægget.
         </p>
         <p>

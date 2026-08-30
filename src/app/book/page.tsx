@@ -1,4 +1,4 @@
-// "Book bane" — indgangen til baner.
+// "Book ink" — indgangen til baner.
 //
 // Viser kun godkendte klubber i brugerens land, filtreret på den valgte
 // sportsgren. Uden landefilteret ville en dansk spiller få tyske klubber
@@ -66,7 +66,7 @@ export default async function BookPage() {
     <div>
       <div className="mb-5">
         <h1 className="display text-3xl">{t("book.title")}</h1>
-        <p className="text-net/70">
+        <p className="text-slate/70">
           {clubs.length > 0
             ? `${clubs.length} klubber · ${totalFree} ledige tider i dag`
             : t("book.intro")}
@@ -76,9 +76,9 @@ export default async function BookPage() {
       <SportPicker active={prefs.sport} locale={prefs.locale} />
 
       {clubs.length === 0 ? (
-        <div className="card text-center text-net/60">
+        <div className="card text-center text-slate/60">
           <p>{t("book.noClubs")}</p>
-          <Link href="/opret-klub" className="btn-grus mt-4">
+          <Link href="/opret-klub" className="btn-court mt-4">
             {t("club.signup")}
           </Link>
         </div>
@@ -86,13 +86,13 @@ export default async function BookPage() {
         <ClubExplorer clubs={data} />
       )}
 
-      <div className="card mt-10 border-grus/30 bg-grus/5">
-        <p className="display text-xl text-grus-deep">Mangler din klub?</p>
+      <div className="card mt-10 border-court/30 bg-court/5">
+        <p className="display text-xl text-court-dark">Mangler din klub?</p>
         <p className="mt-1 text-sm">
           I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
           frigiver, til spillere udefra — og sender betalingen videre til jer.
         </p>
-        <Link href="/opret-klub" className="btn-grus mt-4">
+        <Link href="/opret-klub" className="btn-court mt-4">
           {t("club.signup")}
         </Link>
       </div>

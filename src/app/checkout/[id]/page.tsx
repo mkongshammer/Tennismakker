@@ -22,7 +22,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
     return (
       <div className="mx-auto max-w-sm card text-center">
         <p className="font-bold">Reservationen er udløbet</p>
-        <p className="mt-1 text-sm text-net/60">De 10 minutter gik — vælg tidspunktet igen.</p>
+        <p className="mt-1 text-sm text-slate/60">De 10 minutter gik — vælg tidspunktet igen.</p>
       </div>
     );
   }
@@ -48,20 +48,20 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
         <p className="text-sm capitalize">
           {format(booking.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} – {format(booking.endsAt, "HH:mm")}
         </p>
-        <div className="chalk-line !bg-none border-t border-dashed border-net/20" />
+        <div className="chalk-line !bg-none border-t border-dashed border-slate/20" />
         <div className="flex justify-between text-sm">
           <span>Pris</span>
           <span className="font-bold">{booking.priceKr} kr</span>
         </div>
-        <p className="text-xs text-net/50">
+        <p className="text-xs text-slate/50">
           {fee > 0
             ? `Heraf går ${fee} kr til RacketBuddy — de resterende ${booking.priceKr - fee} kr udbetales automatisk til ${booking.kind === "COURT" ? "klubben" : "træneren"}.`
             : `Hele beløbet udbetales til klubben. Klubben betaler et fast abonnement i stedet for provision.`}
         </p>
         <form action={pay}>
-          <button className="btn-grus w-full">Betal {booking.priceKr} kr (demo)</button>
+          <button className="btn-court w-full">Betal {booking.priceKr} kr (demo)</button>
         </form>
-        <p className="text-center text-xs text-net/50">
+        <p className="text-center text-xs text-slate/50">
           Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til{" "}
           {booking.holdExpiresAt ? format(booking.holdExpiresAt, "HH:mm") : "—"}.
         </p>

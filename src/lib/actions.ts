@@ -147,7 +147,7 @@ export async function closeMatchRequest(formData: FormData) {
   revalidatePath("/profil");
 }
 
-// ---------------- Booking (bane + træner) ----------------
+// ---------------- Booking (ink + træner) ----------------
 
 const HOLD_MINUTES = 10;
 
@@ -335,7 +335,7 @@ export async function syncNow() {
 }
 
 /**
- * Frigiver gæstetider (MANUAL-integration): klubben vælger bane, dato,
+ * Frigiver gæstetider (MANUAL-integration): klubben vælger ink, dato,
  * tidsrum og pris, og vi opretter én time ad gangen i det interval.
  */
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
@@ -348,7 +348,7 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const priceKr = Number(formData.get("priceKr") ?? 0);
 
   const court = await db.court.findFirst({ where: { id: courtId, clubId } });
-  if (!court) return { error: "Vælg en bane der hører til klubben." };
+  if (!court) return { error: "Vælg en ink der hører til klubben." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Vælg en dato." };
   if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
     return { error: "Sluttidspunktet skal ligge efter starttidspunktet." };
@@ -581,7 +581,7 @@ export async function approveClub(formData: FormData) {
         ``,
         `${club.name} er godkendt og synlig for spillere.`,
         ``,
-        `Næste skridt: frigiv de tider, gæster må booke.`,
+        `Næste schalk: frigiv de tider, gæster må booke.`,
         `${process.env.APP_URL ?? "https://tennis-makker.onrender.com"}/admin`,
         ``,
         `RacketBuddy`,

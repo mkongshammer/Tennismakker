@@ -57,7 +57,7 @@ export default function PrivatlivPage() {
 
       <Section n="4" title="Hvem oplysningerne deles med">
         <p>
-          Booker du en bane, deler vi dit navn, din e-mail og bookingens
+          Booker du en ink, deler vi dit navn, din e-mail og bookingens
           tidspunkt med klubben, så de kan give dig adgang. Booker du en
           trænertime, deles de samme oplysninger med træneren.
         </p>

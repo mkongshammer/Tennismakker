@@ -9,7 +9,7 @@ export type IcalEvent = {
   start: Date;
   end: Date;
   summary: string | null;
-  /** Rå værdi af LOCATION/SUMMARY brugt til at gætte hvilken bane eventet hører til */
+  /** Rå værdi af LOCATION/SUMMARY brugt til at gætte hvilken ink eventet hører til */
   raw: string;
 };
 

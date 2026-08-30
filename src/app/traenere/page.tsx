@@ -32,7 +32,7 @@ export default async function TraenerePage({
     <div>
       <div className="mb-6">
         <h1 className="display text-3xl">{t("coach.title")}</h1>
-        <p className="text-net/70">{t("coach.intro")}</p>
+        <p className="text-slate/70">{t("coach.intro")}</p>
       </div>
 
       <SportPicker active={prefs.sport} locale={prefs.locale} />
@@ -42,11 +42,11 @@ export default async function TraenerePage({
           <label className="label" htmlFor="omraade">Område</label>
           <input className="input" id="omraade" name="omraade" defaultValue={area} placeholder="fx Aarhus" />
         </div>
-        <button className="btn-bane">Søg</button>
+        <button className="btn-ink">Søg</button>
       </form>
 
       {coaches.length === 0 && (
-        <div className="card text-center text-net/60">Ingen trænere i det område endnu.</div>
+        <div className="card text-center text-slate/60">Ingen trænere i det område endnu.</div>
       )}
 
       <ul className="grid gap-4 sm:grid-cols-2">
@@ -54,7 +54,7 @@ export default async function TraenerePage({
           <li key={c.id} className="card">
             <div className="flex items-baseline justify-between">
               <p className="text-lg font-bold">{c.user.name}</p>
-              <p className="display text-xl text-grus">{c.priceHour} kr/t</p>
+              <p className="display text-xl text-court">{c.priceHour} kr/t</p>
             </div>
             <div className="mt-1">
               <Stars
@@ -63,24 +63,24 @@ export default async function TraenerePage({
               />
             </div>
             <p className="mt-2 text-sm">{c.headline}</p>
-            <p className="mt-1 text-sm text-net/60">{c.area}</p>
+            <p className="mt-1 text-sm text-slate/60">{c.area}</p>
             {c.specialties && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {c.specialties.split(",").filter(Boolean).map((s) => (
-                  <span key={s} className="rounded-full bg-bane/10 px-2 py-0.5 text-xs font-semibold text-bane">
+                  <span key={s} className="rounded-full bg-ink/10 px-2 py-0.5 text-xs font-semibold text-ink">
                     {s.trim()}
                   </span>
                 ))}
               </div>
             )}
             {c.packages.length > 0 && (
-              <p className="mt-3 text-sm font-semibold text-bane">
+              <p className="mt-3 text-sm font-semibold text-ink">
                 {c.packages.length === 1
                   ? `Tilbyder også ${c.packages[0].name}`
                   : `Tilbyder også ${c.packages.length} pakkeforløb`}
               </p>
             )}
-            <Link href={`/traenere/${c.id}`} className="btn-grus mt-4">
+            <Link href={`/traenere/${c.id}`} className="btn-court mt-4">
               Se ledige tider
             </Link>
           </li>

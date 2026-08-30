@@ -9,7 +9,7 @@ export function ReviewForm({ bookingId, what }: { bookingId: string; what: strin
   const [rating, setRating] = useState(0);
 
   if (state?.ok) {
-    return <p className="text-sm font-semibold text-bane">{state.ok}</p>;
+    return <p className="text-sm font-semibold text-ink">{state.ok}</p>;
   }
 
   return (
@@ -25,7 +25,7 @@ export function ReviewForm({ bookingId, what }: { bookingId: string; what: strin
             onClick={() => setRating(n)}
             aria-label={`${n} ud af 5 stjerner`}
             aria-pressed={rating === n}
-            className={`text-2xl leading-none ${n <= rating ? "text-grus" : "text-net/25"}`}
+            className={`text-2xl leading-none ${n <= rating ? "text-court" : "text-slate/25"}`}
           >
             ★
           </button>
@@ -40,8 +40,8 @@ export function ReviewForm({ bookingId, what }: { bookingId: string; what: strin
         placeholder="Hvordan var det? (valgfrit)"
       />
 
-      {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-      <button className="btn-bane text-sm" disabled={rating === 0}>
+      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+      <button className="btn-ink text-sm" disabled={rating === 0}>
         Send anmeldelse
       </button>
     </form>
@@ -50,13 +50,13 @@ export function ReviewForm({ bookingId, what }: { bookingId: string; what: strin
 
 export function Stars({ average, count }: { average: number; count: number }) {
   if (count === 0) {
-    return <span className="text-sm text-net/50">Ingen anmeldelser endnu</span>;
+    return <span className="text-sm text-slate/50">Ingen anmeldelser endnu</span>;
   }
   return (
     <span className="text-sm">
-      <span className="text-grus">{"★".repeat(Math.round(average))}</span>
-      <span className="text-net/25">{"☆".repeat(5 - Math.round(average))}</span>{" "}
-      <span className="text-net/60">
+      <span className="text-court">{"★".repeat(Math.round(average))}</span>
+      <span className="text-slate/25">{"☆".repeat(5 - Math.round(average))}</span>{" "}
+      <span className="text-slate/60">
         {average.toFixed(1)} ({count})
       </span>
     </span>

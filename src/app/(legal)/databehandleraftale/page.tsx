@@ -5,7 +5,7 @@ export const metadata = { title: "Databehandleraftale — RacketBuddy" };
 export default function DatabehandleraftalePage() {
   return (
     <LegalPage title="Databehandleraftale" updated="29. august 2026">
-      <p className="text-net/70">
+      <p className="text-slate/70">
         Denne aftale indgås mellem klubben (<strong>den dataansvarlige</strong>)
         og <Fill>virksomhedsnavn</Fill>, CVR <Fill>CVR-nummer</Fill> (
         <strong>databehandleren</strong>), når klubben opretter sig på Tennis

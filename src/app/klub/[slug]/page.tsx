@@ -12,6 +12,7 @@ import { getCurrentUser } from "../../../lib/session";
 import { releaseExpiredHolds } from "../../../lib/payments";
 import { getClubAvailability } from "../../../lib/integrations";
 import { BookingGrid } from "../../../components/BookingGrid";
+import { getPreferences } from "../../../lib/preferences";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function KlubPage({
   });
   if (!club) notFound();
 
-  const user = await getCurrentUser();
+  const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   await releaseExpiredHolds();
 
   const today = startOfDay(new Date());
@@ -45,11 +46,11 @@ export default async function KlubPage({
   return (
     <div>
       <section
-        className="rounded-xl px-5 py-8 text-kridt sm:px-6 sm:py-10"
+        className="rounded-xl px-5 py-8 text-chalk sm:px-6 sm:py-10"
         style={{ backgroundColor: club.color }}
       >
         <h1 className="display text-3xl sm:text-4xl">{club.name}</h1>
-        <p className="mt-1 text-kridt/80">
+        <p className="mt-1 text-chalk/80">
           {club.address ? `${club.address}, ` : ""}
           {club.city}
         </p>
@@ -60,7 +61,7 @@ export default async function KlubPage({
       </section>
 
       <h2 className="display mb-1 mt-8 text-2xl">Ledige tider</h2>
-      <p className="mb-4 text-sm text-net/60">
+      <p className="mb-4 text-sm text-slate/60">
         {isExternal
           ? "Tiderne her er dem, klubben har gjort ledige for gæster. Tiden holdes i 10 minutter, mens du betaler."
           : "Vælg et ledigt tidspunkt. Tiden holdes i 10 minutter, mens du betaler."}
@@ -77,7 +78,7 @@ export default async function KlubPage({
                 key={i}
                 href={`/klub/${club.slug}?dag=${i}`}
                 className={`whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-semibold capitalize ${
-                  active ? "bg-bane text-kridt" : "border border-net/20"
+                  active ? "bg-ink text-chalk" : "border border-slate/20"
                 }`}
               >
                 {format(d, "EEE d/M", { locale: da })}
@@ -92,6 +93,7 @@ export default async function KlubPage({
           id: c.id,
           name: c.name,
           surface: c.surface,
+          sport: c.sport,
         }))}
         slots={slots.map((s) => ({
           courtId: s.courtId,
@@ -99,16 +101,16 @@ export default async function KlubPage({
           priceKr: s.priceKr,
         }))}
         hours={hours}
-        day={day.toISOString()}
         loggedIn={Boolean(user)}
+        locale={prefs.locale}
       />
 
       {!user && slots.length > 0 && (
-        <p className="mt-4 text-sm text-net/60">
-          <Link href="/login" className="font-semibold text-grus underline">
+        <p className="mt-4 text-sm text-slate/60">
+          <Link href="/login" className="font-semibold text-court underline">
             Log ind
           </Link>{" "}
-          for at booke en bane.
+          for at booke en ink.
         </p>
       )}
     </div>

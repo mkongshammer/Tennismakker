@@ -27,9 +27,9 @@ export default async function BeskederPage() {
       <h1 className="display mb-6 text-3xl">Beskeder</h1>
 
       {threads.length === 0 ? (
-        <div className="card text-net/60">
+        <div className="card text-slate/60">
           Du har ingen samtaler endnu. Slå til på et{" "}
-          <Link href="/makkere" className="font-semibold text-grus underline">
+          <Link href="/makkere" className="font-semibold text-court underline">
             makker-opslag
           </Link>
           , så åbner der en samtale her.
@@ -38,19 +38,19 @@ export default async function BeskederPage() {
         <ul className="space-y-3">
           {threads.map((t: any) => (
             <li key={t.id}>
-              <Link href={`/beskeder/${t.id}`} className="card block hover:border-grus">
+              <Link href={`/beskeder/${t.id}`} className="card block hover:border-court">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="font-bold">
                     {t.otherName}
                     {t.unread && (
-                      <span className="ml-2 rounded-full bg-grus px-2 py-0.5 text-xs text-kridt">
+                      <span className="ml-2 rounded-full bg-court px-2 py-0.5 text-xs text-chalk">
                         ny
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs text-net/50">{when(t.lastAt)}</span>
+                  <span className="shrink-0 text-xs text-slate/50">{when(t.lastAt)}</span>
                 </div>
-                <p className="mt-1 line-clamp-1 text-sm text-net/70">
+                <p className="mt-1 line-clamp-1 text-sm text-slate/70">
                   {t.lastBody ?? `Om: ${t.subject}`}
                 </p>
               </Link>

@@ -1,7 +1,7 @@
 // Sportsvælger. Skal være en formular, ikke links: valget gemmes i en
 // cookie, og cookies kan ikke sættes, mens en side renderes.
 import { setSport } from "../lib/actions";
-import { sportLabel, SPORTS } from "../lib/sports";
+import { sportColor, sportLabel, SPORTS } from "../lib/sports";
 import type { Locale, Sport } from "../lib/sports";
 
 export function SportPicker({
@@ -19,12 +19,17 @@ export function SportPicker({
             <input type="hidden" name="sport" value={s} />
             <button
               aria-pressed={active === s}
-              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${
+              className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
                 active === s
-                  ? "bg-bane text-kridt"
-                  : "border border-net/20 hover:border-bane"
+                  ? "bg-ink text-chalk"
+                  : "border border-slate/20 bg-chalk text-slate hover:text-ink"
               }`}
             >
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: sportColor(s) }}
+              />
               {sportLabel(s, locale)}
             </button>
           </form>

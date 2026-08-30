@@ -21,11 +21,11 @@ export function LegalPage({
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="display text-3xl">{title}</h1>
-      <p className="mt-1 text-sm text-net/50">Senest opdateret: {updated}</p>
+      <p className="mt-1 text-sm text-slate/50">Senest opdateret: {updated}</p>
 
       {draft && (
-        <div className="mt-5 rounded-md border-2 border-grus bg-grus/5 p-4">
-          <p className="font-bold text-grus-deep">Udkast — ikke juridisk gennemgået</p>
+        <div className="mt-5 rounded-md border-2 border-court bg-court/5 p-4">
+          <p className="font-bold text-court-dark">Udkast — ikke juridisk gennemgået</p>
           <p className="mt-1 text-sm">
             Dette dokument er et udgangspunkt, som skal gennemgås og tilpasses af
             en advokat, før platformen tages i brug med rigtige kunder og
@@ -45,7 +45,7 @@ export function Section({ n, title, children }: { n: string; title: string; chil
       <h2 className="mb-2 text-lg font-bold">
         {n}. {title}
       </h2>
-      <div className="space-y-3 text-net/85">{children}</div>
+      <div className="space-y-3 text-slate/85">{children}</div>
     </section>
   );
 }
@@ -53,7 +53,7 @@ export function Section({ n, title, children }: { n: string; title: string; chil
 /** Felter der skal udfyldes med rigtige oplysninger før brug. */
 export function Fill({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded bg-grus/15 px-1.5 py-0.5 font-mono text-sm text-grus-deep">
+    <span className="rounded bg-court/15 px-1.5 py-0.5 font-mono text-sm text-court-dark">
       [{children}]
     </span>
   );

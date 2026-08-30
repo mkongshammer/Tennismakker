@@ -28,15 +28,15 @@ export default async function SamtalePage({ params }: { params: { id: string } }
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/beskeder" className="text-sm text-net/60 hover:underline">
+      <Link href="/beskeder" className="text-sm text-slate/60 hover:underline">
         ← Beskeder
       </Link>
       <h1 className="display mt-2 text-2xl">{access.otherUser.name}</h1>
-      <p className="text-sm text-net/60">Om: {access.thread.message}</p>
+      <p className="text-sm text-slate/60">Om: {access.thread.message}</p>
 
       <div className="my-6 space-y-3">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-net/50">
+          <p className="text-center text-sm text-slate/50">
             Ingen beskeder endnu — skriv den første og aftal en tid.
           </p>
         )}
@@ -46,11 +46,11 @@ export default async function SamtalePage({ params }: { params: { id: string } }
             <div key={m.id} className={mine ? "flex justify-end" : "flex justify-start"}>
               <div
                 className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  mine ? "bg-bane text-kridt" : "bg-white border border-net/10"
+                  mine ? "bg-ink text-chalk" : "bg-white border border-slate/10"
                 }`}
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
-                <p className={`mt-1 text-xs ${mine ? "text-kridt/60" : "text-net/40"}`}>
+                <p className={`mt-1 text-xs ${mine ? "text-chalk/60" : "text-slate/40"}`}>
                   {clock(m.createdAt)}
                 </p>
               </div>
@@ -59,7 +59,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
         })}
       </div>
 
-      <form action={sendMessage} className="sticky bottom-0 flex gap-2 bg-kridt pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+      <form action={sendMessage} className="sticky bottom-0 flex gap-2 bg-chalk pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
         <input type="hidden" name="matchRequestId" value={params.id} />
         <input
           className="input flex-1"
@@ -69,7 +69,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
           required
           autoComplete="off"
         />
-        <button className="btn-grus">Send</button>
+        <button className="btn-court">Send</button>
       </form>
     </div>
   );

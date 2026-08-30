@@ -19,7 +19,7 @@ export const SPORT_LABELS: Record<string, { da: string; en: string }> = {
   PICKLEBALL: { da: "Pickleball", en: "Pickleball" },
 };
 
-/** Baneunderlag afhænger af sportsgren — grus giver kun mening i tennis. */
+/** Baneunderlag afhænger af sportsgren — court giver kun mening i tennis. */
 export const SURFACES_BY_SPORT: Record<string, string[]> = {
   TENNIS: ["GRUS", "HARD", "KUNSTGRAES", "INDE"],
   PADEL: ["KUNSTGRAES", "INDE"],
@@ -78,4 +78,25 @@ export function parseSports(value: string | null | undefined): Sport[] {
 export function serializeSports(sports: string[]): string {
   const valid = sports.filter((s) => (SPORTS as readonly string[]).includes(s));
   return (valid.length > 0 ? valid : [DEFAULT_SPORT]).join(",");
+}
+
+
+/**
+ * Hver sportsgrens rigtige banefarve.
+ *
+ * Farve bruges som data, ikke pynt: kan man kende padel fra badminton på
+ * farven alene, behøver man ikke læse etiketten. Værdierne er taget fra
+ * de underlag, grenene faktisk spilles på.
+ */
+export const SPORT_COLORS: Record<string, string> = {
+  TENNIS: "#1B62C4",     // hardcourt-blå
+  PADEL: "#12796B",      // kunstgræs-turkis
+  BADMINTON: "#1B6B45",  // gulvmåtte-grøn
+  SQUASH: "#B4472C",     // rødt banemarkering mod lyst træ
+  BORDTENNIS: "#123F8C", // bordets mørkeblå
+  PICKLEBALL: "#6B3FA0", // lilla, så den ikke forveksles med de øvrige
+};
+
+export function sportColor(sport: string): string {
+  return SPORT_COLORS[sport] ?? SPORT_COLORS.TENNIS;
 }

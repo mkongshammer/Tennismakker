@@ -35,9 +35,9 @@ export default async function MakkerePage({
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="display text-3xl">Find en makker</h1>
-          <p className="text-net/70">Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.</p>
+          <p className="text-slate/70">Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.</p>
         </div>
-        <Link href="/makkere/ny" className="btn-grus">Opret opslag</Link>
+        <Link href="/makkere/ny" className="btn-court">Opret opslag</Link>
       </div>
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
@@ -49,13 +49,13 @@ export default async function MakkerePage({
           <label className="label" htmlFor="niveau">Dit niveau (viser ±1)</label>
           <input className="input" id="niveau" name="niveau" type="number" min={1} max={7} defaultValue={searchParams.niveau ?? user?.level ?? ""} />
         </div>
-        <button className="btn-bane">Filtrér</button>
+        <button className="btn-ink">Filtrér</button>
       </form>
 
       {requests.length === 0 && (
-        <div className="card text-center text-net/60">
+        <div className="card text-center text-slate/60">
           Ingen åbne opslag matcher din søgning endnu.{" "}
-          <Link href="/makkere/ny" className="font-semibold text-grus underline">Opret det første</Link>
+          <Link href="/makkere/ny" className="font-semibold text-court underline">Opret det første</Link>
         </div>
       )}
 
@@ -66,24 +66,24 @@ export default async function MakkerePage({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-bold">{r.requester.name}</span>
                 <LevelBadge level={r.level} />
-                <span className="rounded-full bg-grus/10 px-2.5 py-0.5 text-xs font-bold text-grus-deep">
+                <span className="rounded-full bg-court/10 px-2.5 py-0.5 text-xs font-bold text-court-dark">
                   {MATCH_TYPES[r.matchType] ?? r.matchType}
                 </span>
               </div>
               <p className="mt-1">{r.message}</p>
-              <p className="mt-1 text-sm text-net/60">
+              <p className="mt-1 text-sm text-slate/60">
                 {r.area} · {formatDistanceToNow(r.createdAt, { addSuffix: true, locale: da })}
               </p>
             </div>
             {user && user.id !== r.requesterId ? (
               <form action={acceptMatchRequest}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="btn-grus">Slå til</button>
+                <button className="btn-court">Slå til</button>
               </form>
             ) : !user ? (
               <Link href="/login" className="btn-ghost">Log ind for at svare</Link>
             ) : (
-              <span className="text-sm text-net/50">Dit opslag</span>
+              <span className="text-sm text-slate/50">Dit opslag</span>
             )}
           </li>
         ))}

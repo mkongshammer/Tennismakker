@@ -19,10 +19,10 @@ export default function LoginPage() {
           <label className="label" htmlFor="password">Adgangskode</label>
           <input className="input" id="password" name="password" type="password" required />
         </div>
-        {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-        <button className="btn-bane w-full">Log ind</button>
-        <p className="text-center text-sm text-net/60">
-          Ny her? <Link href="/signup" className="font-semibold text-grus underline">Opret profil</Link>
+        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+        <button className="btn-ink w-full">Log ind</button>
+        <p className="text-center text-sm text-slate/60">
+          Ny her? <Link href="/signup" className="font-semibold text-court underline">Opret profil</Link>
         </p>
       </form>
     </div>

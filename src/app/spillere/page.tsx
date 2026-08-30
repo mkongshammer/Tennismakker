@@ -23,7 +23,7 @@ export default async function SpillerePage() {
       <div className="mb-4 flex items-baseline justify-between">
         <h1 className="display text-3xl">Find spillere</h1>
         {likes > 0 && (
-          <span className="rounded-full bg-grus px-3 py-1 text-sm font-bold text-kridt">
+          <span className="rounded-full bg-court px-3 py-1 text-sm font-bold text-chalk">
             {likes} venter på dig
           </span>
         )}
@@ -32,10 +32,10 @@ export default async function SpillerePage() {
       {!player ? (
         <div className="card text-center">
           <p className="font-bold">Ikke flere lige nu</p>
-          <p className="mt-2 text-sm text-net/60">
+          <p className="mt-2 text-sm text-slate/60">
             Du har set alle spillere på dit niveau i dit område. Kig forbi igen om
             et par dage — eller slå et{" "}
-            <Link href="/makkere/ny" className="font-semibold text-grus underline">
+            <Link href="/makkere/ny" className="font-semibold text-court underline">
               opslag
             </Link>{" "}
             op i stedet.
@@ -45,8 +45,8 @@ export default async function SpillerePage() {
         <>
           <div className="card">
             {/* Initialer som billede — vi gemmer ikke brugeruploadede fotos */}
-            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-bane">
-              <span className="display text-3xl text-kridt">
+            <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-ink">
+              <span className="display text-3xl text-chalk">
                 {player.name
                   .split(" ")
                   .map((n: string) => n[0])
@@ -59,11 +59,11 @@ export default async function SpillerePage() {
               <LevelBadge level={player.level} />
             </div>
             {player.area && (
-              <p className="mt-2 text-center text-net/60">{player.area}</p>
+              <p className="mt-2 text-center text-slate/60">{player.area}</p>
             )}
             {player.bio && <p className="mt-4 text-center">{player.bio}</p>}
             {player.role === "COACH" && (
-              <p className="mt-3 text-center text-sm font-semibold text-grus">
+              <p className="mt-3 text-center text-sm font-semibold text-court">
                 Er også træner på platformen
               </p>
             )}
@@ -78,11 +78,11 @@ export default async function SpillerePage() {
             <form action={submitSwipe} className="flex-1">
               <input type="hidden" name="toUserId" value={player.id} />
               <input type="hidden" name="liked" value="1" />
-              <button className="btn-grus w-full py-3">Vil spille</button>
+              <button className="btn-court w-full py-3">Vil spille</button>
             </form>
           </div>
 
-          <p className="mt-4 text-center text-xs text-net/50">
+          <p className="mt-4 text-center text-xs text-slate/50">
             Siger I begge ja, åbner der en samtale. Den anden får ikke besked,
             hvis du springer over.
           </p>

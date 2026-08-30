@@ -20,7 +20,7 @@ export default async function SuperadminPage() {
     return (
       <div className="card mx-auto max-w-md text-center">
         <p className="font-bold">Ikke adgang</p>
-        <p className="mt-1 text-sm text-net/60">
+        <p className="mt-1 text-sm text-slate/60">
           Denne side er for RacketBuddys egne administratorer.
         </p>
       </div>
@@ -44,7 +44,7 @@ export default async function SuperadminPage() {
     <div className="space-y-10">
       <div>
         <h1 className="display text-3xl">Klubgodkendelser</h1>
-        <p className="text-net/70">
+        <p className="text-slate/70">
           {pending.length} venter · {decided.length} behandlet
         </p>
       </div>
@@ -52,7 +52,7 @@ export default async function SuperadminPage() {
       <section>
         <h2 className="display mb-3 text-2xl">Venter på svar</h2>
         {pending.length === 0 && (
-          <p className="text-net/60">Ingen klubber venter lige nu.</p>
+          <p className="text-slate/60">Ingen klubber venter lige nu.</p>
         )}
 
         <ul className="space-y-4">
@@ -66,29 +66,29 @@ export default async function SuperadminPage() {
               <li key={club.id} className="card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-lg font-bold">{club.name}</p>
-                  <p className="text-sm text-net/50">
+                  <p className="text-sm text-slate/50">
                     Oprettet {format(club.createdAt, "d. MMM yyyy", { locale: da })}
                   </p>
                 </div>
 
                 <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                   <div className="flex gap-2">
-                    <dt className="text-net/50">Adresse</dt>
+                    <dt className="text-slate/50">Adresse</dt>
                     <dd>{club.address ? `${club.address}, ${club.city}` : club.city}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-net/50">Baner</dt>
+                    <dt className="text-slate/50">Baner</dt>
                     <dd>
                       {club.courts.length} ·{" "}
                       {sports.map((s) => sportLabel(s, "da")).join(", ")}
                     </dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-net/50">Pris</dt>
+                    <dt className="text-slate/50">Pris</dt>
                     <dd>{club.priceHour} kr/time</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-net/50">Model</dt>
+                    <dt className="text-slate/50">Model</dt>
                     <dd>
                       {club.billingModel === "SUBSCRIPTION"
                         ? `Abonnement ${club.subscriptionKr} kr/md`
@@ -96,18 +96,18 @@ export default async function SuperadminPage() {
                     </dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-net/50">System</dt>
+                    <dt className="text-slate/50">System</dt>
                     <dd>{club.externalSystem ?? "ikke oplyst"}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-net/50">Kontakt</dt>
+                    <dt className="text-slate/50">Kontakt</dt>
                     <dd>
                       {admin ? `${admin.name} · ${admin.email}` : "ingen admin"}
                     </dd>
                   </div>
                 </dl>
 
-                <p className="mt-3 text-xs text-net/50">
+                <p className="mt-3 text-xs text-slate/50">
                   Tjek at klubben findes, at adressen passer, og at kontaktpersonen
                   hører til klubben — helst med et opkald.
                 </p>
@@ -115,7 +115,7 @@ export default async function SuperadminPage() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <form action={approveClub}>
                     <input type="hidden" name="id" value={club.id} />
-                    <button className="btn-bane">Godkend</button>
+                    <button className="btn-ink">Godkend</button>
                   </form>
                   <form action={rejectClub} className="flex flex-1 gap-2">
                     <input type="hidden" name="id" value={club.id} />
@@ -135,14 +135,14 @@ export default async function SuperadminPage() {
 
       <section>
         <h2 className="display mb-3 text-2xl">Behandlet</h2>
-        <ul className="card divide-y divide-net/10">
+        <ul className="card divide-y divide-slate/10">
           {decided.map((club: any) => (
             <li key={club.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm">
               <span className="font-semibold">{club.name}</span>
-              <span className="text-net/60">{club.city}</span>
+              <span className="text-slate/60">{club.city}</span>
               <span
                 className={
-                  club.status === "APPROVED" ? "text-bane font-bold" : "text-grus font-bold"
+                  club.status === "APPROVED" ? "text-ink font-bold" : "text-court font-bold"
                 }
               >
                 {club.status === "APPROVED" ? "Godkendt" : "Afvist"}

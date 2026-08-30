@@ -10,7 +10,7 @@ import { SURFACES } from "../lib/levels";
 const ClubMapView = dynamic(() => import("./ClubMapView"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-net/50">
+    <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-slate/50">
       Henter kort
     </div>
   ),
@@ -37,11 +37,11 @@ function CourtGraphic({ color }: { color: string }) {
 }
 
 function Rating({ average, count }: { average: number; count: number }) {
-  if (count === 0) return <span className="text-sm text-net/45">Ny på RacketBuddy</span>;
+  if (count === 0) return <span className="text-sm text-slate/45">Ny på RacketBuddy</span>;
   return (
     <span className="text-sm">
-      <span className="text-grus">★</span> {average.toFixed(1)}{" "}
-      <span className="text-net/45">({count})</span>
+      <span className="text-court">★</span> {average.toFixed(1)}{" "}
+      <span className="text-slate/45">({count})</span>
     </span>
   );
 }
@@ -81,7 +81,7 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
               href={`/klub/${club.slug}`}
               onFocus={() => setActiveId(club.id)}
               className={`flex gap-3 rounded-xl border bg-white p-3 transition-shadow sm:gap-4 ${
-                active ? "border-grus shadow-md" : "border-net/10"
+                active ? "border-court shadow-md" : "border-slate/10"
               }`}
             >
               <div className="h-[64px] w-[96px] shrink-0 overflow-hidden rounded-lg sm:h-[72px] sm:w-[120px]">
@@ -93,19 +93,19 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
                   <p className="truncate font-bold">{club.name}</p>
                   <Rating average={club.rating.average} count={club.rating.count} />
                 </div>
-                <p className="truncate text-sm text-net/60">
+                <p className="truncate text-sm text-slate/60">
                   {club.address ? `${club.address}, ` : ""}
                   {club.city}
                 </p>
-                <p className="mt-1 text-sm text-net/60">
+                <p className="mt-1 text-sm text-slate/60">
                   {club.courtCount} baner ·{" "}
                   {club.surfaces.map((s) => SURFACES[s] ?? s).join(", ")}
                 </p>
                 <p className="mt-2">
                   <span className="font-bold">fra {club.priceHour} kr</span>
-                  <span className="text-net/60"> / time</span>
+                  <span className="text-slate/60"> / time</span>
                   {club.guestSlotsToday > 0 && (
-                    <span className="ml-2 rounded-full bg-grus/10 px-2 py-0.5 text-xs font-bold text-grus-deep">
+                    <span className="ml-2 rounded-full bg-court/10 px-2 py-0.5 text-xs font-bold text-court-dark">
                       {club.guestSlotsToday} ledige i dag
                     </span>
                   )}
@@ -123,11 +123,11 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
       {/* Bred skærm: listen til venstre, kortet bliver hængende til højre */}
       <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div>{list}</div>
-        <div className="sticky top-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-net/10">
+        <div className="sticky top-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-slate/10">
           {mappable.length > 0 ? (
             <ClubMapView clubs={mappable} activeId={activeId} onSelect={setActiveId} />
           ) : (
-            <div className="flex h-full items-center justify-center p-6 text-center text-sm text-net/50">
+            <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">
               Ingen klubber har en adresse endnu.
             </div>
           )}
@@ -137,11 +137,11 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
       {/* Telefon: listen som udgangspunkt, kortet på en knap */}
       <div className="lg:hidden">
         {showMap ? (
-          <div className="h-[70vh] overflow-hidden rounded-xl border border-net/10">
+          <div className="h-[70vh] overflow-hidden rounded-xl border border-slate/10">
             {mappable.length > 0 ? (
               <ClubMapView clubs={mappable} activeId={activeId} onSelect={setActiveId} />
             ) : (
-              <div className="flex h-full items-center justify-center p-6 text-center text-sm text-net/50">
+              <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">
                 Ingen klubber har en adresse endnu.
               </div>
             )}
@@ -153,7 +153,7 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
         <div className="sticky bottom-[max(1.25rem,env(safe-area-inset-bottom))] mt-5 flex justify-center">
           <button
             onClick={() => setShowMap((v) => !v)}
-            className="min-h-[44px] rounded-full bg-bane px-6 py-3 font-semibold text-kridt shadow-lg"
+            className="min-h-[44px] rounded-full bg-ink px-6 py-3 font-semibold text-chalk shadow-lg"
           >
             {showMap ? "Vis liste" : "Vis kort"}
           </button>

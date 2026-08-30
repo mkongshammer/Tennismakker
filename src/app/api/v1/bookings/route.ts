@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 }
 
 /**
- * POST /api/v1/bookings — reservér en bane- eller trænertime.
+ * POST /api/v1/bookings — reservér en ink- eller trænertime.
  * Betaling sker på web (checkoutUrl), så appen ikke skal håndtere kort.
  */
 export async function POST(req: Request) {

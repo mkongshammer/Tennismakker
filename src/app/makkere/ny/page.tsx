@@ -38,8 +38,8 @@ export default function NytOpslagPage() {
           <label className="label" htmlFor="area">Område</label>
           <input className="input" id="area" name="area" placeholder="fx Valby / København SV" required />
         </div>
-        {state?.error && <p className="text-sm font-semibold text-grus">{state.error}</p>}
-        <button className="btn-grus w-full">Slå op</button>
+        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
+        <button className="btn-court w-full">Slå op</button>
       </form>
     </div>
   );
