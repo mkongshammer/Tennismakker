@@ -1,118 +1,272 @@
-// Klubbens side: mini-hjemmeside + ledige gæstetider.
+// Klubbens side.
 //
-// Hvor tiderne kommer fra afhænger af klubbens integration
-// (se src/lib/integrations). Klubber med eget bookingsystem beholder det —
-// vi viser kun, hvad der er ledigt for udefrakommende spillere.
+// For klubber på NATIVE er det her deres eneste hjemmeside — så siden skal
+// kunne stå alene: hvem er klubben, hvad koster det, hvordan kommer man
+// ind på anlægget, og hvad sker der lige nu. Bookingen er en del af siden,
+// ikke hele siden.
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
+import { getPreferences } from "../../../lib/preferences";
 import { releaseExpiredHolds } from "../../../lib/payments";
 import { getClubAvailability } from "../../../lib/integrations";
 import { BookingGrid } from "../../../components/BookingGrid";
-import { getPreferences } from "../../../lib/preferences";
+import { clubRatings } from "../../../lib/reviews";
+import { sportLabel } from "../../../lib/sports";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const club = await db.club.findUnique({ where: { slug: params.slug } });
+  return {
+    title: club ? `${club.name} — book bane` : "Klub",
+    description: club?.tagline ?? club?.about ?? undefined,
+  };
+}
 
 export default async function KlubPage({
   params,
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { dag?: string };
+  searchParams: { dag?: string; optaget?: string };
 }) {
   const club = await db.club.findUnique({
     where: { slug: params.slug },
-    include: { courts: { orderBy: { name: "asc" } } },
+    include: {
+      courts: { orderBy: { name: "asc" } },
+      posts: { orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], take: 3 },
+      _count: { select: { members: true } },
+    },
   });
-  if (!club) notFound();
+  if (!club || club.status !== "APPROVED") notFound();
 
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   await releaseExpiredHolds();
+
+  const isMember = Boolean(user && user.clubId === club.id);
 
   const today = startOfDay(new Date());
   const dayOffset = Math.min(6, Math.max(0, Number(searchParams.dag ?? 0) || 0));
   const day = addDays(today, dayOffset);
 
-  const { slots } = await getClubAvailability(club.id, day, addDays(day, 1));
+  const [{ slots }, ratings] = await Promise.all([
+    getClubAvailability(club.id, day, addDays(day, 1), { isMember }),
+    clubRatings([club.id]),
+  ]);
+  const rating = ratings.get(club.id) ?? { average: 0, count: 0 };
 
   const hours: number[] = [];
   for (let h = club.openHour; h < club.closeHour; h++) hours.push(h);
 
-  const isExternal = club.integrationType !== "NATIVE";
+  const sports = Array.from(new Set(club.courts.map((c: any) => c.sport))) as string[];
 
   return (
-    <div>
+    <div className="space-y-12">
+      {/* Klubbens hoved */}
       <section
-        className="rounded-xl px-5 py-8 text-chalk sm:px-6 sm:py-10"
+        className="relative overflow-hidden rounded-2xl px-6 py-10 text-chalk sm:px-10 sm:py-14"
         style={{ backgroundColor: club.color }}
       >
-        <h1 className="display text-3xl sm:text-4xl">{club.name}</h1>
-        <p className="mt-1 text-chalk/80">
-          {club.address ? `${club.address}, ` : ""}
-          {club.city}
-        </p>
-        {club.description && <p className="mt-3 max-w-2xl">{club.description}</p>}
-        <p className="mt-3 text-sm font-semibold">
-          {club.courts.length} baner · fra {club.priceHour} kr/time
-        </p>
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.15]"
+          viewBox="0 0 400 200"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <g stroke="#fff" strokeWidth="1.5" fill="none">
+            <rect x="30" y="18" width="340" height="164" />
+            <line x1="30" y1="44" x2="370" y2="44" />
+            <line x1="30" y1="156" x2="370" y2="156" />
+            <line x1="118" y1="44" x2="118" y2="156" />
+            <line x1="282" y1="44" x2="282" y2="156" />
+            <line x1="118" y1="100" x2="282" y2="100" />
+          </g>
+          <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
+        </svg>
+
+        <div className="relative">
+          <p className="eyebrow text-chalk/70">
+            {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
+          </p>
+          <h1 className="display mt-2 text-3xl sm:text-5xl">{club.name}</h1>
+          {club.tagline && (
+            <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
+          )}
+          <p className="mt-4 text-sm font-semibold text-chalk/85">
+            {club.address ? `${club.address}, ` : ""}
+            {club.city} · {club.courts.length} baner
+            {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+          </p>
+          {isMember && (
+            <p className="data mt-4 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
+              Du er medlem — medlemspris
+            </p>
+          )}
+        </div>
       </section>
 
-      <h2 className="display mb-1 mt-8 text-2xl">Ledige tider</h2>
-      <p className="mb-4 text-sm text-slate/60">
-        {isExternal
-          ? "Tiderne her er dem, klubben har gjort ledige for gæster. Tiden holdes i 10 minutter, mens du betaler."
-          : "Vælg et ledigt tidspunkt. Tiden holdes i 10 minutter, mens du betaler."}
-      </p>
-
-      {/* Dagsvælger — ruller vandret på telefon frem for at brydes */}
-      <div className="snap-row no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
-        <div className="flex w-max gap-2">
-          {Array.from({ length: 7 }, (_, i) => {
-            const d = addDays(today, i);
-            const active = isSameDay(d, day);
-            return (
-              <Link
-                key={i}
-                href={`/klub/${club.slug}?dag=${i}`}
-                className={`whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-semibold capitalize ${
-                  active ? "bg-ink text-chalk" : "border border-slate/20"
-                }`}
-              >
-                {format(d, "EEE d/M", { locale: da })}
-              </Link>
-            );
-          })}
-        </div>
-      </div>
-
-      <BookingGrid
-        courts={club.courts.map((c: any) => ({
-          id: c.id,
-          name: c.name,
-          surface: c.surface,
-          sport: c.sport,
-        }))}
-        slots={slots.map((s) => ({
-          courtId: s.courtId,
-          startsAt: s.startsAt.toISOString(),
-          priceKr: s.priceKr,
-        }))}
-        hours={hours}
-        loggedIn={Boolean(user)}
-        locale={prefs.locale}
-      />
-
-      {!user && slots.length > 0 && (
-        <p className="mt-4 text-sm text-slate/60">
-          <Link href="/login" className="font-semibold text-court underline">
-            Log ind
-          </Link>{" "}
-          for at booke en ink.
+      {searchParams.optaget && (
+        <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
+          Den tid var taget. Her er resten af dagen — vælg en anden.
         </p>
       )}
+
+      {/* Nyheder fra klubben */}
+      {club.posts.length > 0 && (
+        <section>
+          <h2 className="display mb-3 text-2xl">Nyt fra klubben</h2>
+          <ul className="space-y-3">
+            {club.posts.map((post: any) => (
+              <li key={post.id} className="card">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="font-bold">{post.title}</p>
+                  <p className="text-xs text-slate">
+                    {format(post.createdAt, "d. MMMM", { locale: da })}
+                  </p>
+                </div>
+                <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">
+                  {post.body}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Booking */}
+      <section>
+        <h2 className="display mb-1 text-2xl">Book bane</h2>
+        <p className="mb-4 text-sm text-slate">
+          {club.memberPriceHour != null && !isMember
+            ? `Gæstepris ${club.priceHour} kr. Medlemmer betaler ${club.memberPriceHour} kr.`
+            : "Tiden holdes i 10 minutter, mens du betaler."}
+        </p>
+
+        <div className="snap-row no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
+          <div className="flex w-max gap-2">
+            {Array.from({ length: 7 }, (_, i) => {
+              const d = addDays(today, i);
+              const active = isSameDay(d, day);
+              return (
+                <Link
+                  key={i}
+                  href={`/klub/${club.slug}?dag=${i}`}
+                  className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold capitalize ${
+                    active
+                      ? "bg-ink text-chalk"
+                      : "border border-slate/20 bg-chalk text-slate"
+                  }`}
+                >
+                  {format(d, "EEE d/M", { locale: da })}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+
+        <BookingGrid
+          courts={club.courts.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            surface: c.surface,
+            sport: c.sport,
+          }))}
+          slots={slots.map((s) => ({
+            courtId: s.courtId,
+            startsAt: s.startsAt.toISOString(),
+            priceKr: s.priceKr,
+          }))}
+          hours={hours}
+          loggedIn={Boolean(user)}
+          locale={prefs.locale}
+        />
+
+        {!user && slots.length > 0 && (
+          <p className="mt-4 text-sm text-slate">
+            <Link href="/login" className="font-semibold text-court underline">
+              Log ind
+            </Link>{" "}
+            for at booke en bane.
+          </p>
+        )}
+      </section>
+
+      {/* Praktisk og om */}
+      {(club.about || club.practicalInfo) && (
+        <section className="grid gap-4 sm:grid-cols-2">
+          {club.about && (
+            <div className="card">
+              <h2 className="display text-xl">Om klubben</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
+                {club.about}
+              </p>
+            </div>
+          )}
+          {club.practicalInfo && (
+            <div className="card">
+              <h2 className="display text-xl">Praktisk</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
+                {club.practicalInfo}
+              </p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Medlemskab */}
+      {club.joinCode && !isMember && (
+        <section className="rounded-2xl bg-ink px-6 py-8 text-chalk sm:px-10">
+          <h2 className="display text-2xl">Bliv medlem</h2>
+          <p className="mt-2 max-w-xl text-chalk/80">
+            {club.memberPriceHour != null
+              ? `Medlemmer booker til ${club.memberPriceHour} kr i timen i stedet for ${club.priceHour} kr.`
+              : "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}
+            Har du fået en kode af klubben, kan du tilmelde dig her.
+          </p>
+          <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">
+            Indløs kode
+          </Link>
+        </section>
+      )}
+
+      {/* Kontakt */}
+      <section className="card">
+        <h2 className="display text-xl">Kontakt</h2>
+        <dl className="mt-3 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
+          {club.address && (
+            <div className="flex gap-2">
+              <dt className="text-slate">Adresse</dt>
+              <dd>{club.address}, {club.city}</dd>
+            </div>
+          )}
+          {club.contactEmail && (
+            <div className="flex gap-2">
+              <dt className="text-slate">E-mail</dt>
+              <dd>
+                <a href={`mailto:${club.contactEmail}`} className="underline">
+                  {club.contactEmail}
+                </a>
+              </dd>
+            </div>
+          )}
+          {club.contactPhone && (
+            <div className="flex gap-2">
+              <dt className="text-slate">Telefon</dt>
+              <dd>{club.contactPhone}</dd>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <dt className="text-slate">Åbent</dt>
+            <dd className="data">
+              {club.openHour}–{club.closeHour}
+            </dd>
+          </div>
+        </dl>
+      </section>
     </div>
   );
 }

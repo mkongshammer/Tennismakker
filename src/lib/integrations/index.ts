@@ -23,11 +23,17 @@ export function adapterFor(type: string): BookingSystemAdapter {
 export async function getClubAvailability(
   clubId: string,
   from: Date,
-  until: Date
+  until: Date,
+  opts: { isMember?: boolean } = {}
 ): Promise<AvailabilityResult> {
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) return { slots: [], needsClubEntry: false };
-  return adapterFor(club.integrationType).getAvailability({ clubId, from, until });
+  return adapterFor(club.integrationType).getAvailability({
+    clubId,
+    from,
+    until,
+    isMember: opts.isMember,
+  });
 }
 
 /** Hvor gammelt et spejl må være, når nogen er ved at booke. */

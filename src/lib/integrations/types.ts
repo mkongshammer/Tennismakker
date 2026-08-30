@@ -32,6 +32,8 @@ export type AdapterInput = {
   clubId: string;
   from: Date;
   until: Date;
+  /** Er den, der kigger, medlem af klubben? Så gælder medlemsprisen. */
+  isMember?: boolean;
 };
 
 /** Alle adaptere opfylder denne kontrakt. */

@@ -821,3 +821,109 @@ export async function setLastMinute(formData: FormData) {
   await db.club.update({ where: { id: clubId }, data: { lastMinuteHours: hours } });
   revalidatePath("/admin");
 }
+
+// ---------------- Klubbens hjemmeside ----------------
+//
+// Klubber der bruger os som deres eneste system har ingen anden
+// hjemmeside. Så det, de skriver her, ER klubbens ansigt udadtil.
+
+export async function updateClubSite(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const color = String(formData.get("color") ?? "").trim();
+  if (color && !/^#[0-9a-fA-F]{6}$/.test(color)) {
+    return { error: "Farven skal skrives som en hex-kode, fx #1B62C4." };
+  }
+
+  const openHour = Number(formData.get("openHour") ?? 7);
+  const closeHour = Number(formData.get("closeHour") ?? 22);
+  if (!(openHour >= 0 && closeHour <= 24 && openHour < closeHour)) {
+    return { error: "Lukketid skal ligge efter åbningstid." };
+  }
+
+  const memberPriceRaw = String(formData.get("memberPriceHour") ?? "").trim();
+  const memberPriceHour = memberPriceRaw === "" ? null : Number(memberPriceRaw);
+  if (memberPriceHour !== null && !(memberPriceHour >= 0)) {
+    return { error: "Medlemsprisen skal være 0 kr eller derover." };
+  }
+
+  await db.club.update({
+    where: { id: clubId },
+    data: {
+      tagline: String(formData.get("tagline") ?? "").trim() || null,
+      about: String(formData.get("about") ?? "").trim() || null,
+      practicalInfo: String(formData.get("practicalInfo") ?? "").trim() || null,
+      contactEmail: String(formData.get("contactEmail") ?? "").trim() || null,
+      contactPhone: String(formData.get("contactPhone") ?? "").trim() || null,
+      priceHour: Math.max(0, Number(formData.get("priceHour") ?? 0)),
+      memberPriceHour,
+      openHour,
+      closeHour,
+      ...(color ? { color } : {}),
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: "Siden er opdateret." };
+}
+
+export async function createPost(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  if (!title || !body) return { error: "Udfyld både overskrift og tekst." };
+
+  await db.clubPost.create({
+    data: { clubId, title, body, pinned: formData.get("pinned") === "on" },
+  });
+
+  revalidatePath("/admin");
+  return { ok: "Nyheden er slået op." };
+}
+
+export async function deletePost(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  await db.clubPost.deleteMany({
+    where: { id: String(formData.get("id")), clubId },
+  });
+  revalidatePath("/admin");
+}
+
+/** Genererer en tilmeldingskode, klubben kan dele med sine medlemmer. */
+export async function generateJoinCode() {
+  const { clubId } = await requireClubAdmin();
+  const club = await db.club.findUnique({ where: { id: clubId } });
+  if (!club) return;
+
+  const base = club.slug.split("-")[0].toUpperCase().slice(0, 6);
+  let code = "";
+  for (let i = 0; i < 20; i++) {
+    const candidate = `${base}-${Math.floor(1000 + Math.random() * 9000)}`;
+    if (!(await db.club.findUnique({ where: { joinCode: candidate } }))) {
+      code = candidate;
+      break;
+    }
+  }
+  if (!code) return;
+
+  await db.club.update({ where: { id: clubId }, data: { joinCode: code } });
+  revalidatePath("/admin");
+}
+
+/** Melder den indloggede bruger ind i klubben med koden. */
+export async function joinClub(_prev: unknown, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const code = String(formData.get("code") ?? "").trim().toUpperCase();
+  if (!code) return { error: "Skriv koden fra klubben." };
+
+  const club = await db.club.findUnique({ where: { joinCode: code } });
+  if (!club) return { error: "Koden passer ikke til nogen klub." };
+  if (user.clubId === club.id) return { ok: "Du er allerede medlem." };
+
+  await db.user.update({ where: { id: user.id }, data: { clubId: club.id } });
+  revalidatePath(`/klub/${club.slug}`);
+  redirect(`/klub/${club.slug}`);
+}

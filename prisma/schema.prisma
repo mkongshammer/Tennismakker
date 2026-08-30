@@ -74,6 +74,17 @@ model Club {
   reviewNote   String? // intern note, vises ikke for klubben
   contactPhone String?
 
+  // Klubbens hjemmeside hos os. Klubber på NATIVE bruger os som deres
+  // eneste system og har ikke andet website — så siden her er klubbens
+  // ansigt udadtil, ikke bare en bookingkalender.
+  tagline        String? // én linje under navnet
+  about          String? // om klubben
+  practicalInfo  String? // adgang, parkering, omklædning, nøglebrik
+  contactEmail   String?
+  websiteUrl     String?
+  joinCode       String? @unique // medlemmer melder sig ind med denne kode
+  memberPriceHour Int? // medlemspris; er den sat, betaler medlemmer den
+
   address   String? // gadeadresse, bruges til kortet og til at finde vej
   latitude  Float?
   longitude Float?
@@ -92,6 +103,22 @@ model Club {
   members User[]
   reviews Review[]
   rules   GuestRule[]
+  posts   ClubPost[]
+}
+
+// ---------- Klubbens nyheder ----------
+// Klubber uden eget website har brug for et sted at skrive "banerne er
+// lukket på lørdag" og "klubmesterskab 12. maj".
+model ClubPost {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, createdAt])
 }
 
 // surface: "GRUS" | "HARD" | "INDE"

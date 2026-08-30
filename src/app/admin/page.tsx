@@ -5,12 +5,14 @@ import { addDays, format, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute } from "../../lib/actions";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost } from "../../lib/actions";
 import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
 import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
+import { SiteForm, PostForm } from "./SiteForm";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +32,11 @@ export default async function AdminPage() {
 
   const club = await db.club.findUnique({
     where: { id: user.clubId },
-    include: { courts: { orderBy: { name: "asc" } }, members: true },
+    include: {
+      courts: { orderBy: { name: "asc" } },
+      members: true,
+      posts: { orderBy: { createdAt: "desc" }, take: 10 },
+    },
   });
   if (!club) redirect("/");
 
@@ -147,6 +153,75 @@ export default async function AdminPage() {
         <p className="mt-3 text-sm text-slate/60">
           Vil I skifte model, så skriv til os.
         </p>
+      </section>
+
+      <section>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="display text-2xl">Jeres side</h2>
+          <Link href={`/klub/${club.slug}`} className="text-sm font-semibold text-court underline">
+            Se den som gæsterne gør
+          </Link>
+        </div>
+        <p className="mb-4 text-sm text-slate">
+          Bruger I os som jeres eneste system, er det her jeres hjemmeside.
+        </p>
+        <SiteForm club={club} />
+      </section>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Medlemmer</h2>
+        <p className="mb-4 text-sm text-slate">
+          {club.joinCode
+            ? "Del koden med jeres medlemmer, så booker de til medlemspris."
+            : "Lav en kode, I kan dele med medlemmerne."}
+        </p>
+        <div className="card flex flex-wrap items-center justify-between gap-4">
+          {club.joinCode ? (
+            <p className="data text-2xl font-bold">{club.joinCode}</p>
+          ) : (
+            <p className="text-slate">Ingen kode endnu</p>
+          )}
+          <form action={generateJoinCode}>
+            <button className="btn-ghost">
+              {club.joinCode ? "Lav en ny kode" : "Lav en kode"}
+            </button>
+          </form>
+        </div>
+        <p className="mt-2 text-xs text-slate">
+          Laver I en ny kode, holder den gamle op med at virke. Medlemmer der
+          allerede er meldt ind, bliver ved med at være det.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Nyheder</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vises øverst på jeres side. Til lukkedage, turneringer og andet, folk
+          skal vide.
+        </p>
+        <PostForm />
+
+        {club.posts.length > 0 && (
+          <ul className="mt-4 space-y-2">
+            {club.posts.map((post: any) => (
+              <li key={post.id} className="card flex flex-wrap items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-semibold">
+                    {post.pinned && <span className="text-court">★ </span>}
+                    {post.title}
+                  </p>
+                  <p className="text-xs text-slate">
+                    {format(post.createdAt, "d. MMMM yyyy", { locale: da })}
+                  </p>
+                </div>
+                <form action={deletePost}>
+                  <input type="hidden" name="id" value={post.id} />
+                  <button className="text-sm text-slate underline">Slet</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section>

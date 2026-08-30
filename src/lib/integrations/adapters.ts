@@ -9,7 +9,12 @@ import type {
 } from "./types";
 
 /** Timeslots i klubbens åbningstid mellem from og until. */
-async function openingHourSlots(clubId: string, from: Date, until: Date) {
+async function openingHourSlots(
+  clubId: string,
+  from: Date,
+  until: Date,
+  isMember = false
+) {
   const club = await db.club.findUnique({
     where: { id: clubId },
     include: { courts: { orderBy: { name: "asc" } } },
@@ -29,7 +34,10 @@ async function openingHourSlots(clubId: string, from: Date, until: Date) {
           surface: court.surface,
           startsAt,
           endsAt: addHours(startsAt, 1),
-          priceKr: club.priceHour,
+          priceKr:
+            isMember && club.memberPriceHour != null
+              ? club.memberPriceHour
+              : club.priceHour,
         });
       }
     }
@@ -56,8 +64,8 @@ async function ownBookingKeys(courtIds: string[], from: Date, until: Date) {
 export const nativeAdapter: BookingSystemAdapter = {
   type: "NATIVE",
   label: "RacketBuddy",
-  async getAvailability({ clubId, from, until }: AdapterInput): Promise<AvailabilityResult> {
-    const base = await openingHourSlots(clubId, from, until);
+  async getAvailability({ clubId, from, until, isMember }: AdapterInput): Promise<AvailabilityResult> {
+    const base = await openingHourSlots(clubId, from, until, isMember);
     if (!base) return { slots: [], needsClubEntry: false };
 
     const taken = await ownBookingKeys(

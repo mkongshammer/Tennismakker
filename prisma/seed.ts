@@ -28,6 +28,15 @@ async function main() {
       country: "DK",
       status: "APPROVED",
       approvedAt: new Date(),
+      tagline: "Fire grusbaner og en indendørsbane ti minutter fra centrum.",
+      about:
+        "Søndermark er en klub for folk der vil spille, ikke for folk der vil sidde i bestyrelsen. Vi har hold i alle rækker, fri træning tirsdag og torsdag aften, og en klubturnering hvert forår.\n\nVi bruger RacketBuddy som vores eneste bookingsystem — både medlemmer og gæster booker her.",
+      practicalInfo:
+        "Anlægget ligger bag hallen. Lågen åbnes med den kode, du får i din kvittering, og koden virker fra 15 minutter før din tid.\n\nDer er omklædning og bad i klubhuset. Parkering på grusarealet ved indkørslen.",
+      contactEmail: "kontakt@soendermarktennis.dk",
+      contactPhone: "38 12 44 90",
+      joinCode: "SOENDE-2041",
+      memberPriceHour: 45,
     },
   });
 
@@ -152,6 +161,15 @@ async function main() {
       country: "DK",
       status: "APPROVED",
       approvedAt: new Date(),
+      tagline: "Fire grusbaner og en indendørsbane ti minutter fra centrum.",
+      about:
+        "Søndermark er en klub for folk der vil spille, ikke for folk der vil sidde i bestyrelsen. Vi har hold i alle rækker, fri træning tirsdag og torsdag aften, og en klubturnering hvert forår.\n\nVi bruger RacketBuddy som vores eneste bookingsystem — både medlemmer og gæster booker her.",
+      practicalInfo:
+        "Anlægget ligger bag hallen. Lågen åbnes med den kode, du får i din kvittering, og koden virker fra 15 minutter før din tid.\n\nDer er omklædning og bad i klubhuset. Parkering på grusarealet ved indkørslen.",
+      contactEmail: "kontakt@soendermarktennis.dk",
+      contactPhone: "38 12 44 90",
+      joinCode: "SOENDE-2041",
+      memberPriceHour: 45,
     },
   });
 
@@ -191,6 +209,25 @@ async function main() {
         toHour: 20,
         priceKr: guestClub.priceHour,
       },
+    });
+  }
+
+  // Et par nyheder, så klubsiden ikke står tom
+  if ((await db.clubPost.count({ where: { clubId: club.id } })) === 0) {
+    await db.clubPost.createMany({
+      data: [
+        {
+          clubId: club.id,
+          title: "Bane 3 og 4 er lukket lørdag",
+          body: "Vi lægger nyt grus lørdag den 6. Bane 1, 2 og indendørsbanen er åbne som normalt.",
+          pinned: true,
+        },
+        {
+          clubId: club.id,
+          title: "Klubturnering 12. maj",
+          body: "Tilmelding hænger i klubhuset. Alle rækker, og der er kage.",
+        },
+      ],
     });
   }
 

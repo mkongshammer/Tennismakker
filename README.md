@@ -383,3 +383,27 @@ Den tungeste del af at være klub hos os var, at man skulle frigive hver enkelt 
 **Det er genkendelse, ikke integration.** Halbooking har ingen offentlig grænseflade, så selv når vi genkender det, kan vi ikke hente ledighed derfra uden en aftale med Globus Data. Det siger opsætningen rent ud i stedet for at love noget, den ikke kan holde — og foreslår en regel i stedet.
 
 Finder vi et kalenderfeed, kan klubben teste det med en knap, der fortæller hvor mange bookinger vi kan se i det. Et feed der "ser rigtigt ud" er ikke det samme som et feed der virker.
+
+## Plug and play: klubben bruger os som eneste system
+
+Klubber på `integrationType = NATIVE` har ikke noget andet bookingsystem — og ofte heller ingen hjemmeside. Så `/klub/[slug]` er ikke en bookingkalender, det er klubbens ansigt udadtil:
+
+- **Hoved** i klubbens egen farve med banemotiv, tagline, adresse og bedømmelse
+- **Nyheder** — lukkedage, turneringer, alt det der ellers hænger på en opslagstavle
+- **Booking** med medlems- og gæstepris
+- **Om klubben** og **Praktisk** — hvor det vigtigste for en gæst er, hvordan man kommer ind på anlægget
+- **Bliv medlem** med kode
+- **Kontakt**
+
+Alt redigeres i `/admin` under "Jeres side". Klubben skriver tekst i almindelige felter og ser resultatet med ét klik. Ingen udvikler, ingen skabelon at vælge.
+
+**Medlemskab** virker med en kode, klubben selv genererer og deler. Er `memberPriceHour` sat, booker medlemmer til den pris, gæster til den almindelige. Prisen afgøres i adapterlaget (`isMember`), så både klubside, API og app viser det samme.
+
+Laver klubben en ny kode, holder den gamle op med at virke, men eksisterende medlemmer forbliver medlemmer.
+
+**Ikke bygget endnu:**
+
+- **Eget domæne.** Klubben ligger på `/klub/navn`, ikke `navn.dk`. Datamodellen er klar til det (`slug` er unik), og en `middleware.ts` der læser værtsnavnet ville være nok — men det kræver også, at klubben peger sit DNS hen, og at der udstedes certifikater.
+- **Billeder.** Der er ingen logo- eller fotoupload. Det kræver en lagringsudbyder og en beslutning om, hvem der rydder op i det.
+- **Kontingent.** Medlemskab giver adgang til medlemspris, men der opkræves ikke kontingent. Det er en anden slags betaling end en booking og hører sammen med Stripe Billing.
+- **Hold og turneringer.** Nyheder dækker det løseste behov. Rigtig holdadministration er et selvstændigt produkt.
