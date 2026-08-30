@@ -311,6 +311,112 @@ async function main() {
     },
   });
 
+  // Fem ekstra klubber, udelukkende så kortet på /book har noget at vise.
+  // Adresserne er rigtige steder i og omkring København, men klubberne
+  // selv, priserne og medlemstallene er opdigtede.
+  const mapClubs = [
+    {
+      slug: "amager-tennis",
+      name: "Amager Tennisklub",
+      city: "København S",
+      address: "Amager Strandvej 100",
+      latitude: 55.6559,
+      longitude: 12.6197,
+      color: "#8F3510",
+      priceHour: 85,
+      sport: "TENNIS",
+      surface: "GRUS",
+      courts: 5,
+    },
+    {
+      slug: "frederiksberg-padel",
+      name: "Frederiksberg Padel",
+      city: "Frederiksberg",
+      address: "Falkoner Allé 44",
+      latitude: 55.6811,
+      longitude: 12.5344,
+      color: "#12796B",
+      priceHour: 260,
+      sport: "PADEL",
+      surface: "KUNSTGRAES",
+      courts: 4,
+    },
+    {
+      slug: "valby-badminton",
+      name: "Valby Badmintonklub",
+      city: "Valby",
+      address: "Vigerslev Allé 18",
+      latitude: 55.6598,
+      longitude: 12.5075,
+      color: "#1B6B45",
+      priceHour: 70,
+      sport: "BADMINTON",
+      surface: "INDE",
+      courts: 8,
+    },
+    {
+      slug: "hellerup-tennis",
+      name: "Hellerup Tennisklub",
+      city: "Hellerup",
+      address: "Strandvejen 205",
+      latitude: 55.7346,
+      longitude: 12.5793,
+      color: "#1B62C4",
+      priceHour: 140,
+      sport: "TENNIS",
+      surface: "HARD",
+      courts: 6,
+    },
+    {
+      slug: "koebenhavn-squash",
+      name: "København Squash Club",
+      city: "København K",
+      address: "Njalsgade 21",
+      latitude: 55.6656,
+      longitude: 12.5883,
+      color: "#B4472C",
+      priceHour: 110,
+      sport: "SQUASH",
+      surface: "INDE",
+      courts: 3,
+    },
+  ];
+
+  for (const c of mapClubs) {
+    const club = await db.club.upsert({
+      where: { slug: c.slug },
+      update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
+      create: {
+        slug: c.slug,
+        name: c.name,
+        city: c.city,
+        address: c.address,
+        latitude: c.latitude,
+        longitude: c.longitude,
+        color: c.color,
+        priceHour: c.priceHour,
+        openHour: 7,
+        closeHour: 22,
+        country: "DK",
+        status: "APPROVED",
+        approvedAt: new Date(),
+        integrationType: "NATIVE",
+        tagline: `${c.courts} baner i ${c.city}.`,
+      },
+    });
+
+    if ((await db.court.count({ where: { clubId: club.id } })) === 0) {
+      await db.court.createMany({
+        data: Array.from({ length: c.courts }, (_, i) => ({
+          name: `Bane ${i + 1}`,
+          sport: c.sport,
+          surface: c.surface,
+          clubId: club.id,
+        })),
+      });
+    }
+  }
+
   console.log("Seed færdig ✔");
   console.log("Log ind med fx mads@demo.dk / tennis123 (alle demo-konti bruger tennis123)");
 }
