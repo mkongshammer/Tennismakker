@@ -74,6 +74,13 @@ model Club {
   stripeChargesEnabled Boolean @default(false)
   stripePayoutsEnabled Boolean @default(false)
 
+  // Adgang til anlægget. Vises kun til folk der rent faktisk har booket —
+  // i kvitteringsmailen og på deres profil, aldrig på den offentlige
+  // klubside. En kode alle kan se, er ingen kode.
+  hasLock            Boolean @default(false)
+  accessCode         String?
+  accessInstructions String?
+
   // Klubber godkendes manuelt, før de bliver synlige. En klub der påstår
   // at have baner, den ikke har, ødelægger tilliden for alle andre.
   status       String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"

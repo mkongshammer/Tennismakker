@@ -161,6 +161,9 @@ async function main() {
       country: "DK",
       status: "APPROVED",
       approvedAt: new Date(),
+      hasLock: true,
+      accessCode: "4821",
+      accessInstructions: "Koden virker fra 15 minutter før din tid. Indgang er ved siden af klubhuset.",
       tagline: "Fire grusbaner og en indendørsbane ti minutter fra centrum.",
       about:
         "Søndermark er en klub for folk der vil spille, ikke for folk der vil sidde i bestyrelsen. Vi har hold i alle rækker, fri træning tirsdag og torsdag aften, og en klubturnering hvert forår.\n\nVi bruger RacketBuddy som vores eneste bookingsystem — både medlemmer og gæster booker her.",

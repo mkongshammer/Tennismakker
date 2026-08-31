@@ -849,6 +849,10 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
     return { error: "Medlemsprisen skal være 0 kr eller derover." };
   }
 
+  const hasLock = formData.get("hasLock") === "on";
+  const accessCode = String(formData.get("accessCode") ?? "").trim();
+  const accessInstructions = String(formData.get("accessInstructions") ?? "").trim();
+
   await db.club.update({
     where: { id: clubId },
     data: {
@@ -861,6 +865,9 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
       memberPriceHour,
       openHour,
       closeHour,
+      hasLock,
+      accessCode: accessCode || null,
+      accessInstructions: accessInstructions || null,
       ...(color ? { color } : {}),
     },
   });

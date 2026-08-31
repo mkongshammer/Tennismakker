@@ -531,3 +531,13 @@ Alt er skrevet efter Stripes dokumentation og typetjekket, men jeg har ingen Str
 
 - **Abonnementsopkrævning** for klubber på fastprismodellen og for de 5.000 kr til hjemmesideydelsen. Begge er stadig manuelle. Stripe Billing er det naturlige næste skridt, når Connect-delen er bekræftet at virke.
 - **Retry ved mislykket webhook.** Stripe forsøger selv igen i timevis ved fejl, men der er ingen egen overvågning af, om en booking er "hængt" i HOLD, fordi en webhook aldrig kom igennem.
+
+## Adgang til anlægget
+
+Løser det spørgsmål, der afgør, om gæstebooking overhovedet fungerer i virkeligheden: **hvordan kommer en gæst ind, hvis anlægget er aflåst?**
+
+Klubben sætter det op i `/admin` under "Jeres side": en kode (`accessCode`) og/eller en fritekst-vejledning (`accessInstructions`), bag én kontakt "Anlægget er aflåst" (`hasLock`).
+
+**Vises kun til folk med en bekræftet booking** — i kvitteringsmailen og på deres profil under kommende bookinger. Aldrig på den offentlige klubside. En kode, alle kan se, er ingen sikkerhed; det er hele pointen med at gemme den bag en betalt booking.
+
+**Det er en statisk kode, ikke en digital lås.** Der er ingen integration til fysiske låsesystemer — koden er den samme for alle, indtil klubben selv ændrer den i admin. Rigtige udenlandske systemer som ClubSpark tilbyder engangskoder pr. booking gennem en fysisk lås-integration; det kræver en aftale med en låseleverandør og er ikke bygget. Til gengæld virker det med enhver aflåsning en klub allerede har — en kodelås, en nøgleboks, en vagt der skal ringes til — fordi det bare er tekst, klubben selv formulerer.

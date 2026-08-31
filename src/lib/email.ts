@@ -80,7 +80,15 @@ export function bookingReceipt(opts: {
   startsAt: Date;
   priceKr: number;
   bookingId: string;
+  access?: { hasLock: boolean; code: string | null; instructions: string | null };
 }): Mail {
+  const accessLines: string[] = [];
+  if (opts.access?.hasLock) {
+    accessLines.push(``, `Adgang til anlægget:`);
+    if (opts.access.code) accessLines.push(`Kode: ${opts.access.code}`);
+    if (opts.access.instructions) accessLines.push(opts.access.instructions);
+  }
+
   return {
     to: opts.to,
     subject: `Kvittering: ${opts.what}`,
@@ -92,6 +100,7 @@ export function bookingReceipt(opts: {
       `${opts.what}`,
       `${danishDateTime(opts.startsAt)}`,
       `Betalt: ${opts.priceKr} kr`,
+      ...accessLines,
       ``,
       `Se dine bookinger: ${baseUrl()}/profil`,
       ``,

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { useFormState } from "react-dom";
 import { updateClubSite, createPost } from "../../lib/actions";
 
 export function SiteForm({ club }: { club: any }) {
   const [state, action] = useFormState(updateClubSite, null);
+  const [locked, setLocked] = useState(Boolean(club.hasLock));
 
   return (
     <form action={action} className="card space-y-5">
@@ -90,6 +92,49 @@ export function SiteForm({ club }: { club: any }) {
           <label className="label" htmlFor="color">Klubfarve</label>
           <input className="input h-12 p-1" id="color" name="color" type="color" defaultValue={club.color} />
         </div>
+      </div>
+
+      <div className="border-t border-slate/10 pt-5">
+        <label className="flex items-center gap-2 font-semibold">
+          <input
+            type="checkbox"
+            name="hasLock"
+            className="h-4 w-4"
+            defaultChecked={club.hasLock}
+            onChange={(e) => setLocked(e.target.checked)}
+          />
+          Anlægget er aflåst
+        </label>
+        <p className="mt-1 text-sm text-slate">
+          Vises kun til gæster med en bekræftet booking — i kvitteringsmailen
+          og på deres profil. Aldrig på den offentlige klubside.
+        </p>
+
+        {locked && (
+          <div className="mt-3 space-y-4">
+            <div>
+              <label className="label" htmlFor="accessCode">Kode</label>
+              <input
+                className="input data"
+                id="accessCode"
+                name="accessCode"
+                defaultValue={club.accessCode ?? ""}
+                placeholder="fx 4821"
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="accessInstructions">Vejledning</label>
+              <textarea
+                className="input"
+                id="accessInstructions"
+                name="accessInstructions"
+                rows={2}
+                defaultValue={club.accessInstructions ?? ""}
+                placeholder="fx Koden virker fra 15 minutter før din tid. Indgang er bag hallen."
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}

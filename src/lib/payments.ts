@@ -201,6 +201,14 @@ async function notifyBookingConfirmed(booking: any) {
       startsAt: booking.startsAt,
       priceKr: booking.priceKr,
       bookingId: booking.id,
+      access:
+        booking.kind === "COURT" && booking.court
+          ? {
+              hasLock: booking.court.club.hasLock,
+              code: booking.court.club.accessCode,
+              instructions: booking.court.club.accessInstructions,
+            }
+          : undefined,
     })
   );
 

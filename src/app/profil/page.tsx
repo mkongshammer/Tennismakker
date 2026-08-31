@@ -137,7 +137,7 @@ export default async function ProfilPage({
           </p>
         )}
         <ul className="space-y-3">
-          {bookings.map((b) => (
+          {bookings.map((b: any) => (
             <li key={b.id} className="card flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="font-bold">
@@ -149,6 +149,20 @@ export default async function ProfilPage({
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
                   {b.status === "HOLD" ? "Afventer betaling" : "Bekræftet"}
                 </p>
+                {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
+                  <div className="mt-2 rounded-lg bg-court/5 p-2.5 text-sm">
+                    <span className="font-semibold">Adgang: </span>
+                    {b.court.club.accessCode && (
+                      <span className="data">{b.court.club.accessCode}</span>
+                    )}
+                    {b.court.club.accessInstructions && (
+                      <span className="text-slate">
+                        {b.court.club.accessCode ? " · " : ""}
+                        {b.court.club.accessInstructions}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 {b.status === "HOLD" && (
