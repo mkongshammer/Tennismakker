@@ -616,3 +616,10 @@ Alle fejl i bookingflowet blev tidligere kastet som rå undtagelser, hvilket gav
 **Reservationen ryddes op ved fejl.** Kan betalingen ikke startes — typisk fordi modtageren ikke har fuldført Stripe-opsætningen — annulleres den oprettede reservation med det samme. Ellers ville tiden stå blokeret i ti minutter for alle andre, uden at nogen havde betalt for den.
 
 **Klub-admin advarer nu tydeligt**, når udbetalinger ikke er sat op: "Gæster kan ikke booke hos jer endnu." Uden det ville en klub kunne frigive tider i god tro og først opdage problemet, når en gæst klagede.
+
+
+### Faldgrube: redirect() må ikke ligge i en try/catch
+
+`redirect()` i Next virker ved at kaste en intern undtagelse, som framework'et selv fanger. Ligger kaldet inde i en `try/catch`, der fanger alt, bliver omdirigeringen slugt — og brugeren sidder tilbage med en side, der bare bliver ved med at loade, uden fejl nogen steder.
+
+Præcis det skete, da fejlhåndteringen ovenfor blev bygget: betalingsfejlen blev fanget korrekt, men den efterfølgende omdirigering til fejlbeskeden forsvandt i samme `catch`. Rettet ved at fange kun selve betalingsfejlen og placere `redirect()` bagefter, uden for blokken.

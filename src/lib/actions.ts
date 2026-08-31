@@ -213,7 +213,11 @@ export async function bookCourtSlot(formData: FormData) {
     },
   });
 
-  let checkoutUrl: string;
+  // redirect() i Next virker ved at kaste en intern undtagelse. Den må
+  // derfor ALDRIG kaldes inde i en try/catch, der fanger alt — så bliver
+  // omdirigeringen slugt, og brugeren sidder tilbage med en side der
+  // bare loader. Derfor: fang kun betalingsfejlen, og omdirigér bagefter.
+  let checkoutUrl: string | null = null;
   try {
     checkoutUrl = await startCheckout(booking.id);
   } catch (err) {
@@ -224,11 +228,10 @@ export async function bookCourtSlot(formData: FormData) {
       data: { status: "CANCELLED" },
     });
     console.error("Kunne ikke starte betaling:", err);
-    fail("betaling");
-    return;
   }
 
-  redirect(checkoutUrl);
+  if (!checkoutUrl) fail("betaling");
+  redirect(checkoutUrl!);
 }
 
 /** Booker en trænertime. */
@@ -271,7 +274,8 @@ export async function bookCoachSlot(formData: FormData) {
     },
   });
 
-  let checkoutUrl: string;
+  // Samme forbehold som ved banebooking: redirect uden for try/catch.
+  let checkoutUrl: string | null = null;
   try {
     checkoutUrl = await startCheckout(booking.id);
   } catch (err) {
@@ -280,11 +284,10 @@ export async function bookCoachSlot(formData: FormData) {
       data: { status: "CANCELLED" },
     });
     console.error("Kunne ikke starte betaling:", err);
-    fail("betaling");
-    return;
   }
 
-  redirect(checkoutUrl);
+  if (!checkoutUrl) fail("betaling");
+  redirect(checkoutUrl!);
 }
 
 export async function cancelBooking(formData: FormData) {
