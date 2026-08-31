@@ -606,3 +606,13 @@ Webhooken blev første gang oprettet med "thin" som payload style, og da koden k
 `/api/webhooks/stripe` håndterer nu begge: den forsøger først den klassiske verifikation, og falder ved fejl tilbage til at læse event-id'et og hente hele eventet fra Stripe. Opslaget er samtidig verifikationen — et opdigtet id findes ikke hos Stripe.
 
 Det gør opsætningen robust over for, hvilken payload style der er valgt i panelet. Snapshot anbefales stadig, fordi det sparer et ekstra kald pr. event.
+
+## Bookingfejl vises som beskeder, ikke serverfejl
+
+Alle fejl i bookingflowet blev tidligere kastet som rå undtagelser, hvilket gav en blank "Application error"-side. En bruger der lige havde trykket på en bane, fik altså ingen anelse om hvad der gik galt eller hvad de skulle gøre.
+
+`bookCourtSlot()` og `bookCoachSlot()` sender nu i stedet brugeren tilbage til klubbens eller trænerens side med en læsbar besked: tiden var taget, tidspunktet er passeret, eller klubben kan ikke modtage betaling endnu.
+
+**Reservationen ryddes op ved fejl.** Kan betalingen ikke startes — typisk fordi modtageren ikke har fuldført Stripe-opsætningen — annulleres den oprettede reservation med det samme. Ellers ville tiden stå blokeret i ti minutter for alle andre, uden at nogen havde betalt for den.
+
+**Klub-admin advarer nu tydeligt**, når udbetalinger ikke er sat op: "Gæster kan ikke booke hos jer endnu." Uden det ville en klub kunne frigive tider i god tro og først opdage problemet, når en gæst klagede.

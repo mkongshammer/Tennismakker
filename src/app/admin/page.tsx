@@ -131,6 +131,10 @@ export default async function AdminPage({
             </p>
           ) : (
             <>
+              <p className="mt-2 rounded-xl border border-court/30 bg-court/5 p-3 text-sm font-semibold">
+                Gæster kan ikke booke hos jer endnu. Jeres tider vises, men en
+                booking afvises, indtil dette er på plads.
+              </p>
               <p className="mt-2 text-sm text-slate">
                 Klubben skal have en Stripe-konto, før gæster kan booke og betale.
                 Det tager typisk 5-10 minutter — I skal bruge NemID/MitID og

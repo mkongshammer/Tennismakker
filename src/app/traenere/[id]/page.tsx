@@ -12,7 +12,13 @@ import { Stars } from "../../../components/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function TraenerPage({ params }: { params: { id: string } }) {
+export default async function TraenerPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: { fejl?: string };
+}) {
   const coach = await db.coachProfile.findUnique({
     where: { id: params.id },
     include: { user: true, packages: { where: { active: true } } },
@@ -49,6 +55,18 @@ export default async function TraenerPage({ params }: { params: { id: string } }
 
   return (
     <div className="mx-auto max-w-2xl">
+      {searchParams.fejl && (
+        <p className="mb-4 rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
+          {searchParams.fejl === "betaling"
+            ? "Træneren kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført."
+            : searchParams.fejl === "egen"
+              ? "Du kan ikke booke en tid hos dig selv."
+              : searchParams.fejl === "passeret"
+                ? "Det tidspunkt er passeret. Vælg en anden tid."
+                : "Den tid var lige taget. Vælg en anden."}
+        </p>
+      )}
+
       <div className="card">
         <div className="flex items-baseline justify-between">
           <h1 className="display text-3xl">{coach.user.name}</h1>

@@ -175,8 +175,15 @@ export async function bookCourtSlot(formData: FormData) {
     where: { id: courtId },
     include: { club: true },
   });
-  if (!court) throw new Error("Banen findes ikke");
-  if (startsAt < new Date()) throw new Error("Tidspunktet er passeret");
+  if (!court) redirect("/book");
+
+  const slug = court.club.slug;
+  // Fejl vises som en besked på klubbens egen side, ikke som en rå
+  // serverfejlside. En bruger der har trykket på en bane, skal kunne se
+  // hvad der gik galt og prøve en anden tid — ikke ramme en blank fejl.
+  const fail = (reason: string) => redirect(`/klub/${slug}?fejl=${reason}`);
+
+  if (startsAt < new Date()) fail("passeret");
 
   await releaseExpiredHolds();
   // Hent klubbens kalender på ny, hvis spejlet er mere end et minut gammelt
@@ -190,9 +197,7 @@ export async function bookCourtSlot(formData: FormData) {
   const slot = slots.find(
     (s) => s.courtId === courtId && s.startsAt.getTime() === startsAt.getTime()
   );
-  if (!slot) {
-    throw new Error("Tiden er ikke længere ledig — vælg en anden.");
-  }
+  if (!slot) fail("optaget");
 
   const booking = await db.booking.create({
     data: {
@@ -200,7 +205,7 @@ export async function bookCourtSlot(formData: FormData) {
       status: "HOLD",
       startsAt,
       endsAt,
-      priceKr: slot.priceKr,
+      priceKr: slot!.priceKr,
       holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
       userId: user.id,
       courtId,
@@ -208,7 +213,22 @@ export async function bookCourtSlot(formData: FormData) {
     },
   });
 
-  redirect(await startCheckout(booking.id));
+  let checkoutUrl: string;
+  try {
+    checkoutUrl = await startCheckout(booking.id);
+  } catch (err) {
+    // Kan klubben ikke modtage betaling endnu, skal reservationen ikke
+    // blive hængende og blokere tiden for andre.
+    await db.booking.update({
+      where: { id: booking.id },
+      data: { status: "CANCELLED" },
+    });
+    console.error("Kunne ikke starte betaling:", err);
+    fail("betaling");
+    return;
+  }
+
+  redirect(checkoutUrl);
 }
 
 /** Booker en trænertime. */
@@ -221,16 +241,22 @@ export async function bookCoachSlot(formData: FormData) {
   const endsAt = addHours(startsAt, 1);
 
   const coach = await db.coachProfile.findUnique({ where: { id: coachProfileId } });
-  if (!coach) throw new Error("Træneren findes ikke");
-  if (coach.userId === user.id) throw new Error("Du kan ikke booke dig selv");
-  if (startsAt < new Date()) throw new Error("Tidspunktet er passeret");
+  if (!coach) redirect("/traenere");
+
+  // Samme princip som ved banebooking: vis en læsbar besked på trænerens
+  // side i stedet for en rå serverfejl.
+  const fail = (reason: string) =>
+    redirect(`/traenere/${coachProfileId}?fejl=${reason}`);
+
+  if (coach!.userId === user.id) fail("egen");
+  if (startsAt < new Date()) fail("passeret");
 
   await releaseExpiredHolds();
 
   const clash = await db.booking.findFirst({
     where: { coachProfileId, startsAt, status: { in: ["HOLD", "CONFIRMED"] } },
   });
-  if (clash) throw new Error("Tiden er lige blevet taget — vælg en anden.");
+  if (clash) fail("optaget");
 
   const booking = await db.booking.create({
     data: {
@@ -238,14 +264,27 @@ export async function bookCoachSlot(formData: FormData) {
       status: "HOLD",
       startsAt,
       endsAt,
-      priceKr: coach.priceHour,
+      priceKr: coach!.priceHour,
       holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
       userId: user.id,
       coachProfileId,
     },
   });
 
-  redirect(await startCheckout(booking.id));
+  let checkoutUrl: string;
+  try {
+    checkoutUrl = await startCheckout(booking.id);
+  } catch (err) {
+    await db.booking.update({
+      where: { id: booking.id },
+      data: { status: "CANCELLED" },
+    });
+    console.error("Kunne ikke starte betaling:", err);
+    fail("betaling");
+    return;
+  }
+
+  redirect(checkoutUrl);
 }
 
 export async function cancelBooking(formData: FormData) {

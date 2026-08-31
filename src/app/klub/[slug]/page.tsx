@@ -33,7 +33,7 @@ export default async function KlubPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { dag?: string; optaget?: string };
+  searchParams: { dag?: string; optaget?: string; fejl?: string };
 }) {
   const club = await db.club.findUnique({
     where: { slug: params.slug },
@@ -178,9 +178,13 @@ export default async function KlubPage({
         </section>
       )}
 
-      {searchParams.optaget && (
+      {(searchParams.optaget || searchParams.fejl) && (
         <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
-          Den tid var taget. Her er resten af dagen — vælg en anden.
+          {searchParams.fejl === "betaling"
+            ? "Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked."
+            : searchParams.fejl === "passeret"
+              ? "Det tidspunkt er passeret. Vælg en anden tid."
+              : "Den tid var lige taget. Her er resten af dagen — vælg en anden."}
         </p>
       )}
 
