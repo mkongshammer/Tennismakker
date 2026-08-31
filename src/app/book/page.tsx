@@ -1,4 +1,4 @@
-// "Book ink" — indgangen til baner.
+// "Book bane" — indgangen til baner.
 //
 // Viser kun godkendte klubber i brugerens land, filtreret på den valgte
 // sportsgren. Uden landefilteret ville en dansk spiller få tyske klubber

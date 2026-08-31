@@ -11,11 +11,18 @@ type Dict = Record<string, { da: string; en: string }>;
 
 const T: Dict = {
   // Navigation
-  "nav.book": { da: "Book ink", en: "Book court" },
+  "nav.book": { da: "Book bane", en: "Book court" },
   "nav.coaches": { da: "Find træner", en: "Find coach" },
   "nav.players": { da: "Find medspiller", en: "Find co-player" },
   "nav.profile": { da: "Min profil", en: "My profile" },
   "nav.messages": { da: "Beskeder", en: "Messages" },
+
+  // Korte udgaver til bundlinjen på telefon, hvor fire faner skal dele
+  // bredden. De lange navne bruges stadig som sidetitler.
+  "tab.book": { da: "Book bane", en: "Book" },
+  "tab.coaches": { da: "Trænere", en: "Coaches" },
+  "tab.players": { da: "Medspillere", en: "Players" },
+  "tab.messages": { da: "Beskeder", en: "Messages" },
   "nav.admin": { da: "Klub-admin", en: "Club admin" },
   "nav.login": { da: "Log ind", en: "Log in" },
   "nav.signup": { da: "Opret profil", en: "Sign up" },
@@ -40,8 +47,8 @@ const T: Dict = {
   "common.level": { da: "Niveau", en: "Level" },
   "common.price": { da: "Pris", en: "Price" },
 
-  // Book ink
-  "book.title": { da: "Book ink", en: "Book a court" },
+  // Book bane
+  "book.title": { da: "Book bane", en: "Book a court" },
   "book.intro": {
     da: "Find en ledig ink i en klub nær dig.",
     en: "Find an available court at a club near you.",

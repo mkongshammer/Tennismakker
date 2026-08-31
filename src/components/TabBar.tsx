@@ -93,10 +93,10 @@ export function TabBar({
   // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det
   // tydeligere, hvad appen er til.
   const tabs = [
-    { href: "/book", label: t("nav.book"), Icon: IconCourt, badge: 0 },
-    { href: "/traenere", label: t("nav.coaches"), Icon: IconCoach, badge: 0 },
-    { href: "/spillere", label: t("nav.players"), Icon: IconPlayers, badge: 0 },
-    { href: "/beskeder", label: t("nav.messages"), Icon: IconMessages, badge: unread },
+    { href: "/book", label: t("tab.book"), Icon: IconCourt, badge: 0 },
+    { href: "/traenere", label: t("tab.coaches"), Icon: IconCoach, badge: 0 },
+    { href: "/spillere", label: t("tab.players"), Icon: IconPlayers, badge: 0 },
+    { href: "/beskeder", label: t("tab.messages"), Icon: IconMessages, badge: unread },
   ];
 
   const isActive = (href: string) =>
@@ -137,7 +137,11 @@ export function TabBar({
                     </span>
                   )}
                 </span>
-                <span className={`text-[11px] ${active ? "font-bold" : "font-medium"}`}>
+                <span
+                  className={`whitespace-nowrap text-[10px] leading-tight ${
+                    active ? "font-bold" : "font-medium"
+                  }`}
+                >
                   {label}
                 </span>
               </Link>
