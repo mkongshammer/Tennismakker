@@ -115,6 +115,22 @@ export async function startCheckout(bookingId: string): Promise<string> {
 
   const base = process.env.APP_URL ?? "https://tennis-makker.onrender.com";
 
+  // Hvem betaler Stripes eget gebyr, afhænger af klubbens model.
+  //
+  // Ved provision (fee > 0) er vi som standard ansvarlige for Stripes
+  // gebyr i en destination charge — det er fint, for gebyret trækkes fra
+  // vores egen andel, og det er netop derfor provisionen er 10% og ikke
+  // lavere (se COMMISSION_PCT).
+  //
+  // Ved abonnement er vores andel 0 kr. Uden videre ville VI stadig
+  // hæfte for Stripes gebyr på hver eneste booking, uden noget at dække
+  // det med — platformen ville tabe penge på hver transaktion. Derfor
+  // sættes `on_behalf_of` her, som flytter ansvaret for Stripes gebyr
+  // over på klubbens egen konto. Klubben betaler et fast beløb om
+  // måneden i stedet for provision, og betaler så Stripes gebyr som en
+  // hvilken som helst anden erhvervsdrivende, der tager kortbetaling.
+  const isSubscriptionClub = fee === 0 && kind === "CLUB";
+
   const session = await stripe().checkout.sessions.create({
     mode: "payment",
     // MobilePay slås til i Stripe Dashboard under Payment methods — når
@@ -133,6 +149,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
     payment_intent_data: {
       application_fee_amount: fee * 100,
       transfer_data: { destination: account.id },
+      ...(isSubscriptionClub ? { on_behalf_of: account.id } : {}),
       metadata: { bookingId },
     },
     metadata: { bookingId },

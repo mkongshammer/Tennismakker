@@ -93,7 +93,11 @@ Satserne står i `src/lib/payments.ts`: **10% af hver booking**, både baner og 
 
 En sats er lettere at forklare i et klubmøde end to, og den holder over Stripes gebyr. En indenlandsk betaling koster 1,5% + 1,80 kr, så en banetime til 100 kr giver 10,00 − 3,30 = 6,70 kr tilbage. Ved 3% ville den samme booking koste os 30 øre — det faste gebyr æder alt, når beløbet er lille.
 
-**Klubber kan vælge abonnement i stedet.** `Club.billingModel` er enten `COMMISSION` (10% pr. booking) eller `SUBSCRIPTION` (fast beløb pr. måned, klubben beholder hele bookingen). `platformFeeForBooking()` returnerer 0 for abonnementsklubbers banebookinger. Trænertimer er altid på provision — træneren er selvstændig og har ikke et abonnement.
+**Klubber kan vælge abonnement i stedet.** `Club.billingModel` er enten `COMMISSION` (10% pr. booking) eller `SUBSCRIPTION` (fast beløb pr. måned, klubben beholder resten af hver booking). `platformFeeForBooking()` returnerer 0 for abonnementsklubbers banebookinger. Trænertimer er altid på provision — træneren er selvstændig og har ikke et abonnement.
+
+**Hvem betaler Stripes eget gebyr ved abonnement?** Det gjorde først platformen — en fejl der blev fanget og rettet. I en destination charge er platformen som standard ansvarlig for Stripes gebyr, uanset hvad `application_fee_amount` er sat til. Med 0 kr i vores egen andel ville hver eneste abonnementsklubs booking altså have kostet os Stripes gebyr uden noget at dække det med — platformen ville tabe penge på hver transaktion.
+
+Rettet ved at sætte `on_behalf_of: account.id` på betalingen, når klubben er på abonnement. Det flytter ansvaret for Stripes gebyr over på klubbens egen konto. Klubben betaler derved et fast beløb om måneden i stedet for provision, og betaler så Stripes transaktionsgebyr, som enhver anden erhvervsdrivende, der tager kortbetaling ville gøre. Provisionsklubber er upåvirkede — der dækker vores 10% fortsat gebyret, som beskrevet ovenfor.
 
 Opkrævningen af selve abonnementet er ikke bygget. `subscriptionKr` er indtil videre kun et tal, der vises i admin.
 
