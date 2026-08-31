@@ -1,7 +1,7 @@
 import { addHours, addMinutes } from "date-fns";
 import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
-import { releaseExpiredHolds } from "../../../../lib/payments";
+import { releaseExpiredHolds, startCheckout } from "../../../../lib/payments";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 
 export const dynamic = "force-dynamic";
@@ -88,7 +88,11 @@ export async function POST(req: Request) {
         needsClubEntry,
       },
     });
-    return json({ id: booking.id, checkoutUrl: `/checkout/${booking.id}` }, 201);
+    // Bruger den samme betalingslogik som websitet — så appen får en
+    // rigtig Stripe-session, når PAYMENT_PROVIDER er sat til stripe,
+    // i stedet for en genvej der aldrig burde ligge i produktion.
+    const checkoutUrl = await startCheckout(booking.id);
+    return json({ id: booking.id, checkoutUrl }, 201);
   }
 
   if (body.coachProfileId) {
@@ -114,7 +118,8 @@ export async function POST(req: Request) {
         coachProfileId: coachId,
       },
     });
-    return json({ id: booking.id, checkoutUrl: `/checkout/${booking.id}` }, 201);
+    const checkoutUrl = await startCheckout(booking.id);
+    return json({ id: booking.id, checkoutUrl }, 201);
   }
 
   return apiError("Angiv enten courtId eller coachProfileId.");

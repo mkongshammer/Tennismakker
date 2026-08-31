@@ -556,3 +556,18 @@ Løst med `useFormStatus()` fra React, som ved præcis hvornår den `<form>`, de
 - **`BookingGrid.tsx`** og **`CoachSlotButton.tsx`** — banetiderne og trænertiderne beholder deres egen stil (farvet flise med sportens farve, henholdsvis en lille kant-knap), men viser en spinner i stedet for teksten, mens bookingen oprettes
 
 Knappen deaktiveres samtidig, mens den venter — et dobbeltklik under de 5-6 sekunder kan ellers nå at oprette to Stripe-kald for den samme handling.
+
+## Sikkerhedsrettelse: gratis booking var mulig
+
+Fundet ved et spørgsmål om abonnementsgebyrer, ikke ved en systematisk gennemgang — værd at bemærke.
+
+`/checkout/[id]` tjekkede aldrig `PAYMENT_PROVIDER`. Siden viste altid en "Betal (demo)"-knap, der bekræftede bookingen direkte uden nogen betaling — bygget til udvikling, men uden en spærring mod at blive brugt i produktion. Samtidig pegede `/api/v1/bookings` (det API, mobilappen bruger) altid derhen med en hårdkodet sti, uanset hvilken betalingsudbyder der var sat.
+
+Kombinationen betød: med `PAYMENT_PROVIDER=stripe` sat i produktion kunne enhver med en konto booke og bekræfte en bane- eller trænertime uden at betale, ved at kalde API'et direkte.
+
+Rettet to steder:
+
+- **`/api/v1/bookings`** kalder nu den samme `startCheckout()`, som websitet bruger, og returnerer en ægte Stripe-adresse, når Stripe er slået til.
+- **`/checkout/[id]`** sender nu videre til en ægte Stripe-session, så snart `PAYMENT_PROVIDER=stripe` — uanset hvordan nogen er landet på siden. Demo-knappen findes kun tilbage, når platformen kører i mock-tilstand.
+
+Ingen tegn på, at hullet blev udnyttet — men det var reelt, og det lå live, indtil nu.

@@ -1,11 +1,16 @@
-// Mock-checkout: simulerer betalingsflowet (MobilePay/kort).
-// I produktion erstattes denne side af Stripe Checkout — se src/lib/payments.ts.
+// Betalingsside.
+//
+// I mock-tilstand simulerer den selv et betalingsflow. I Stripe-tilstand
+// må den ALDRIG vise en gratis "betal"-genvej — det ville betyde, at en
+// booking kunne bekræftes uden at en krone rørte ved en rigtig konto.
+// I stedet sendes brugeren videre til en ægte Stripe-session, uanset
+// hvordan de er landet her (websitet, appen, eller en direkte adresse).
 import { notFound, redirect } from "next/navigation";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
-import { confirmBookingPayment, platformFeeForBooking } from "../../../lib/payments";
+import { confirmBookingPayment, platformFeeForBooking, startCheckout } from "../../../lib/payments";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +32,12 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
     );
   }
   if (booking.status === "CONFIRMED") redirect("/profil?betalt=1");
+
+  // Stripe er slået til: denne side er kun en gennemgangsstation. Den
+  // egentlige betaling foregår hos Stripe, aldrig her.
+  if ((process.env.PAYMENT_PROVIDER ?? "mock") === "stripe") {
+    redirect(await startCheckout(booking.id));
+  }
 
   const what =
     booking.kind === "COURT"
