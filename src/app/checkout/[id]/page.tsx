@@ -35,8 +35,37 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
 
   // Stripe er slået til: denne side er kun en gennemgangsstation. Den
   // egentlige betaling foregår hos Stripe, aldrig her.
+  //
+  // Omdirigeringen sker med en meta-refresh og ikke med redirect(), fordi
+  // Stripes adresse ligger på et andet domæne. Next behandler en server-
+  // redirect som en intern navigation, og browseren kan i den situation
+  // ende med at blive på siden — hvorefter brugeren lander tilbage på
+  // profilen uden nogensinde at have set en betalingsside.
   if ((process.env.PAYMENT_PROVIDER ?? "mock") === "stripe") {
-    redirect(await startCheckout(booking.id));
+    const url = await startCheckout(booking.id);
+    return (
+      <html lang="da">
+        <head>
+          <meta httpEquiv="refresh" content={`0;url=${url}`} />
+        </head>
+        <body
+          style={{
+            fontFamily: "system-ui, sans-serif",
+            padding: "3rem 1.5rem",
+            textAlign: "center",
+            color: "#0F2138",
+          }}
+        >
+          <p style={{ fontWeight: 700 }}>Sender dig til betaling…</p>
+          <p style={{ marginTop: "0.75rem", fontSize: 14, color: "#54677E" }}>
+            Sker der ikke noget?{" "}
+            <a href={url} style={{ color: "#1B62C4", fontWeight: 600 }}>
+              Klik her for at fortsætte
+            </a>
+          </p>
+        </body>
+      </html>
+    );
   }
 
   const what =

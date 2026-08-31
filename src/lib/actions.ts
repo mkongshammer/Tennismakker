@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { createSession, destroySession, getCurrentUser } from "./session";
-import { startCheckout, releaseExpiredHolds, cancelAndRefund } from "./payments";
+import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
 import { matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
@@ -213,25 +213,27 @@ export async function bookCourtSlot(formData: FormData) {
     },
   });
 
-  // redirect() i Next virker ved at kaste en intern undtagelse. Den må
-  // derfor ALDRIG kaldes inde i en try/catch, der fanger alt — så bliver
-  // omdirigeringen slugt, og brugeren sidder tilbage med en side der
-  // bare loader. Derfor: fang kun betalingsfejlen, og omdirigér bagefter.
-  let checkoutUrl: string | null = null;
-  try {
-    checkoutUrl = await startCheckout(booking.id);
-  } catch (err) {
-    // Kan klubben ikke modtage betaling endnu, skal reservationen ikke
-    // blive hængende og blokere tiden for andre.
+  // Bekræft at betalingen kan startes, FØR brugeren sendes videre — så en
+  // klub uden Stripe-opsætning giver en pæn fejl i stedet for en blindgyde.
+  //
+  // Selve omdirigeringen går til vores egen /checkout-side, ikke direkte
+  // til Stripes domæne. En server-redirect på tværs af domæner behandles
+  // som en intern navigation af Next, og browseren kan ende med at blive
+  // stående — hvorefter brugeren lander på profilen uden at have betalt.
+  // Kan klubben overhovedet modtage penge? Feltet holdes opdateret af
+  // Stripes account.updated-webhook, så det er billigt og troværdigt at
+  // slå op — i modsætning til at oprette en session bare for at teste.
+  const stripeOn = (process.env.PAYMENT_PROVIDER ?? "mock") === "stripe";
+  if (stripeOn && !court.club.stripeChargesEnabled) {
+    // Reservationen må ikke blive hængende og blokere tiden for andre.
     await db.booking.update({
       where: { id: booking.id },
       data: { status: "CANCELLED" },
     });
-    console.error("Kunne ikke starte betaling:", err);
+    fail("betaling");
   }
 
-  if (!checkoutUrl) fail("betaling");
-  redirect(checkoutUrl!);
+  redirect(`/checkout/${booking.id}`);
 }
 
 /** Booker en trænertime. */
@@ -274,20 +276,17 @@ export async function bookCoachSlot(formData: FormData) {
     },
   });
 
-  // Samme forbehold som ved banebooking: redirect uden for try/catch.
-  let checkoutUrl: string | null = null;
-  try {
-    checkoutUrl = await startCheckout(booking.id);
-  } catch (err) {
+  // Samme tjek som ved banebooking, se dér.
+  const stripeOn = (process.env.PAYMENT_PROVIDER ?? "mock") === "stripe";
+  if (stripeOn && !coach!.stripeChargesEnabled) {
     await db.booking.update({
       where: { id: booking.id },
       data: { status: "CANCELLED" },
     });
-    console.error("Kunne ikke starte betaling:", err);
+    fail("betaling");
   }
 
-  if (!checkoutUrl) fail("betaling");
-  redirect(checkoutUrl!);
+  redirect(`/checkout/${booking.id}`);
 }
 
 export async function cancelBooking(formData: FormData) {

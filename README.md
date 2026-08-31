@@ -653,3 +653,23 @@ Den tjekker:
 Det er den vigtigste af dem: hvis testbetalingen er grøn, virker kæden for rigtige kunder også.
 
 **Bemærk:** testen kan ikke bekræfte webhooken. En webhook kan kun bevises ved, at Stripe rent faktisk kalder tilbage, hvilket kræver en gennemført betaling. Selvtesten kontrollerer derfor kun, at hemmeligheden er sat.
+
+## Fejl: falsk betalingsbekræftelse
+
+Profilen viste "Tiden er din — kvittering er sendt", udelukkende fordi der stod `?betalt=1` i adressen. Den tjekkede aldrig, om bookingen faktisk var betalt. Det gav to problemer:
+
+1. En ubetalt booking kunne se bekræftet ud, mens den samme side lige nedenfor stadig sagde "Afventer betaling" og viste en "Betal nu"-knap — to modstridende beskeder på samme skærm.
+2. Adressen kunne skrives i hånden for at fremkalde en falsk kvittering.
+
+Bekræftelsen afhænger nu af, om der findes en `CONFIRMED` booking oprettet inden for den seneste time. Er man kommet tilbage fra betaling uden at den er registreret, siges det direkte, i stedet for at lade brugeren tro at alt er i orden.
+
+### Den underliggende årsag: omdirigering på tværs af domæner
+
+Brugeren blev sendt til `/profil?betalt=1` uden nogensinde at have set Stripes betalingsside. `startCheckout()` returnerer en adresse på Stripes eget domæne, og en server-`redirect()` til et andet domæne behandles af Next som en intern navigation — browseren kunne derfor ende med at blive stående og lande tilbage på profilen.
+
+Rettet to steder:
+
+- **Bookingflowet** omdirigerer nu til vores egen `/checkout/[id]`-side i stedet for direkte til Stripe.
+- **Checkout-siden** sender videre til Stripe med en meta-refresh og viser samtidig et klikbart link, hvis browseren ikke følger med automatisk.
+
+Bookingflowet kontrollerer desuden `stripeChargesEnabled` direkte i databasen i stedet for at oprette en Stripe-session bare for at teste — det sparer et unødigt kald og en overflødig session pr. booking.

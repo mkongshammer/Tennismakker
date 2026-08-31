@@ -55,14 +55,39 @@ export default async function ProfilPage({
     withName: null,
   }));
 
+  // Er der en bekræftet booking oprettet inden for den seneste time?
+  // Det er den, brugeren netop har betalt for.
+  const hasConfirmedBooking = bookings.some(
+    (b: any) =>
+      b.status === "CONFIRMED" &&
+      Date.now() - new Date(b.createdAt).getTime() < 60 * 60 * 1000
+  );
+
   return (
     <div className="space-y-10">
-      {searchParams.betalt && (
+      {/* Vis kun en bekræftelse, hvis der FAKTISK findes en betalt booking.
+          Tidligere blev beskeden vist alene fordi ?betalt=1 stod i adressen
+          — så en ubetalt booking kunne se bekræftet ud, og adressen kunne
+          skrives i hånden for at få en falsk kvittering. */}
+      {searchParams.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
           <p className="display text-xl">Tiden er din</p>
           <p className="mt-1 text-sm text-slate">
             Kvittering er sendt til {user.email}. Spiller du fast? Book den samme
             tid næste uge nedenfor, så er den ikke væk.
+          </p>
+        </div>
+      )}
+
+      {/* Kom brugeren tilbage fra betaling, uden at den er registreret endnu?
+          Så skal de vide det, i stedet for at tro at alt er i orden. */}
+      {searchParams.betalt && !hasConfirmedBooking && (
+        <div className="rounded-2xl border border-slate/25 bg-mist p-5">
+          <p className="display text-xl">Betalingen er ikke registreret endnu</p>
+          <p className="mt-1 text-sm text-slate">
+            Det tager nogle gange et øjeblik. Genindlæs siden om lidt. Står der
+            stadig “Afventer betaling” nedenfor, er beløbet ikke trukket, og du
+            kan trygt prøve igen.
           </p>
         </div>
       )}
