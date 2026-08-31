@@ -96,7 +96,7 @@ export async function createOnboardingLink(
   returnPath: string,
   refreshPath: string
 ): Promise<string> {
-  const base = process.env.APP_URL ?? "https://tennis-makker.onrender.com";
+  const base = process.env.APP_URL ?? "https://racketbuddy.app";
   const link = await stripe().accountLinks.create({
     account: accountId,
     type: "account_onboarding",

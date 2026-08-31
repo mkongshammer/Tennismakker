@@ -3,6 +3,7 @@ import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native
 import { useFocusEffect } from "@react-navigation/native";
 import { api, checkoutUrl } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { PlayAgain } from "../lib/PlayAgain";
 import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
@@ -10,11 +11,16 @@ import { dateTimeLong } from "../lib/dates";
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const [state, setState] = useState({ loading: true, error: null, bookings: [] });
+  const [repeatable, setRepeatable] = useState([]);
 
   const load = useCallback(async () => {
     try {
-      const { bookings } = await api.bookings();
+      const [{ bookings }, { items }] = await Promise.all([
+        api.bookings(),
+        api.repeatableBookings(),
+      ]);
       setState({ loading: false, error: null, bookings });
+      setRepeatable(items);
     } catch (e) {
       setState({ loading: false, error: e.message, bookings: [] });
     }
@@ -23,7 +29,7 @@ export default function ProfileScreen() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   return (
-    <ScrollView style={{ backgroundColor: colors.kridt }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
       <Card>
         <Text style={styles.name}>{user?.name}</Text>
         <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
@@ -32,6 +38,10 @@ export default function ProfileScreen() {
         </View>
         <Text style={styles.meta}>{user?.email}</Text>
       </Card>
+
+      <View style={{ marginTop: 20 }}>
+        <PlayAgain items={repeatable} onBooked={load} />
+      </View>
 
       <Text style={styles.section}>Kommende bookinger</Text>
       {state.loading ? (
@@ -63,7 +73,7 @@ export default function ProfileScreen() {
       <View style={{ marginTop: 24 }}>
         <Button
           title="Log ud"
-          variant="bane"
+          variant="ink"
           onPress={() =>
             Alert.alert("Log ud", "Er du sikker?", [
               { text: "Annullér", style: "cancel" },
@@ -77,9 +87,9 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 22, fontWeight: "900" },
-  meta: { color: colors.muted, marginTop: 4, fontSize: 13 },
-  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.bane },
-  bookingTitle: { fontWeight: "800", fontSize: 16 },
-  warn: { color: colors.grus, fontWeight: "700", marginBottom: 8, fontSize: 13 },
+  name: { fontSize: 22, fontWeight: "900", color: colors.ink },
+  meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
+  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
+  bookingTitle: { fontWeight: "800" },
+  warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
 });

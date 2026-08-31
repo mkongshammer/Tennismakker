@@ -26,7 +26,7 @@ export default function NewMatchScreen({ navigation }) {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.kridt }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
       <Text style={styles.label}>Hvad søger du?</Text>
       <TextInput
         style={[styles.input, { height: 90, textAlignVertical: "top" }]}
@@ -82,7 +82,7 @@ export default function NewMatchScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  label: { fontWeight: "700", color: colors.muted, marginBottom: 6, marginTop: 14, fontSize: 13 },
+  label: { fontWeight: "700", color: colors.slate, marginBottom: 6, marginTop: 14, fontSize: 13 },
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: "#fff",
   },
-  chipActive: { backgroundColor: colors.bane, borderColor: colors.bane },
-  chipText: { fontWeight: "600", color: colors.net },
-  chipTextActive: { color: colors.kridt },
-  hint: { color: colors.muted, marginTop: 6, fontSize: 13 },
-  error: { color: colors.grus, fontWeight: "600", marginTop: 14 },
+  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipText: { fontWeight: "600", color: colors.ink },
+  chipTextActive: { color: colors.chalk },
+  hint: { color: colors.slate, marginTop: 6, fontSize: 13 },
+  error: { color: colors.court, fontWeight: "600", marginTop: 14 },
 });

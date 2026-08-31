@@ -571,3 +571,28 @@ Rettet to steder:
 - **`/checkout/[id]`** sender nu videre til en ægte Stripe-session, så snart `PAYMENT_PROVIDER=stripe` — uanset hvordan nogen er landet på siden. Demo-knappen findes kun tilbage, når platformen kører i mock-tilstand.
 
 Ingen tegn på, at hullet blev udnyttet — men det var reelt, og det lå live, indtil nu.
+
+## Appen matcher nu websitet
+
+Hele det visuelle sprog fra RacketBuddy-omlægningen er ført over i mobilappen — samme farver, samme banefliser, samme navigationsstruktur.
+
+**Farver:** `mobile/src/lib/theme.js` bruger nu de samme tokens som `src/app/globals.css` — hardcourt-blå, mørk marineblå, kridhvid, kølig grå. Ingen af de gamle grus/bane-farver er tilbage.
+
+**Navigation:** fire bundfaner i samme rækkefølge som websitet — Book bane, Trænere, Medspillere, Beskeder. Profilen er ikke en femte fane; den nås via et hjørne-ikon (initialer i en cirkel) på alle skærme, ligesom på websitet. Det løses med en global navigationsreference (`src/lib/navigationRef.js`) i stedet for at kæde `getParent()` gennem indlejrede stakke — mere robust, når fire uafhængige faner alle skal kunne åbne den samme profilskærm.
+
+**Ikoner:** rigtige streg-ikoner tegnet med `react-native-svg`, ikke emojis. Samme streger som websitets `TabBar.tsx`.
+
+**Banefliser:** ledige tider vises som et farvet felt i sportens farve med en kridhvid baglinje i bunden — samme signatur som websitets `.court-tile`, inklusive rettelsen af, hvor linjen sidder (i bunden, ikke midt i feltet, hvor den før skar gennem prisen).
+
+**Sportsvælger:** `mobile/src/lib/SportPicker.js`, gemt lokalt med AsyncStorage i stedet for en cookie. Samme farveprikker som banefliserne.
+
+**"Spil igen":** logikken er udtrukket til `src/lib/rebook.ts` og bruges nu af både websitet og appen gennem to nye endepunkter (`/api/v1/bookings/repeatable`, `/api/v1/bookings/rebook`). Det er bevidst delt kode, ikke to udgaver af den samme forretningslogik — to udgaver ville før eller siden opføre sig forskelligt.
+
+**To reelle fejl fundet og rettet undervejs:**
+
+- Login-skærmen sagde stadig "TENNIS MAKKER" i store bogstaver. Aldrig omdøbt efter RacketBuddy-skiftet.
+- Appens `checkoutUrl()`-hjælper antog altid en relativ sti. Med Stripe slået til returnerer serveren en hel ekstern adresse (`https://checkout.stripe.com/...`), som hjælperen ville have sat foran sin egen serveradresse og ødelagt. Rettet til at genkende og videresende absolutte adresser direkte.
+
+**Trænerskærmen viste mindre end websitet.** `/api/v1/coaches/[id]` manglede pakker og anmeldelser, som websitets tilsvarende side allerede havde. Rettet, så begge flader nu viser det samme.
+
+Bygget og testet: bundler rent til både iOS (819 moduler) og Android (825 moduler) efter alle ændringerne.

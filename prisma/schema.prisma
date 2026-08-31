@@ -413,6 +413,27 @@ model CoachPackage {
 }
 
 
+// ---------- Klubhenvendelser ----------
+// Klubber kan ikke længere oprette sig selv. De sender en henvendelse, og
+// platformens ejer opretter den fulde klubprofil manuelt derfra. Det er
+// bevidst: en klub der bare kunne oprette sig selv med falske oplysninger
+// var netop det, den manuelle godkendelse skulle beskytte imod — så nu
+// er oprettelsen slet ikke tilgængelig for nogen udefra.
+model ClubLead {
+  id        String   @id @default(cuid())
+  clubName  String
+  city      String
+  contactName String
+  email     String
+  phone     String?
+  message   String?
+  // "NEW" | "CONTACTED" | "CONVERTED" | "DECLINED"
+  status    String   @default("NEW")
+  clubId    String? // sat når henvendelsen er blevet til en rigtig klub
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+}
 // ---------- Bestilling af hjemmeside ----------
 // Den betalte opsætningsydelse: klubben får en færdig side på deres eget
 // domæne, bygget af os. Bestillingen kommer typisk før klubben findes i

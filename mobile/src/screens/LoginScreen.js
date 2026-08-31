@@ -42,7 +42,9 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
-        <Text style={styles.logo}>TENNIS MAKKER</Text>
+        <Text style={styles.logo}>
+          Racket<Text style={{ color: colors.court }}>Buddy</Text>
+        </Text>
         <Text style={styles.tagline}>
           Find en makker på dit niveau, book en træner, eller find en ledig bane.
         </Text>
@@ -105,10 +107,10 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: 24, paddingTop: 72, backgroundColor: colors.kridt, flexGrow: 1 },
-  logo: { fontSize: 30, fontWeight: "900", color: colors.bane, letterSpacing: -0.5 },
-  tagline: { color: colors.muted, marginTop: 8, marginBottom: 28, lineHeight: 20 },
-  label: { fontWeight: "700", color: colors.muted, marginBottom: 5, marginTop: 12, fontSize: 13 },
+  wrap: { padding: 24, paddingTop: 72, backgroundColor: colors.mist, flexGrow: 1 },
+  logo: { fontSize: 30, fontWeight: "900", color: colors.ink, letterSpacing: -0.5 },
+  tagline: { color: colors.slate, marginTop: 8, marginBottom: 28, lineHeight: 20 },
+  label: { fontWeight: "700", color: colors.slate, marginBottom: 5, marginTop: 12, fontSize: 13 },
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -117,6 +119,6 @@ const styles = StyleSheet.create({
     padding: 13,
     fontSize: 16,
   },
-  error: { color: colors.grus, fontWeight: "600", marginTop: 14 },
-  switch: { color: colors.grus, textAlign: "center", marginTop: 20, fontWeight: "600" },
+  error: { color: colors.court, fontWeight: "600", marginTop: 14 },
+  switch: { color: colors.court, textAlign: "center", marginTop: 20, fontWeight: "600" },
 });

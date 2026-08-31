@@ -55,7 +55,7 @@ export default function ChatScreen({ route }) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.kridt }}
+      style={{ flex: 1, backgroundColor: colors.mist }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={90}
     >
@@ -102,7 +102,7 @@ export default function ChatScreen({ route }) {
 const styles = StyleSheet.create({
   subject: {
     padding: 12,
-    color: colors.muted,
+    color: colors.slate,
     fontSize: 13,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
@@ -111,13 +111,13 @@ const styles = StyleSheet.create({
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
   bubble: { maxWidth: "80%", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 },
-  mine: { backgroundColor: colors.bane },
+  mine: { backgroundColor: colors.ink },
   theirs: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border },
-  textMine: { color: colors.kridt, lineHeight: 20 },
-  textTheirs: { color: colors.net, lineHeight: 20 },
+  textMine: { color: colors.chalk, lineHeight: 20 },
+  textTheirs: { color: colors.ink, lineHeight: 20 },
   timeMine: { color: "rgba(250,247,240,0.6)", fontSize: 11, marginTop: 3 },
-  timeTheirs: { color: colors.muted, fontSize: 11, marginTop: 3 },
-  empty: { textAlign: "center", color: colors.muted, marginTop: 32 },
+  timeTheirs: { color: colors.slate, fontSize: 11, marginTop: 3 },
+  empty: { textAlign: "center", color: colors.slate, marginTop: 32 },
   composer: {
     flexDirection: "row",
     gap: 8,

@@ -11,7 +11,7 @@
 export type Coordinates = { latitude: number; longitude: number };
 
 const CONTACT =
-  process.env.APP_URL ?? "https://tennis-makker.onrender.com";
+  process.env.APP_URL ?? "https://racketbuddy.app";
 
 /**
  * Finder koordinater for en adresse i Danmark.

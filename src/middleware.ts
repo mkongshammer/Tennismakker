@@ -12,8 +12,8 @@ import { NextResponse, type NextRequest } from "next/server";
 const OWN_HOSTS = [
   "localhost",
   "127.0.0.1",
-  "racketbuddy.dk",
-  "www.racketbuddy.dk",
+  "racketbuddy.app",
+  "www.racketbuddy.app",
   "tennis-makker.onrender.com",
 ];
 

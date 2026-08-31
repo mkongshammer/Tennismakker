@@ -39,7 +39,7 @@ export default function MatchesScreen({ navigation }) {
 
   return (
     <FlatList
-      style={{ backgroundColor: colors.kridt }}
+      style={{ backgroundColor: colors.mist }}
       contentContainerStyle={{ padding: 16 }}
       data={state.matches}
       keyExtractor={(m) => m.id}
@@ -83,8 +83,8 @@ export default function MatchesScreen({ navigation }) {
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
   name: { fontWeight: "800", fontSize: 16, flexShrink: 1 },
-  type: { color: colors.grus, fontWeight: "700", fontSize: 12, marginTop: 6 },
+  type: { color: colors.court, fontWeight: "700", fontSize: 12, marginTop: 6 },
   message: { marginTop: 6, lineHeight: 20 },
-  meta: { color: colors.muted, marginTop: 6, fontSize: 13 },
-  mine: { color: colors.muted, marginTop: 10, fontStyle: "italic" },
+  meta: { color: colors.slate, marginTop: 6, fontSize: 13 },
+  mine: { color: colors.slate, marginTop: 10, fontStyle: "italic" },
 });

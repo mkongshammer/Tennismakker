@@ -1,5 +1,5 @@
 // Dansk datoformatering uden ekstra afhængigheder.
-const DAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
+export const DAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
 const DAYS_SHORT = ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
 const MONTHS = [
   "januar", "februar", "marts", "april", "maj", "juni",

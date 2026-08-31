@@ -113,7 +113,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
       ? `Trænertime hos ${booking.coachProfile?.user.name}`
       : `${booking.court?.club.name} — ${booking.court?.name}`;
 
-  const base = process.env.APP_URL ?? "https://tennis-makker.onrender.com";
+  const base = process.env.APP_URL ?? "https://racketbuddy.app";
 
   // Hvem betaler Stripes eget gebyr, afhænger af klubbens model.
   //

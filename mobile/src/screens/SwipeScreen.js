@@ -48,12 +48,12 @@ export default function SwipeScreen({ navigation }) {
 
   if (!player) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.kridt, justifyContent: "center" }}>
+      <View style={{ flex: 1, backgroundColor: colors.mist, justifyContent: "center" }}>
         <Empty>
           Ikke flere spillere lige nu. Kig forbi igen om et par dage.
         </Empty>
         <View style={{ paddingHorizontal: 32 }}>
-          <Button title="Hent igen" variant="bane" onPress={load} />
+          <Button title="Hent igen" variant="ink" onPress={load} />
         </View>
       </View>
     );
@@ -82,7 +82,7 @@ export default function SwipeScreen({ navigation }) {
 
       <View style={styles.actions}>
         <View style={{ flex: 1 }}>
-          <Button title="Spring over" variant="bane" onPress={() => decide(false)} disabled={busy} />
+          <Button title="Spring over" variant="ink" onPress={() => decide(false)} disabled={busy} />
         </View>
         <View style={{ flex: 1 }}>
           <Button title="Vil spille" onPress={() => decide(true)} disabled={busy} />
@@ -98,10 +98,10 @@ export default function SwipeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.kridt, padding: 16, justifyContent: "center" },
+  wrap: { flex: 1, backgroundColor: colors.mist, padding: 16, justifyContent: "center" },
   likes: {
     textAlign: "center",
-    color: colors.grus,
+    color: colors.court,
     fontWeight: "800",
     marginBottom: 12,
   },
@@ -110,17 +110,17 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: colors.bane,
+    backgroundColor: colors.ink,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
   },
-  initials: { color: colors.kridt, fontSize: 32, fontWeight: "900" },
+  initials: { color: colors.chalk, fontSize: 32, fontWeight: "900" },
   name: { fontSize: 24, fontWeight: "900" },
-  level: { color: colors.muted, marginTop: 6 },
-  area: { color: colors.muted, marginTop: 2 },
+  level: { color: colors.slate, marginTop: 6 },
+  area: { color: colors.slate, marginTop: 2 },
   bio: { marginTop: 14, textAlign: "center", lineHeight: 20 },
-  coach: { marginTop: 12, color: colors.grus, fontWeight: "700" },
+  coach: { marginTop: 12, color: colors.court, fontWeight: "700" },
   actions: { flexDirection: "row", gap: 12, marginTop: 20 },
-  hint: { textAlign: "center", color: colors.muted, fontSize: 12, marginTop: 16, lineHeight: 17 },
+  hint: { textAlign: "center", color: colors.slate, fontSize: 12, marginTop: 16, lineHeight: 17 },
 });

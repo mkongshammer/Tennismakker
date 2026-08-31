@@ -24,7 +24,7 @@ export default function CoachScreen({ route }) {
   if (state.loading) return <Loading />;
   if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
 
-  const { coach, slots } = state.data;
+  const { coach, packages, reviews, slots } = state.data;
   const days = groupByDay(slots.map((s) => new Date(s)), (d) => d);
 
   const book = async (date) => {
@@ -45,15 +45,42 @@ export default function CoachScreen({ route }) {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.kridt }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
       <Card>
         <View style={styles.row}>
           <Text style={styles.name}>{coach.name}</Text>
           <Text style={styles.price}>{coach.priceHour} kr/t</Text>
         </View>
+        {coach.rating?.count > 0 && (
+          <Text style={styles.rating}>
+            <Text style={{ color: colors.court }}>★</Text> {coach.rating.average.toFixed(1)}{" "}
+            <Text style={styles.meta}>({coach.rating.count})</Text>
+          </Text>
+        )}
         <Text style={styles.headline}>{coach.headline}</Text>
         <Text style={styles.meta}>{coach.area}</Text>
       </Card>
+
+      {packages.length > 0 && (
+        <>
+          <Text style={styles.section}>Pakkeforløb</Text>
+          <Text style={styles.sectionHint}>
+            Aftales direkte med træneren — book en enkelt time først for at komme i kontakt.
+          </Text>
+          {packages.map((p) => (
+            <Card key={p.id}>
+              <View style={styles.row}>
+                <Text style={styles.packageName}>{p.name}</Text>
+                <Text style={styles.price}>{p.priceKr} kr</Text>
+              </View>
+              <Text style={styles.meta}>
+                {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
+              </Text>
+              {p.description ? <Text style={styles.packageDesc}>{p.description}</Text> : null}
+            </Card>
+          ))}
+        </>
+      )}
 
       <Text style={styles.section}>Ledige tider</Text>
       {days.length === 0 ? (
@@ -77,17 +104,35 @@ export default function CoachScreen({ route }) {
           </View>
         ))
       )}
+
+      {reviews.length > 0 && (
+        <>
+          <Text style={styles.section}>Hvad elever siger</Text>
+          {reviews.map((r) => (
+            <Card key={r.id}>
+              <Text style={{ color: colors.court }}>{"★".repeat(r.rating)}</Text>
+              {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
+              <Text style={styles.meta}>{r.authorName}</Text>
+            </Card>
+          ))}
+        </>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 },
-  name: { fontWeight: "900", fontSize: 20, flexShrink: 1 },
-  price: { fontWeight: "800", color: colors.grus, fontSize: 17 },
+  name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.ink },
+  price: { fontWeight: "800", color: colors.court, fontSize: 17 },
+  rating: { marginTop: 6, fontSize: 13, fontWeight: "700", color: colors.ink },
   headline: { marginTop: 8, lineHeight: 20 },
-  meta: { color: colors.muted, marginTop: 4, fontSize: 13 },
-  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.bane },
-  dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize" },
-  slotTime: { fontSize: 20, fontWeight: "800" },
+  meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
+  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
+  sectionHint: { color: colors.slate, marginTop: -10, marginBottom: 10, fontSize: 13 },
+  packageName: { fontWeight: "800", flexShrink: 1, color: colors.ink },
+  packageDesc: { marginTop: 8, lineHeight: 19 },
+  dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.ink },
+  slotTime: { fontSize: 20, fontWeight: "800", color: colors.ink },
+  comment: { marginTop: 6, lineHeight: 19 },
 });

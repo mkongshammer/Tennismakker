@@ -1,5 +1,6 @@
 "use server";
 
+import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
@@ -17,6 +18,7 @@ import { setPreferenceCookies } from "./preferences";
 import { detectBookingSystem, testFeed } from "./detect";
 import { store as storeImage, remove as removeImage } from "./images";
 import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from "./connect";
+import { rebookSameSlot } from "./rebook";
 
 // ---------------- Auth ----------------
 
@@ -412,11 +414,83 @@ function slugify(name: string): string {
     .slice(0, 50);
 }
 
+// ---------------- Klub-kontakt (erstatter selvbetjent oprettelse) ----------------
+//
+// Klubber kan ikke længere oprette sig selv. De sender en henvendelse her,
+// og platformens ejer opretter den fulde profil manuelt fra /superadmin.
+// Det er bevidst: selvbetjening var netop det, den manuelle godkendelse
+// skulle beskytte imod, så nu findes oprettelsen slet ikke offentligt.
+
+export async function submitClubLead(_prev: unknown, formData: FormData) {
+  const clubName = String(formData.get("clubName") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const contactName = String(formData.get("contactName") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const message = String(formData.get("message") ?? "").trim();
+
+  if (!clubName || !city) return { error: "Udfyld klubbens navn og by." };
+  if (!contactName || !email.includes("@")) {
+    return { error: "Udfyld dit navn og en gyldig e-mail." };
+  }
+
+  const lead = await db.clubLead.create({
+    data: { clubName, city, contactName, email, phone: phone || null, message: message || null },
+  });
+
+  await sendMail({
+    to: email,
+    subject: `Vi har jeres henvendelse — ${clubName}`,
+    body: [
+      `Hej ${contactName}`,
+      ``,
+      `Tak for interessen i RacketBuddy. Vi vender tilbage og sætter jeres`,
+      `klub op, så snart vi har talt sammen.`,
+      ``,
+      `RacketBuddy`,
+    ].join("\n"),
+  });
+
+  const inbox = process.env.ORDERS_EMAIL;
+  if (inbox) {
+    await sendMail({
+      to: inbox,
+      subject: `Ny klubhenvendelse: ${clubName}`,
+      body: [
+        `${clubName}, ${city}`,
+        `${contactName} · ${email}${phone ? ` · ${phone}` : ""}`,
+        ``,
+        message || "Ingen besked.",
+        ``,
+        `${process.env.APP_URL ?? "https://racketbuddy.app"}/superadmin`,
+      ].join("\n"),
+    });
+  }
+
+  return {
+    ok: `Tak — vi vender tilbage til ${contactName} snarest. Henvendelsesnummer ${lead.id.slice(-6).toUpperCase()}.`,
+  };
+}
+
+export async function updateLeadStatus(formData: FormData) {
+  await requireSuperadmin();
+  const id = String(formData.get("id"));
+  const status = String(formData.get("status"));
+  if (!["NEW", "CONTACTED", "CONVERTED", "DECLINED"].includes(status)) return;
+  await db.clubLead.update({ where: { id }, data: { status } });
+  revalidatePath("/superadmin");
+}
+
 /**
- * Opretter en klub og en admin-konto i én omgang, så en bestyrelse kan
- * komme i gang uden at vi skal ind over.
+ * Opretter en fuld klubprofil — kun platformens ejer kan gøre det. Klubben
+ * får automatisk en administratorkonto med en midlertidig adgangskode,
+ * som sendes på mail. Godkendes med det samme: det er ejeren selv, der nu
+ * står inde for, at klubben er ægte, så den separate godkendelseskø er
+ * unødvendig for klubber oprettet ad denne vej.
  */
-export async function createClub(_prev: unknown, formData: FormData) {
+export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
+  await requireSuperadmin();
+
   const clubName = String(formData.get("clubName") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
   const address = String(formData.get("address") ?? "").trim();
@@ -426,34 +500,28 @@ export async function createClub(_prev: unknown, formData: FormData) {
   const billingModel =
     String(formData.get("billingModel")) === "SUBSCRIPTION" ? "SUBSCRIPTION" : "COMMISSION";
 
-  const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
+  const adminName = String(formData.get("adminName") ?? "").trim();
+  const adminEmail = String(formData.get("adminEmail") ?? "").trim().toLowerCase();
+  const leadId = String(formData.get("leadId") ?? "").trim();
 
   if (!clubName || !city) return { error: "Udfyld klubbens navn og by." };
   if (!(courtCount >= 1 && courtCount <= 40)) {
     return { error: "Antal baner skal være mellem 1 og 40." };
   }
   if (!(priceHour >= 0)) return { error: "Angiv en pris på 0 kr eller derover." };
-  if (!name || !email.includes("@")) {
-    return { error: "Udfyld dit navn og en gyldig e-mail." };
+  if (!adminName || !adminEmail.includes("@")) {
+    return { error: "Udfyld administratorens navn og en gyldig e-mail." };
   }
-  if (password.length < 8) {
-    return { error: "Adgangskoden skal være mindst 8 tegn." };
-  }
-  if (await db.user.findUnique({ where: { email } })) {
+  if (await db.user.findUnique({ where: { email: adminEmail } })) {
     return { error: "Der findes allerede en konto med den e-mail." };
   }
 
-  // Sikr et unikt slug
   const base = slugify(clubName) || "klub";
   let slug = base;
   for (let i = 2; await db.club.findUnique({ where: { slug } }); i++) {
     slug = `${base}-${i}`;
   }
 
-  // Slå adressen op, så klubben kan vises på kortet. Lykkes det ikke,
-  // oprettes klubben alligevel — den mangler bare på kortet indtil videre.
   const coords = address ? await geocode(address, city) : null;
 
   const club = await db.club.create({
@@ -465,34 +533,64 @@ export async function createClub(_prev: unknown, formData: FormData) {
       latitude: coords?.latitude ?? null,
       longitude: coords?.longitude ?? null,
       priceHour,
-      // Nye klubber starter altid manuelt: det virker uanset hvilket system
-      // de kører, og kræver ingen teknisk opsætning fra deres side.
       integrationType: "MANUAL",
       externalSystem: externalSystem || null,
       billingModel,
+      country: "DK",
+      status: "APPROVED",
+      approvedAt: new Date(),
       courts: {
         create: Array.from({ length: courtCount }, (_, i) => ({
           name: `Bane ${i + 1}`,
+          sport: "TENNIS",
           surface: "GRUS",
         })),
       },
     },
   });
 
+  // En midlertidig adgangskode — klubben skifter den selv efter første login
+  const tempPassword = crypto.randomBytes(6).toString("base64url");
   const admin = await db.user.create({
     data: {
-      email,
-      name,
-      passwordHash: await bcrypt.hash(password, 10),
+      email: adminEmail,
+      name: adminName,
+      passwordHash: await bcrypt.hash(tempPassword, 10),
       role: "CLUB_ADMIN",
       clubId: club.id,
       area: city,
     },
   });
 
-  await createSession(admin.id);
-  redirect("/admin");
+  if (leadId) {
+    await db.clubLead.update({
+      where: { id: leadId },
+      data: { status: "CONVERTED", clubId: club.id },
+    }).catch(() => null);
+  }
+
+  await sendMail({
+    to: adminEmail,
+    subject: `${clubName} er oprettet på RacketBuddy`,
+    body: [
+      `Hej ${adminName}`,
+      ``,
+      `${clubName} er oprettet. Log ind og se jeres side her:`,
+      ``,
+      `${process.env.APP_URL ?? "https://racketbuddy.app"}/login`,
+      `E-mail: ${adminEmail}`,
+      `Midlertidig adgangskode: ${tempPassword}`,
+      ``,
+      `Skift adgangskoden under din profil, når du er logget ind.`,
+      ``,
+      `RacketBuddy`,
+    ].join("\n"),
+  });
+
+  revalidatePath("/superadmin");
+  return { ok: `${clubName} er oprettet. Login er sendt til ${adminEmail}.` };
 }
+
 
 // ---------------- Beskeder ----------------
 
@@ -585,7 +683,7 @@ export async function approveClub(formData: FormData) {
         `${club.name} er godkendt og synlig for spillere.`,
         ``,
         `Næste schalk: frigiv de tider, gæster må booke.`,
-        `${process.env.APP_URL ?? "https://tennis-makker.onrender.com"}/admin`,
+        `${process.env.APP_URL ?? "https://racketbuddy.app"}/admin`,
         ``,
         `RacketBuddy`,
       ].join("\n"),
@@ -701,55 +799,16 @@ export async function rebookNextWeek(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const bookingId = String(formData.get("bookingId"));
-  const previous = await db.booking.findFirst({
-    where: { id: bookingId, userId: user.id },
-    include: { court: true },
-  });
-  if (!previous?.courtId) redirect("/book");
+  const result = await rebookSameSlot(user.id, String(formData.get("bookingId")));
 
-  // Find den næste forekomst af samme ugedag og tid, som ligger i fremtiden
-  let startsAt = new Date(previous.startsAt);
-  while (startsAt <= new Date()) {
-    startsAt = addDays(startsAt, 7);
-  }
-  const endsAt = addHours(startsAt, 1);
-
-  await releaseExpiredHolds();
-  await refreshBeforeBooking(previous.court!.clubId);
-
-  const { slots, needsClubEntry } = await getClubAvailability(
-    previous.court!.clubId,
-    startsAt,
-    endsAt
-  );
-  const slot = slots.find(
-    (s) => s.courtId === previous.courtId && s.startsAt.getTime() === startsAt.getTime()
-  );
-
-  // Er tiden taget, sendes man til klubbens side på den dag i stedet for
-  // at få en fejl. Man skal videre, ikke stoppes.
-  if (!slot) {
-    const club = await db.club.findUnique({ where: { id: previous.court!.clubId } });
-    const days = Math.round((startsAt.getTime() - Date.now()) / 86400000);
-    redirect(`/klub/${club?.slug}?dag=${Math.min(6, Math.max(0, days))}&optaget=1`);
+  if (!result.ok) {
+    if (result.reason === "taken") {
+      redirect(`/klub/${result.clubSlug}?dag=${result.dayOffset}&optaget=1`);
+    }
+    redirect("/book");
   }
 
-  const booking = await db.booking.create({
-    data: {
-      kind: "COURT",
-      status: "HOLD",
-      startsAt,
-      endsAt,
-      priceKr: slot.priceKr,
-      holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
-      userId: user.id,
-      courtId: previous.courtId,
-      needsClubEntry,
-    },
-  });
-
-  redirect(await startCheckout(booking.id));
+  redirect(result.checkoutUrl);
 }
 
 // ---------------- Klubopsætning: find systemet, sæt regler ----------------
@@ -1134,4 +1193,26 @@ export async function startCoachPayoutSetup() {
     "/profil/traener?stripe=refresh"
   );
   redirect(url);
+}
+
+// ---------------- Adgangskode ----------------
+
+export async function changePassword(_prev: unknown, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const current = String(formData.get("current") ?? "");
+  const next = String(formData.get("next") ?? "");
+
+  if (!(await bcrypt.compare(current, user.passwordHash))) {
+    return { error: "Nuværende adgangskode er forkert." };
+  }
+  if (next.length < 8) return { error: "Den nye adgangskode skal være mindst 8 tegn." };
+
+  await db.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await bcrypt.hash(next, 10) },
+  });
+
+  return { ok: "Adgangskoden er skiftet." };
 }

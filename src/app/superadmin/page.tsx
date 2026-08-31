@@ -4,12 +4,15 @@
 // efter i sømmene. En klub der påstår at have baner, den ikke har, koster
 // os tilliden hos alle andre — og hos den gæst der står foran en låst låge.
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { approveClub, rejectClub, updateOrderStatus, markDomainLive } from "../../lib/actions";
 import { DomainForm } from "./OrderTools";
+import { CreateClubForm } from "./CreateClubForm";
+import { updateLeadStatus } from "../../lib/actions";
 import { sportLabel } from "../../lib/sports";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +31,7 @@ export default async function SuperadminPage() {
     );
   }
 
-  const [pending, decided, orders, domainClubs] = await Promise.all([
+  const [pending, decided, orders, domainClubs, leads] = await Promise.all([
     db.club.findMany({
       where: { status: "PENDING" },
       include: { courts: true, members: true },
@@ -48,6 +51,10 @@ export default async function SuperadminPage() {
       select: { id: true, name: true, customDomain: true, domainStatus: true },
       orderBy: { name: "asc" },
     }),
+    db.clubLead.findMany({
+      where: { status: { in: ["NEW", "CONTACTED"] } },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
 
   return (
@@ -58,6 +65,65 @@ export default async function SuperadminPage() {
           {pending.length} venter · {decided.length} behandlet
         </p>
       </div>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Klubhenvendelser</h2>
+        <p className="mb-4 text-sm text-slate">
+          {leads.length === 0
+            ? "Ingen åbne henvendelser."
+            : `${leads.length} venter på at blive taget kontakt til.`}
+        </p>
+
+        {leads.length > 0 && (
+          <ul className="mb-6 space-y-3">
+            {leads.map((lead: any) => (
+              <li key={lead.id} className="card">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <p className="font-bold">{lead.clubName}, {lead.city}</p>
+                  <p className="data text-xs text-slate">
+                    {format(lead.createdAt, "d. MMM", { locale: da })}
+                  </p>
+                </div>
+                <p className="mt-1 text-sm">
+                  {lead.contactName} · {lead.email}
+                  {lead.phone ? ` · ${lead.phone}` : ""}
+                </p>
+                {lead.message && <p className="mt-2 text-sm">{lead.message}</p>}
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href={`/superadmin?leadId=${lead.id}&clubName=${encodeURIComponent(lead.clubName)}&city=${encodeURIComponent(lead.city)}&adminName=${encodeURIComponent(lead.contactName)}&adminEmail=${encodeURIComponent(lead.email)}#opret-klub`}
+                    className="btn-court text-sm"
+                  >
+                    Opret klub ud fra denne
+                  </Link>
+                  {lead.status === "NEW" && (
+                    <form action={updateLeadStatus}>
+                      <input type="hidden" name="id" value={lead.id} />
+                      <input type="hidden" name="status" value="CONTACTED" />
+                      <button className="btn-ghost text-sm">Markér som ringet op</button>
+                    </form>
+                  )}
+                  <form action={updateLeadStatus}>
+                    <input type="hidden" name="id" value={lead.id} />
+                    <input type="hidden" name="status" value="DECLINED" />
+                    <button className="text-sm text-slate underline">Afvis</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section id="opret-klub">
+        <h2 className="display mb-1 text-2xl">Opret klub</h2>
+        <p className="mb-4 text-sm text-slate">
+          Kun her klubber bliver til — der er ingen offentlig oprettelse.
+          Udfyldes en henvendelse ovenfor ind i, er felterne udfyldt på forhånd.
+        </p>
+        <CreateClubForm />
+      </section>
 
       <section>
         <h2 className="display mb-3 text-2xl">Venter på svar</h2>

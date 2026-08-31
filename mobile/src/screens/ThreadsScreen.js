@@ -31,7 +31,7 @@ export default function ThreadsScreen({ navigation }) {
 
   return (
     <FlatList
-      style={{ backgroundColor: colors.kridt }}
+      style={{ backgroundColor: colors.mist }}
       contentContainerStyle={{ padding: 16 }}
       data={state.threads}
       keyExtractor={(t) => t.id}
@@ -73,7 +73,7 @@ export default function ThreadsScreen({ navigation }) {
 const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
   name: { fontWeight: "800", fontSize: 16, flexShrink: 1 },
-  badge: { color: colors.grus, fontSize: 12, fontWeight: "800" },
-  time: { color: colors.muted, fontSize: 12 },
-  preview: { color: colors.muted, marginTop: 4 },
+  badge: { color: colors.court, fontSize: 12, fontWeight: "800" },
+  time: { color: colors.slate, fontSize: 12 },
+  preview: { color: colors.slate, marginTop: 4 },
 });

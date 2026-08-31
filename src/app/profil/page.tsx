@@ -9,6 +9,8 @@ import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
 import { PlayAgain } from "../../components/PlayAgain";
+import { getRepeatableBookings } from "../../lib/rebook";
+import { ChangePasswordForm } from "./ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,7 @@ export default async function ProfilPage({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const [bookings, myRequests, myMatches, coachBookings, toReview, pastCourts] = await Promise.all([
+  const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
     db.booking.findMany({
       where: { userId: user.id, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { gte: new Date() } },
       include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
@@ -44,36 +46,14 @@ export default async function ProfilPage({
         })
       : Promise.resolve([]),
     pendingReviews(user.id),
-    // Tidligere banebookinger, nyeste først, én pr. bane+tidspunkt
-    db.booking.findMany({
-      where: {
-        userId: user.id,
-        kind: "COURT",
-        status: "CONFIRMED",
-        endsAt: { lt: new Date() },
-      },
-      include: { court: { include: { club: true } } },
-      orderBy: { startsAt: "desc" },
-      take: 12,
-    }),
   ]);
 
-  // Vis hver ugedag+tid én gang — ellers fylder den samme tirsdag hele siden
-  const seen = new Set<string>();
-  const repeatable = pastCourts
-    .filter((b: any) => {
-      const key = `${b.courtId}_${b.startsAt.getDay()}_${b.startsAt.getHours()}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, 3)
-    .map((b: any) => ({
-      bookingId: b.id,
-      what: `${b.court?.club.name} — ${b.court?.name}`,
-      startsAt: b.startsAt,
-      withName: null,
-    }));
+  const repeatable = (await getRepeatableBookings(user.id)).map((r) => ({
+    bookingId: r.bookingId,
+    what: r.what,
+    startsAt: r.startsAt,
+    withName: null,
+  }));
 
   return (
     <div className="space-y-10">
@@ -93,9 +73,12 @@ export default async function ProfilPage({
           <LevelBadge level={user.level} />
           {user.area && <span className="text-slate/60">{user.area}</span>}
         </div>
-        <form action={logout}>
-          <button className="btn-ghost">Log ud</button>
-        </form>
+        <div className="flex items-center gap-3">
+          <ChangePasswordForm />
+          <form action={logout}>
+            <button className="btn-ghost">Log ud</button>
+          </form>
+        </div>
       </div>
 
       <PlayAgain items={repeatable} />

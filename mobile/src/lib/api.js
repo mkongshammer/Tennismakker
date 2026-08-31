@@ -47,14 +47,20 @@ export const api = {
     request("/auth/signup", { method: "POST", body: payload, auth: false }),
   me: () => request("/me"),
 
-  clubs: () => request("/clubs", { auth: false }),
+  clubs: (sport = "TENNIS", country = "DK") =>
+    request(`/clubs?sport=${sport}&land=${country}`, { auth: false }),
   club: (slug, days = 7) => request(`/clubs/${slug}?dage=${days}`, { auth: false }),
 
-  coaches: (area) =>
-    request(`/coaches${area ? `?omraade=${encodeURIComponent(area)}` : ""}`, {
-      auth: false,
-    }),
+  coaches: (sport = "TENNIS", area) => {
+    const q = new URLSearchParams({ sport });
+    if (area) q.set("omraade", area);
+    return request(`/coaches?${q}`, { auth: false });
+  },
   coach: (id) => request(`/coaches/${id}`, { auth: false }),
+
+  repeatableBookings: () => request("/bookings/repeatable"),
+  rebook: (bookingId) =>
+    request("/bookings/rebook", { method: "POST", body: { bookingId } }),
 
   matches: (params = {}) => {
     const q = new URLSearchParams();
@@ -83,4 +89,8 @@ export const api = {
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
 };
 
-export const checkoutUrl = (path) => `${BASE_URL}${path}`;
+// I mock-tilstand returnerer serveren en relativ sti ("/checkout/abc123").
+// Med Stripe slået til returnerer den en hel ekstern adresse
+// ("https://checkout.stripe.com/..."). Begge dele skal kunne åbnes direkte.
+export const checkoutUrl = (path) =>
+  path.startsWith("http") ? path : `${BASE_URL}${path}`;

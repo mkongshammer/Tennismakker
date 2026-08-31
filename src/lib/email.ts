@@ -67,7 +67,7 @@ function danishDateTime(d: Date): string {
   return `${DAYS[d.getDay()]} d. ${d.getDate()}. ${MONTHS[d.getMonth()]} kl. ${t}`;
 }
 
-const baseUrl = () => process.env.APP_URL ?? "https://tennis-makker.onrender.com";
+const baseUrl = () => process.env.APP_URL ?? "https://racketbuddy.app";
 
 // ---------------------------------------------------------------------------
 // Skabeloner
