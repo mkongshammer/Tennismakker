@@ -6,14 +6,57 @@
 // egentlige bekræftelse her — success_url er kun for brugerens oplevelse.
 //
 // Sæt denne adresse op i Stripe Dashboard → Developers → Webhooks:
-//   https://<dit-domæne>/api/webhooks/stripe
+//   https://racketbuddy.app/api/webhooks/stripe
 // og lyt på: checkout.session.completed, account.updated
+//
+// HÅNDTERER TO FORMATER:
+// Stripe har to slags udsendelser. Den klassiske ("snapshot") indeholder
+// hele objektet i beskeden. Den nyere ("thin") sender kun et event-id, som
+// modtageren selv skal slå op. Vi understøtter begge, fordi en forkert
+// indstilling i Stripe-panelet ellers får alle webhooks til at fejle tavst
+// — hvilket er præcis, hvad der skete første gang.
 import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
 import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
 
 export const dynamic = "force-dynamic";
+
+/** Behandler et event, uanset hvordan det kom ind. */
+async function handleEvent(type: string, object: any) {
+  switch (type) {
+    case "checkout.session.completed": {
+      const session = object as Stripe.Checkout.Session;
+      const bookingId = session.metadata?.bookingId;
+      if (!bookingId) {
+        console.error("checkout.session.completed uden bookingId i metadata", session.id);
+        return;
+      }
+      const paymentIntentId =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : session.payment_intent?.id;
+      await confirmBookingPayment(bookingId, paymentIntentId);
+      return;
+    }
+
+    // Klubben/træneren har ændret noget i deres Stripe-onboarding —
+    // opdater om de kan modtage betalinger og udbetalinger endnu.
+    case "account.updated": {
+      const account = object as Stripe.Account;
+      const recipient = await findRecipientByAccountId(account.id);
+      if (recipient) {
+        await refreshAccountStatus(recipient.kind, recipient.id);
+      }
+      return;
+    }
+
+    default:
+      // Ukendte events ignoreres bevidst — Stripe sender langt flere
+      // event-typer, end vi har brug for at reagere på.
+      return;
+  }
+}
 
 export async function POST(req: Request) {
   const signature = req.headers.get("stripe-signature");
@@ -31,55 +74,58 @@ export async function POST(req: Request) {
   // derfor som tekst, ikke som JSON, før noget andet rører den.
   const rawBody = await req.text();
 
-  let event: Stripe.Event;
+  let type: string;
+  let object: any;
+
   try {
-    event = stripe().webhooks.constructEvent(rawBody, signature, secret);
+    // Klassisk format: hele objektet ligger i beskeden.
+    const event = stripe().webhooks.constructEvent(rawBody, signature, secret);
+    type = event.type;
+    object = (event as any).data?.object;
   } catch (err) {
-    console.error("Stripe-webhook: ugyldig signatur", err);
-    return new Response("Ugyldig signatur", { status: 400 });
+    // Kunne det være det nye "thin"-format? Der er kun et id i beskeden,
+    // og selve objektet skal hentes bagefter.
+    const parsed = safeParse(rawBody);
+    if (!parsed?.id || !parsed?.type) {
+      console.error("Stripe-webhook: ugyldig signatur", err);
+      return new Response("Ugyldig signatur", { status: 400 });
+    }
+
+    try {
+      // Hent hele eventet ud fra id'et. Det er samtidig verifikationen:
+      // et opdigtet id findes ikke hos Stripe.
+      const full = await stripe().events.retrieve(parsed.id);
+      type = full.type;
+      object = (full as any).data?.object;
+    } catch (retrieveErr) {
+      console.error("Stripe-webhook: kunne ikke hente event", parsed.id, retrieveErr);
+      return new Response("Kunne ikke hente event", { status: 400 });
+    }
+  }
+
+  if (!object) {
+    console.error("Stripe-webhook: event uden indhold", type);
+    return new Response("Event uden indhold", { status: 400 });
   }
 
   try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const bookingId = session.metadata?.bookingId;
-        if (!bookingId) {
-          console.error("checkout.session.completed uden bookingId i metadata", session.id);
-          break;
-        }
-        const paymentIntentId =
-          typeof session.payment_intent === "string"
-            ? session.payment_intent
-            : session.payment_intent?.id;
-        await confirmBookingPayment(bookingId, paymentIntentId);
-        break;
-      }
-
-      // Klubben/træneren har ændret noget i deres Stripe-onboarding —
-      // opdater om de kan modtage betalinger og udbetalinger endnu.
-      case "account.updated": {
-        const account = event.data.object as Stripe.Account;
-        const recipient = await findRecipientByAccountId(account.id);
-        if (recipient) {
-          await refreshAccountStatus(recipient.kind, recipient.id);
-        }
-        break;
-      }
-
-      default:
-        // Ukendte events ignoreres bevidst — Stripe sender langt flere
-        // event-typer, end vi har brug for at reagere på.
-        break;
-    }
+    await handleEvent(type, object);
   } catch (err) {
     // 500 beder Stripe prøve igen senere, i stedet for at give op på et
     // event, der fejlede pga. noget forbigående (fx databasen var langsom).
-    console.error(`Stripe-webhook fejlede ved håndtering af ${event.type}:`, err);
+    console.error(`Stripe-webhook fejlede ved håndtering af ${type}:`, err);
     return new Response("Intern fejl ved behandling", { status: 500 });
   }
 
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
   });
+}
+
+function safeParse(raw: string): any | null {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }

@@ -596,3 +596,13 @@ Hele det visuelle sprog fra RacketBuddy-omlægningen er ført over i mobilappen 
 **Trænerskærmen viste mindre end websitet.** `/api/v1/coaches/[id]` manglede pakker og anmeldelser, som websitets tilsvarende side allerede havde. Rettet, så begge flader nu viser det samme.
 
 Bygget og testet: bundler rent til både iOS (819 moduler) og Android (825 moduler) efter alle ændringerne.
+
+## Stripe-webhook: to formater
+
+Stripe udsender events i to formater. Det klassiske ("snapshot") indeholder hele objektet i beskeden. Det nyere ("thin") sender kun et event-id, som modtageren selv skal slå op bagefter.
+
+Webhooken blev første gang oprettet med "thin" som payload style, og da koden kun forstod snapshot-formatet, **fejlede hver eneste webhook tavst** med `You passed a thin event notification to a function that expects a webhook`. Alt så rigtigt ud i Stripe-panelet (destination Active, korrekt adresse), men ingen betaling ville nogensinde være blevet bekræftet.
+
+`/api/webhooks/stripe` håndterer nu begge: den forsøger først den klassiske verifikation, og falder ved fejl tilbage til at læse event-id'et og hente hele eventet fra Stripe. Opslaget er samtidig verifikationen — et opdigtet id findes ikke hos Stripe.
+
+Det gør opsætningen robust over for, hvilken payload style der er valgt i panelet. Snapshot anbefales stadig, fordi det sparer et ekstra kald pr. event.
