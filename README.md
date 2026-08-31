@@ -635,3 +635,19 @@ Tre steder tager nu højde for det:
 - **Klubsiden** viser en tydelig besked øverst: klubben kan ikke tage imod bookinger endnu, og tiderne er vejledende.
 
 De fem demo-klubber, der blev oprettet for at have noget at vise på kortet, falder i denne kategori — de har aldrig haft en Stripe-konto. Det var netop dem, en testbooking ramte, hvilket gjorde problemet synligt.
+
+## Selvtest af betalingskæden
+
+`/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.
+
+Den tjekker:
+
+- **Konfiguration** — er `PAYMENT_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` og `APP_URL` sat, og er nøglen test eller live
+- **Forbindelse til Stripe** — et rigtigt kald, ikke bare "nøglen ser rigtig ud"
+- **Provisionsregnestykket** — hvad klubben får, hvad vi får, og hvad der er tilbage efter Stripes eget gebyr, ved tre prisniveauer
+- **Modtagere** — hvilke klubber og trænere der kan tage imod penge, hvilke der er halvvejs igennem, og hvilke der ikke er begyndt
+- **Testbetaling** — opretter en rigtig checkout-session mod en klar konto med korrekt gebyrsplit, bekræfter at Stripe accepterer den, og **lukker sessionen igen med det samme**. Ingen betaler noget, men det beviser, at nøgle, Connect-konto, gebyrsplit og valuta hænger sammen.
+
+Det er den vigtigste af dem: hvis testbetalingen er grøn, virker kæden for rigtige kunder også.
+
+**Bemærk:** testen kan ikke bekræfte webhooken. En webhook kan kun bevises ved, at Stripe rent faktisk kalder tilbage, hvilket kræver en gennemført betaling. Selvtesten kontrollerer derfor kun, at hemmeligheden er sat.

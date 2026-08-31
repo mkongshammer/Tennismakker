@@ -59,11 +59,14 @@ export default async function SuperadminPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <h1 className="display text-3xl">Klubgodkendelser</h1>
-        <p className="text-slate/70">
-          {pending.length} venter · {decided.length} behandlet
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="display text-3xl">Klubgodkendelser</h1>
+          <p className="text-slate/70">
+            {pending.length} venter · {decided.length} behandlet
+          </p>
+        </div>
+        <Link href="/superadmin/selvtest" className="btn-ghost">Selvtest af betaling</Link>
       </div>
 
       <section>
