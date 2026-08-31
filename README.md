@@ -623,3 +623,15 @@ Alle fejl i bookingflowet blev tidligere kastet som rå undtagelser, hvilket gav
 `redirect()` i Next virker ved at kaste en intern undtagelse, som framework'et selv fanger. Ligger kaldet inde i en `try/catch`, der fanger alt, bliver omdirigeringen slugt — og brugeren sidder tilbage med en side, der bare bliver ved med at loade, uden fejl nogen steder.
 
 Præcis det skete, da fejlhåndteringen ovenfor blev bygget: betalingsfejlen blev fanget korrekt, men den efterfølgende omdirigering til fejlbeskeden forsvandt i samme `catch`. Rettet ved at fange kun selve betalingsfejlen og placere `redirect()` bagefter, uden for blokken.
+
+## Klubber uden betalingsopsætning vises ærligt
+
+En klub kan være godkendt og have frigivet tider, men endnu ikke have fuldført sin Stripe-opsætning. Uden en spærring ville gæster kunne se ledige tider, trykke book, og først dér få at vide, at det ikke kan lade sig gøre.
+
+Tre steder tager nu højde for det:
+
+- **Forsidens tal** ("N ledige banetimer nær dig") tæller kun klubber, der faktisk kan modtage betaling. Tallet er et løfte, og det skal kunne holdes.
+- **Klublisten** viser ikke "ledige i dag" for klubber, der ikke kan bookes.
+- **Klubsiden** viser en tydelig besked øverst: klubben kan ikke tage imod bookinger endnu, og tiderne er vejledende.
+
+De fem demo-klubber, der blev oprettet for at have noget at vise på kortet, falder i denne kategori — de har aldrig haft en Stripe-konto. Det var netop dem, en testbooking ramte, hvilket gjorde problemet synligt.

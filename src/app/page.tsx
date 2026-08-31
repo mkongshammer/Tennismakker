@@ -23,6 +23,9 @@ export default async function Home() {
       status: "APPROVED",
       country: prefs.country,
       courts: { some: { sport: prefs.sport } },
+      // Forsidens tal er et løfte. Klubber der ikke kan modtage betaling
+      // endnu, kan ikke bookes — så de skal ikke tælles med.
+      stripeChargesEnabled: true,
     },
     include: { courts: { where: { sport: prefs.sport } } },
   });

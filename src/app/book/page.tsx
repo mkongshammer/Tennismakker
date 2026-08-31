@@ -57,7 +57,9 @@ export default async function BookPage() {
     surfaces: Array.from(new Set(c.courts.map((court: any) => court.surface))) as string[],
     color: c.color,
     rating: ratings.get(c.id) ?? { average: 0, count: 0 },
-    guestSlotsToday: freeToday.get(c.id) ?? 0,
+    // En klub uden betalingsopsætning kan ikke bookes, så dens tider
+    // tælles ikke med — ellers lover forsiden noget, den ikke kan holde.
+    guestSlotsToday: c.stripeChargesEnabled ? (freeToday.get(c.id) ?? 0) : 0,
   }));
 
   const totalFree = data.reduce((sum, c) => sum + c.guestSlotsToday, 0);

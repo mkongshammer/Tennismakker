@@ -212,7 +212,17 @@ export default async function KlubPage({
 
       {/* Booking */}
       <section>
-        <h2 className="display mb-1 text-2xl">Book bane</h2>
+        {!club.stripeChargesEnabled && (
+        <div className="mb-5 rounded-xl border border-court/30 bg-court/5 p-4">
+          <p className="font-bold">Denne klub kan ikke tage imod bookinger endnu</p>
+          <p className="mt-1 text-sm text-slate">
+            Klubben er ved at få sin betalingsopsætning på plads. Tiderne
+            nedenfor er vejledende, og en booking vil blive afvist indtil da.
+          </p>
+        </div>
+      )}
+
+      <h2 className="display mb-1 text-2xl">Book bane</h2>
         <p className="mb-4 text-sm text-slate">
           {club.memberPriceHour != null && !isMember
             ? `Gæstepris ${club.priceHour} kr. Medlemmer betaler ${club.memberPriceHour} kr.`
