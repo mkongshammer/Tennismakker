@@ -12,6 +12,7 @@
 import { useFormState } from "react-dom";
 import { submitClubLead } from "../../lib/actions";
 import { DetectStep } from "./DetectStep";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export default function OpretKlubPage() {
   const [state, action] = useFormState(submitClubLead, null);
@@ -74,7 +75,7 @@ export default function OpretKlubPage() {
           </div>
 
           {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-          <button className="btn-court w-full">Send henvendelse</button>
+          <SubmitButton className="btn-court w-full" pendingText="Sender…">Send henvendelse</SubmitButton>
           <p className="text-center text-xs text-slate/50">
             Ved henvendelse accepterer du vores{" "}
             <a href="/vilkaar" className="underline">handelsbetingelser</a> og{" "}

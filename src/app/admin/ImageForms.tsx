@@ -3,6 +3,7 @@
 import { useFormState } from "react-dom";
 import { uploadImage, deleteImage } from "../../lib/actions";
 import { imageUrl } from "../../lib/imageUrl";
+import { SubmitButton } from "../../components/SubmitButton";
 
 function Uploader({
   kind,
@@ -52,9 +53,9 @@ function Uploader({
         )}
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
         {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
-        <button className="btn-ghost">
+        <SubmitButton className="btn-ghost" pendingText="Uploader…">
           {current ? "Skift billede" : "Upload"}
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

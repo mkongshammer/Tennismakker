@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormState } from "react-dom";
 import { updateClubSite, createPost } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export function SiteForm({ club }: { club: any }) {
   const [state, action] = useFormState(updateClubSite, null);
@@ -139,7 +140,7 @@ export function SiteForm({ club }: { club: any }) {
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
       {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
-      <button className="btn-court">Gem siden</button>
+      <SubmitButton pendingText="Gemmer…">Gem siden</SubmitButton>
     </form>
   );
 }

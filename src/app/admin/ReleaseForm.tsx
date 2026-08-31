@@ -2,6 +2,7 @@
 
 import { useFormState } from "react-dom";
 import { releaseGuestSlots } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export function ReleaseForm({
   courts,
@@ -47,7 +48,7 @@ export function ReleaseForm({
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
       {state?.ok && <p className="text-sm font-semibold text-ink">{state.ok}</p>}
-      <button className="btn-court">Frigiv tider</button>
+      <SubmitButton pendingText="Frigiver…">Frigiv tider</SubmitButton>
     </form>
   );
 }

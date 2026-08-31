@@ -3,6 +3,7 @@
 import { useFormState } from "react-dom";
 import { createMatchRequest } from "../../../lib/actions";
 import { LEVELS, MATCH_TYPES } from "../../../lib/levels";
+import { SubmitButton } from "../../../components/SubmitButton";
 
 export default function NytOpslagPage() {
   const [state, action] = useFormState(createMatchRequest, null);
@@ -39,7 +40,7 @@ export default function NytOpslagPage() {
           <input className="input" id="area" name="area" placeholder="fx Valby / København SV" required />
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <button className="btn-court w-full">Slå op</button>
+        <SubmitButton className="btn-court w-full" pendingText="Slår op…">Slå op</SubmitButton>
       </form>
     </div>
   );

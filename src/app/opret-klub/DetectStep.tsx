@@ -9,6 +9,7 @@
 
 import { useFormState } from "react-dom";
 import { detectClubSystem } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export function DetectStep() {
   const [state, action] = useFormState(detectClubSystem, null);
@@ -29,7 +30,7 @@ export function DetectStep() {
           placeholder="fx soendermarktennis.dk"
           aria-label="Jeres hjemmeside"
         />
-        <button className="btn-ghost">Find systemet</button>
+        <SubmitButton className="btn-ghost" pendingText="Kigger…">Find systemet</SubmitButton>
       </form>
 
       {state?.error && (

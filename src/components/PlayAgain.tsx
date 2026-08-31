@@ -1,4 +1,5 @@
 import { rebookNextWeek } from "../lib/actions";
+import { SubmitButton } from "./SubmitButton";
 
 // "Spil igen": gentag en tid, man allerede har spillet.
 //
@@ -48,7 +49,7 @@ export function PlayAgain({ items }: { items: Repeatable[] }) {
               </div>
               <form action={rebookNextWeek}>
                 <input type="hidden" name="bookingId" value={item.bookingId} />
-                <button className="btn-court">Book næste {day}</button>
+                <SubmitButton pendingText="Åbner betaling…">Book næste {day}</SubmitButton>
               </form>
             </li>
           );

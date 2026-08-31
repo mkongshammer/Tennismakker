@@ -2,6 +2,7 @@
 
 import { useFormState } from "react-dom";
 import { createRule } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 
 const DAYS = [
   { v: "1", label: "Man" },
@@ -98,7 +99,7 @@ export function RuleForm({
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
       {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
 
-      <button className="btn-court">Aktivér reglen</button>
+      <SubmitButton pendingText="Aktiverer…">Aktivér reglen</SubmitButton>
       <p className="text-xs text-slate">
         Husk at tage de samme tider ud af jeres eget bookingsystem, så den
         samme bane ikke sælges to gange.

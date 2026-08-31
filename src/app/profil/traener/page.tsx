@@ -81,7 +81,7 @@ export default function TraenerProfilPage() {
           </p>
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <button className="btn-court w-full">Gem profil</button>
+        <SubmitButton className="btn-court w-full" pendingText="Gemmer…">Gem profil</SubmitButton>
       </form>
     </div>
   );

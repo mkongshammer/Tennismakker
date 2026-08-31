@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useFormState } from "react-dom";
 import { signup } from "../../lib/actions";
 import { LEVELS } from "../../lib/levels";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export default function SignupPage() {
   const [state, action] = useFormState(signup, null);
@@ -46,7 +47,7 @@ export default function SignupPage() {
           </div>
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <button className="btn-court w-full">Opret profil</button>
+        <SubmitButton className="btn-court w-full" pendingText="Opretter…">Opret profil</SubmitButton>
         <p className="text-center text-sm text-slate/60">
           Har du en konto? <Link href="/login" className="font-semibold text-court underline">Log ind</Link>
         </p>

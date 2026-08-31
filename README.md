@@ -557,6 +557,8 @@ Løst med `useFormStatus()` fra React, som ved præcis hvornår den `<form>`, de
 
 Knappen deaktiveres samtidig, mens den venter — et dobbeltklik under de 5-6 sekunder kan ellers nå at oprette to Stripe-kald for den samme handling.
 
+**Udvidet til alle formularer med mærkbar ventetid:** login, oprettelse af profil, klubhenvendelse, systemgenkendelse (henter klubbens hjemmeside), billedupload (skalering tager tid), gem klubside, frigivelsesregler og "Spil igen". Hurtige databasehandlinger som "luk opslag" eller "godkend klub" har bevidst ikke fået spinner — dér ville den nå at blinke og forsvinde, hvilket er mere forstyrrende end hjælpsomt.
+
 ## Sikkerhedsrettelse: gratis booking var mulig
 
 Fundet ved et spørgsmål om abonnementsgebyrer, ikke ved en systematisk gennemgang — værd at bemærke.

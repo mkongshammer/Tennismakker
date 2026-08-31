@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useFormState } from "react-dom";
 import { login } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 
 export default function LoginPage() {
   const [state, action] = useFormState(login, null);
@@ -20,7 +21,7 @@ export default function LoginPage() {
           <input className="input" id="password" name="password" type="password" required />
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <button className="btn-ink w-full">Log ind</button>
+        <SubmitButton className="btn-ink w-full" pendingText="Logger ind…">Log ind</SubmitButton>
         <p className="text-center text-sm text-slate/60">
           Ny her? <Link href="/signup" className="font-semibold text-court underline">Opret profil</Link>
         </p>
