@@ -14,6 +14,7 @@ import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { ImageForms } from "./ImageForms";
 import { startClubPayoutSetup } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
 import { refreshAccountStatus } from "../../lib/connect";
 import { stripeEnabled } from "../../lib/stripe";
 import Link from "next/link";
@@ -136,9 +137,9 @@ export default async function AdminPage({
                 klubbens kontonummer.
               </p>
               <form action={startClubPayoutSetup} className="mt-3">
-                <button className="btn-court">
+                <SubmitButton pendingText="Åbner Stripe…">
                   {club.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
-                </button>
+                </SubmitButton>
               </form>
             </>
           )}

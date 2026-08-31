@@ -541,3 +541,14 @@ Klubben sætter det op i `/admin` under "Jeres side": en kode (`accessCode`) og/
 **Vises kun til folk med en bekræftet booking** — i kvitteringsmailen og på deres profil under kommende bookinger. Aldrig på den offentlige klubside. En kode, alle kan se, er ingen sikkerhed; det er hele pointen med at gemme den bag en betalt booking.
 
 **Det er en statisk kode, ikke en digital lås.** Der er ingen integration til fysiske låsesystemer — koden er den samme for alle, indtil klubben selv ændrer den i admin. Rigtige udenlandske systemer som ClubSpark tilbyder engangskoder pr. booking gennem en fysisk lås-integration; det kræver en aftale med en låseleverandør og er ikke bygget. Til gengæld virker det med enhver aflåsning en klub allerede har — en kodelås, en nøgleboks, en vagt der skal ringes til — fordi det bare er tekst, klubben selv formulerer.
+
+## Indlæsningstilstand på langsomme knapper
+
+Stripe-kaldene tager typisk 1-6 sekunder — opsætning af udbetalinger opretter en konto og et onboarding-link hos Stripe, en booking opretter en checkout-session. Uden en synlig reaktion ser det ud som om, klikket ikke virkede, og folk klikker igen.
+
+Løst med `useFormStatus()` fra React, som ved præcis hvornår den `<form>`, den sidder i, er ved at sende:
+
+- **`src/components/SubmitButton.tsx`** — generisk knap med spinner og tekst ("Åbner Stripe…"), brugt til opsætning af udbetalinger for både klub og træner
+- **`BookingGrid.tsx`** og **`CoachSlotButton.tsx`** — banetiderne og trænertiderne beholder deres egen stil (farvet flise med sportens farve, henholdsvis en lille kant-knap), men viser en spinner i stedet for teksten, mens bookingen oprettes
+
+Knappen deaktiveres samtidig, mens den venter — et dobbeltklik under de 5-6 sekunder kan ellers nå at oprette to Stripe-kald for den samme handling.

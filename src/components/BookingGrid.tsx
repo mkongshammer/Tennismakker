@@ -10,6 +10,7 @@
 // gitteret med baner som kolonner rigtigt: man overskuer hele dagen.
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { bookCourtSlot } from "../lib/actions";
 import { sportColor, surfaceLabel } from "../lib/sports";
 import type { Locale } from "../lib/sports";
@@ -20,6 +21,22 @@ export type Slot = { courtId: string; startsAt: string; priceKr: number };
 function clock(iso: string) {
   const d = new Date(iso);
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+function BookButtonContent({ children }: { children: React.ReactNode }) {
+  const { pending } = useFormStatus();
+  if (!pending) return <>{children}</>;
+  return (
+    <svg
+      className="relative z-10 mx-auto h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" opacity="0.3" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
 }
 
 function Book({
@@ -49,7 +66,7 @@ function Book({
       <input type="hidden" name="courtId" value={courtId} />
       <input type="hidden" name="startsAt" value={startsAt} />
       <button className={className} style={style}>
-        {children}
+        <BookButtonContent>{children}</BookButtonContent>
       </button>
     </form>
   );

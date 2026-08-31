@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
-import { bookCoachSlot } from "../../../lib/actions";
+import { CoachSlotButton } from "../../../components/CoachSlotButton";
 import { releaseExpiredHolds } from "../../../lib/payments";
 import { parseWeeklySlots, upcomingSlotsFromWeekly } from "../../../lib/slots";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
@@ -114,13 +114,12 @@ export default async function TraenerPage({ params }: { params: { id: string } }
             <div className="flex flex-wrap gap-2">
               {daySlots.map((s) =>
                 user ? (
-                  <form key={s.toISOString()} action={bookCoachSlot}>
-                    <input type="hidden" name="coachProfileId" value={coach.id} />
-                    <input type="hidden" name="startsAt" value={s.toISOString()} />
-                    <button className="rounded-md border border-ink px-3 py-1.5 text-sm font-semibold text-ink hover:bg-ink hover:text-chalk">
-                      {format(s, "HH:mm")}
-                    </button>
-                  </form>
+                  <CoachSlotButton
+                    key={s.toISOString()}
+                    coachProfileId={coach.id}
+                    startsAt={s.toISOString()}
+                    time={format(s, "HH:mm")}
+                  />
                 ) : (
                   <Link key={s.toISOString()} href="/login"
                     className="rounded-md border border-slate/20 px-3 py-1.5 text-sm text-slate/50">

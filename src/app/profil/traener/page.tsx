@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions";
+import { SubmitButton } from "../../../components/SubmitButton";
 import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
@@ -45,9 +46,9 @@ export default function TraenerProfilPage() {
               Tager typisk 5-10 minutter.
             </p>
             <form action={startCoachPayoutSetup} className="mt-3">
-              <button className="btn-court">
+              <SubmitButton pendingText="Åbner Stripe…">
                 {profile.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
-              </button>
+              </SubmitButton>
             </form>
           </>
         )}
