@@ -27,7 +27,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://tennis-makker.onrender.com"
+      "apiUrl": "https://racketbuddy.app"
     },
     "experiments": {
       "baseUrl": "/app"

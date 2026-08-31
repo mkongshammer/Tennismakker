@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 
 const BASE_URL =
-  Constants.expoConfig?.extra?.apiUrl ?? "https://tennis-makker.onrender.com";
+  Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
 
 const TOKEN_KEY = "tm_token";
 
