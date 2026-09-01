@@ -173,8 +173,13 @@ export default async function ProfilPage({
                 )}
               </div>
               <div className="flex gap-2">
+                {/* Betalingsknappen er et almindeligt <a> og ikke <Link>:
+                    ruten sender videre til Stripes eget domæne, og det
+                    kræver en rigtig sidenavigation. Med <Link> henter Next
+                    kun svaret som data i baggrunden, og omdirigeringen når
+                    aldrig at blive fulgt. */}
                 {b.status === "HOLD" && (
-                  <Link href={`/checkout/${b.id}`} className="btn-court text-sm">Betal nu</Link>
+                  <a href={`/checkout/${b.id}/start`} className="btn-court text-sm">Betal nu</a>
                 )}
                 <form action={cancelBooking}>
                   <input type="hidden" name="id" value={b.id} />

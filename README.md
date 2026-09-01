@@ -673,3 +673,18 @@ Rettet to steder:
 - **Checkout-siden** sender videre til Stripe med en meta-refresh og viser samtidig et klikbart link, hvis browseren ikke følger med automatisk.
 
 Bookingflowet kontrollerer desuden `stripeChargesEnabled` direkte i databasen i stedet for at oprette en Stripe-session bare for at teste — det sparer et unødigt kald og en overflødig session pr. booking.
+
+### Hvorfor betalingen aldrig nåede til Stripe
+
+Tre forsøg i træk fejlede på samme grundproblem, hver gang med en ny forklædning. Loggen afslørede det til sidst:
+
+```
+GET /checkout/<id>?_rsc=1gbqz  →  200
+GET /profil?_rsc=1gbqz          →  200
+```
+
+`_rsc` betyder, at Next hentede checkout-siden som **data i baggrunden**, ikke som en rigtig sidenavigation. Det sker, fordi knappen var et `<Link>`. Al omdirigering inde i den side — først `redirect()`, siden en meta-refresh — lå dermed i et datasvar, browseren aldrig kørte.
+
+Løsningen er en **route handler** (`/checkout/[id]/start`) i stedet for en side. Den svarer med en ægte HTTP-302 til Stripes adresse, og den følger browseren altid, uanset hvordan den blev kaldt. Knappen er samtidig ændret fra `<Link>` til et almindeligt `<a>`.
+
+Læren: når et flow skal forlade appen til et andet domæne, skal det gå gennem en route handler med et rigtigt omdirigeringssvar — ikke gennem en sidekomponent.

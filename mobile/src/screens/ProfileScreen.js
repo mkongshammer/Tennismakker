@@ -62,7 +62,7 @@ export default function ProfileScreen() {
                 <Text style={styles.warn}>Afventer betaling</Text>
                 <Button
                   title="Betal nu"
-                  onPress={() => Linking.openURL(checkoutUrl(`/checkout/${b.id}`))}
+                  onPress={() => Linking.openURL(checkoutUrl(`/checkout/${b.id}/start`))}
                 />
               </View>
             )}

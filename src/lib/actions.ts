@@ -233,7 +233,7 @@ export async function bookCourtSlot(formData: FormData) {
     fail("betaling");
   }
 
-  redirect(`/checkout/${booking.id}`);
+  redirect(`/checkout/${booking.id}/start`);
 }
 
 /** Booker en trænertime. */
@@ -286,7 +286,7 @@ export async function bookCoachSlot(formData: FormData) {
     fail("betaling");
   }
 
-  redirect(`/checkout/${booking.id}`);
+  redirect(`/checkout/${booking.id}/start`);
 }
 
 export async function cancelBooking(formData: FormData) {
