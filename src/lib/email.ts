@@ -11,7 +11,9 @@ type Mail = {
   body: string; // ren tekst, én besked pr. linje
 };
 
-const FROM = process.env.EMAIL_FROM ?? "RacketBuddy <ingen-svar@tennismakker.dk>";
+// Afsenderen skal ligge på et domæne, der er verificeret hos
+// e-mailudbyderen — ellers afvises mailen, eller den lander i spam.
+const FROM = process.env.EMAIL_FROM ?? "RacketBuddy <ikke-svar@racketbuddy.app>";
 
 /**
  * Sender en e-mail. Fejler aldrig hårdt: en booking må ikke gå tabt,

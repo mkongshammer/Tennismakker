@@ -11,6 +11,7 @@
 import { db } from "./db";
 import { stripe, stripeEnabled } from "./stripe";
 import { commission, COMMISSION_PCT } from "./payments";
+import { sendMail } from "./email";
 
 export type Check = {
   name: string;
@@ -57,6 +58,50 @@ function configChecks(): Check[] {
   });
 
   return checks;
+}
+
+/**
+ * Sender en rigtig testmail til den adresse, bestillinger går til.
+ * Det er den eneste måde at vide, om afsenderdomænet er verificeret —
+ * en forkert opsætning giver først en fejl i selve afsendelsen.
+ */
+async function emailCheck(): Promise<Check> {
+  const to = process.env.ORDERS_EMAIL;
+
+  if (!process.env.EMAIL_API_KEY) {
+    return {
+      name: "E-mail",
+      status: "advarsel",
+      detail: "EMAIL_API_KEY mangler — kvitteringer logges kun, de sendes ikke.",
+    };
+  }
+  if (!to) {
+    return {
+      name: "E-mail",
+      status: "advarsel",
+      detail: "Nøglen er sat, men ORDERS_EMAIL mangler, så testen kan ikke sende nogen steder hen.",
+    };
+  }
+
+  const sent = await sendMail({
+    to,
+    subject: "RacketBuddy — selvtest af e-mail",
+    body: [
+      "Denne mail er sendt af selvtesten på /superadmin/selvtest.",
+      "",
+      `Afsender: ${process.env.EMAIL_FROM ?? "(standard)"}`,
+      "",
+      "Kan du læse den her, virker kvitteringer og klubbeskeder også.",
+    ].join("\n"),
+  });
+
+  return {
+    name: "E-mail",
+    status: sent ? "ok" : "fejl",
+    detail: sent
+      ? `Testmail sendt til ${to}. Kom den ikke frem, er afsenderdomænet ikke verificeret hos udbyderen.`
+      : "Afsendelsen fejlede. Se serverloggen — typisk et uverificeret afsenderdomæne.",
+  };
 }
 
 /** Kan vi overhovedet nå Stripe med den nøgle, der er sat? */
@@ -235,14 +280,15 @@ export async function runSelfTest(): Promise<{
   checks: Check[];
   recipients: RecipientStatus[];
 }> {
-  const [connectivity, checkout, recipients] = await Promise.all([
+  const [connectivity, email, checkout, recipients] = await Promise.all([
     connectivityCheck(),
+    emailCheck(),
     testCheckoutSession(),
     recipientStatuses(),
   ]);
 
   return {
-    checks: [...configChecks(), connectivity, ...feeChecks(), checkout],
+    checks: [...configChecks(), connectivity, email, ...feeChecks(), checkout],
     recipients,
   };
 }

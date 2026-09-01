@@ -697,3 +697,19 @@ Betalingen bekræftes nu ad to uafhængige veje:
 2. **Webhooken** — fanger de tilfælde, hvor brugeren lukker browseren eller mister forbindelsen undervejs. Pengene er trukket, så bookingen skal bekræftes uanset hvad.
 
 `confirmBookingPayment()` er idempotent, så det gør ingen skade, at begge veje kalder den. Uden vej 1 ville en forsinket webhook betyde, at brugeren så "Afventer betaling" umiddelbart efter at have betalt — uden vej 2 ville en lukket browser efterlade en betalt booking som ubekræftet.
+
+## E-mail
+
+Sendes via Resend. Tre variabler styrer det:
+
+| Variabel | Betydning |
+|---|---|
+| `EMAIL_API_KEY` | Resend-nøgle. Mangler den, logges mails i stedet for at blive sendt |
+| `EMAIL_FROM` | Afsender. **Skal ligge på et domæne, der er verificeret hos Resend** — ellers afvises mailen eller lander i spam |
+| `ORDERS_EMAIL` | Hvor klubhenvendelser og hjemmesidebestillinger sendes hen |
+
+Afsenderen var oprindeligt sat til `tennismakker.dk` — et domæne, der aldrig har eksisteret. Enhver mail ville være blevet afvist. Nu bruges `racketbuddy.app`, som er verificeret.
+
+**Selvtesten sender en rigtig mail.** `/superadmin/selvtest` afsender en testmail til `ORDERS_EMAIL` hver gang den køres. Det er den eneste pålidelige måde at kontrollere opsætningen på: en uverificeret afsender fejler først i selve afsendelsen, ikke i konfigurationen.
+
+Kommer testmailen ikke frem, men står tjekket som grønt, er nøglen god, men afsenderdomænet er ikke verificeret hos Resend.
