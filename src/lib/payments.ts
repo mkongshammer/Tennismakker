@@ -153,7 +153,11 @@ export async function startCheckout(bookingId: string): Promise<string> {
       metadata: { bookingId },
     },
     metadata: { bookingId },
-    success_url: `${base}/profil?betalt=1`,
+    // Send brugeren via vores egen bekræftelsesrute i stedet for direkte
+    // til profilen. Den spørger Stripe, om betalingen faktisk gik igennem,
+    // og bekræfter bookingen med det samme — så oplevelsen ikke afhænger
+    // af, at webhooken når frem først.
+    success_url: `${base}/checkout/${bookingId}/faerdig?session={CHECKOUT_SESSION_ID}`,
     cancel_url: `${base}/profil`,
     expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // matcher HOLD-vinduet med god margen
   });

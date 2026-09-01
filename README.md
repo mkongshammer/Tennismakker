@@ -688,3 +688,12 @@ GET /profil?_rsc=1gbqz          →  200
 Løsningen er en **route handler** (`/checkout/[id]/start`) i stedet for en side. Den svarer med en ægte HTTP-302 til Stripes adresse, og den følger browseren altid, uanset hvordan den blev kaldt. Knappen er samtidig ændret fra `<Link>` til et almindeligt `<a>`.
 
 Læren: når et flow skal forlade appen til et andet domæne, skal det gå gennem en route handler med et rigtigt omdirigeringssvar — ikke gennem en sidekomponent.
+
+### Bekræftelse sker to steder
+
+Betalingen bekræftes nu ad to uafhængige veje:
+
+1. **`/checkout/[id]/faerdig`** — Stripes `success_url` peger hertil. Ruten spørger Stripe direkte, om sessionen er betalt, og bekræfter bookingen med det samme. Det giver brugeren et korrekt svar i samme øjeblik, de kommer tilbage.
+2. **Webhooken** — fanger de tilfælde, hvor brugeren lukker browseren eller mister forbindelsen undervejs. Pengene er trukket, så bookingen skal bekræftes uanset hvad.
+
+`confirmBookingPayment()` er idempotent, så det gør ingen skade, at begge veje kalder den. Uden vej 1 ville en forsinket webhook betyde, at brugeren så "Afventer betaling" umiddelbart efter at have betalt — uden vej 2 ville en lukket browser efterlade en betalt booking som ubekræftet.
