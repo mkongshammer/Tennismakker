@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../../lib/session";
+import { getPreferences } from "../../../lib/preferences";
+import { translator } from "../../../lib/i18n";
 import { loadThread, readMessages, MAX_MESSAGE_LENGTH } from "../../../lib/messages";
 import { sendMessage } from "../../../lib/actions";
 
@@ -12,14 +14,15 @@ function clock(d: Date) {
 
 export default async function SamtalePage({ params }: { params: { id: string } }) {
   const user = await getCurrentUser();
+  const t = translator((await getPreferences()).locale);
   if (!user) redirect("/login");
 
   const access = await loadThread(params.id, user.id);
   if (!access.ok) {
     return (
       <div className="card mx-auto max-w-md text-center">
-        <p className="font-bold">{access.reason}</p>
-        <Link href="/beskeder" className="btn-ghost mt-4">Tilbage til beskeder</Link>
+        <p className="font-bold">{t(access.reason)}</p>
+        <Link href="/beskeder" className="btn-ghost mt-4">{t("msg.back")}</Link>
       </div>
     );
   }
@@ -29,27 +32,27 @@ export default async function SamtalePage({ params }: { params: { id: string } }
   return (
     <div className="mx-auto max-w-2xl">
       <Link href="/beskeder" className="text-sm text-slate/60 hover:underline">
-        ← Beskeder
+        ← {t("msg.title")}
       </Link>
       <h1 className="display mt-2 text-2xl">{access.otherUser.name}</h1>
-      <p className="text-sm text-slate/60">Om: {access.thread.message}</p>
+      <p className="text-sm text-slate/60">{t("msg.about", { subject: access.thread.message })}</p>
 
       {/* Sløjfen lukkes her: en aftale uden en bane bliver sjældent til noget.
           Knappen står øverst i samtalen, ikke gemt i en menu. */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-court/25 bg-court/5 p-4">
         <div>
-          <p className="font-bold">Har I aftalt en tid?</p>
-          <p className="text-sm text-slate">Book banen, så er den jeres.</p>
+          <p className="font-bold">{t("msg.agreedTitle")}</p>
+          <p className="text-sm text-slate">{t("msg.agreedBody")}</p>
         </div>
         <Link href="/book" className="btn-court">
-          Book en bane
+          {t("nav.book")}
         </Link>
       </div>
 
       <div className="my-6 space-y-3">
         {messages.length === 0 && (
           <p className="text-center text-sm text-slate/50">
-            Ingen beskeder endnu — skriv den første og aftal en tid.
+            {t("msg.emptyThread")}
           </p>
         )}
         {messages.map((m: any) => {
@@ -76,12 +79,12 @@ export default async function SamtalePage({ params }: { params: { id: string } }
         <input
           className="input flex-1"
           name="body"
-          placeholder="Skriv en besked…"
+          placeholder={t("msg.placeholder")}
           maxLength={MAX_MESSAGE_LENGTH}
           required
           autoComplete="off"
         />
-        <button className="btn-court">Send</button>
+        <button className="btn-court">{t("msg.send")}</button>
       </form>
     </div>
   );

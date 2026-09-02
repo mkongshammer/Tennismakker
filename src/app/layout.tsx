@@ -6,7 +6,8 @@ import { getPreferences } from "../lib/preferences";
 import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
 import { LanguagePicker } from "../components/LanguagePicker";
-import { CountryModal } from "../components/CountryModal";
+import { CountrySuggestion } from "../components/CountrySuggestion";
+import { detectCountry } from "../lib/geo";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
@@ -39,6 +40,7 @@ export default async function RootLayout({
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   const t = translator(prefs.locale);
   const unread = user ? await unreadCount(user.id) : 0;
+  const suggestedCountry = prefs.countryChosen ? null : detectCountry();
 
   return (
     <html lang={prefs.locale}>
@@ -64,6 +66,11 @@ export default async function RootLayout({
         <main
           className={`mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}
         >
+          {/* Kun når gættet peger et andet sted hen end det, vi viser. Er
+              man dér, hvor vi allerede er, er der ingenting at spørge om. */}
+          {!prefs.countryChosen && suggestedCountry && suggestedCountry !== prefs.country && (
+            <CountrySuggestion code={suggestedCountry} />
+          )}
           {children}
         </main>
 
@@ -97,9 +104,7 @@ export default async function RootLayout({
             Forsiden fører selv de besøgende videre. */}
         {user && <TabBar locale={prefs.locale} unread={unread} />}
 
-        {/* Spørges én gang. Derefter husker cookien det — og for en
-            indlogget bruger følger valget med til enhver enhed. */}
-        {!prefs.countryChosen && <CountryModal locale={prefs.locale} />}
+
       </body>
     </html>
   );

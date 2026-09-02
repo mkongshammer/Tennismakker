@@ -8,6 +8,8 @@ import { db } from "./db";
 
 export type ThreadAccess =
   | { ok: true; thread: any; otherUser: any }
+  // reason er en oversættelsesnøgle, ikke en færdig sætning: laget her
+  // ved ikke, hvilket sprog den skal læses på.
   | { ok: false; reason: string };
 
 /** Henter en tråd, hvis brugeren har adgang til den. */
@@ -20,15 +22,15 @@ export async function loadThread(
     include: { requester: true, acceptedBy: true },
   });
 
-  if (!request) return { ok: false, reason: "Samtalen findes ikke." };
+  if (!request) return { ok: false, reason: "msg.errNoThread" };
   if (!request.acceptedById) {
-    return { ok: false, reason: "Der er ingen samtale, før nogen har slået til på opslaget." };
+    return { ok: false, reason: "msg.errNotOpen" };
   }
 
   const isOwner = request.requesterId === userId;
   const isAccepter = request.acceptedById === userId;
   if (!isOwner && !isAccepter) {
-    return { ok: false, reason: "Du har ikke adgang til denne samtale." };
+    return { ok: false, reason: "msg.errNoAccess" };
   }
 
   return {

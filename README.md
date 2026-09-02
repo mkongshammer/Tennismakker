@@ -387,17 +387,19 @@ Booking-flowet og betalingssplittet er de næste steder, der bør dækkes.
 
 ## Landevalget
 
-Første gang nogen lander på siden, bliver de spurgt, hvor de spiller. Landet afgør tre ting på én gang: hvilke klubber der overhovedet vises, hvilken valuta priser står i, og hvilket sprog siden er på. At gætte forkert på alle tre samtidig er værre end at spørge én gang.
+Vi gætter, hvor den besøgende er, og spørger kun, hvis gættet peger et andet sted hen end det, vi allerede viser. En dansker i Danmark ser altså ingenting.
 
-**Vi kan se forskel på et valg og en standard.** `User.countryChosen` og tilstedeværelsen af landcookien fortæller, om nogen selv har valgt. Uden det felt kunne vi ikke skelne en dansker fra en tysker, der endnu ikke var blevet spurgt — og så måtte vi enten spørge alle hver gang eller aldrig spørge nogen.
+Før var det en boks med fire lande midt på forsiden. Den stod i vejen for alle for at hjælpe de få — langt de fleste er dér, hvor vi allerede viser.
 
-**Sproget følger med landet, men kun én vej.** Har man allerede skiftet sprog i footeren, er det et bevidst valg, og et landevalg trumfer det ikke. Omvendt får en, der vælger Tyskland uden at have rørt sproget, tysk med det samme.
+**Gættet, i den rækkefølge.** Først et landeheader fra en CDN foran appen (Cloudflare, Vercel og CloudFront sætter hver sit). Ligger der ingen CDN foran — som på Render i dag — falder vi tilbage på browserens `Accept-Language`. Det er noget, den besøgende selv har sat, det kræver ingen opslagstjeneste og ingen IP-adresse, og en browser sat til tysk er et bedre gæt på Tyskland end de fleste IP-databaser. Lande, vi ikke er i endnu, tæller som et blankt svar.
 
-**Boksen kan lukkes uden at svare.** At blokere siden, indtil nogen har valgt, ville koste flere besøgende, end det forkerte land gør — og landet kan skiftes i footeren når som helst. Lukker man, spørger vi ikke igen.
+**Spørgsmålet står på sproget dér, hvor vi tror, de er.** En tysker, der lander på en dansk side, skal kunne læse netop den ene sætning, der tilbyder at gøre noget ved det. Resten af siden er stadig dansk, indtil de svarer ja.
 
-**Ingen klient-JavaScript.** Hvert land er en formular, ligesom sports- og sprogvælgeren. Cookies kan ikke sættes, mens en side renderes, så et valg skal være en handling — og så kan boksen lige så godt renderes på serveren og virke uden JavaScript overhovedet.
+**Gættet bestemmer aldrig noget selv.** Det stiller kun et spørgsmål. Et gæt, der lander forkert og bare skifter sproget under fødderne på nogen, er værre end slet ikke at gætte.
 
-Eksisterende brugere har `countryChosen: false` og bliver derfor spurgt én gang. Det er med vilje: de har aldrig valgt.
+**Vi kan se forskel på et valg og en standard.** `User.countryChosen` og landcookien fortæller, om nogen selv har valgt. Uden det felt kunne vi ikke skelne en dansker fra en tysker, der endnu ikke var blevet spurgt.
+
+**Ingen klient-JavaScript.** Ja og nej er hver sin formular, ligesom sprog- og sportsvælgeren.
 
 ## Sprog
 
