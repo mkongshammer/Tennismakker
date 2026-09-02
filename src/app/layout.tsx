@@ -73,6 +73,7 @@ export default async function RootLayout({
               Racket<span className="text-court">Buddy</span>
             </p>
             <p className="mt-1 text-sm text-slate">Ketsjersport samlet ét sted</p>
+            <p className="mt-1 text-sm text-slate">{t("availability.soon")}</p>
             <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
               <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
               <Link href="/hjemmeside" className="hover:text-ink">Hjemmeside til klubben</Link>

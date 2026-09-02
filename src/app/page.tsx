@@ -73,7 +73,7 @@ export default async function Home() {
 
         <div className="relative max-w-2xl">
           <p className="eyebrow text-chalk/75">
-            {sportLabel(prefs.sport, prefs.locale)} · i dag
+            {sportLabel(prefs.sport, prefs.locale)} · i dag · {t("availability.now")}
           </p>
           <p className="data mt-3 text-6xl font-bold leading-none sm:text-8xl">
             {freeToday}

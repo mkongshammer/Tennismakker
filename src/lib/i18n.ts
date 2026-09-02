@@ -35,6 +35,14 @@ const T: Dict = {
   "common.from": { da: "fra", en: "from" },
   "common.courts": { da: "baner", en: "courts" },
   "common.book": { da: "Book", en: "Book" },
+  // Vi starter i Danmark og åbner flere lande senere. Sætningen står to
+  // steder: i hero'ens overlinje, hvor den møder en ny besøgende, og i
+  // footeren, hvor den bliver stående uanset hvor man er på sitet.
+  "availability.now": { da: "Tilgængelig i Danmark", en: "Available in Denmark" },
+  "availability.soon": {
+    da: "Tilgængelig i Danmark — flere lande på vej",
+    en: "Available in Denmark — more countries coming",
+  },
   "common.save": { da: "Gem", en: "Save" },
   "common.cancel": { da: "Annullér", en: "Cancel" },
   "common.loading": { da: "Henter…", en: "Loading…" },
