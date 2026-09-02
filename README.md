@@ -401,6 +401,23 @@ Før var det en boks med fire lande midt på forsiden. Den stod i vejen for alle
 
 **Ingen klient-JavaScript.** Ja og nej er hver sin formular, ligesom sprog- og sportsvælgeren.
 
+## Vejen ind, første gang
+
+Hønen og ægget: superadmin-konti oprettes af en superadmin, og login i to trin sender koden til kontoens egen mail. Er den eneste superadmin en demo-konto på en adresse, ingen kan læse, findes der ingen vej ind.
+
+`/superadmin/bootstrap` er den vej, og den er lukket som udgangspunkt. Den virker kun, når `BOOTSTRAP_TOKEN` er sat i miljøet, og kun med præcis det token. Kun den, der kan sætte miljøvariabler på serveren, kan altså bruge den — og det er allerede den samme person, der kunne læse databasen direkte.
+
+Sådan bruges den:
+
+1. Sæt `BOOTSTRAP_TOKEN` til noget langt og tilfældigt på Render
+2. Åbn `/superadmin/bootstrap?token=DIT_TOKEN&email=din@adresse.dk`
+3. Gem adgangskoden, der vises én gang
+4. Slet `BOOTSTRAP_TOKEN` igen
+
+Uden variablen svarer siden "Ikke fundet" — samme svar som ved forkert token, så ingen kan aflæse, om der overhovedet er en dør der.
+
+**Demo-superadmin bør fjernes.** Seed opretter `super@demo.dk` med rollen SUPERADMIN. Så længe den findes i produktion, er der en konto med fuld adgang på en adresse, ingen af os ejer. Sæt rollen til PLAYER, når din egen konto virker.
+
 ## Login i to trin
 
 En superadmin kan se og ændre alt. Adgangskoden alene er ikke nok til den konto: den kan lækkes fra et andet site, gættes eller kigges over skulderen. Efter adgangskoden sendes derfor en sekscifret kode til den mail, kontoen hører til, og sessionen oprettes først, når koden er indtastet.
