@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
+import { normaliseWeeklySlots } from "./slots";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
@@ -311,12 +312,16 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
   const user = await getCurrentUser();
   if (!user || !user.coachProfile) redirect("/login");
 
-  const weeklySlotsRaw = String(formData.get("weeklySlots") ?? "[]");
+  // Kalenderen sender et rent mønster, men mobilappen og API-klienter sender
+  // rå JSON. Det renses samme sted uanset hvor det kommer fra, så ingen kan
+  // gemme noget, brugerfladen ikke selv kunne have lavet.
+  let weeklySlots: string;
   try {
-    const parsed = JSON.parse(weeklySlotsRaw);
-    if (!Array.isArray(parsed)) throw new Error();
+    weeklySlots = JSON.stringify(
+      normaliseWeeklySlots(JSON.parse(String(formData.get("weeklySlots") ?? "[]")))
+    );
   } catch {
-    return { error: "Ledige tider skal være gyldig JSON, fx [{\"day\":2,\"from\":16,\"to\":20}]" };
+    return { error: "Dine ledige tider kunne ikke læses. Prøv at markere dem igen." };
   }
 
   await db.coachProfile.update({
@@ -326,7 +331,7 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
       priceHour: Math.max(0, Number(formData.get("priceHour") ?? 350)),
       specialties: String(formData.get("specialties") ?? "").trim(),
       area: String(formData.get("area") ?? "").trim(),
-      weeklySlots: weeklySlotsRaw,
+      weeklySlots,
     },
   });
   revalidatePath("/traenere");

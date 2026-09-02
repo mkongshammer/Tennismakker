@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
+import { WeeklyCalendar } from "./WeeklyCalendar";
 import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
@@ -74,11 +75,12 @@ export default function TraenerProfilPage() {
           <input className="input" id="specialties" name="specialties" defaultValue={profile.specialties} placeholder="Serv, Baghånd, Junior" />
         </div>
         <div>
-          <label className="label" htmlFor="weeklySlots">Ugentlige ledige tider (JSON)</label>
-          <textarea className="input font-mono text-sm" id="weeklySlots" name="weeklySlots" rows={3} defaultValue={profile.weeklySlots} />
-          <p className="mt-1 text-xs text-slate/50">
-            {'Format: [{"day":2,"from":16,"to":20}] — day: 0=søndag … 6=lørdag. Her: tirsdage 16-20.'}
+          <span className="label">Hvornår kan du tage elever?</span>
+          <p className="mb-2 text-xs text-slate">
+            Tiderne gentages hver uge. Eleverne kan kun booke de timer, du
+            markerer her — og kun dem, der ikke allerede er booket.
           </p>
+          <WeeklyCalendar name="weeklySlots" defaultValue={profile.weeklySlots} />
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
         <SubmitButton className="btn-court w-full" pendingText="Gemmer…">Gem profil</SubmitButton>

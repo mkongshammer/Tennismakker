@@ -140,7 +140,7 @@ Nogle ting er bevidst holdt simple i denne version og bør på plads, før rigti
 - **Dobbeltbooking er ikke teknisk umulig.** Ved `MANUAL` og `ICAL` ejer klubben stadig sandheden. Frigiver klubben en tid hos os og sælger den samtidig i sit eget system, opdager vi det ikke. `MANUAL` er mindst risikabelt, fordi klubben bevidst tager tiden ud af eget system først. Ved `ICAL` afhænger sikkerheden af, hvor tit der synkroniseres.
 - Synkronisering af kalenderfeeds sker kun, når klubben trykker "Synkronisér nu". Et cron-job, der kører fx hvert 15. minut, er næste skridt — `syncClubCalendar()` er allerede skrevet til at kunne kaldes udefra.
 - Bookinger er altid på hele timer.
-- Trænernes ledige tider redigeres som JSON i trænerprofilen. Det virker, men en kalender-UI er næste skridt.
+- Bookinger kan kun ligge på hele timer — også trænertimer. En træner, der vil have 45 minutter eller halve timer, kan ikke sætte det op.
 - Klubber og baner oprettes via seed-scriptet; der er endnu ingen selvbetjening til at oprette en ny klub.
 - Aflysning giver ikke automatisk pengene retur — refunderingen skal håndteres, når rigtig betaling sættes på.
 
@@ -332,6 +332,26 @@ Ud over en enkelt time kan trænere sælge forløb — fx et 10-turskort eller e
 **Pakker kan ikke købes online endnu.** De vises og aftales direkte med træneren. Onlinekøb af pakker kræver et klippekortsystem — hvor mange timer er brugt, hvornår udløber de, hvad sker der ved aflysning — og det bør bygges sammen med den rigtige betaling, ikke før.
 
 ---
+
+## Trænerens ledige tider
+
+Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var det et tekstfelt med rå JSON — det virkede, men ingen træner udfylder det, og en enkelt manglende tuborgklamme gjorde profilen ubookbar uden nogen forklaring.
+
+**Formatet er uændret.** Der gemmes stadig `[{ "day": 2, "from": 16, "to": 20 }]` i `CoachProfile.weeklySlots`, så `upcomingSlotsFromWeekly()`, trænersiden og mobilappens API læser præcis som før. Kalenderen skriver bare ned i et skjult felt.
+
+**Der klikkes i timer, men der gemmes intervaller.** En træner tænker "tirsdag 16-20", ikke "fire enkelttimer". Timerne samles derfor til sammenhængende intervaller igen, inden de gemmes — overlap smelter sammen, og pauser midt på dagen bliver til to intervaller.
+
+**Rensningen sker på serveren, ikke i browseren.** `normaliseWeeklySlots()` kaldes i `updateCoachProfile`, uanset om mønsteret kom fra kalenderen eller fra en API-klient. Ugyldige dage, bagvendte intervaller og timer uden for døgnet frasorteres. Ingen kan gemme noget, brugerfladen ikke selv kunne have lavet.
+
+**Der males kun med musen.** På en telefon ville et træk hen over kalenderen slås med at rulle siden. Et tryk pr. time er lidt langsommere, men forudsigeligt — og en typisk uge er en halv snes timer. Et tryk på en dags navn markerer eller rydder hele dagen.
+
+## Tests
+
+`npm test` kører Nodes indbyggede testkører gennem `tsx`. Ingen testramme installeret.
+
+Der er kun tests ét sted indtil videre: `src/lib/slots.test.ts`, som dækker omregningen mellem gemte intervaller og klikbare timer. Netop dér ville en fejl være stille — en træners tider ville forsvinde uden fejlmeddelelse, og det ville først blive opdaget, når en elev ikke kunne booke.
+
+Booking-flowet og betalingssplittet er de næste steder, der bør dækkes.
 
 ## Designsystem
 
