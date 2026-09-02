@@ -714,13 +714,16 @@ Den tjekker:
 
 - **Opsætning** — én linje: mangler der noget, eller er alt sat. Selve værdierne hører hjemme på `/superadmin/opsaetning`, hvor de også kan rettes
 - **Forbindelse til Stripe** — et rigtigt kald, ikke bare "nøglen ser rigtig ud"
+- **Webhook** — findes der et endpoint hos Stripe, der peger på vores adresse, i den samme verden som nøglen? Sandkasse og live er adskilte: et endpoint oprettet i en sandkasse findes ikke i live, og dets signeringsnøgle validerer ikke live-events. Tjekket kigger også efter, om endpointet lytter på alle de events, appen behøver
 - **Provisionsregnestykket** — hvad klubben får, hvad vi får, og hvad der er tilbage efter Stripes eget gebyr. Ét eksempel: satsen er den samme uanset beløb, så flere linjer viste det samme tal tre gange. Vil man se flere beløb, står de på opsætningssiden ved siden af satsen
 - **Modtagere** — hvilke klubber og trænere der kan tage imod penge, hvilke der er halvvejs igennem, og hvilke der ikke er begyndt
 - **Testbetaling** — opretter en rigtig checkout-session mod en klar konto med korrekt gebyrsplit, bekræfter at Stripe accepterer den, og **lukker sessionen igen med det samme**. Ingen betaler noget, men det beviser, at nøgle, Connect-konto, gebyrsplit og valuta hænger sammen.
 
 Det er den vigtigste af dem: hvis testbetalingen er grøn, virker kæden for rigtige kunder også.
 
-**Bemærk:** testen kan ikke bekræfte webhooken. En webhook kan kun bevises ved, at Stripe rent faktisk kalder tilbage, hvilket kræver en gennemført betaling. Selvtesten kontrollerer derfor kun, at hemmeligheden er sat.
+**Bemærk:** webhook-tjekket kan ikke bevise, at `STRIPE_WEBHOOK_SECRET` hører til netop det endpoint — Stripe udleverer kun signeringsnøglen ved oprettelsen. Det kan svare på, om endpointet findes det rigtige sted og lytter på det rigtige, hvilket er de to fejl, der faktisk sker. Selve signaturen viser sig først ved en rigtig betaling.
+
+Det er værd at forstå hvorfor tjekket findes: forkert opsat webhook fejler **tavst**. Betalingen går igennem, pengene flytter sig, og bookingen bliver bare aldrig bekræftet. Og det rammer typisk præcis den dag, man skifter fra sandkasse til live — hvor endpointet, man byggede i sandkassen, pludselig ikke findes.
 
 ## Fejl: falsk betalingsbekræftelse
 
