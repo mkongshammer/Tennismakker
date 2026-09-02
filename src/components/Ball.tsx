@@ -1,12 +1,13 @@
 // Bolden for hver sport, tegnet frem for fotograferet.
 //
-// Et foto af en fjerbold kræver rettigheder, vejer hundrede gange mere og
-// ser forskelligt ud fra sport til sport. Tegnede bolde deler stregtykkelse
-// og størrelse, så seks sportsgrene ved siden af hinanden ligner ét sæt og
-// ikke seks tilfældige billeder.
+// Et foto kræver rettigheder, vejer hundrede gange mere, og seks fotos ved
+// siden af hinanden ligner seks tilfældige billeder frem for ét sæt. Tegnede
+// bolde deler stregtykkelse og størrelse, så rækken hænger sammen.
 //
-// Farverne er de rigtige: en squashbold ER sort med en prik, og en
-// fjerbold ER hvid med kork. Det er dét, man genkender.
+// Farverne og formerne er til gengæld de rigtige: en squashbold ER sort med
+// en lille farveprik, en fjerbold har korken NEDERST og fjerene bredende sig
+// opad, og en pickleball er perforeret. Det er præcis dét, man genkender —
+// og en fjerbold på hovedet ser forkert ud, længe før man kan sige hvorfor.
 export function Ball({ sport, size = 56 }: { sport: string; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 64 64", "aria-hidden": true as const };
 
@@ -14,38 +15,62 @@ export function Ball({ sport, size = 56 }: { sport: string; size?: number }) {
     case "BADMINTON":
       return (
         <svg {...common}>
-          <path d="M32 6 L48 40 H16 Z" fill="#FFFFFF" stroke="#C9D4E0" strokeWidth="1.5" />
-          <path d="M32 6 V40 M24 18 L22 40 M40 18 L42 40" stroke="#C9D4E0" strokeWidth="1.5" />
-          <path d="M16 40 h32 a16 16 0 0 1 -32 0" fill="#E6B980" />
-          <ellipse cx="32" cy="40" rx="16" ry="4" fill="#D8A566" />
+          <path
+            d="M25 44 L13 12 h38 L39 44 z"
+            fill="#FCFCFA"
+            stroke="#C4CEDB"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          <g stroke="#C4CEDB" strokeWidth="1.4">
+            <path d="M32 13 V44" />
+            <path d="M22.5 13 L26.5 44" />
+            <path d="M41.5 13 L37.5 44" />
+            <path d="M17 24 H47" />
+          </g>
+          <path d="M24 44 h16 a8 9 0 0 1 -16 0" fill="#E8C68F" stroke="#C9A468" strokeWidth="1.4" />
+          <path d="M24 44 h16" stroke="#C9A468" strokeWidth="1.6" />
         </svg>
       );
+
     case "SQUASH":
       return (
         <svg {...common}>
-          <circle cx="32" cy="32" r="22" fill="#1A1A1A" />
-          <circle cx="32" cy="32" r="22" fill="none" stroke="#333" strokeWidth="2" />
-          <circle cx="32" cy="24" r="4" fill="#D8FF3E" />
+          <circle cx="32" cy="32" r="22" fill="#1C1C20" />
+          <circle cx="32" cy="32" r="3.4" fill="#D8FF3E" />
         </svg>
       );
+
     case "BORDTENNIS":
       return (
         <svg {...common}>
-          <circle cx="32" cy="32" r="21" fill="#FF7A1A" />
-          <path d="M18 22 a24 24 0 0 1 22 -8" fill="none" stroke="#FFFFFF" strokeWidth="2.5" opacity="0.55" strokeLinecap="round" />
+          <circle cx="32" cy="32" r="22" fill="#FDFDFD" stroke="#C4CEDB" strokeWidth="1.8" />
+          <path
+            d="M18 24 a20 20 0 0 1 14 -9"
+            fill="none"
+            stroke="#E4EAF1"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
         </svg>
       );
+
     case "PICKLEBALL":
       return (
         <svg {...common}>
-          <circle cx="32" cy="32" r="22" fill="#F2E32E" />
-          {[
-            [24, 24], [40, 24], [32, 32], [22, 38], [42, 38], [32, 16], [32, 48],
-          ].map(([cx, cy], i) => (
-            <circle key={i} cx={cx} cy={cy} r="3.2" fill="#0F2138" opacity="0.75" />
-          ))}
+          <circle cx="32" cy="32" r="22" fill="#EFE43B" stroke="#C9BE22" strokeWidth="1.5" />
+          <g fill="#B9AE1C">
+            <circle cx="32" cy="19" r="3" />
+            <circle cx="21" cy="26" r="3" />
+            <circle cx="43" cy="26" r="3" />
+            <circle cx="32" cy="33" r="3.2" />
+            <circle cx="21" cy="41" r="2.8" />
+            <circle cx="43" cy="41" r="2.8" />
+            <circle cx="32" cy="47" r="2.6" />
+          </g>
         </svg>
       );
+
     case "PADEL":
       return (
         <svg {...common}>
@@ -54,6 +79,7 @@ export function Ball({ sport, size = 56 }: { sport: string; size?: number }) {
           <path d="M49 38 a26 26 0 0 1 -26 12" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" />
         </svg>
       );
+
     default: // TENNIS
       return (
         <svg {...common}>
