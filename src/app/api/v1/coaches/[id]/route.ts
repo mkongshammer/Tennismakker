@@ -1,5 +1,6 @@
 import { db } from "../../../../../lib/db";
-import { parseWeeklySlots, upcomingSlotsFromWeekly } from "../../../../../lib/slots";
+import { freeSlots } from "../../../../../lib/coaching";
+import { lessonPriceKr } from "../../../../../lib/slots";
 import { coachRatings, recentReviews } from "../../../../../lib/reviews";
 import { apiError, json, preflight } from "../../../../../lib/api/helpers";
 
@@ -23,16 +24,7 @@ export async function GET(
   ]);
   const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
 
-  const all = upcomingSlotsFromWeekly(parseWeeklySlots(coach.weeklySlots), 7);
-  const booked = await db.booking.findMany({
-    where: {
-      coachProfileId: coach.id,
-      status: { in: ["HOLD", "CONFIRMED"] },
-      startsAt: { gte: new Date() },
-    },
-    select: { startsAt: true },
-  });
-  const takenSet = new Set(booked.map((b: any) => b.startsAt.getTime()));
+  const free = await freeSlots(coach);
 
   return json({
     coach: {
@@ -40,6 +32,8 @@ export async function GET(
       name: coach.user.name,
       headline: coach.headline,
       priceHour: coach.priceHour,
+      lessonMinutes: coach.lessonMinutes,
+      lessonPriceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
       area: coach.area,
       specialties: coach.specialties ? coach.specialties.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
       rating,
@@ -57,8 +51,6 @@ export async function GET(
       comment: r.comment,
       authorName: r.author.name,
     })),
-    slots: all
-      .filter((s) => !takenSet.has(s.getTime()))
-      .map((s) => s.toISOString()),
+    slots: free.map((s) => s.toISOString()),
   });
 }

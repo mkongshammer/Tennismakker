@@ -1,5 +1,5 @@
 // Hjælpere til at generere bookbare timeslots.
-import { addDays, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
+import { addDays, addMinutes, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
 
 export type WeeklySlot = { day: number; from: number; to: number }; // day: 0=søn ... 6=lør
 
@@ -7,16 +7,40 @@ export function hourDate(base: Date, hour: number): Date {
   return setMilliseconds(setSeconds(setMinutes(setHours(base, hour), 0), 0), 0);
 }
 
+/** Et tidspunkt på dagen, angivet i minutter siden midnat. */
+export function minuteDate(base: Date, minutesFromMidnight: number): Date {
+  const h = Math.floor(minutesFromMidnight / 60);
+  const m = minutesFromMidnight % 60;
+  return setMilliseconds(setSeconds(setMinutes(setHours(base, h), m), 0), 0);
+}
+
+/**
+ * Starttidspunkterne for lektioner inden for ét interval, i minutter siden
+ * midnat. Lektionerne lægges efter hinanden fra intervallets begyndelse, og
+ * den sidste skal kunne nå at slutte inden for intervallet: en lektion på 45
+ * minutter kl. 19.45 findes ikke, hvis træneren holder op kl. 20.
+ */
+export function lessonStarts(fromHour: number, toHour: number, lessonMinutes: number): number[] {
+  const length = Math.max(5, Math.round(lessonMinutes));
+  const starts: number[] = [];
+  for (let m = fromHour * 60; m + length <= toHour * 60; m += length) starts.push(m);
+  return starts;
+}
+
 /** Genererer konkrete start-tidspunkter de næste `days` dage ud fra et ugentligt mønster. */
-export function upcomingSlotsFromWeekly(pattern: WeeklySlot[], days = 7): Date[] {
+export function upcomingSlotsFromWeekly(
+  pattern: WeeklySlot[],
+  days = 7,
+  lessonMinutes = 60
+): Date[] {
   const now = new Date();
   const slots: Date[] = [];
   for (let d = 0; d < days; d++) {
     const day = addDays(now, d);
     for (const p of pattern) {
       if (day.getDay() !== p.day) continue;
-      for (let h = p.from; h < p.to; h++) {
-        const start = hourDate(day, h);
+      for (const m of lessonStarts(p.from, p.to, lessonMinutes)) {
+        const start = minuteDate(day, m);
         if (start > now) slots.push(start);
       }
     }
@@ -119,4 +143,50 @@ export function describeWeeklySlots(pattern: WeeklySlot[]): string {
 /** Timer om ugen i alt — den ene tal, en træner selv regner efter. */
 export function weeklyHours(pattern: WeeklySlot[]): number {
   return pattern.reduce((sum, p) => sum + (p.to - p.from), 0);
+}
+
+/** Hvor mange lektioner et helt ugemønster giver plads til. */
+export function lessonCount(pattern: WeeklySlot[], lessonMinutes: number): number {
+  return pattern.reduce((n, p) => n + lessonStarts(p.from, p.to, lessonMinutes).length, 0);
+}
+
+/** "45 min" — længden sagt kort. Hele timer skrives som timer. */
+export function describeLength(lessonMinutes: number): string {
+  if (lessonMinutes % 60 === 0) {
+    const hours = lessonMinutes / 60;
+    return hours === 1 ? "1 time" : `${hours} timer`;
+  }
+  return `${lessonMinutes} min`;
+}
+
+// ---------------------------------------------------------------------------
+// Lektionens længde og pris
+// ---------------------------------------------------------------------------
+//
+// Rene funktioner, og det er med vilje: både trænerens redigeringsside i
+// browseren og serveren regner på dem, og de skal give samme svar begge
+// steder. Ligger de sammen med databasekaldene, kan browseren ikke få dem.
+
+/** De længder, en træner kan vælge imellem. */
+export const LESSON_LENGTHS = [30, 45, 60, 90] as const;
+
+/**
+ * Prisen for én lektion.
+ *
+ * Timeprisen bliver stående som det, trænere sammenlignes på — ellers kunne
+ * en halv time til 200 kr se billigere ud end en hel til 350.
+ */
+export function lessonPriceKr(priceHour: number, lessonMinutes: number): number {
+  return Math.max(1, Math.round((priceHour * lessonMinutes) / 60));
+}
+
+/** Hvornår en lektion, der begynder her, er slut. */
+export function lessonEnd(startsAt: Date, lessonMinutes: number): Date {
+  return addMinutes(startsAt, lessonMinutes);
+}
+
+/** Kun én af de gyldige længder slipper igennem — også fra en API-klient. */
+export function normaliseLessonMinutes(input: unknown): number {
+  const n = Number(input);
+  return (LESSON_LENGTHS as readonly number[]).includes(n) ? n : 60;
 }

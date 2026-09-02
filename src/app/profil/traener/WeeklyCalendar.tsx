@@ -19,11 +19,12 @@ import { Fragment, useMemo, useRef, useState } from "react";
 import {
   DAY_NAMES,
   WEEK_ORDER,
+  describeLength,
   describeWeeklySlots,
   hoursToSlots,
+  lessonCount,
   normaliseWeeklySlots,
   slotsToHours,
-  weeklyHours,
 } from "../../../lib/slots";
 
 const SHORT = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
@@ -33,7 +34,15 @@ const SHORT = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
 const DEFAULT_FIRST = 6;
 const DEFAULT_LAST = 21; // sidste time man kan begynde på, altså 21-22
 
-export function WeeklyCalendar({ name, defaultValue }: { name: string; defaultValue: string }) {
+export function WeeklyCalendar({
+  name,
+  defaultValue,
+  lessonMinutes,
+}: {
+  name: string;
+  defaultValue: string;
+  lessonMinutes: number;
+}) {
   const initial = useMemo(() => {
     let parsed: unknown = [];
     try {
@@ -147,7 +156,10 @@ export function WeeklyCalendar({ name, defaultValue }: { name: string; defaultVa
             "Ingen tider valgt endnu. Tryk på timerne, du kan tage elever — eller på en dag for hele dagen."
           ) : (
             <>
-              <span className="font-bold">{weeklyHours(pattern)} timer om ugen.</span>{" "}
+              <span className="font-bold">
+                {lessonCount(pattern, lessonMinutes)} lektioner om ugen à{" "}
+                {describeLength(lessonMinutes)}.
+              </span>{" "}
               {describeWeeklySlots(pattern)}
             </>
           )}

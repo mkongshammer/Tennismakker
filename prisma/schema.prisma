@@ -287,7 +287,11 @@ model CoachProfile {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   headline    String // fx "DTF-uddannet træner, speciale i serv"
   sports      String @default("TENNIS") // kommasepareret
-  priceHour   Int // kr pr. time
+  priceHour   Int // kr pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
+  // Længden på én lektion. Juniorer og teknik-timer er ofte kortere end en
+  // hel time, og en træner, der kun kan sælge 60 minutter ad gangen, kan
+  // ikke sætte sin egen dag op.
+  lessonMinutes Int @default(60)
   specialties String // kommasepareret, fx "Serv,Baghånd,Junior"
   area        String
   // Ledige tider som ugentligt mønster: JSON [{ "day": 1, "from": 16, "to": 20 }] (day: 0=søn ... 6=lør)

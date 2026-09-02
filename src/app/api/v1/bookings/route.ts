@@ -1,4 +1,6 @@
 import { addHours, addMinutes } from "date-fns";
+import { isOffered, isTaken } from "../../../../lib/coaching";
+import { lessonEnd, lessonPriceKr } from "../../../../lib/slots";
 import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
 import { releaseExpiredHolds, startCheckout } from "../../../../lib/payments";
@@ -101,18 +103,24 @@ export async function POST(req: Request) {
     if (!coach) return apiError("Træneren findes ikke.", 404);
     if (coach.userId === auth.user.id) return apiError("Du kan ikke booke dig selv.");
 
-    const clash = await db.booking.findFirst({
-      where: { coachProfileId: coachId, startsAt, status: { in: ["HOLD", "CONFIRMED"] } },
-    });
-    if (clash) return apiError("Tiden er lige blevet taget.", 409);
+    // Trænertimer er ikke nødvendigvis en time — længden kommer fra træneren,
+    // ikke fra det, appen gætter på.
+    const lessonEndsAt = lessonEnd(startsAt, coach.lessonMinutes);
+
+    if (!isOffered(coach, startsAt)) {
+      return apiError("Træneren tilbyder ikke det tidspunkt.", 409);
+    }
+    if (await isTaken(coachId, startsAt, lessonEndsAt)) {
+      return apiError("Tiden er lige blevet taget.", 409);
+    }
 
     const booking = await db.booking.create({
       data: {
         kind: "COACH",
         status: "HOLD",
         startsAt,
-        endsAt,
-        priceKr: coach.priceHour,
+        endsAt: lessonEndsAt,
+        priceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
         holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
         userId: auth.user.id,
         coachProfileId: coachId,

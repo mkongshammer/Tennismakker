@@ -20,6 +20,7 @@
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
+import { describeLength } from "./slots";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -218,12 +219,31 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
   return updated;
 }
 
+/**
+ * Hvad bookingen hedder i en mail.
+ *
+ * Trænertimer er ikke nødvendigvis en time, så længden står med — ellers
+ * ville en kvittering på en 45-minutters lektion se ud præcis som en på en
+ * hel, og eleven ville ikke kunne se forskel.
+ */
+function bookingLabel(booking: any): string {
+  if (booking.kind === "COURT") {
+    return `${booking.court?.club.name} — ${booking.court?.name}`;
+  }
+  return `Trænertime hos ${booking.coachProfile?.user.name} (${describeLength(
+    lessonMinutesOf(booking)
+  )})`;
+}
+
+function lessonMinutesOf(booking: any): number {
+  return Math.round(
+    (new Date(booking.endsAt).getTime() - new Date(booking.startsAt).getTime()) / 60000
+  );
+}
+
 /** Sender kvittering til spilleren og besked til klub eller træner. */
 async function notifyBookingConfirmed(booking: any) {
-  const what =
-    booking.kind === "COURT"
-      ? `${booking.court?.club.name} — ${booking.court?.name}`
-      : `Trænertime hos ${booking.coachProfile?.user.name}`;
+  const what = bookingLabel(booking);
 
   await sendMail(
     bookingReceipt({
@@ -271,6 +291,7 @@ async function notifyBookingConfirmed(booking: any) {
       coachBookingNotice({
         to: booking.coachProfile.user.email,
         coachName: booking.coachProfile.user.name,
+        length: describeLength(lessonMinutesOf(booking)),
         playerName: booking.user.name,
         playerEmail: booking.user.email,
         startsAt: booking.startsAt,
@@ -332,10 +353,7 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
     refunded = booking.payment!.amountKr;
   }
 
-  const what =
-    booking.kind === "COURT"
-      ? `${booking.court?.club.name} — ${booking.court?.name}`
-      : `Trænertime hos ${booking.coachProfile?.user.name}`;
+  const what = bookingLabel(booking);
 
   await sendMail(
     cancellationNotice({

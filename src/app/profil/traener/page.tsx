@@ -5,12 +5,17 @@ import { useFormState } from "react-dom";
 import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { WeeklyCalendar } from "./WeeklyCalendar";
+import { LESSON_LENGTHS, describeLength, lessonPriceKr } from "../../../lib/slots";
 import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
 export default function TraenerProfilPage() {
   const [state, action] = useFormState(updateCoachProfile, null);
   const [profile, setProfile] = useState<any>(null);
+  // Længde og timepris styres af siden, så prisen pr. lektion og antallet af
+  // lektioner i kalenderen kan opdatere sig, mens man skriver.
+  const [lessonMinutes, setLessonMinutes] = useState(60);
+  const [priceHour, setPriceHour] = useState(350);
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -21,7 +26,10 @@ export default function TraenerProfilPage() {
         await fetch("/api/me/coach/stripe-refresh", { method: "POST" }).catch(() => null);
       }
       const res = await fetch("/api/me/coach");
-      setProfile(await res.json());
+      const data = await res.json();
+      setProfile(data);
+      if (data?.lessonMinutes) setLessonMinutes(data.lessonMinutes);
+      if (data?.priceHour) setPriceHour(data.priceHour);
     }
     load();
   }, [searchParams]);
@@ -63,12 +71,39 @@ export default function TraenerProfilPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="priceHour">Pris (kr/time)</label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={0} defaultValue={profile.priceHour} required />
+            <input
+              className="input"
+              id="priceHour"
+              name="priceHour"
+              type="number"
+              min={0}
+              value={priceHour}
+              onChange={(e) => setPriceHour(Number(e.target.value))}
+              required
+            />
           </div>
           <div>
             <label className="label" htmlFor="area">Område</label>
             <input className="input" id="area" name="area" defaultValue={profile.area} required />
           </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="lessonMinutes">Længden på én lektion</label>
+          <select
+            className="input"
+            id="lessonMinutes"
+            name="lessonMinutes"
+            value={lessonMinutes}
+            onChange={(e) => setLessonMinutes(Number(e.target.value))}
+          >
+            {LESSON_LENGTHS.map((m) => (
+              <option key={m} value={m}>{describeLength(m)}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-slate">
+            Eleven betaler {lessonPriceKr(priceHour, lessonMinutes)} kr for én lektion.
+            Timeprisen er stadig den, du sammenlignes på i oversigten.
+          </p>
         </div>
         <div>
           <label className="label" htmlFor="specialties">Specialer (kommasepareret)</label>
@@ -80,7 +115,11 @@ export default function TraenerProfilPage() {
             Tiderne gentages hver uge. Eleverne kan kun booke de timer, du
             markerer her — og kun dem, der ikke allerede er booket.
           </p>
-          <WeeklyCalendar name="weeklySlots" defaultValue={profile.weeklySlots} />
+          <WeeklyCalendar
+            name="weeklySlots"
+            defaultValue={profile.weeklySlots}
+            lessonMinutes={lessonMinutes}
+          />
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
         <SubmitButton className="btn-court w-full" pendingText="Gemmer…">Gem profil</SubmitButton>

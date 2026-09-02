@@ -160,6 +160,7 @@ export function coachBookingNotice(opts: {
   playerEmail: string;
   startsAt: Date;
   priceKr: number;
+  length: string;
 }): Mail {
   return {
     to: opts.to,
@@ -169,7 +170,7 @@ export function coachBookingNotice(opts: {
       ``,
       `Du har fået en ny booking.`,
       ``,
-      `${danishDateTime(opts.startsAt)}`,
+      `${danishDateTime(opts.startsAt)} · ${opts.length}`,
       `Elev: ${opts.playerName} (${opts.playerEmail})`,
       `Beløb: ${opts.priceKr} kr — din andel udbetales automatisk`,
       ``,

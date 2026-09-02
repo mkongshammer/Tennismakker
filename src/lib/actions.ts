@@ -7,7 +7,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
-import { normaliseWeeklySlots } from "./slots";
+import {
+  lessonEnd,
+  lessonPriceKr,
+  normaliseLessonMinutes,
+  normaliseWeeklySlots,
+} from "./slots";
+import { isOffered, isTaken } from "./coaching";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
@@ -245,10 +251,11 @@ export async function bookCoachSlot(formData: FormData) {
 
   const coachProfileId = String(formData.get("coachProfileId"));
   const startsAt = new Date(String(formData.get("startsAt")));
-  const endsAt = addHours(startsAt, 1);
 
   const coach = await db.coachProfile.findUnique({ where: { id: coachProfileId } });
   if (!coach) redirect("/traenere");
+
+  const endsAt = lessonEnd(startsAt, coach!.lessonMinutes);
 
   // Samme princip som ved banebooking: vis en læsbar besked på trænerens
   // side i stedet for en rå serverfejl.
@@ -257,13 +264,13 @@ export async function bookCoachSlot(formData: FormData) {
 
   if (coach!.userId === user.id) fail("egen");
   if (startsAt < new Date()) fail("passeret");
+  // Knapperne på siden er ikke den eneste vej ind — tidspunktet skal være et,
+  // træneren rent faktisk tilbyder.
+  if (!isOffered(coach!, startsAt)) fail("ikke-ledig");
 
   await releaseExpiredHolds();
 
-  const clash = await db.booking.findFirst({
-    where: { coachProfileId, startsAt, status: { in: ["HOLD", "CONFIRMED"] } },
-  });
-  if (clash) fail("optaget");
+  if (await isTaken(coachProfileId, startsAt, endsAt)) fail("optaget");
 
   const booking = await db.booking.create({
     data: {
@@ -271,7 +278,7 @@ export async function bookCoachSlot(formData: FormData) {
       status: "HOLD",
       startsAt,
       endsAt,
-      priceKr: coach!.priceHour,
+      priceKr: lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
       holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
       userId: user.id,
       coachProfileId,
@@ -329,6 +336,7 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
     data: {
       headline: String(formData.get("headline") ?? "").trim(),
       priceHour: Math.max(0, Number(formData.get("priceHour") ?? 350)),
+      lessonMinutes: normaliseLessonMinutes(formData.get("lessonMinutes")),
       specialties: String(formData.get("specialties") ?? "").trim(),
       area: String(formData.get("area") ?? "").trim(),
       weeklySlots,

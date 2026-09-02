@@ -6,7 +6,8 @@ import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
 import { CoachSlotButton } from "../../../components/CoachSlotButton";
 import { releaseExpiredHolds } from "../../../lib/payments";
-import { parseWeeklySlots, upcomingSlotsFromWeekly } from "../../../lib/slots";
+import { describeLength, lessonPriceKr } from "../../../lib/slots";
+import { BOOKING_WINDOW_DAYS, freeSlots } from "../../../lib/coaching";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
 import { Stars } from "../../../components/ReviewForm";
 
@@ -34,17 +35,9 @@ export default async function TraenerPage({
   ]);
   const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
 
-  const slots = upcomingSlotsFromWeekly(parseWeeklySlots(coach.weeklySlots), 7);
-  const taken = await db.booking.findMany({
-    where: {
-      coachProfileId: coach.id,
-      status: { in: ["HOLD", "CONFIRMED"] },
-      startsAt: { gte: new Date() },
-    },
-    select: { startsAt: true },
-  });
-  const takenSet = new Set(taken.map((b) => b.startsAt.getTime()));
-  const free = slots.filter((s) => !takenSet.has(s.getTime()));
+  const free = await freeSlots(coach);
+  const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
+  const length = describeLength(coach.lessonMinutes);
 
   // Gruppér pr. dag
   const byDay = new Map<string, Date[]>();
@@ -63,7 +56,9 @@ export default async function TraenerPage({
               ? "Du kan ikke booke en tid hos dig selv."
               : searchParams.fejl === "passeret"
                 ? "Det tidspunkt er passeret. Vælg en anden tid."
-                : "Den tid var lige taget. Vælg en anden."}
+                : searchParams.fejl === "ikke-ledig"
+                  ? "Træneren tilbyder ikke den tid. Vælg en af tiderne herunder."
+                  : "Den tid var lige taget. Vælg en anden."}
         </p>
       )}
 
@@ -117,11 +112,15 @@ export default async function TraenerPage({
         </div>
       )}
 
-      <h2 className="display mb-3 mt-8 text-2xl">Ledige tider (næste 7 dage)</h2>
+      <h2 className="display mb-1 mt-8 text-2xl">Ledige tider (næste {BOOKING_WINDOW_DAYS} dage)</h2>
+      <p className="mb-3 text-sm text-slate">
+        Én lektion er {length} og koster {lessonPrice} kr.
+      </p>
 
       {byDay.size === 0 && (
         <div className="card text-slate/60">
           Ingen ledige tider lige nu — træneren har ikke åbnet flere tider denne uge.
+          Skriv til træneren, hvis du vil aftale noget uden for de faste tider.
         </div>
       )}
 

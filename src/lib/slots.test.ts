@@ -9,7 +9,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
+  describeLength,
   describeWeeklySlots,
+  lessonCount,
+  lessonStarts,
   hoursToSlots,
   normaliseWeeklySlots,
   slotsToHours,
@@ -71,4 +74,44 @@ test("mønsteret kan siges højt", () => {
   const uge = round([{ day: 2, from: 16, to: 20 }, { day: 6, from: 9, to: 13 }]);
   assert.equal(describeWeeklySlots(uge), "Tirsdag 16–20 · Lørdag 9–13");
   assert.equal(weeklyHours(uge), 8);
+});
+
+// ---------------------------------------------------------------------------
+// Lektioner inden for et interval
+// ---------------------------------------------------------------------------
+
+test("hele timer fylder intervallet ud", () => {
+  assert.deepEqual(lessonStarts(16, 20, 60), [960, 1020, 1080, 1140]); // 16, 17, 18, 19
+});
+
+test("45 minutter: den sidste lektion skal kunne nå at slutte", () => {
+  // 16.00, 16.45, 17.30, 18.15, 19.00 — og ikke 19.45, for den ville slutte
+  // 20.30, efter træneren er gået hjem.
+  assert.deepEqual(lessonStarts(16, 20, 45), [960, 1005, 1050, 1095, 1140]);
+});
+
+test("en lektion der er længere end intervallet giver ingen tider", () => {
+  assert.deepEqual(lessonStarts(16, 17, 90), []);
+});
+
+test("intervallet passer præcis til lektionen", () => {
+  assert.deepEqual(lessonStarts(9, 10, 60), [540]);
+});
+
+test("halve timer deler en formiddag i fire", () => {
+  assert.deepEqual(lessonStarts(9, 11, 30).length, 4);
+});
+
+test("lektioner tælles på tværs af hele ugen", () => {
+  const uge = round([{ day: 2, from: 16, to: 20 }, { day: 6, from: 9, to: 13 }]);
+  assert.equal(lessonCount(uge, 60), 8);
+  assert.equal(lessonCount(uge, 45), 10); // fem pr. interval
+  assert.equal(lessonCount(uge, 90), 4);
+});
+
+test("længden skrives, som man ville sige den", () => {
+  assert.equal(describeLength(45), "45 min");
+  assert.equal(describeLength(60), "1 time");
+  assert.equal(describeLength(90), "90 min");
+  assert.equal(describeLength(120), "2 timer");
 });

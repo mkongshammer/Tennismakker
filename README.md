@@ -140,7 +140,7 @@ Nogle ting er bevidst holdt simple i denne version og bør på plads, før rigti
 - **Dobbeltbooking er ikke teknisk umulig.** Ved `MANUAL` og `ICAL` ejer klubben stadig sandheden. Frigiver klubben en tid hos os og sælger den samtidig i sit eget system, opdager vi det ikke. `MANUAL` er mindst risikabelt, fordi klubben bevidst tager tiden ud af eget system først. Ved `ICAL` afhænger sikkerheden af, hvor tit der synkroniseres.
 - Synkronisering af kalenderfeeds sker kun, når klubben trykker "Synkronisér nu". Et cron-job, der kører fx hvert 15. minut, er næste skridt — `syncClubCalendar()` er allerede skrevet til at kunne kaldes udefra.
 - Bookinger er altid på hele timer.
-- Bookinger kan kun ligge på hele timer — også trænertimer. En træner, der vil have 45 minutter eller halve timer, kan ikke sætte det op.
+- **Banebookinger** ligger på hele timer. Trænertimer gør ikke længere, men baner deles med klubbens eget system, hvor timen er normen — det ville skulle løses hos klubben først.
 - Klubber og baner oprettes via seed-scriptet; der er endnu ingen selvbetjening til at oprette en ny klub.
 - Aflysning giver ikke automatisk pengene retur — refunderingen skal håndteres, når rigtig betaling sættes på.
 
@@ -345,11 +345,25 @@ Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var d
 
 **Der males kun med musen.** På en telefon ville et træk hen over kalenderen slås med at rulle siden. Et tryk pr. time er lidt langsommere, men forudsigeligt — og en typisk uge er en halv snes timer. Et tryk på en dags navn markerer eller rydder hele dagen.
 
+## Lektionens længde
+
+En trænertime behøver ikke være en time. Træneren vælger 30, 45, 60 eller 90 minutter på sin profil, og tiderne lægges efter hinanden inden for de intervaller, kalenderen er markeret med.
+
+**Den sidste lektion skal kunne nå at slutte.** Et interval fra 16 til 20 med 45-minutters lektioner giver fem tider: 16.00, 16.45, 17.30, 18.15 og 19.00. Ikke 19.45 — den ville slutte 20.30, efter træneren er gået hjem.
+
+**Timeprisen bliver stående.** `priceHour` er fortsat det, trænere sammenlignes på i oversigten, og prisen for én lektion regnes ud fra den. Ellers ville en halv time til 200 kr se billigere ud end en hel til 350.
+
+**"Optaget" er nu et spørgsmål om overlap.** Før blev der sammenlignet starttidspunkter: to bookinger var i konflikt, hvis de begyndte på samme minut. Med lektioner på 45 eller 90 minutter kan to bookinger ramme hinanden uden at begynde samtidig, og den gamle sammenligning ville have solgt tiden to gange. `isTaken()` spørger i stedet, om der findes en booking, der begynder før den nye slutter og slutter efter den begynder.
+
+**Ét sted, ikke fire.** Trænersiden, dens API-modstykke, bookingen fra nettet og bookingen fra mobilappen vidste hver især det samme om trænertider — og antog hver især en time. Logikken ligger nu i `src/lib/coaching.ts`, mens regnestykkerne ligger i `src/lib/slots.ts`, hvor browseren også kan nå dem.
+
+**Tidspunktet valideres nu.** Både på nettet og i API'et tjekkes det, at træneren rent faktisk tilbyder den tid. Knapperne på siden var ikke den eneste vej ind — man kunne sende et hvilket som helst klokkeslæt og booke uden om kalenderen.
+
 ## Tests
 
 `npm test` kører Nodes indbyggede testkører gennem `tsx`. Ingen testramme installeret.
 
-Der er kun tests ét sted indtil videre: `src/lib/slots.test.ts`, som dækker omregningen mellem gemte intervaller og klikbare timer. Netop dér ville en fejl være stille — en træners tider ville forsvinde uden fejlmeddelelse, og det ville først blive opdaget, når en elev ikke kunne booke.
+Der er kun tests ét sted indtil videre: `src/lib/slots.test.ts`, som dækker omregningen mellem gemte intervaller og klikbare timer samt udregningen af lektioner inden for et interval. Netop dér ville en fejl være stille — en træners tider ville forsvinde uden fejlmeddelelse, og det ville først blive opdaget, når en elev ikke kunne booke.
 
 Booking-flowet og betalingssplittet er de næste steder, der bør dækkes.
 
