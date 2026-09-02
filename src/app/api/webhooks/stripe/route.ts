@@ -7,7 +7,9 @@
 //
 // Sæt denne adresse op i Stripe Dashboard → Developers → Webhooks:
 //   https://racketbuddy.app/api/webhooks/stripe
-// og lyt på: checkout.session.completed, account.updated
+// og lyt på: checkout.session.completed, account.updated,
+//   customer.subscription.created, customer.subscription.updated,
+//   customer.subscription.deleted
 //
 // HÅNDTERER TO FORMATER:
 // Stripe har to slags udsendelser. Den klassiske ("snapshot") indeholder
@@ -20,6 +22,7 @@ import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
 import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
 import { getSettings } from "../../../../lib/settings";
+import { syncSubscription } from "../../../../lib/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +31,21 @@ async function handleEvent(type: string, object: any) {
   switch (type) {
     case "checkout.session.completed": {
       const session = object as Stripe.Checkout.Session;
+
+      // Samme event dækker to ting: en gæst der har betalt for en booking,
+      // og en klub der lige har lagt kort ind til sit abonnement.
+      if (session.mode === "subscription") {
+        const subscriptionId =
+          typeof session.subscription === "string"
+            ? session.subscription
+            : session.subscription?.id;
+        if (subscriptionId) {
+          const sub = await (await stripe()).subscriptions.retrieve(subscriptionId);
+          await syncSubscription(sub as any);
+        }
+        return;
+      }
+
       const bookingId = session.metadata?.bookingId;
       if (!bookingId) {
         console.error("checkout.session.completed uden bookingId i metadata", session.id);
@@ -49,6 +67,16 @@ async function handleEvent(type: string, object: any) {
       if (recipient) {
         await refreshAccountStatus(recipient.kind, recipient.id);
       }
+      return;
+    }
+
+    // Abonnementet er startet, fornyet, fejlet eller opsagt. Statussen
+    // skrives ned, fordi den afgør, om klubben slipper for provision:
+    // holder de op med at betale, falder de tilbage på 10%.
+    case "customer.subscription.created":
+    case "customer.subscription.updated":
+    case "customer.subscription.deleted": {
+      await syncSubscription(object as any);
       return;
     }
 

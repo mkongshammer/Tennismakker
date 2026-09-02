@@ -14,6 +14,7 @@ import {
   normaliseWeeklySlots,
 } from "./slots";
 import { isOffered, isTaken } from "./coaching";
+import { billingPortalUrl, startSubscriptionCheckout } from "./subscription";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
@@ -349,6 +350,35 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
 // ---------------- Klub-admin: integration mod klubbens eget bookingsystem ----------------
 
 /** Sikrer at brugeren er admin for en klub, og returnerer klub-ID'et. */
+// ---------------- Klubbens abonnement ----------------
+
+/**
+ * Sender klubadministratoren til Stripe for at lægge et kort ind.
+ *
+ * Kaldet ligger uden for try/catch med vilje: redirect() kaster internt, og
+ * en catch-alt ville sluge den — samme faldgrube som i bookingflowet.
+ */
+export async function startClubSubscription() {
+  const { clubId } = await requireClubAdmin();
+  const url = await startSubscriptionCheckout(clubId).catch((err) => {
+    console.error("Abonnementet kunne ikke startes:", err);
+    return null;
+  });
+  if (!url) redirect("/admin?abonnement=fejl");
+  redirect(url);
+}
+
+/** Åbner Stripes kundeportal: skift kort, se fakturaer, opsig. */
+export async function openClubBillingPortal() {
+  const { clubId } = await requireClubAdmin();
+  const url = await billingPortalUrl(clubId).catch((err) => {
+    console.error("Kundeportalen kunne ikke åbnes:", err);
+    return null;
+  });
+  if (!url) redirect("/admin?abonnement=portal");
+  redirect(url);
+}
+
 async function requireClubAdmin() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

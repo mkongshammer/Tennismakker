@@ -5,6 +5,8 @@
 // os tilliden hos alle andre — og hos den gæst der står foran en låst låge.
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getSettings } from "../../lib/settings";
+import { describeSubscription, subscriptionIsActive } from "../../lib/billing";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
@@ -31,6 +33,7 @@ export default async function SuperadminPage() {
     );
   }
 
+  const pct = Math.round((await getSettings()).commissionPct * 100);
   const [pending, decided, orders, domainClubs, leads] = await Promise.all([
     db.club.findMany({
       where: { status: "PENDING" },
@@ -174,9 +177,21 @@ export default async function SuperadminPage() {
                     <dd>
                       {club.billingModel === "SUBSCRIPTION"
                         ? `Abonnement ${club.subscriptionKr} kr/md`
-                        : "10% provision"}
+                        : `${pct}% provision`}
                     </dd>
                   </div>
+                  {club.billingModel === "SUBSCRIPTION" && (
+                    <div className="flex gap-2">
+                      <dt className="text-slate/50">Betaling</dt>
+                      <dd
+                        className={
+                          subscriptionIsActive(club) ? "" : "font-bold text-court-dark"
+                        }
+                      >
+                        {describeSubscription(club)}
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <dt className="text-slate/50">System</dt>
                     <dd>{club.externalSystem ?? "ikke oplyst"}</dd>

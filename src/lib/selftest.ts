@@ -13,6 +13,7 @@ import { stripe, stripeEnabled } from "./stripe";
 import { commissionAt } from "./payments";
 import { sendMail } from "./email";
 import { getSettings, getSettingsWithSource, LABELS, SETTING_KEYS } from "./settings";
+import { describeSubscription, subscriptionIsActive } from "./billing";
 
 export type Check = {
   name: string;
@@ -171,6 +172,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
         stripeChargesEnabled: true,
         billingModel: true,
         subscriptionKr: true,
+        subscriptionStatus: true,
       },
       orderBy: { name: "asc" },
     }),
@@ -191,9 +193,11 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
       id: c.id,
       hasAccount: Boolean(c.stripeAccountId),
       chargesEnabled: c.stripeChargesEnabled,
+      // Står der SUBSCRIPTION, men betales der ikke, skal det kunne ses her
+      // frem for at ligne en indtægt, der ikke findes.
       billing:
         c.billingModel === "SUBSCRIPTION"
-          ? `Abonnement ${c.subscriptionKr} kr/md`
+          ? `Abonnement ${c.subscriptionKr} kr/md — ${describeSubscription(c)}`
           : `${pct}% provision`,
     })),
     ...coaches.map((c: any) => ({
@@ -220,7 +224,14 @@ export async function testCheckoutSession(): Promise<Check> {
 
   const club = await db.club.findFirst({
     where: { status: "APPROVED", stripeChargesEnabled: true, stripeAccountId: { not: null } },
-    select: { id: true, name: true, stripeAccountId: true, priceHour: true, billingModel: true },
+    select: {
+      id: true,
+      name: true,
+      stripeAccountId: true,
+      priceHour: true,
+      billingModel: true,
+      subscriptionStatus: true,
+    },
   });
 
   if (!club) {
@@ -234,8 +245,7 @@ export async function testCheckoutSession(): Promise<Check> {
 
   const priceKr = club.priceHour || 100;
   const settings = await getSettings();
-  const fee =
-    club.billingModel === "SUBSCRIPTION" ? 0 : commissionAt(priceKr, settings.commissionPct);
+  const fee = subscriptionIsActive(club) ? 0 : commissionAt(priceKr, settings.commissionPct);
   const base = settings.appUrl;
 
   try {

@@ -65,6 +65,17 @@ model Club {
   billingModel   String @default("COMMISSION")
   subscriptionKr Int    @default(199)
 
+  // Abonnementet, klubben betaler TIL os. Ikke det samme som
+  // stripeAccountId nedenfor, som er den konto, vi betaler penge UD til:
+  // her er klubben kunde hos os, dér er de modtager. To forskellige roller,
+  // to forskellige id'er, og de må ikke forveksles.
+  stripeCustomerId     String?
+  subscriptionId       String?
+  // "active" | "trialing" | "past_due" | "canceled" | "unpaid" — Stripes egne
+  // navne, så et event kan skrives direkte ind uden oversættelse.
+  subscriptionStatus   String?
+  subscriptionRenewsAt DateTime?
+
   country String @default("DK")
 
   // Stripe Connect — kontoen pengene sendes videre til, når nogen booker

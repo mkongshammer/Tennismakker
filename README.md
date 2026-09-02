@@ -345,6 +345,24 @@ Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var d
 
 **Der males kun med musen.** På en telefon ville et træk hen over kalenderen slås med at rulle siden. Et tryk pr. time er lidt langsommere, men forudsigeligt — og en typisk uge er en halv snes timer. Et tryk på en dags navn markerer eller rydder hele dagen.
 
+## Klubbernes abonnement
+
+En klub kan være på provision (10% af hver gæstebooking) eller på abonnement (fast beløb om måneden, ingen provision). Abonnementet blev aldrig opkrævet: `subscriptionKr` stod som tekst tre steder, og `platformFeeForBooking()` returnerede 0 for enhver klub med `billingModel: "SUBSCRIPTION"`. En abonnementsklub kørte altså gratis på begge modeller samtidig.
+
+**To Stripe-roller, ikke én.** `Club.stripeAccountId` er en Connect-konto, vi sender penge **ud** til, når en gæst booker. `Club.stripeCustomerId` er klubben som kunde **hos os**, på vores egen Stripe-konto. Samme klub, modsat pengestrøm, to id'er der ikke må forveksles.
+
+**Prisen laves i checkout, ikke i Stripe-panelet.** Hver klub har sin egen aftalte pris, så `price_data` sættes direkte i sessionen med `recurring: { interval: "month" }`. Et katalog af Produkter, der skulle holdes i sync med `subscriptionKr`, ville være to steder at rette det samme.
+
+**Aftale er ikke betaling.** `subscriptionIsActive()` kræver både `billingModel: "SUBSCRIPTION"` og en status, Stripe kalder betalende (`active` eller `trialing`). Alt andet — ikke startet, `past_due`, opsagt, eller en status vi ikke kender — betyder, at klubben falder tilbage på provision. Systemet retter altså sig selv: holder en klub op med at betale, begynder vi automatisk at tage 10% igen i stedet for at køre dem gratis.
+
+En ukendt status fra Stripe tæller bevidst som "betaler ikke". Det er bedre at opkræve for meget og få en henvendelse end at opkræve ingenting og aldrig opdage det.
+
+**Reglerne ligger for sig selv.** `src/lib/billing.ts` er ren — ingen database, ingen Stripe — netop fordi den ene funktion afgør provisionen på hver eneste booking. Den er dækket af tests. Selve Stripe-delen (kunde, checkout, kundeportal, statussynkronisering) ligger i `src/lib/subscription.ts`.
+
+**Nye webhook-events.** Ud over `checkout.session.completed` og `account.updated` skal Stripe nu også sende `customer.subscription.created`, `.updated` og `.deleted`. Tilføj dem i Stripe-panelet på det eksisterende endpoint.
+
+**Kundeportalen skal slås til.** Knappen "Kort, fakturaer og opsigelse" bruger Stripes egen portal, som kræver, at den er aktiveret én gang under Settings → Billing → Customer portal. Er det ikke gjort, fejler kaldet, og klubben får en læsbar besked i stedet for en tom side.
+
 ## Lektionens længde
 
 En trænertime behøver ikke være en time. Træneren vælger 30, 45, 60 eller 90 minutter på sin profil, og tiderne lægges efter hinanden inden for de intervaller, kalenderen er markeret med.

@@ -21,6 +21,7 @@ import { db } from "./db";
 import { stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
 import { describeLength } from "./slots";
+import { subscriptionIsActive } from "./billing";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -69,9 +70,14 @@ export async function platformFeeForBooking(booking: {
 
   const court = await db.court.findUnique({
     where: { id: booking.courtId },
-    include: { club: { select: { billingModel: true } } },
+    include: { club: { select: { billingModel: true, subscriptionStatus: true } } },
   });
-  if (court?.club.billingModel === "SUBSCRIPTION") return 0;
+
+  // Kun et abonnement, der rent faktisk betales, fritager for provision.
+  // At stå som SUBSCRIPTION i databasen er en aftale, ikke en betaling — og
+  // uden dette tjek ville en klub, der aldrig fik lagt et kort ind eller
+  // hvis kort er udløbet, køre gratis på begge modeller samtidig.
+  if (court && subscriptionIsActive(court.club)) return 0;
 
   return commission(booking.priceKr);
 }
@@ -137,6 +143,9 @@ export async function startCheckout(bookingId: string): Promise<string> {
   // over på klubbens egen konto. Klubben betaler et fast beløb om
   // måneden i stedet for provision, og betaler så Stripes gebyr som en
   // hvilken som helst anden erhvervsdrivende, der tager kortbetaling.
+  // fee er kun 0 for en klub, hvis abonnementet betales — se
+  // platformFeeForBooking. Derfor er dette samtidig tjekket på, om klubben
+  // skal bære Stripes gebyr selv.
   const isSubscriptionClub = fee === 0 && kind === "CLUB";
 
   const session = await (await stripe()).checkout.sessions.create({

@@ -5,7 +5,7 @@ import { addDays, format, startOfDay } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme } from "../../lib/actions";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme, startClubSubscription, openClubBillingPortal } from "../../lib/actions";
 import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
@@ -17,6 +17,8 @@ import { startClubPayoutSetup } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
 import { refreshAccountStatus } from "../../lib/connect";
 import { stripeEnabled } from "../../lib/stripe";
+import { getSettings } from "../../lib/settings";
+import { subscriptionIsActive } from "../../lib/billing";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -24,10 +26,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { stripe?: string };
+  searchParams: { stripe?: string; abonnement?: string };
 }) {
   const user = await getCurrentUser();
   const stripeOn = await stripeEnabled();
+  const pct = Math.round((await getSettings()).commissionPct * 100);
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
     return (
@@ -93,6 +96,18 @@ export default async function AdminPage({
           Klubside: /klub/{club.slug} · {INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS]}
         </p>
       </div>
+
+      {searchParams.abonnement && (
+        <p className="card border border-court/25 text-sm">
+          {searchParams.abonnement === "ok"
+            ? "Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke."
+            : searchParams.abonnement === "afbrudt"
+              ? "Betalingen blev afbrudt. Abonnementet er ikke startet."
+              : searchParams.abonnement === "portal"
+                ? "Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det."
+                : "Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os."}
+        </p>
+      )}
 
       {toEnter.length > 0 && (
         <section className="rounded-lg border-2 border-court bg-court/5 p-5">
@@ -182,11 +197,45 @@ export default async function AdminPage({
               Fast pris uanset hvor mange bookinger der kommer ind. Bedst når I
               har mange ledige tider at fylde.
             </p>
+
+            {subscriptionIsActive(club) ? (
+              <>
+                <p className="mt-3 text-sm">
+                  <span className="font-bold text-court">Betaling aktiv.</span>{" "}
+                  {club.subscriptionRenewsAt
+                    ? `Fornyes ${format(club.subscriptionRenewsAt, "d. MMMM", { locale: da })}.`
+                    : "Fornyes automatisk hver måned."}
+                </p>
+                <form action={openClubBillingPortal} className="mt-3">
+                  <SubmitButton className="btn-ghost" pendingText="Åbner Stripe…">
+                    Kort, fakturaer og opsigelse
+                  </SubmitButton>
+                </form>
+              </>
+            ) : (
+              <>
+                <p className="mt-3 text-sm">
+                  <span className="font-bold text-court-dark">
+                    {club.subscriptionStatus === "past_due" || club.subscriptionStatus === "unpaid"
+                      ? "Betalingen fejlede."
+                      : club.subscriptionStatus === "canceled"
+                        ? "Abonnementet er opsagt."
+                        : "Abonnementet er ikke startet."}
+                  </span>{" "}
+                  Indtil det betales, trækkes {pct}% af hver gæstebooking i stedet.
+                </p>
+                <form action={startClubSubscription} className="mt-3">
+                  <SubmitButton pendingText="Åbner Stripe…">
+                    {club.stripeCustomerId ? "Forny betaling" : "Start abonnement"}
+                  </SubmitButton>
+                </form>
+              </>
+            )}
           </>
         ) : (
           <>
             <p className="mt-2">
-              <span className="font-bold">Provision — 10% af hver gæstebooking.</span>{" "}
+              <span className="font-bold">Provision — {pct}% af hver gæstebooking.</span>{" "}
               Ingen fast betaling.
             </p>
             <p className="mt-1 text-sm text-slate/60">
