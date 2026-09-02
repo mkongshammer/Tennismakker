@@ -5,7 +5,7 @@
 // leder efter tysk, læser ikke dansk, og et sprognavn skal kunne genkendes
 // af netop den, der ikke forstår siden, det står på.
 import { setLocale } from "../lib/actions";
-import { LOCALES, LOCALE_LABELS } from "../lib/sports";
+import { LOCALES, LOCALE_FLAGS, LOCALE_LABELS } from "../lib/sports";
 import type { Locale } from "../lib/sports";
 
 export function LanguagePicker({ active }: { active: Locale }) {
@@ -21,6 +21,7 @@ export function LanguagePicker({ active }: { active: Locale }) {
               active === l ? "font-bold text-ink" : "font-medium text-slate hover:text-ink"
             }`}
           >
+            <span aria-hidden="true" className="mr-1.5">{LOCALE_FLAGS[l]}</span>
             {LOCALE_LABELS[l]}
           </button>
         </form>

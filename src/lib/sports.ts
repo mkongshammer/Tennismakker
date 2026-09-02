@@ -40,10 +40,10 @@ export const SURFACE_LABELS: Record<string, Record<Locale, string>> = {
 // Danmark tilbage på engelsk, hvilket er det dårligste valg begge veje:
 // en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
 export const COUNTRIES = [
-  { code: "DK", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
-  { code: "SE", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
-  { code: "NO", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
-  { code: "DE", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
+  { code: "DK", flag: "🇩🇰", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
+  { code: "SE", flag: "🇸🇪", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
+  { code: "NO", flag: "🇳🇴", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
+  { code: "DE", flag: "🇩🇪", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
 ] as const;
 
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
@@ -58,6 +58,23 @@ export type Locale = (typeof LOCALES)[number];
  * dansk. Et sprognavn skal kunne genkendes af den, der ikke forstår siden,
  * det står på.
  */
+/**
+ * Flag ved siden af sprogene.
+ *
+ * Strengt taget forkert — engelsk tales ikke kun i Storbritannien, og et
+ * sprog er ikke et land. Men et flag genkendes på et halvt sekund, og
+ * teksten ved siden af siger, hvad det faktisk er. Vises flagene ikke
+ * (nogle Windows-maskiner mangler dem), står der to bogstaver i stedet, og
+ * sprognavnet bærer alligevel betydningen.
+ */
+export const LOCALE_FLAGS: Record<Locale, string> = {
+  da: "🇩🇰",
+  en: "🇬🇧",
+  de: "🇩🇪",
+  sv: "🇸🇪",
+  no: "🇳🇴",
+};
+
 export const LOCALE_LABELS: Record<Locale, string> = {
   da: "Dansk",
   en: "English",

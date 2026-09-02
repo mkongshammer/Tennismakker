@@ -5,6 +5,8 @@ import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { acceptMatchRequest } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
 import { MATCH_TYPES } from "../../lib/levels";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +17,7 @@ export default async function MakkerePage({
   searchParams: { omraade?: string; niveau?: string };
 }) {
   const user = await getCurrentUser();
+  const t = translator((await getPreferences()).locale);
   const area = searchParams.omraade?.trim();
   const level = searchParams.niveau ? Number(searchParams.niveau) : undefined;
 
@@ -34,28 +37,28 @@ export default async function MakkerePage({
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="display text-3xl">Find en makker</h1>
-          <p className="text-slate/70">Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.</p>
+          <h1 className="display text-3xl">{t("partners.title")}</h1>
+          <p className="text-slate/70">{t("partners.intro")}</p>
         </div>
-        <Link href="/makkere/ny" className="btn-court">Opret opslag</Link>
+        <Link href="/makkere/ny" className="btn-court">{t("partners.createPost")}</Link>
       </div>
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <label className="label" htmlFor="omraade">Område</label>
+          <label className="label" htmlFor="omraade">{t("common.area")}</label>
           <input className="input" id="omraade" name="omraade" defaultValue={area} placeholder="fx København" />
         </div>
         <div>
-          <label className="label" htmlFor="niveau">Dit niveau (viser ±1)</label>
+          <label className="label" htmlFor="niveau">{t("partners.yourLevel")}</label>
           <input className="input" id="niveau" name="niveau" type="number" min={1} max={7} defaultValue={searchParams.niveau ?? user?.level ?? ""} />
         </div>
-        <button className="btn-ink">Filtrér</button>
+        <button className="btn-ink">{t("common.filter")}</button>
       </form>
 
       {requests.length === 0 && (
         <div className="card text-center text-slate/60">
-          Ingen åbne opslag matcher din søgning endnu.{" "}
-          <Link href="/makkere/ny" className="font-semibold text-court underline">Opret det første</Link>
+          {t("partners.none")}{" "}
+          <Link href="/makkere/ny" className="font-semibold text-court underline">{t("partners.createFirst")}</Link>
         </div>
       )}
 
@@ -78,12 +81,12 @@ export default async function MakkerePage({
             {user && user.id !== r.requesterId ? (
               <form action={acceptMatchRequest}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="btn-court">Slå til</button>
+                <button className="btn-court">{t("partners.respond")}</button>
               </form>
             ) : !user ? (
-              <Link href="/login" className="btn-ghost">Log ind for at svare</Link>
+              <Link href="/login" className="btn-ghost">{t("partners.loginToRespond")}</Link>
             ) : (
-              <span className="text-sm text-slate/50">Dit opslag</span>
+              <span className="text-sm text-slate/50">{t("partners.yours")}</span>
             )}
           </li>
         ))}

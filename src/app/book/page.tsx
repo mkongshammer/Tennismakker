@@ -89,10 +89,9 @@ export default async function BookPage() {
       )}
 
       <div className="card mt-10 border-court/30 bg-court/5">
-        <p className="display text-xl text-court-dark">Mangler din klub?</p>
+        <p className="display text-xl text-court-dark">{t("club.missing")}</p>
         <p className="mt-1 text-sm">
-          I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
-          frigiver, til spillere udefra — og sender betalingen videre til jer.
+          {t("club.pitch")}
         </p>
         <Link href="/opret-klub" className="btn-court mt-4">
           {t("club.signup")}

@@ -7,6 +7,8 @@ import { getCurrentUser } from "../../../lib/session";
 import { CoachSlotButton } from "../../../components/CoachSlotButton";
 import { releaseExpiredHolds } from "../../../lib/payments";
 import { describeLength, lessonPriceKr } from "../../../lib/slots";
+import { getPreferences } from "../../../lib/preferences";
+import { translator } from "../../../lib/i18n";
 import { BOOKING_WINDOW_DAYS, freeSlots } from "../../../lib/coaching";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
 import { Stars } from "../../../components/ReviewForm";
@@ -36,6 +38,7 @@ export default async function TraenerPage({
   const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
 
   const free = await freeSlots(coach);
+  const t = translator((await getPreferences()).locale);
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
   const length = describeLength(coach.lessonMinutes);
 
@@ -50,15 +53,17 @@ export default async function TraenerPage({
     <div className="mx-auto max-w-2xl">
       {searchParams.fejl && (
         <p className="mb-4 rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
-          {searchParams.fejl === "betaling"
-            ? "Træneren kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført."
-            : searchParams.fejl === "egen"
-              ? "Du kan ikke booke en tid hos dig selv."
-              : searchParams.fejl === "passeret"
-                ? "Det tidspunkt er passeret. Vælg en anden tid."
-                : searchParams.fejl === "ikke-ledig"
-                  ? "Træneren tilbyder ikke den tid. Vælg en af tiderne herunder."
-                  : "Den tid var lige taget. Vælg en anden."}
+          {t(
+            searchParams.fejl === "betaling"
+              ? "coach.errNoPayout"
+              : searchParams.fejl === "egen"
+                ? "coach.errSelf"
+                : searchParams.fejl === "passeret"
+                  ? "coach.errPast"
+                  : searchParams.fejl === "ikke-ledig"
+                    ? "coach.errNotOffered"
+                    : "coach.errTaken"
+          )}
         </p>
       )}
 
@@ -91,9 +96,9 @@ export default async function TraenerPage({
 
       {coach.packages.length > 0 && (
         <div className="mt-6">
-          <h2 className="display mb-1 text-xl">Pakkeforløb</h2>
+          <h2 className="display mb-1 text-xl">{t("coach.packages")}</h2>
           <p className="mb-3 text-sm text-slate/60">
-            Aftales direkte med træneren — skriv eller book en enkelt time først.
+            {t("coach.packagesNote")}
           </p>
           <ul className="space-y-3">
             {coach.packages.map((p: any) => (
@@ -112,15 +117,14 @@ export default async function TraenerPage({
         </div>
       )}
 
-      <h2 className="display mb-1 mt-8 text-2xl">Ledige tider (næste {BOOKING_WINDOW_DAYS} dage)</h2>
+      <h2 className="display mb-1 mt-8 text-2xl">{t("coach.timesTitle", { days: BOOKING_WINDOW_DAYS })}</h2>
       <p className="mb-3 text-sm text-slate">
-        Én lektion er {length} og koster {lessonPrice} kr.
+        {t("coach.lessonLine", { length, price: lessonPrice })}
       </p>
 
       {byDay.size === 0 && (
         <div className="card text-slate/60">
-          Ingen ledige tider lige nu — træneren har ikke åbnet flere tider denne uge.
-          Skriv til træneren, hvis du vil aftale noget uden for de faste tider.
+          {t("coach.noTimes")} {t("coach.noTimesNote")}
         </div>
       )}
 
@@ -150,7 +154,9 @@ export default async function TraenerPage({
       </div>
       {!user && (
         <p className="mt-4 text-sm text-slate/60">
-          <Link href="/login" className="font-semibold text-court underline">Log ind</Link> for at booke en tid.
+          <Link href="/login" className="font-semibold text-court underline">
+            {t("coach.loginToBook")}
+          </Link>
         </p>
       )}
     </div>

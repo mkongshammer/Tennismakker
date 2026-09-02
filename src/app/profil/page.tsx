@@ -4,6 +4,8 @@ import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
 import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
@@ -20,6 +22,7 @@ export default async function ProfilPage({
   searchParams: { betalt?: string };
 }) {
   const user = await getCurrentUser();
+  const t = translator((await getPreferences()).locale);
   if (!user) redirect("/login");
 
   const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
@@ -71,10 +74,9 @@ export default async function ProfilPage({
           skrives i hånden for at få en falsk kvittering. */}
       {searchParams.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
-          <p className="display text-xl">Tiden er din</p>
+          <p className="display text-xl">{t("profile.paidTitle")}</p>
           <p className="mt-1 text-sm text-slate">
-            Kvittering er sendt til {user.email}. Spiller du fast? Book den samme
-            tid næste uge nedenfor, så er den ikke væk.
+            {t("profile.paidBody", { email: user.email })}
           </p>
         </div>
       )}
@@ -83,11 +85,9 @@ export default async function ProfilPage({
           Så skal de vide det, i stedet for at tro at alt er i orden. */}
       {searchParams.betalt && !hasConfirmedBooking && (
         <div className="rounded-2xl border border-slate/25 bg-mist p-5">
-          <p className="display text-xl">Betalingen er ikke registreret endnu</p>
+          <p className="display text-xl">{t("profile.pendingTitle")}</p>
           <p className="mt-1 text-sm text-slate">
-            Det tager nogle gange et øjeblik. Genindlæs siden om lidt. Står der
-            stadig “Afventer betaling” nedenfor, er beløbet ikke trukket, og du
-            kan trygt prøve igen.
+            {t("profile.pendingBody")}
           </p>
         </div>
       )}
@@ -140,8 +140,10 @@ export default async function ProfilPage({
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
           <p className="text-slate/60">
-            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-court underline">book en bane</Link> eller{" "}
-            <Link href="/traenere" className="font-semibold text-court underline">en træner</Link>.
+            {t("profile.noBookings")}{" "}
+            <Link href="/book" className="font-semibold text-court underline">{t("nav.book")}</Link>{" "}
+            {t("common.or")}{" "}
+            <Link href="/traenere" className="font-semibold text-court underline">{t("nav.coaches")}</Link>.
           </p>
         )}
         <ul className="space-y-3">
@@ -151,11 +153,11 @@ export default async function ProfilPage({
                 <p className="font-bold">
                   {b.kind === "COURT"
                     ? `${b.court?.club.name} — ${b.court?.name}`
-                    : `Trænertime: ${b.coachProfile?.user.name}`}
+                    : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
                 <p className="text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
-                  {b.status === "HOLD" ? "Afventer betaling" : "Bekræftet"}
+                  {t(b.status === "HOLD" ? "profile.awaitingPayment" : "profile.confirmed")}
                 </p>
                 {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
                   <div className="mt-2 rounded-lg bg-court/5 p-2.5 text-sm">
@@ -195,7 +197,8 @@ export default async function ProfilPage({
         <h2 className="display mb-3 text-2xl">Dine makker-opslag</h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
           <p className="text-slate/60">
-            Ingen opslag — <Link href="/makkere/ny" className="font-semibold text-court underline">opret et</Link>.
+            {t("profile.noPosts")}{" "}
+            <Link href="/makkere/ny" className="font-semibold text-court underline">{t("profile.createOne")}</Link>.
           </p>
         )}
         <ul className="space-y-3">
@@ -206,7 +209,7 @@ export default async function ProfilPage({
                 <p className="text-sm text-slate/60">
                   {r.status === "MATCHED" && r.acceptedBy ? (
                     <>
-                      Matchet med {r.acceptedBy.name} —{" "}
+                      {t("profile.matchedWith", { name: r.acceptedBy.name })} —{" "}
                       <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
                         skriv til {r.acceptedBy.name.split(" ")[0]}
                       </Link>

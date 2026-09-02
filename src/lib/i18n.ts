@@ -328,6 +328,361 @@ const T: Dict = {
   },
   "country.skip": { da: "Ikke nu", en: "Not now", de: "Nicht jetzt", sv: "Inte nu", no: "Ikke nå" },
 
+  // Forside
+  "home.slotOne": {
+    da: "ledig banetime nær dig",
+    en: "free court hour near you",
+    de: "freie Platzstunde in deiner Nähe",
+    sv: "ledig bantimme nära dig",
+    no: "ledig banetime nær deg",
+  },
+  "home.slotMany": {
+    da: "ledige banetimer nær dig",
+    en: "free court hours near you",
+    de: "freie Platzstunden in deiner Nähe",
+    sv: "lediga bantimmar nära dig",
+    no: "ledige banetimer nær deg",
+  },
+  "home.lede": {
+    da: "Book uden medlemskab. Find en træner, når du vil blive bedre. Find en medspiller, når du mangler en at spille imod.",
+    en: "Book without a membership. Find a coach when you want to improve. Find a co-player when you need someone to play against.",
+    de: "Buchen ohne Mitgliedschaft. Finde einen Trainer, wenn du besser werden willst. Finde einen Mitspieler, wenn dir jemand zum Spielen fehlt.",
+    sv: "Boka utan medlemskap. Hitta en tränare när du vill bli bättre. Hitta en medspelare när du saknar någon att spela mot.",
+    no: "Book uten medlemskap. Finn en trener når du vil bli bedre. Finn en medspiller når du mangler noen å spille mot.",
+  },
+  "home.cardBook": {
+    da: "Se ledige tider i klubber nær dig, og betal online. Du behøver ikke være medlem.",
+    en: "See available times at clubs near you and pay online. No membership needed.",
+    de: "Sieh freie Zeiten in Clubs in deiner Nähe und zahle online. Eine Mitgliedschaft brauchst du nicht.",
+    sv: "Se lediga tider i klubbar nära dig och betala online. Du behöver inte vara medlem.",
+    no: "Se ledige tider i klubber nær deg, og betal på nett. Du trenger ikke være medlem.",
+  },
+  "home.cardCoaches": {
+    da: "Enkelttimer eller hele forløb. Priser og ledige tider står på profilen.",
+    en: "Single sessions or full packages. Prices and available times are on the profile.",
+    de: "Einzelstunden oder ganze Pakete. Preise und freie Zeiten stehen im Profil.",
+    sv: "Enstaka timmar eller hela paket. Priser och lediga tider står på profilen.",
+    no: "Enkelttimer eller hele forløp. Priser og ledige tider står på profilen.",
+  },
+  "home.cardPlayers": {
+    da: "Se spillere på dit niveau. Siger I begge ja, åbner der en samtale.",
+    en: "See players at your level. If you both say yes, a conversation opens.",
+    de: "Sieh Spieler auf deinem Niveau. Sagt ihr beide ja, öffnet sich ein Gespräch.",
+    sv: "Se spelare på din nivå. Säger ni båda ja öppnas en konversation.",
+    no: "Se spillere på ditt nivå. Sier dere begge ja, åpnes en samtale.",
+  },
+  "unit.club": { da: "klub", en: "club", de: "Club", sv: "klubb", no: "klubb" },
+  "unit.clubs": { da: "klubber", en: "clubs", de: "Clubs", sv: "klubbar", no: "klubber" },
+  "unit.coach": { da: "træner", en: "coach", de: "Trainer", sv: "tränare", no: "trener" },
+  "unit.coaches": { da: "trænere", en: "coaches", de: "Trainer", sv: "tränare", no: "trenere" },
+  "unit.player": { da: "spiller", en: "player", de: "Spieler", sv: "spelare", no: "spiller" },
+  "unit.players": { da: "spillere", en: "players", de: "Spieler", sv: "spelare", no: "spillere" },
+  "club.missing": {
+    da: "Mangler din klub?",
+    en: "Is your club missing?",
+    de: "Fehlt dein Club?",
+    sv: "Saknas din klubb?",
+    no: "Mangler klubben din?",
+  },
+  "club.pitch": {
+    da: "I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv frigiver, til spillere udefra — og sender betalingen videre til jer.",
+    en: "You keep your own booking system. We only show the times you release yourselves, to players from outside — and pass the payment on to you.",
+    de: "Ihr behaltet euer eigenes Buchungssystem. Wir zeigen nur die Zeiten, die ihr selbst freigebt, an Spieler von außerhalb — und leiten die Zahlung an euch weiter.",
+    sv: "Ni behåller ert eget bokningssystem. Vi visar bara de tider ni själva släpper, till spelare utifrån — och skickar betalningen vidare till er.",
+    no: "Dere beholder deres eget bookingsystem. Vi viser bare tidene dere selv frigir, til spillere utenfra — og sender betalingen videre til dere.",
+  },
+  "club.pitchPricing": {
+    da: "Vælg mellem {pct}% pr. booking eller et fast månedsbeløb.",
+    en: "Choose between {pct}% per booking or a fixed monthly fee.",
+    de: "Wählt zwischen {pct}% pro Buchung oder einem festen Monatsbetrag.",
+    sv: "Välj mellan {pct}% per bokning eller ett fast månadsbelopp.",
+    no: "Velg mellom {pct}% per booking eller et fast månedsbeløp.",
+  },
+
+  // Trænere, liste og profil
+  "common.search": { da: "Søg", en: "Search", de: "Suchen", sv: "Sök", no: "Søk" },
+  "coach.noneInArea": {
+    da: "Ingen trænere i det område endnu.",
+    en: "No coaches in that area yet.",
+    de: "Noch keine Trainer in diesem Gebiet.",
+    sv: "Inga tränare i det området än.",
+    no: "Ingen trenere i det området ennå.",
+  },
+  "coach.alsoOffersOne": {
+    da: "Tilbyder også {name}",
+    en: "Also offers {name}",
+    de: "Bietet außerdem {name}",
+    sv: "Erbjuder även {name}",
+    no: "Tilbyr også {name}",
+  },
+  "coach.alsoOffersMany": {
+    da: "Tilbyder også {n} pakkeforløb",
+    en: "Also offers {n} packages",
+    de: "Bietet außerdem {n} Pakete",
+    sv: "Erbjuder även {n} paket",
+    no: "Tilbyr også {n} pakkeforløp",
+  },
+  "coach.seeTimes": {
+    da: "Se ledige tider",
+    en: "See available times",
+    de: "Freie Zeiten ansehen",
+    sv: "Se lediga tider",
+    no: "Se ledige tider",
+  },
+  "coach.packagesNote": {
+    da: "Aftales direkte med træneren — skriv eller book en enkelt time først.",
+    en: "Arranged directly with the coach — write to them or book a single session first.",
+    de: "Wird direkt mit dem Trainer vereinbart — schreib ihm oder buche zuerst eine Einzelstunde.",
+    sv: "Bestäms direkt med tränaren — skriv eller boka en enstaka timme först.",
+    no: "Avtales direkte med treneren — skriv eller book en enkelttime først.",
+  },
+  "coach.lessonLine": {
+    da: "Én lektion er {length} og koster {price} kr.",
+    en: "One session is {length} and costs {price} kr.",
+    de: "Eine Stunde dauert {length} und kostet {price} kr.",
+    sv: "En lektion är {length} och kostar {price} kr.",
+    no: "Én leksjon er {length} og koster {price} kr.",
+  },
+  "coach.timesTitle": {
+    da: "Ledige tider (næste {days} dage)",
+    en: "Available times (next {days} days)",
+    de: "Freie Zeiten (nächste {days} Tage)",
+    sv: "Lediga tider (nästa {days} dagar)",
+    no: "Ledige tider (neste {days} dager)",
+  },
+  "coach.noTimes": {
+    da: "Ingen ledige tider lige nu — træneren har ikke åbnet flere tider denne uge.",
+    en: "No available times right now — the coach has not opened more times this week.",
+    de: "Gerade keine freien Zeiten — der Trainer hat diese Woche keine weiteren geöffnet.",
+    sv: "Inga lediga tider just nu — tränaren har inte öppnat fler tider den här veckan.",
+    no: "Ingen ledige tider akkurat nå — treneren har ikke åpnet flere tider denne uken.",
+  },
+  "coach.noTimesNote": {
+    da: "Skriv til træneren, hvis du vil aftale noget uden for de faste tider.",
+    en: "Write to the coach if you want to arrange something outside the fixed times.",
+    de: "Schreib dem Trainer, wenn du etwas außerhalb der festen Zeiten vereinbaren willst.",
+    sv: "Skriv till tränaren om du vill komma överens om något utanför de fasta tiderna.",
+    no: "Skriv til treneren hvis du vil avtale noe utenfor de faste tidene.",
+  },
+  "coach.loginToBook": {
+    da: "Log ind for at booke en tid",
+    en: "Log in to book a session",
+    de: "Melde dich an, um eine Stunde zu buchen",
+    sv: "Logga in för att boka en tid",
+    no: "Logg inn for å booke en time",
+  },
+  "coach.errNoPayout": {
+    da: "Træneren kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført.",
+    en: "The coach cannot receive payment yet, so the booking did not go through.",
+    de: "Der Trainer kann noch keine Zahlungen empfangen, deshalb kam die Buchung nicht zustande.",
+    sv: "Tränaren kan inte ta emot betalning än, så bokningen gick inte igenom.",
+    no: "Treneren kan ikke ta imot betaling ennå, så bookingen ble ikke gjennomført.",
+  },
+  "coach.errSelf": {
+    da: "Du kan ikke booke en tid hos dig selv.",
+    en: "You cannot book a session with yourself.",
+    de: "Du kannst keine Stunde bei dir selbst buchen.",
+    sv: "Du kan inte boka en tid hos dig själv.",
+    no: "Du kan ikke booke en time hos deg selv.",
+  },
+  "coach.errPast": {
+    da: "Det tidspunkt er passeret. Vælg en anden tid.",
+    en: "That time has passed. Choose another one.",
+    de: "Dieser Zeitpunkt ist vorbei. Wähle einen anderen.",
+    sv: "Den tiden har passerat. Välj en annan tid.",
+    no: "Det tidspunktet er passert. Velg en annen tid.",
+  },
+  "coach.errNotOffered": {
+    da: "Træneren tilbyder ikke den tid. Vælg en af tiderne herunder.",
+    en: "The coach does not offer that time. Choose one of the times below.",
+    de: "Der Trainer bietet diese Zeit nicht an. Wähle eine der Zeiten unten.",
+    sv: "Tränaren erbjuder inte den tiden. Välj en av tiderna nedan.",
+    no: "Treneren tilbyr ikke den tiden. Velg en av tidene nedenfor.",
+  },
+  "coach.errTaken": {
+    da: "Den tid var lige taget. Vælg en anden.",
+    en: "That time was just taken. Choose another.",
+    de: "Diese Zeit war gerade vergeben. Wähle eine andere.",
+    sv: "Den tiden blev precis tagen. Välj en annan.",
+    no: "Den tiden ble nettopp tatt. Velg en annen.",
+  },
+
+  // Spillere og makkere
+  "players.findTitle": {
+    da: "Find spillere",
+    en: "Find players",
+    de: "Spieler finden",
+    sv: "Hitta spelare",
+    no: "Finn spillere",
+  },
+  "players.waiting": {
+    da: "{n} venter på dig",
+    en: "{n} waiting for you",
+    de: "{n} warten auf dich",
+    sv: "{n} väntar på dig",
+    no: "{n} venter på deg",
+  },
+  "players.seenAll": {
+    da: "Du har set alle spillere på dit niveau i dit område. Kig forbi igen om et par dage.",
+    en: "You have seen every player at your level nearby. Check back in a couple of days.",
+    de: "Du hast alle Spieler auf deinem Niveau in deiner Nähe gesehen. Schau in ein paar Tagen wieder vorbei.",
+    sv: "Du har sett alla spelare på din nivå i ditt område. Kom tillbaka om ett par dagar.",
+    no: "Du har sett alle spillere på ditt nivå i området ditt. Stikk innom igjen om et par dager.",
+  },
+  "players.alsoCoach": {
+    da: "Er også træner på platformen",
+    en: "Also a coach on the platform",
+    de: "Ist auch Trainer auf der Plattform",
+    sv: "Är även tränare på plattformen",
+    no: "Er også trener på plattformen",
+  },
+  "partners.title": {
+    da: "Find en makker",
+    en: "Find a partner",
+    de: "Partner finden",
+    sv: "Hitta en partner",
+    no: "Finn en makker",
+  },
+  "partners.intro": {
+    da: "Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.",
+    en: "Open posts from players looking for an opponent, a doubles partner or someone to train with.",
+    de: "Offene Gesuche von Spielern, die einen Gegner, Doppelpartner oder Trainingspartner suchen.",
+    sv: "Öppna inlägg från spelare som söker motståndare, dubbelpartner eller träningspartner.",
+    no: "Åpne oppslag fra spillere som søker motstander, doublemakker eller treningspartner.",
+  },
+  "partners.none": {
+    da: "Ingen åbne opslag matcher din søgning endnu.",
+    en: "No open posts match your search yet.",
+    de: "Noch passt kein offenes Gesuch zu deiner Suche.",
+    sv: "Inga öppna inlägg matchar din sökning än.",
+    no: "Ingen åpne oppslag matcher søket ditt ennå.",
+  },
+  "partners.createFirst": {
+    da: "Opret det første",
+    en: "Create the first one",
+    de: "Erstelle das erste",
+    sv: "Skapa det första",
+    no: "Opprett det første",
+  },
+  "partners.respond": { da: "Slå til", en: "Take it", de: "Zusagen", sv: "Nappa", no: "Slå til" },
+  "partners.loginToRespond": {
+    da: "Log ind for at svare",
+    en: "Log in to reply",
+    de: "Zum Antworten anmelden",
+    sv: "Logga in för att svara",
+    no: "Logg inn for å svare",
+  },
+
+  // Profil
+  "profile.paidTitle": {
+    da: "Tiden er din",
+    en: "The time is yours",
+    de: "Die Zeit gehört dir",
+    sv: "Tiden är din",
+    no: "Tiden er din",
+  },
+  "profile.paidBody": {
+    da: "Kvittering er sendt til {email}. Spiller du fast? Book den samme tid næste uge nedenfor, så er den ikke væk.",
+    en: "A receipt has been sent to {email}. Play regularly? Book the same time next week below, so it is not gone.",
+    de: "Eine Quittung ging an {email}. Spielst du regelmäßig? Buche unten dieselbe Zeit nächste Woche, dann ist sie dir sicher.",
+    sv: "Ett kvitto har skickats till {email}. Spelar du regelbundet? Boka samma tid nästa vecka nedan, så är den inte borta.",
+    no: "Kvittering er sendt til {email}. Spiller du fast? Book den samme tiden neste uke nedenfor, så er den ikke borte.",
+  },
+  "profile.pendingTitle": {
+    da: "Betalingen er ikke registreret endnu",
+    en: "The payment is not registered yet",
+    de: "Die Zahlung ist noch nicht erfasst",
+    sv: "Betalningen är inte registrerad än",
+    no: "Betalingen er ikke registrert ennå",
+  },
+  "profile.pendingBody": {
+    da: "Det tager nogle gange et øjeblik. Genindlæs siden om lidt. Står der stadig Afventer betaling nedenfor, er beløbet ikke trukket, og du kan trygt prøve igen.",
+    en: "It sometimes takes a moment. Reload the page shortly. If it still says Awaiting payment below, nothing has been charged and you can safely try again.",
+    de: "Das dauert manchmal einen Moment. Lade die Seite gleich neu. Steht unten weiterhin Zahlung ausstehend, wurde nichts abgebucht und du kannst es bedenkenlos erneut versuchen.",
+    sv: "Det tar ibland ett ögonblick. Ladda om sidan strax. Står det fortfarande Väntar på betalning nedan har inget dragits, och du kan tryggt försöka igen.",
+    no: "Det tar noen ganger et øyeblikk. Last inn siden på nytt om litt. Står det fortsatt Venter på betaling nedenfor, er beløpet ikke trukket, og du kan trygt prøve igjen.",
+  },
+  "profile.noBookings": {
+    da: "Ingen bookinger endnu —",
+    en: "No bookings yet —",
+    de: "Noch keine Buchungen —",
+    sv: "Inga bokningar än —",
+    no: "Ingen bookinger ennå —",
+  },
+  "profile.noPosts": {
+    da: "Ingen opslag —",
+    en: "No posts —",
+    de: "Keine Gesuche —",
+    sv: "Inga inlägg —",
+    no: "Ingen oppslag —",
+  },
+  "profile.createOne": {
+    da: "opret et",
+    en: "create one",
+    de: "erstelle eines",
+    sv: "skapa ett",
+    no: "opprett et",
+  },
+  "profile.awaitingPayment": {
+    da: "Afventer betaling",
+    en: "Awaiting payment",
+    de: "Zahlung ausstehend",
+    sv: "Väntar på betalning",
+    no: "Venter på betaling",
+  },
+  "profile.confirmed": {
+    da: "Bekræftet",
+    en: "Confirmed",
+    de: "Bestätigt",
+    sv: "Bekräftad",
+    no: "Bekreftet",
+  },
+  "profile.coachSession": {
+    da: "Trænertime: {name}",
+    en: "Coach session: {name}",
+    de: "Trainerstunde: {name}",
+    sv: "Tränartimme: {name}",
+    no: "Trenertime: {name}",
+  },
+  "profile.matchedWith": {
+    da: "Matchet med {name}",
+    en: "Matched with {name}",
+    de: "Verbunden mit {name}",
+    sv: "Matchad med {name}",
+    no: "Matchet med {name}",
+  },
+  "common.or": { da: "eller", en: "or", de: "oder", sv: "eller", no: "eller" },
+
+  "club.boardQuestion": {
+    da: "Sidder du i en klubbestyrelse?",
+    en: "On a club board?",
+    de: "Sitzt du im Vorstand eines Clubs?",
+    sv: "Sitter du i en klubbstyrelse?",
+    no: "Sitter du i et klubbstyre?",
+  },
+  "partners.createPost": {
+    da: "Opret opslag",
+    en: "New post",
+    de: "Gesuch erstellen",
+    sv: "Skapa inlägg",
+    no: "Opprett oppslag",
+  },
+  "partners.yourLevel": {
+    da: "Dit niveau (viser ±1)",
+    en: "Your level (shows ±1)",
+    de: "Dein Niveau (zeigt ±1)",
+    sv: "Din nivå (visar ±1)",
+    no: "Ditt nivå (viser ±1)",
+  },
+  "common.filter": { da: "Filtrér", en: "Filter", de: "Filtern", sv: "Filtrera", no: "Filtrer" },
+  "partners.yours": {
+    da: "Dit opslag",
+    en: "Your post",
+    de: "Dein Gesuch",
+    sv: "Ditt inlägg",
+    no: "Ditt oppslag",
+  },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",
@@ -359,8 +714,19 @@ const T: Dict = {
   },
 };
 
-/** Slår en tekst op. Mangler nøglen, returneres nøglen selv, så fejlen ses. */
-export function t(key: string, locale: Locale = "da"): string {
+/**
+ * Slår en tekst op. Mangler nøglen, returneres nøglen selv, så fejlen ses.
+ *
+ * `vars` erstatter pladsholdere som {navn} i teksten. Det er nødvendigt,
+ * fordi ordstillingen skifter fra sprog til sprog: "5 venter på dig" og
+ * "5 warten auf dich" kan ikke sættes sammen af de samme stumper i samme
+ * rækkefølge. Hele sætningen skal være ét opslag med huller i.
+ */
+export function t(
+  key: string,
+  locale: Locale = "da",
+  vars?: Record<string, string | number>
+): string {
   const entry = T[key];
   if (!entry) {
     if (process.env.NODE_ENV !== "production") {
@@ -371,10 +737,14 @@ export function t(key: string, locale: Locale = "da"): string {
   // Falder tilbage på engelsk frem for at vise en tom streng. Typerne
   // sikrer, at det ikke kan ske — men en tom knap i en butik er værre end
   // en knap på det forkerte sprog.
-  return entry[locale] || entry.en;
+  const text = entry[locale] || entry.en;
+  if (!vars) return text;
+  return text.replace(/\{(\w+)\}/g, (whole, name) =>
+    name in vars ? String(vars[name]) : whole
+  );
 }
 
 /** Bundet oversætter, så komponenter slipper for at sende locale med hver gang. */
 export function translator(locale: Locale) {
-  return (key: string) => t(key, locale);
+  return (key: string, vars?: Record<string, string | number>) => t(key, locale, vars);
 }

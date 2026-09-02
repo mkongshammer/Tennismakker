@@ -39,14 +39,14 @@ export default async function TraenerePage({
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <label className="label" htmlFor="omraade">Område</label>
+          <label className="label" htmlFor="omraade">{t("common.area")}</label>
           <input className="input" id="omraade" name="omraade" defaultValue={area} placeholder="fx Aarhus" />
         </div>
-        <button className="btn-ink">Søg</button>
+        <button className="btn-ink">{t("common.search")}</button>
       </form>
 
       {coaches.length === 0 && (
-        <div className="card text-center text-slate/60">Ingen trænere i det område endnu.</div>
+        <div className="card text-center text-slate/60">{t("coach.noneInArea")}</div>
       )}
 
       <ul className="grid gap-4 sm:grid-cols-2">
@@ -76,12 +76,12 @@ export default async function TraenerePage({
             {c.packages.length > 0 && (
               <p className="mt-3 text-sm font-semibold text-ink">
                 {c.packages.length === 1
-                  ? `Tilbyder også ${c.packages[0].name}`
-                  : `Tilbyder også ${c.packages.length} pakkeforløb`}
+                  ? t("coach.alsoOffersOne", { name: c.packages[0].name })
+                  : t("coach.alsoOffersMany", { n: c.packages.length })}
               </p>
             )}
             <Link href={`/traenere/${c.id}`} className="btn-court mt-4">
-              Se ledige tider
+              {t("coach.seeTimes")}
             </Link>
           </li>
         ))}

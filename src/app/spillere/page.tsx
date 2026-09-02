@@ -5,12 +5,16 @@ import { getCurrentUser } from "../../lib/session";
 import { nextCandidates, pendingLikes } from "../../lib/swipe";
 import { submitSwipe } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
 
 export const dynamic = "force-dynamic";
 
 export default async function SpillerePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const t = translator((await getPreferences()).locale);
 
   const [candidates, likes] = await Promise.all([
     nextCandidates(user.id, 1),
@@ -21,20 +25,19 @@ export default async function SpillerePage() {
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-4 flex items-baseline justify-between">
-        <h1 className="display text-3xl">Find spillere</h1>
+        <h1 className="display text-3xl">{t("players.findTitle")}</h1>
         {likes > 0 && (
           <span className="rounded-full bg-court px-3 py-1 text-sm font-bold text-chalk">
-            {likes} venter på dig
+            {t("players.waiting", { n: likes })}
           </span>
         )}
       </div>
 
       {!player ? (
         <div className="card text-center">
-          <p className="font-bold">Ikke flere lige nu</p>
+          <p className="font-bold">{t("players.empty")}</p>
           <p className="mt-2 text-sm text-slate/60">
-            Du har set alle spillere på dit niveau i dit område. Kig forbi igen om
-            et par dage — eller slå et{" "}
+            {t("players.seenAll")}{" "}
             <Link href="/makkere/ny" className="font-semibold text-court underline">
               opslag
             </Link>{" "}
@@ -64,7 +67,7 @@ export default async function SpillerePage() {
             {player.bio && <p className="mt-4 text-center">{player.bio}</p>}
             {player.role === "COACH" && (
               <p className="mt-3 text-center text-sm font-semibold text-court">
-                Er også træner på platformen
+                {t("players.alsoCoach")}
               </p>
             )}
           </div>
@@ -73,18 +76,17 @@ export default async function SpillerePage() {
             <form action={submitSwipe} className="flex-1">
               <input type="hidden" name="toUserId" value={player.id} />
               <input type="hidden" name="liked" value="0" />
-              <button className="btn-ghost w-full py-3">Spring over</button>
+              <button className="btn-ghost w-full py-3">{t("players.skip")}</button>
             </form>
             <form action={submitSwipe} className="flex-1">
               <input type="hidden" name="toUserId" value={player.id} />
               <input type="hidden" name="liked" value="1" />
-              <button className="btn-court w-full py-3">Vil spille</button>
+              <button className="btn-court w-full py-3">{t("players.interested")}</button>
             </form>
           </div>
 
           <p className="mt-4 text-center text-xs text-slate/50">
-            Siger I begge ja, åbner der en samtale. Den anden får ikke besked,
-            hvis du springer over.
+            {t("players.matchNote")}
           </p>
         </>
       )}

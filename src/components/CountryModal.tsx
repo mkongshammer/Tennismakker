@@ -36,7 +36,8 @@ export function CountryModal({ locale }: { locale: Locale }) {
           {COUNTRIES.map((c) => (
             <form action={setCountry} key={c.code}>
               <input type="hidden" name="country" value={c.code} />
-              <button className="w-full rounded-xl border border-slate/20 px-4 py-3 text-left font-semibold transition-colors hover:border-court hover:text-court">
+              <button className="flex w-full items-center gap-2.5 rounded-xl border border-slate/20 px-4 py-3 text-left font-semibold transition-colors hover:border-court hover:text-court">
+                <span aria-hidden="true" className="text-lg">{c.flag}</span>
                 {countryName(c.code, locale)}
               </button>
             </form>

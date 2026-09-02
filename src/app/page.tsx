@@ -8,6 +8,7 @@ import Link from "next/link";
 import { addDays, startOfDay } from "date-fns";
 import { db } from "../lib/db";
 import { getPreferences } from "../lib/preferences";
+import { getSettings } from "../lib/settings";
 import { getClubAvailability } from "../lib/integrations";
 import { translator } from "../lib/i18n";
 import { sportColor, sportLabel } from "../lib/sports";
@@ -44,6 +45,7 @@ export default async function Home() {
     db.user.count({ where: { role: "PLAYER", country: prefs.country } }),
   ]);
 
+  const pct = Math.round((await getSettings()).commissionPct * 100);
   const tint = sportColor(prefs.sport);
 
   return (
@@ -79,12 +81,9 @@ export default async function Home() {
             {freeToday}
           </p>
           <h1 className="display mt-2 text-2xl sm:text-4xl">
-            {freeToday === 1 ? "ledig banetime nær dig" : "ledige banetimer nær dig"}
+            {t(freeToday === 1 ? "home.slotOne" : "home.slotMany")}
           </h1>
-          <p className="mt-4 max-w-lg text-chalk/85">
-            Book uden medlemskab. Find en træner, når du vil blive bedre. Find en
-            medspiller, når du mangler en at spille imod.
-          </p>
+          <p className="mt-4 max-w-lg text-chalk/85">{t("home.lede")}</p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
             <Link href="/book" className="btn bg-chalk text-ink hover:bg-mist">
               {t("nav.book")}
@@ -106,22 +105,22 @@ export default async function Home() {
             href: "/book",
             label: t("nav.book"),
             n: clubs.length,
-            unit: clubs.length === 1 ? "klub" : "klubber",
-            body: "Se ledige tider i klubber nær dig, og betal online. Du behøver ikke være medlem.",
+            unit: t(clubs.length === 1 ? "unit.club" : "unit.clubs"),
+            body: t("home.cardBook"),
           },
           {
             href: "/traenere",
             label: t("nav.coaches"),
             n: coaches,
-            unit: coaches === 1 ? "træner" : "trænere",
-            body: "Enkelttimer eller hele forløb. Priser og ledige tider står på profilen.",
+            unit: t(coaches === 1 ? "unit.coach" : "unit.coaches"),
+            body: t("home.cardCoaches"),
           },
           {
             href: "/spillere",
             label: t("nav.players"),
             n: players,
-            unit: players === 1 ? "spiller" : "spillere",
-            body: "Se spillere på dit niveau. Siger I begge ja, åbner der en samtale.",
+            unit: t(players === 1 ? "unit.player" : "unit.players"),
+            body: t("home.cardPlayers"),
           },
         ].map((c) => (
           <Link key={c.href} href={c.href} className="card transition-shadow hover:shadow-lift">
@@ -136,11 +135,9 @@ export default async function Home() {
       {/* Klub-pitch */}
       <section className="overflow-hidden rounded-2xl bg-ink px-6 py-10 text-chalk sm:px-10">
         <div className="chalk-line mb-6 max-w-[220px]" />
-        <h2 className="display text-2xl sm:text-3xl">Sidder du i en klubbestyrelse?</h2>
+        <h2 className="display text-2xl sm:text-3xl">{t("club.boardQuestion")}</h2>
         <p className="mt-3 max-w-2xl text-chalk/80">
-          I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv
-          frigiver, til spillere udefra — og sender betalingen videre til jer.
-          Vælg mellem 10% pr. booking eller et fast månedsbeløb.
+          {t("club.pitch")} {t("club.pitchPricing", { pct })}
         </p>
         <Link href="/opret-klub" className="btn-court mt-6">
           {t("club.signup")}
