@@ -1,432 +1,113 @@
-// Demo-data så platformen kan afprøves med det samme.
-// Kør: npm run db:seed
+// Kører ved hver udrulning. Filnavnet er arvet fra dengang, den lagde
+// demo-data ind; nu gør den to ting, og kun den ene som standard.
+//
+// 1. Sikrer, at ejerens superadmin-konto findes. Uden den er der ingen vej
+//    ind, hvis noget går galt — og den kontrol koster ét opslag.
+//
+// 2. Tømmer databasen for alt andet, men KUN hvis RESET_TO_PRODUCTION er
+//    sat. Uden den spærre ville en oprydning, der giver mening i dag,
+//    slette rigtige klubbers bookinger ved næste udrulning. Sæt variablen,
+//    udrul, fjern den igen.
+//
+// Indstillingerne (PlatformSetting) og sidevisningerne røres aldrig. Det
+// første er Stripe-nøgler og afsenderadresse — at tabe dem ville tage
+// betalingerne ned sammen med demo-dataene.
+
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const db = new PrismaClient();
 
-async function main() {
-  const password = await bcrypt.hash("tennis123", 10);
+const OWNER_EMAIL = (process.env.OWNER_EMAIL ?? "").trim().toLowerCase();
 
-  // Demo-klub
-  const club = await db.club.upsert({
-    where: { slug: "soendermark-tennis" },
-    update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
-    create: {
-      slug: "soendermark-tennis",
-      name: "Søndermark Tennisklub",
-      city: "Frederiksberg",
-      description:
-        "Hyggelig klub med fire grusbaner og én indendørs bane. Alle niveauer er velkomne — book en bane online og kom forbi.",
-      color: "#1E3D2F",
-      address: "Sønderjyllands Allé 8",
-      latitude: 55.6721,
-      longitude: 12.5133,
-      priceHour: 90,
-      openHour: 7,
-      closeHour: 22,
-      country: "DK",
-      status: "APPROVED",
-      approvedAt: new Date(),
-      tagline: "Fire grusbaner og en indendørsbane ti minutter fra centrum.",
-      about:
-        "Søndermark er en klub for folk der vil spille, ikke for folk der vil sidde i bestyrelsen. Vi har hold i alle rækker, fri træning tirsdag og torsdag aften, og en klubturnering hvert forår.\n\nVi bruger RacketBuddy som vores eneste bookingsystem — både medlemmer og gæster booker her.",
-      practicalInfo:
-        "Anlægget ligger bag hallen. Lågen åbnes med den kode, du får i din kvittering, og koden virker fra 15 minutter før din tid.\n\nDer er omklædning og bad i klubhuset. Parkering på grusarealet ved indkørslen.",
-      contactEmail: "kontakt@soendermarktennis.dk",
-      contactPhone: "38 12 44 90",
-      joinCode: "SOENDE-2041",
-      memberPriceHour: 45,
-    },
+/**
+ * Rækkefølgen er ikke tilfældig: børn før forældre.
+ *
+ * Bookinger peger på både brugere, baner og trænerprofiler uden kaskade, så
+ * de skal væk først. Brugere peger på klubber, så brugere skal væk før
+ * klubber. Resten rydder databasen selv op via kaskade, men det er billigere
+ * at være eksplicit end at fejlsøge en fremmednøglefejl midt i en udrulning.
+ */
+async function wipe() {
+  await db.payment.deleteMany({});
+  await db.booking.deleteMany({});
+  await db.message.deleteMany({});
+  await db.matchRequest.deleteMany({});
+  await db.swipe.deleteMany({});
+  await db.review.deleteMany({});
+  await db.coachPackage.deleteMany({});
+  await db.coachProfile.deleteMany({});
+  await db.loginChallenge.deleteMany({});
+  await db.guestSlot.deleteMany({});
+  await db.externalBusy.deleteMany({});
+  await db.guestRule.deleteMany({});
+  await db.court.deleteMany({});
+  await db.clubPost.deleteMany({});
+  await db.image.deleteMany({});
+  await db.clubLead.deleteMany({});
+  await db.websiteOrder.deleteMany({});
+
+  // Alle brugere undtagen ejeren. Ellers ville oprydningen slette den ene
+  // konto, der kan komme ind bagefter.
+  await db.user.deleteMany({
+    where: OWNER_EMAIL ? { email: { not: OWNER_EMAIL } } : {},
   });
 
-  const surfaces = ["GRUS", "GRUS", "GRUS", "HARD", "INDE"];
-  for (let i = 0; i < surfaces.length; i++) {
-    const name = `Bane ${i + 1}`;
-    const exists = await db.court.findFirst({ where: { clubId: club.id, name } });
-    if (!exists) {
-      await db.court.create({
-        data: { name, sport: "TENNIS", surface: surfaces[i], clubId: club.id },
-      });
-    }
+  await db.club.deleteMany({});
+}
+
+/**
+ * Ejerens konto skal findes, også efter en oprydning.
+ *
+ * Findes den ikke, laves den med en tilfældig adgangskode, ingen kender —
+ * heller ikke os. Vejen ind er så "Glemt adgangskode", som sender et link
+ * til netop den adresse. En konto uden en kendt adgangskode er ikke en
+ * bagdør; en konto med en adgangskode fra en fil i et repo ville være det.
+ */
+async function ensureOwner() {
+  if (!OWNER_EMAIL.includes("@")) {
+    console.log("OWNER_EMAIL er ikke sat — springer ejerkontoen over.");
+    return;
   }
 
-  // Klub-admin
-  await db.user.upsert({
-    where: { email: "admin@demo.dk" },
-    update: {},
-    create: {
-      email: "admin@demo.dk",
-      name: "Klara Klubformand",
-      passwordHash: password,
-      role: "CLUB_ADMIN",
-      clubId: club.id,
-      level: 4,
-      area: "Frederiksberg",
-    },
-  });
+  const existing = await db.user.findUnique({ where: { email: OWNER_EMAIL } });
 
-  // Spillere
-  const players = [
-    { email: "mads@demo.dk", name: "Mads Poulsen", level: 3, area: "Frederiksberg" },
-    { email: "sofie@demo.dk", name: "Sofie Lind", level: 4, area: "Valby" },
-    { email: "jonas@demo.dk", name: "Jonas Krogh", level: 2, area: "Vanløse" },
-  ];
-  for (const p of players) {
-    await db.user.upsert({
-      where: { email: p.email },
-      update: {},
-      create: { ...p, passwordHash: password, role: "PLAYER", clubId: club.id, phone: "12 34 56 78" },
-    });
-  }
-
-  // Træner med ledige tider man/ons/lør
-  const coachUser = await db.user.upsert({
-    where: { email: "traener@demo.dk" },
-    update: {},
-    create: {
-      email: "traener@demo.dk",
-      name: "Emil Vestergaard",
-      passwordHash: password,
-      role: "COACH",
-      level: 6,
-      area: "Frederiksberg",
-      phone: "87 65 43 21",
-    },
-  });
-  await db.coachProfile.upsert({
-    where: { userId: coachUser.id },
-    update: {},
-    create: {
-      userId: coachUser.id,
-      headline: "DTF-uddannet træner — speciale i serv og kampforberedelse",
-      priceHour: 400,
-      specialties: "Serv,Baghånd,Kamptaktik,Junior",
-      area: "Frederiksberg / København",
-      weeklySlots: JSON.stringify([
-        { day: 1, from: 16, to: 20 },
-        { day: 3, from: 16, to: 20 },
-        { day: 6, from: 9, to: 13 },
-      ]),
-    },
-  });
-
-  // Åbne makker-opslag
-  const mads = await db.user.findUnique({ where: { email: "mads@demo.dk" } });
-  const sofie = await db.user.findUnique({ where: { email: "sofie@demo.dk" } });
-  if (mads && (await db.matchRequest.count({ where: { requesterId: mads.id } })) === 0) {
-    await db.matchRequest.create({
+  if (!existing) {
+    await db.user.create({
       data: {
-        requesterId: mads.id,
-        message: "Søger single-modstander tirsdag eller torsdag aften. Spiller for hyggen, men gerne med tempo.",
-        area: "Frederiksberg",
+        email: OWNER_EMAIL,
+        name: "RacketBuddy",
+        role: "SUPERADMIN",
+        passwordHash: await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10),
         level: 3,
-        matchType: "SINGLE",
+        countryChosen: true,
       },
     });
-  }
-  if (sofie && (await db.matchRequest.count({ where: { requesterId: sofie.id } })) === 0) {
-    await db.matchRequest.create({
-      data: {
-        requesterId: sofie.id,
-        message: "Vi mangler et doublepar til fast lørdags-double kl. 10. Niveau 3-5.",
-        area: "Valby",
-        level: 4,
-        matchType: "DOUBLE",
-      },
-    });
+    console.log(`Ejerkonto oprettet: ${OWNER_EMAIL}. Brug "Glemt adgangskode".`);
+    return;
   }
 
-  // Klub nr. 2: har sit eget bookingsystem (Halbooking) og frigiver kun
-  // udvalgte gæstetider — det er den model, de fleste klubber vil bruge.
-  const guestClub = await db.club.upsert({
-    where: { slug: "nordhavn-tennis" },
-    update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
-    create: {
-      slug: "nordhavn-tennis",
-      name: "Nordhavn Tennisklub",
-      city: "København Ø",
-      description:
-        "Vi har vores eget bookingsystem til medlemmer. Her på RacketBuddy frigiver vi de tider, hvor banerne alligevel står tomme — så gæster kan spille.",
-      color: "#8F3510",
-      address: "Sundkrogsgade 21",
-      latitude: 55.7093,
-      longitude: 12.5946,
-      priceHour: 120,
-      openHour: 7,
-      closeHour: 22,
-      integrationType: "MANUAL",
-      externalSystem: "Halbooking (Globus Data)",
-      billingModel: "SUBSCRIPTION",
-      country: "DK",
-      status: "APPROVED",
-      approvedAt: new Date(),
-      hasLock: true,
-      accessCode: "4821",
-      accessInstructions: "Koden virker fra 15 minutter før din tid. Indgang er ved siden af klubhuset.",
-      tagline: "Fire grusbaner og en indendørsbane ti minutter fra centrum.",
-      about:
-        "Søndermark er en klub for folk der vil spille, ikke for folk der vil sidde i bestyrelsen. Vi har hold i alle rækker, fri træning tirsdag og torsdag aften, og en klubturnering hvert forår.\n\nVi bruger RacketBuddy som vores eneste bookingsystem — både medlemmer og gæster booker her.",
-      practicalInfo:
-        "Anlægget ligger bag hallen. Lågen åbnes med den kode, du får i din kvittering, og koden virker fra 15 minutter før din tid.\n\nDer er omklædning og bad i klubhuset. Parkering på grusarealet ved indkørslen.",
-      contactEmail: "kontakt@soendermarktennis.dk",
-      contactPhone: "38 12 44 90",
-      joinCode: "SOENDE-2041",
-      memberPriceHour: 45,
-    },
-  });
+  if (existing.role !== "SUPERADMIN") {
+    await db.user.update({ where: { id: existing.id }, data: { role: "SUPERADMIN" } });
+    console.log(`Ejerkonto fik superadmin: ${OWNER_EMAIL}`);
+  }
+}
 
-  for (const name of ["Bane 1", "Bane 2", "Bane 3"]) {
-    const exists = await db.court.findFirst({ where: { clubId: guestClub.id, name } });
-    if (!exists) {
-      await db.court.create({
-        data: { name, sport: "TENNIS", surface: "GRUS", clubId: guestClub.id },
-      });
-    }
+async function main() {
+  if (process.env.RESET_TO_PRODUCTION === "1") {
+    console.log("RESET_TO_PRODUCTION er sat — tømmer databasen for demo-data.");
+    await wipe();
+    console.log("Databasen er tom. Fjern RESET_TO_PRODUCTION igen.");
   }
 
-  await db.user.upsert({
-    where: { email: "nordhavn@demo.dk" },
-    update: {},
-    create: {
-      email: "nordhavn@demo.dk",
-      name: "Niels Nordhavn",
-      passwordHash: password,
-      role: "CLUB_ADMIN",
-      clubId: guestClub.id,
-      level: 4,
-      area: "København Ø",
-    },
-  });
-
-  // En frigivelsesregel i stedet for håndplukkede timer: hverdage 17-20
-  // på de to første baner. Det er sådan en klub reelt vil bruge det.
-  const guestCourts = await db.court.findMany({ where: { clubId: guestClub.id } });
-  if ((await db.guestRule.count({ where: { clubId: guestClub.id } })) === 0) {
-    await db.guestRule.create({
-      data: {
-        clubId: guestClub.id,
-        courtIds: guestCourts.slice(0, 2).map((c) => c.id).join(","),
-        daysOfWeek: "1,2,3,4,5",
-        fromHour: 17,
-        toHour: 20,
-        priceKr: guestClub.priceHour,
-      },
-    });
-  }
-
-  // Et par nyheder, så klubsiden ikke står tom
-  if ((await db.clubPost.count({ where: { clubId: club.id } })) === 0) {
-    await db.clubPost.createMany({
-      data: [
-        {
-          clubId: club.id,
-          title: "Bane 3 og 4 er lukket lørdag",
-          body: "Vi lægger nyt grus lørdag den 6. Bane 1, 2 og indendørsbanen er åbne som normalt.",
-          pinned: true,
-        },
-        {
-          clubId: club.id,
-          title: "Klubturnering 12. maj",
-          body: "Tilmelding hænger i klubhuset. Alle rækker, og der er kage.",
-        },
-      ],
-    });
-  }
-
-  // RacketBuddys egen administrator — godkender klubber
-  await db.user.upsert({
-    where: { email: "super@demo.dk" },
-    update: {},
-    create: {
-      email: "super@demo.dk",
-      name: "Rikke RacketBuddy",
-      passwordHash: password,
-      role: "SUPERADMIN",
-      level: 5,
-      area: "København",
-    },
-  });
-
-  // En pakke hos træneren, så pakkevisningen kan afprøves
-  const coachProfile = await db.coachProfile.findUnique({
-    where: { userId: coachUser.id },
-  });
-  if (coachProfile && (await db.coachPackage.count({ where: { coachProfileId: coachProfile.id } })) === 0) {
-    await db.coachPackage.createMany({
-      data: [
-        {
-          coachProfileId: coachProfile.id,
-          name: "10-turskort",
-          sessions: 10,
-          priceKr: 3400,
-          description: "Ti timer til brug over et halvt år. Spar 600 kr mod enkelttimer.",
-        },
-        {
-          coachProfileId: coachProfile.id,
-          name: "Begynderforløb",
-          sessions: 6,
-          priceKr: 1800,
-          description: "Seks uger med grundslag, serv og kampforståelse. For nye spillere.",
-        },
-      ],
-    });
-  }
-
-  // En klub der venter på godkendelse, så godkendelsessiden kan afprøves
-  const pending = await db.club.upsert({
-    where: { slug: "vestegnens-padelcenter" },
-    update: {},
-    create: {
-      slug: "vestegnens-padelcenter",
-      name: "Vestegnens Padelcenter",
-      city: "Glostrup",
-      address: "Hovedvejen 140",
-      country: "DK",
-      status: "PENDING",
-      priceHour: 240,
-      color: "#2C5743",
-      externalSystem: "Matchi",
-      integrationType: "MANUAL",
-    },
-  });
-  if ((await db.court.count({ where: { clubId: pending.id } })) === 0) {
-    await db.court.createMany({
-      data: [1, 2, 3, 4].map((n) => ({
-        name: `Bane ${n}`,
-        sport: "PADEL",
-        surface: "KUNSTGRAES",
-        clubId: pending.id,
-      })),
-    });
-  }
-  await db.user.upsert({
-    where: { email: "padel@demo.dk" },
-    update: {},
-    create: {
-      email: "padel@demo.dk",
-      name: "Peter Padel",
-      passwordHash: password,
-      role: "CLUB_ADMIN",
-      clubId: pending.id,
-      area: "Glostrup",
-      sports: "PADEL",
-    },
-  });
-
-  // Fem ekstra klubber, udelukkende så kortet på /book har noget at vise.
-  // Adresserne er rigtige steder i og omkring København, men klubberne
-  // selv, priserne og medlemstallene er opdigtede.
-  const mapClubs = [
-    {
-      slug: "amager-tennis",
-      name: "Amager Tennisklub",
-      city: "København S",
-      address: "Amager Strandvej 100",
-      latitude: 55.6559,
-      longitude: 12.6197,
-      color: "#8F3510",
-      priceHour: 85,
-      sport: "TENNIS",
-      surface: "GRUS",
-      courts: 5,
-    },
-    {
-      slug: "frederiksberg-padel",
-      name: "Frederiksberg Padel",
-      city: "Frederiksberg",
-      address: "Falkoner Allé 44",
-      latitude: 55.6811,
-      longitude: 12.5344,
-      color: "#12796B",
-      priceHour: 260,
-      sport: "PADEL",
-      surface: "KUNSTGRAES",
-      courts: 4,
-    },
-    {
-      slug: "valby-badminton",
-      name: "Valby Badmintonklub",
-      city: "Valby",
-      address: "Vigerslev Allé 18",
-      latitude: 55.6598,
-      longitude: 12.5075,
-      color: "#1B6B45",
-      priceHour: 70,
-      sport: "BADMINTON",
-      surface: "INDE",
-      courts: 8,
-    },
-    {
-      slug: "hellerup-tennis",
-      name: "Hellerup Tennisklub",
-      city: "Hellerup",
-      address: "Strandvejen 205",
-      latitude: 55.7346,
-      longitude: 12.5793,
-      color: "#1B62C4",
-      priceHour: 140,
-      sport: "TENNIS",
-      surface: "HARD",
-      courts: 6,
-    },
-    {
-      slug: "koebenhavn-squash",
-      name: "København Squash Club",
-      city: "København K",
-      address: "Njalsgade 21",
-      latitude: 55.6656,
-      longitude: 12.5883,
-      color: "#B4472C",
-      priceHour: 110,
-      sport: "SQUASH",
-      surface: "INDE",
-      courts: 3,
-    },
-  ];
-
-  for (const c of mapClubs) {
-    const club = await db.club.upsert({
-      where: { slug: c.slug },
-      update: { status: "APPROVED", approvedAt: new Date(), country: "DK" },
-      create: {
-        slug: c.slug,
-        name: c.name,
-        city: c.city,
-        address: c.address,
-        latitude: c.latitude,
-        longitude: c.longitude,
-        color: c.color,
-        priceHour: c.priceHour,
-        openHour: 7,
-        closeHour: 22,
-        country: "DK",
-        status: "APPROVED",
-        approvedAt: new Date(),
-        integrationType: "NATIVE",
-        tagline: `${c.courts} baner i ${c.city}.`,
-      },
-    });
-
-    if ((await db.court.count({ where: { clubId: club.id } })) === 0) {
-      await db.court.createMany({
-        data: Array.from({ length: c.courts }, (_, i) => ({
-          name: `Bane ${i + 1}`,
-          sport: c.sport,
-          surface: c.surface,
-          clubId: club.id,
-        })),
-      });
-    }
-  }
-
-  console.log("Seed færdig ✔");
-  console.log("Log ind med fx mads@demo.dk / tennis123 (alle demo-konti bruger tennis123)");
+  await ensureOwner();
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
+  .catch((err) => {
+    // Må ikke vælte en udrulning: appen kører fint videre med de data, der
+    // allerede er der.
+    console.error("Opstartsscriptet fejlede:", err);
   })
   .finally(() => db.$disconnect());

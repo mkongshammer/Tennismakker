@@ -262,3 +262,32 @@ export function loginCode(opts: {
     ].join("\n"),
   };
 }
+
+/**
+ * Linket til at sætte en ny adgangskode.
+ *
+ * Advarslen nederst er der, fordi en mail, man ikke selv har bedt om, er
+ * det tidligste tegn på, at nogen forsøger sig med kontoen.
+ */
+export function passwordResetLink(opts: {
+  to: string;
+  name: string;
+  url: string;
+  minutes: number;
+}): Mail {
+  return {
+    to: opts.to,
+    subject: "Ny adgangskode til RacketBuddy",
+    body: [
+      `Hej ${opts.name}`,
+      "",
+      "Åbn linket her for at sætte en ny adgangskode:",
+      opts.url,
+      "",
+      `Linket virker i ${opts.minutes} minutter og kan kun bruges én gang.`,
+      "",
+      "Har du ikke selv bedt om det, kan du se bort fra mailen.",
+      "Din nuværende adgangskode virker stadig.",
+    ].join("\n"),
+  };
+}

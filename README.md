@@ -418,6 +418,25 @@ Uden variablen svarer siden "Ikke fundet" — samme svar som ved forkert token, 
 
 **Demo-superadmin bør fjernes.** Seed opretter `super@demo.dk` med rollen SUPERADMIN. Så længe den findes i produktion, er der en konto med fuld adgang på en adresse, ingen af os ejer. Sæt rollen til PLAYER, når din egen konto virker.
 
+## Glemt adgangskode
+
+`/login/glemt` sender et link til kontoens mail. Linket er beviset: kan man læse postkassen, må man gerne sætte en ny adgangskode. Det er den samme antagelse, login i to trin hviler på, så der er ikke noget at vinde ved at kræve begge dele.
+
+- **Tokenet er 32 tilfældige bytes**, gemt som SHA-256. Vi skal kunne slå rækken op ud fra linket, og det kan man ikke med bcrypt — men der er intet at gætte, og hashen i databasen kan ikke bruges til at bygge linket igen.
+- **En time, én gang.** Længe nok til at nå at åbne mailen, kort nok til at et link, der bliver liggende i en indbakke, ikke er en nøgle for evigt.
+- **Samme svar, uanset om mailen findes.** Ellers kan siden bruges til at finde ud af, hvem der har en konto.
+- **Alt der ventede på den gamle adgangskode ryddes**, når en ny er sat: både andre nulstillingslinks og halvfærdige login-koder.
+
+## Fra demo til produktion
+
+`prisma/seed.ts` lagde før demo-data ind. Den gør nu to ting:
+
+**Sikrer ejerens konto.** `OWNER_EMAIL` får rollen SUPERADMIN, eller oprettes med en tilfældig adgangskode, ingen kender — heller ikke os. Vejen ind er så "Glemt adgangskode". En konto uden en kendt adgangskode er ikke en bagdør; en konto med en adgangskode fra en fil i et repo ville være det.
+
+**Tømmer databasen, men kun på kommando.** Sættes `RESET_TO_PRODUCTION=1`, slettes alt undtagen indstillinger, sidevisninger og ejerkontoen. Uden den spærre ville en oprydning, der giver mening i dag, slette rigtige klubbers bookinger ved næste udrulning. Sæt variablen, udrul, fjern den igen.
+
+Indstillingerne røres aldrig: det er Stripe-nøgler og afsenderadresse, og at tabe dem ville tage betalingerne ned sammen med demo-dataene.
+
 ## Login i to trin
 
 En superadmin kan se og ændre alt. Adgangskoden alene er ikke nok til den konto: den kan lækkes fra et andet site, gættes eller kigges over skulderen. Efter adgangskoden sendes derfor en sekscifret kode til den mail, kontoen hører til, og sessionen oprettes først, når koden er indtastet.

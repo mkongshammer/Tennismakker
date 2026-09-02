@@ -46,6 +46,7 @@ model User {
   swipesReceived  Swipe[]        @relation("swipesReceived")
   reviews         Review[]
   loginChallenges LoginChallenge[]
+  passwordResets  PasswordReset[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -517,4 +518,20 @@ model LoginChallenge {
 model DailyView {
   day   String @id // "2026-09-02"
   views Int    @default(0)
+}
+
+// ---------- Nulstilling af adgangskode ----------
+// Tokenet gemmes som SHA-256 af den værdi, der står i linket. Vi skal kunne
+// slå rækken op ud fra linket, og det kan man ikke med bcrypt — men tokenet
+// er 32 tilfældige bytes, så der er intet at gætte, og en hash i databasen
+// kan ikke bruges til at bygge linket igen.
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

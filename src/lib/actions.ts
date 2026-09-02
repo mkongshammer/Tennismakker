@@ -10,6 +10,7 @@ import { db } from "./db";
 import { getSettings } from "./settings";
 import { COUNTRIES, LOCALES } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
+import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -178,6 +179,36 @@ export async function verifyLoginCode(_prev: unknown, formData: FormData) {
   cookies().delete("rb_login");
   await createSession(result.userId);
   redirect("/superadmin");
+}
+
+/**
+ * Beder om et nulstillingslink.
+ *
+ * Svarer det samme, uanset om mailen findes. Ellers kan siden bruges til at
+ * finde ud af, hvem der har en konto.
+ */
+export async function askPasswordReset(_prev: unknown, formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!email.includes("@")) return { error: "auth.errBadEmail" };
+
+  await requestPasswordReset(email);
+  return { ok: "auth.resetSent" };
+}
+
+/** Sætter den nye adgangskode. */
+export async function submitNewPassword(_prev: unknown, formData: FormData) {
+  const token = String(formData.get("token") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const repeat = String(formData.get("repeat") ?? "");
+
+  if (password !== repeat) return { error: "auth.errNoMatch" };
+
+  const result = await completePasswordReset(token, password);
+  if (!result.ok) {
+    return { error: result.reason === "kort" ? "auth.errShort" : "auth.errBadLink" };
+  }
+
+  redirect("/login?nulstillet=1");
 }
 
 export async function logout() {
