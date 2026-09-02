@@ -5,12 +5,17 @@
 // stedet for at blive slugt. Kommer der oversættere udefra, som skal kunne
 // arbejde uden at røre kode, er det tid til et rigtigt bibliotek.
 
-import type { Locale } from "./sports";
+import { baseLocale, type BaseLocale, type Locale } from "./sports";
 
-// Record<Locale, …> frem for en løs liste: kommer der et sprog til,
+// Record<BaseLocale, …> frem for en løs liste: kommer der et sprog til,
 // nægter TypeScript at bygge, indtil hver eneste streng er oversat. Et
 // halvt oversat sprog er værre end intet, fordi fejlen først ses af brugeren.
-type Dict = Record<string, Record<Locale, string>>;
+//
+// "en-US" er den ene undtagelse og er derfor valgfri: amerikansk engelsk
+// arver hele den engelske ordbog og nævnes kun dér, hvor et ord faktisk
+// siges anderledes. To komplette, næsten ens engelske ordbøger ville drive
+// fra hinanden, første gang nogen rettede den ene.
+type Dict = Record<string, Record<BaseLocale, string> & { "en-US"?: string }>;
 
 const T: Dict = {
   // Navigation
@@ -20,6 +25,7 @@ const T: Dict = {
     de: "Platz buchen",
     sv: "Boka bana",
     no: "Book bane",
+    "en-US": "Reserve a court",
   },
   "nav.coaches": {
     da: "Find træner",
@@ -34,6 +40,7 @@ const T: Dict = {
     de: "Mitspieler finden",
     sv: "Hitta medspelare",
     no: "Finn medspiller",
+    "en-US": "Find a hitting partner",
   },
   "nav.profile": {
     da: "Min profil",
@@ -52,7 +59,7 @@ const T: Dict = {
 
   // Korte udgaver til bundlinjen på telefon, hvor fire faner skal dele
   // bredden. De lange navne bruges stadig som sidetitler.
-  "tab.book": { da: "Book bane", en: "Book", de: "Buchen", sv: "Boka", no: "Book" },
+  "tab.book": { da: "Book bane", en: "Book", de: "Buchen", sv: "Boka", no: "Book", "en-US": "Reserve" },
   "tab.coaches": { da: "Trænere", en: "Coaches", de: "Trainer", sv: "Tränare", no: "Trenere" },
   "tab.players": {
     da: "Medspillere",
@@ -109,7 +116,7 @@ const T: Dict = {
   },
   "common.from": { da: "fra", en: "from", de: "ab", sv: "från", no: "fra" },
   "common.courts": { da: "baner", en: "courts", de: "Plätze", sv: "banor", no: "baner" },
-  "common.book": { da: "Book", en: "Book", de: "Buchen", sv: "Boka", no: "Book" },
+  "common.book": { da: "Book", en: "Book", de: "Buchen", sv: "Boka", no: "Book", "en-US": "Reserve" },
   "common.save": { da: "Gem", en: "Save", de: "Speichern", sv: "Spara", no: "Lagre" },
   "common.cancel": { da: "Annullér", en: "Cancel", de: "Abbrechen", sv: "Avbryt", no: "Avbryt" },
   "common.loading": {
@@ -153,6 +160,7 @@ const T: Dict = {
     de: "Platz buchen",
     sv: "Boka bana",
     no: "Book bane",
+    "en-US": "Reserve a court",
   },
   "book.intro": {
     da: "Find en ledig bane i en klub nær dig.",
@@ -160,6 +168,7 @@ const T: Dict = {
     de: "Finde einen freien Platz in einem Club in deiner Nähe.",
     sv: "Hitta en ledig bana i en klubb nära dig.",
     no: "Finn en ledig bane i en klubb nær deg.",
+    "en-US": "Find an open court at a club near you.",
   },
   "book.noClubs": {
     da: "Ingen klubber i dit land med den sportsgren endnu.",
@@ -250,6 +259,7 @@ const T: Dict = {
     de: "Mitspieler finden",
     sv: "Hitta medspelare",
     no: "Finn medspiller",
+    "en-US": "Find a hitting partner",
   },
   "players.intro": {
     da: "Se spillere på dit niveau i dit område, én ad gangen.",
@@ -542,6 +552,7 @@ const T: Dict = {
     de: "Partner finden",
     sv: "Hitta en partner",
     no: "Finn en makker",
+    "en-US": "Find a hitting partner",
   },
   "partners.intro": {
     da: "Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.",
@@ -549,6 +560,7 @@ const T: Dict = {
     de: "Offene Gesuche von Spielern, die einen Gegner, Doppelpartner oder Trainingspartner suchen.",
     sv: "Öppna inlägg från spelare som söker motståndare, dubbelpartner eller träningspartner.",
     no: "Åpne oppslag fra spillere som søker motstander, doublemakker eller treningspartner.",
+    "en-US": "Open posts from players looking for an opponent, a doubles partner or someone to hit with.",
   },
   "partners.none": {
     da: "Ingen åbne opslag matcher din søgning endnu.",
@@ -737,7 +749,8 @@ export function t(
   // Falder tilbage på engelsk frem for at vise en tom streng. Typerne
   // sikrer, at det ikke kan ske — men en tom knap i en butik er værre end
   // en knap på det forkerte sprog.
-  const text = entry[locale] || entry.en;
+  const text =
+    (locale === "en-US" ? entry["en-US"] : undefined) || entry[baseLocale(locale)] || entry.en;
   if (!vars) return text;
   return text.replace(/\{(\w+)\}/g, (whole, name) =>
     name in vars ? String(vars[name]) : whole

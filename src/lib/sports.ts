@@ -10,7 +10,7 @@ export type Sport = (typeof SPORTS)[number];
 
 export const DEFAULT_SPORT: Sport = "TENNIS";
 
-export const SPORT_LABELS: Record<string, Record<Locale, string>> = {
+export const SPORT_LABELS: Record<string, Record<BaseLocale, string>> = {
   TENNIS: { da: "Tennis", en: "Tennis", de: "Tennis", sv: "Tennis", no: "Tennis" },
   PADEL: { da: "Padel", en: "Padel", de: "Padel", sv: "Padel", no: "Padel" },
   BADMINTON: { da: "Badminton", en: "Badminton", de: "Badminton", sv: "Badminton", no: "Badminton" },
@@ -29,7 +29,7 @@ export const SURFACES_BY_SPORT: Record<string, string[]> = {
   PICKLEBALL: ["HARD", "INDE"],
 };
 
-export const SURFACE_LABELS: Record<string, Record<Locale, string>> = {
+export const SURFACE_LABELS: Record<string, Record<BaseLocale, string>> = {
   GRUS: { da: "Grus", en: "Clay", de: "Sand", sv: "Grus", no: "Grus" },
   HARD: { da: "Hard court", en: "Hard court", de: "Hartplatz", sv: "Hardcourt", no: "Hardcourt" },
   KUNSTGRAES: { da: "Kunstgræs", en: "Artificial grass", de: "Kunstrasen", sv: "Konstgräs", no: "Kunstgress" },
@@ -48,8 +48,21 @@ export const COUNTRIES = [
 
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
 
-export const LOCALES = ["da", "en", "de", "sv", "no"] as const;
+// Sprogene, der har hver sin ordbog.
+export const BASE_LOCALES = ["da", "en", "de", "sv", "no"] as const;
+export type BaseLocale = (typeof BASE_LOCALES)[number];
+
+// Sprogene, man kan vælge imellem. Amerikansk engelsk er en variant af
+// engelsk, ikke et sprog for sig: den arver hele den engelske ordbog og
+// overskriver kun de ord, der faktisk siges anderledes. To næsten ens
+// ordbøger ville drive fra hinanden, første gang nogen rettede den ene.
+export const LOCALES = ["da", "en", "en-US", "de", "sv", "no"] as const;
 export type Locale = (typeof LOCALES)[number];
+
+/** Hvilken ordbog et sprogvalg skal slå op i. */
+export function baseLocale(locale: Locale): BaseLocale {
+  return locale === "en-US" ? "en" : locale;
+}
 
 /**
  * Sprogene skrevet på sig selv.
@@ -70,6 +83,7 @@ export type Locale = (typeof LOCALES)[number];
 export const LOCALE_FLAGS: Record<Locale, string> = {
   da: "🇩🇰",
   en: "🇬🇧",
+  "en-US": "🇺🇸",
   de: "🇩🇪",
   sv: "🇸🇪",
   no: "🇳🇴",
@@ -77,7 +91,8 @@ export const LOCALE_FLAGS: Record<Locale, string> = {
 
 export const LOCALE_LABELS: Record<Locale, string> = {
   da: "Dansk",
-  en: "English",
+  en: "British English",
+  "en-US": "American English",
   de: "Deutsch",
   sv: "Svenska",
   no: "Norsk",
@@ -85,7 +100,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
 
 export function countryName(code: string, locale: Locale): string {
   const c = COUNTRIES.find((x) => x.code === code);
-  return c ? c[locale] : code;
+  return c ? c[baseLocale(locale)] : code;
 }
 
 export function currencyFor(code: string): string {
@@ -93,11 +108,11 @@ export function currencyFor(code: string): string {
 }
 
 export function sportLabel(sport: string, locale: Locale): string {
-  return SPORT_LABELS[sport]?.[locale] ?? sport;
+  return SPORT_LABELS[sport]?.[baseLocale(locale)] ?? sport;
 }
 
 export function surfaceLabel(surface: string, locale: Locale): string {
-  return SURFACE_LABELS[surface]?.[locale] ?? surface;
+  return SURFACE_LABELS[surface]?.[baseLocale(locale)] ?? surface;
 }
 
 /** Læser den kommaseparerede sportsliste, der gemmes på brugere og trænere. */

@@ -401,7 +401,9 @@ Eksisterende brugere har `countryChosen: false` og bliver derfor spurgt én gang
 
 ## Sprog
 
-Fem sprog: dansk, engelsk, tysk, svensk og norsk. De svarer én til én til landene i `COUNTRIES`, så hvert marked møder sit eget sprog i stedet for engelsk som mellemled. Før faldt alt uden for Danmark tilbage på engelsk — det dårligste valg begge veje, for en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
+Seks valg, fem ordbøger: dansk, britisk engelsk, amerikansk engelsk, tysk, svensk og norsk. De svarer én til én til landene i `COUNTRIES`, så hvert marked møder sit eget sprog i stedet for engelsk som mellemled. Før faldt alt uden for Danmark tilbage på engelsk — det dårligste valg begge veje, for en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
+
+**Amerikansk engelsk er en variant, ikke et sprog.** `en-US` arver hele den engelske ordbog og nævnes kun dér, hvor et ord faktisk siges anderledes: en amerikaner reserverer en bane frem for at booke den, og leder efter en hitting partner frem for en co-player. To komplette, næsten ens engelske ordbøger ville drive fra hinanden, første gang nogen rettede den ene. Derfor er `"en-US"` det eneste valgfrie felt i ordbogen.
 
 **Typen tvinger fuldstændighed.** Ordbogen er `Record<string, Record<Locale, string>>`. Tilføjes et sprog til `LOCALES`, nægter TypeScript at bygge, indtil hver eneste streng er oversat. Et halvt oversat sprog er værre end intet, fordi fejlen først opdages af brugeren.
 
