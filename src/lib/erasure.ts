@@ -20,7 +20,13 @@ import { db } from "./db";
 export async function eraseAccount(userId: string): Promise<void> {
   // Beskeder først: de peger på både afsender og samtale.
   await db.message.deleteMany({ where: { senderId: userId } });
-  await db.matchRequest.deleteMany({ where: { authorId: userId } });
+  // Opslag brugeren selv har lavet. Dem, de har sagt ja til hos andre,
+  // løsnes i stedet — opslaget er ikke deres at slette.
+  await db.matchRequest.deleteMany({ where: { requesterId: userId } });
+  await db.matchRequest.updateMany({
+    where: { acceptedById: userId },
+    data: { acceptedById: null, status: "OPEN" },
+  });
   // Begge veje: både dem, brugeren har set på, og dem, der har set på dem.
   await db.swipe.deleteMany({ where: { OR: [{ fromUserId: userId }, { toUserId: userId }] } });
   await db.review.deleteMany({ where: { authorId: userId } });
