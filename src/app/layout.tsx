@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import "./globals.css";
 import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
@@ -8,6 +9,7 @@ import { TabBar } from "../components/TabBar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CountrySuggestion } from "../components/CountrySuggestion";
 import { detectCountry } from "../lib/geo";
+import { recordView } from "../lib/analytics";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
@@ -41,6 +43,11 @@ export default async function RootLayout({
   const t = translator(prefs.locale);
   const unread = user ? await unreadCount(user.id) : 0;
   const suggestedCountry = prefs.countryChosen ? null : detectCountry();
+
+  // Tælles her, fordi layoutet kører for hver sidevisning og allerede er
+  // dynamisk. Der ventes ikke på den: et tal til en oversigt må aldrig
+  // forsinke siden for den, der kigger på den.
+  void recordView(headers().get("user-agent"));
 
   return (
     <html lang={prefs.locale}>

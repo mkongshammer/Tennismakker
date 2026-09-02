@@ -6,6 +6,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
+import { Overblik } from "./Overblik";
 import { getSettings } from "../../lib/settings";
 import { describeSubscription, subscriptionIsActive } from "../../lib/billing";
 import { format } from "date-fns";
@@ -77,6 +78,8 @@ export default async function SuperadminPage() {
 
       </div>
 
+
+      <Overblik />
 
       <SuperadminAccess />
 

@@ -507,3 +507,14 @@ model LoginChallenge {
 
   @@index([userId])
 }
+
+// ---------- Sidevisninger ----------
+// En tæller pr. dag frem for en række pr. besøg. Et site med lidt trafik
+// ville ellers hurtigt have flere besøgsrækker end bookinger, og vi har
+// alligevel kun brug for tallet — ikke for hvem der kiggede hvornår.
+// Det er samtidig det mest nøjsomme, man kan gøre ved persondata: der er
+// ingen at gemme.
+model DailyView {
+  day   String @id // "2026-09-02"
+  views Int    @default(0)
+}
