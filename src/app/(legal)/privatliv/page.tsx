@@ -1,5 +1,5 @@
 import { LegalPage, Section } from "../LegalPage";
-import { COMPANY } from "../company";
+import { COMPANY, EU_REPRESENTATIVE } from "../company";
 
 export const metadata = { title: "Privatlivspolitik — RacketBuddy" };
 
@@ -15,6 +15,14 @@ export default function PrivatlivPage() {
         <p>
           Har du spørgsmål til behandlingen af dine oplysninger, kan du skrive
           til {COMPANY.email}.
+        </p>
+        <p>
+          Fordi selskabet er registreret uden for EU, har vi udpeget en
+          repræsentant i EU efter databeskyttelsesforordningens artikel 27.
+          Bor du i EU, kan du henvende dig direkte til{" "}
+          {EU_REPRESENTATIVE.name}, {EU_REPRESENTATIVE.country}, på{" "}
+          {EU_REPRESENTATIVE.email}. Du kan bruge den kontakt til alt, der
+          handler om dine oplysninger — du behøver ikke skrive til USA.
         </p>
         <p>
           Bruger du platformen som medlem af en klub, er klubben selvstændigt

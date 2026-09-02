@@ -4,6 +4,7 @@
 // (TabBar), så hovedet reduceres til logo og konto.
 
 import Link from "next/link";
+import { Logo } from "./Logo";
 import { usePathname } from "next/navigation";
 import { translator } from "../lib/i18n";
 import type { Locale } from "../lib/sports";
@@ -33,7 +34,10 @@ export function SiteHeader({ user, locale }: Props) {
     <header className="sticky top-0 z-30 border-b border-slate/10 bg-chalk/90 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
         <Link href="/" className="display shrink-0 text-lg tracking-tight">
-          Racket<span className="text-court">Buddy</span>
+          <Logo size={30} />
+          <span>
+            Racket<span className="text-court">Buddy</span>
+          </span>
         </Link>
 
         <div className="hidden flex-1 items-center gap-6 text-sm font-semibold md:flex">

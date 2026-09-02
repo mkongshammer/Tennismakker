@@ -12,6 +12,20 @@ export const COMPANY = {
   email: "racketbuddy.app@gmail.com",
 } as const;
 
+/**
+ * EU-repræsentant efter databeskyttelsesforordningens artikel 27.
+ *
+ * Et selskab uden for EU, der tilbyder tjenester til folk i EU, skal have en
+ * kontakt inde i EU, som myndigheder og brugere kan henvende sig til på
+ * deres eget kontinent. Uden den er der ingen at skrive til, og forordningen
+ * gælder alligevel.
+ */
+export const EU_REPRESENTATIVE = {
+  name: "Magnus Kongshammer",
+  email: "m.kongshammer@icloud.com",
+  country: "Danmark",
+} as const;
+
 /** Underleverandører, der behandler personoplysninger for os. */
 export const PROCESSORS = [
   { name: "Render Services, Inc.", role: "drift af server og database", place: "servere i Frankfurt, EU" },

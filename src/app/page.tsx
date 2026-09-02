@@ -11,12 +11,16 @@ import { getPreferences } from "../lib/preferences";
 import { getSettings } from "../lib/settings";
 import { getClubAvailability } from "../lib/integrations";
 import { translator } from "../lib/i18n";
-import { sportColor, sportLabel } from "../lib/sports";
+import { SPORTS, sportColor, sportLabel } from "../lib/sports";
+import { setSport } from "../lib/actions";
+import { getCurrentUser } from "../lib/session";
+import { Ball } from "../components/Ball";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const prefs = await getPreferences();
+  const user = await getCurrentUser();
   const t = translator(prefs.locale);
 
   const clubs = await db.club.findMany({
@@ -98,6 +102,35 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Sportsvalget som bolde. En bold genkendes hurtigere end et ord —
+          man ved hvad man spiller, længe før man har læst det. */}
+      <section>
+        <h2 className="display text-2xl">{t("home.pickSport")}</h2>
+        <p className="mt-1 text-sm text-slate">{t("home.pickSportNote")}</p>
+        <div className="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-6">
+          {SPORTS.map((s) => {
+            const active = prefs.sport === s;
+            return (
+              <form action={setSport} key={s}>
+                <input type="hidden" name="sport" value={s} />
+                <button
+                  className={`flex w-full flex-col items-center gap-2 rounded-2xl border-2 bg-chalk px-2 py-4 transition-all ${
+                    active
+                      ? "border-court shadow-lift"
+                      : "border-transparent hover:border-court/40 hover:shadow-lift"
+                  }`}
+                >
+                  <Ball sport={s} size={44} />
+                  <span className={`text-xs font-bold ${active ? "text-court" : "text-slate"}`}>
+                    {sportLabel(s, prefs.locale)}
+                  </span>
+                </button>
+              </form>
+            );
+          })}
+        </div>
+      </section>
+
       {/* De tre indgange, med de tal der faktisk findes */}
       <section className="grid gap-4 sm:grid-cols-3">
         {[
@@ -131,6 +164,50 @@ export default async function Home() {
           </Link>
         ))}
       </section>
+
+      {/* Sådan gør du: tre trin, fordi det er præcis så mange der er */}
+      <section>
+        <h2 className="display text-2xl sm:text-3xl">{t("home.howTitle")}</h2>
+        <ol className="mt-5 grid gap-4 sm:grid-cols-3">
+          {[
+            { n: 1, title: t("home.step1"), body: t("home.step1Body") },
+            { n: 2, title: t("home.step2"), body: t("home.step2Body") },
+            { n: 3, title: t("home.step3"), body: t("home.step3Body") },
+          ].map((step) => (
+            <li key={step.n} className="card">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink font-data text-sm font-bold text-chalk">
+                {step.n}
+              </span>
+              <p className="display mt-3 text-xl">{step.title}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* De tre indvendinger, folk faktisk har, besvaret hver for sig */}
+      <section className="grid gap-4 sm:grid-cols-3">
+        {[
+          { title: t("home.trustNoMembership"), body: t("home.trustNoMembershipBody") },
+          { title: t("home.trustPrice"), body: t("home.trustPriceBody") },
+          { title: t("home.trustCancel"), body: t("home.trustCancelBody") },
+        ].map((item) => (
+          <div key={item.title} className="rounded-2xl bg-chalk p-5">
+            <p className="font-bold">{item.title}</p>
+            <p className="mt-1 text-sm leading-relaxed text-slate">{item.body}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* Kun til dem, der ikke har en profil. Resten har allerede sagt ja. */}
+      {!user && (
+        <section className="rounded-2xl border-2 border-court/25 bg-court/5 px-6 py-10 text-center">
+          <h2 className="display text-2xl sm:text-3xl">{t("home.lede")}</h2>
+          <Link href="/signup" className="btn-court mt-6 inline-block">
+            {t("home.ctaSignup")}
+          </Link>
+        </section>
+      )}
 
       {/* Klub-pitch */}
       <section className="overflow-hidden rounded-2xl bg-ink px-6 py-10 text-chalk sm:px-10">

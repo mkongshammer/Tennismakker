@@ -17,13 +17,17 @@ import { getSettings } from "../lib/settings";
 // Asynkron, fordi adressen kan ændres under Opsætning: metadataBase
 // afgør, hvor delelinks og OG-billeder peger hen.
 export async function generateMetadata(): Promise<Metadata> {
+  const [settings, prefs] = await Promise.all([getSettings(), getPreferences()]);
+  const t = translator(prefs.locale);
+
   return {
-    title: "RacketBuddy — book bane, find træner og medspiller",
-    description:
-      "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
+    // Titlen i fanen skal følge sproget som alt andet — en tysker, der har
+    // valgt tysk, skal ikke have en dansk fane stående.
+    title: t("meta.title"),
+    description: t("meta.description"),
     // icon.png, apple-icon.png og opengraph-image.png i denne mappe
     // opsamles automatisk af Next.js — ingen <link>-tags nødvendige.
-    metadataBase: new URL((await getSettings()).appUrl),
+    metadataBase: new URL(settings.appUrl),
   };
 }
 

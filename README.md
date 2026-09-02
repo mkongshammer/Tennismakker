@@ -489,6 +489,28 @@ Seks valg, fem ordbøger: dansk, britisk engelsk, amerikansk engelsk, tysk, sven
 
 **Dækningen er ikke fuld, og det skal man vide.** Oversat er det, en spiller møder: navigation, forside, booking, trænere, medspillere, profil. Ikke oversat er klubadministration, superadmin, handelsbetingelser, privatlivspolitik og alle e-mails — de er dansk. Det er et bevidst sted at stoppe: en klubadministrator i Tyskland er en samtale, man har taget, mens en spiller er en fremmed, der lander på siden. Men det betyder, at et tysk marked kræver mere arbejde end at slå sproget til.
 
+## Mærket
+
+Én tegning bruges alle steder: favicon, app-ikon, splash og logoet i toppen af siden. En ketsjer med streng og en boldgul kugle på mørkeblå. `optic` (#D8FF3E) står i paletten som "bolden — sparsomt", og det er præcis dét, den bruges til her.
+
+**Bolden har én søm, ikke to.** Ved 32 px forsvinder detaljer alligevel, og to buer gjorde bolden aflang i stedet for rund. Ikonet er tegnet for den mindste størrelse, det skal overleve, ikke den største.
+
+Filerne genereres fra samme SVG: `src/app/icon.svg` (favicon), `icon.png`, `apple-icon.png`, `opengraph-image.png` og `mobile/assets/*`. Skal mærket ændres, ændres SVG'en, og resten genskabes derfra — ellers driver web og app fra hinanden.
+
+**Titlen i fanen følger sproget.** `generateMetadata` slår `meta.title` og `meta.description` op i ordbogen. En tysker, der har valgt tysk, skal ikke have en dansk fane stående.
+
+## Forsiden
+
+Åbner med det, produktet faktisk gør: hvor mange baner der står ledige lige nu. Derefter fire ting, i den rækkefølge en fremmed har brug for dem.
+
+**Sportsvalget som bolde.** En bold genkendes hurtigere end et ord — man ved, hvad man spiller, længe før man har læst det. Boldene er tegnet frem for fotograferet: et foto kræver rettigheder, vejer hundrede gange mere, og seks fotos ved siden af hinanden ligner seks tilfældige billeder frem for ét sæt. Farverne er til gengæld de rigtige, for en squashbold ER sort med en prik.
+
+**Tre trin.** Find en tid, betal, spil. Ikke fem, ikke to.
+
+**Tre indvendinger, besvaret hver for sig:** intet medlemskab, prisen står der, og du får pengene igen ved aflysning i god tid. Det er de tre spørgsmål, en der aldrig har booket en bane udefra, faktisk stiller.
+
+**Opret-profil-feltet vises kun til dem, der ikke har en.** Resten har allerede sagt ja.
+
 ## Designsystem
 
 Den tidligere palet — cremehvid baggrund med lerfarvet accent — blev skiftet ud. Ikke fordi den var grim, men fordi den er den default, AI-genereret design altid lander på. Den var ikke et valg.
