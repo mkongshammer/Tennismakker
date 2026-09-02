@@ -24,7 +24,12 @@ model User {
   level        Int      @default(3) // 1-7, se src/lib/levels.ts
   area         String? // fx "København NV", "Aarhus C"
   country      String   @default("DK") // ISO-landekode, styrer hvad man ser
-  locale       String   @default("da") // "da" | "en"
+  // Har man selv valgt land, eller er "DK" bare standarden? Uden dette kan
+  // vi ikke se forskel på en dansker og en tysker, der endnu ikke er
+  // blevet spurgt — og så ville vi enten spørge alle hver gang eller
+  // aldrig spørge nogen.
+  countryChosen Boolean @default(false)
+  locale       String   @default("da") // se LOCALES i src/lib/sports.ts
   sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
   bio          String?
   createdAt    DateTime @default(now())

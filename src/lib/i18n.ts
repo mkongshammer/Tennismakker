@@ -317,6 +317,17 @@ const T: Dict = {
     no: "Mine sporter",
   },
 
+  // Landevalget, første gang nogen lander på siden
+  "country.title": { da: "Hvor spiller du?", en: "Where do you play?", de: "Wo spielst du?", sv: "Var spelar du?", no: "Hvor spiller du?" },
+  "country.intro": {
+    da: "Så viser vi klubber, priser og sprog for dit land. Du kan skifte det nederst på siden.",
+    en: "We will show clubs, prices and language for that country. You can change it at the bottom of the page.",
+    de: "Dann zeigen wir Clubs, Preise und Sprache für dein Land. Ganz unten auf der Seite kannst du es ändern.",
+    sv: "Då visar vi klubbar, priser och språk för ditt land. Du kan ändra det längst ned på sidan.",
+    no: "Da viser vi klubber, priser og språk for landet ditt. Du kan endre det nederst på siden.",
+  },
+  "country.skip": { da: "Ikke nu", en: "Not now", de: "Nicht jetzt", sv: "Inte nu", no: "Ikke nå" },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",

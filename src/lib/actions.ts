@@ -4,10 +4,11 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
-import { LOCALES } from "./sports";
+import { COUNTRIES, LOCALES } from "./sports";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -864,6 +865,56 @@ export async function updatePreferences(formData: FormData) {
 }
 
 /** Skifter valgt sportsgren. Gemmes i cookie, så det følger med rundt. */
+/**
+ * Vælger land — og dermed hvilke klubber, priser og hvilket sprog man møder.
+ *
+ * Sproget følger med landet, men kun hvis man ikke allerede har valgt et
+ * selv. Har man skiftet sprog i footeren først, er det et bevidst valg, og
+ * det skal et landevalg ikke kunne trumfe.
+ */
+export async function setCountry(formData: FormData) {
+  const code = String(formData.get("country") ?? "");
+  const country = COUNTRIES.find((c) => c.code === code);
+  if (!country) return;
+
+  const alreadyPickedLanguage = Boolean(cookies().get("rb_prefs_locale")?.value);
+  const locale = alreadyPickedLanguage ? undefined : (country.defaultLocale as any);
+
+  setPreferenceCookies({ country: country.code, ...(locale ? { locale } : {}) });
+
+  const user = await getCurrentUser();
+  if (user) {
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        country: country.code,
+        countryChosen: true,
+        ...(locale ? { locale } : {}),
+      },
+    });
+  }
+
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Lukker spørgsmålet uden at svare.
+ *
+ * Vi beholder standarden og spørger ikke igen. At blokere siden, indtil
+ * nogen har valgt, ville koste flere besøgende end det forkerte land gør —
+ * og landet kan skiftes i footeren når som helst.
+ */
+export async function dismissCountryChoice() {
+  setPreferenceCookies({ country: "DK" });
+
+  const user = await getCurrentUser();
+  if (user) {
+    await db.user.update({ where: { id: user.id }, data: { countryChosen: true } });
+  }
+
+  revalidatePath("/", "layout");
+}
+
 /**
  * Skifter sprog.
  *

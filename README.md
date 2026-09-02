@@ -385,6 +385,20 @@ Der er kun tests ét sted indtil videre: `src/lib/slots.test.ts`, som dækker om
 
 Booking-flowet og betalingssplittet er de næste steder, der bør dækkes.
 
+## Landevalget
+
+Første gang nogen lander på siden, bliver de spurgt, hvor de spiller. Landet afgør tre ting på én gang: hvilke klubber der overhovedet vises, hvilken valuta priser står i, og hvilket sprog siden er på. At gætte forkert på alle tre samtidig er værre end at spørge én gang.
+
+**Vi kan se forskel på et valg og en standard.** `User.countryChosen` og tilstedeværelsen af landcookien fortæller, om nogen selv har valgt. Uden det felt kunne vi ikke skelne en dansker fra en tysker, der endnu ikke var blevet spurgt — og så måtte vi enten spørge alle hver gang eller aldrig spørge nogen.
+
+**Sproget følger med landet, men kun én vej.** Har man allerede skiftet sprog i footeren, er det et bevidst valg, og et landevalg trumfer det ikke. Omvendt får en, der vælger Tyskland uden at have rørt sproget, tysk med det samme.
+
+**Boksen kan lukkes uden at svare.** At blokere siden, indtil nogen har valgt, ville koste flere besøgende, end det forkerte land gør — og landet kan skiftes i footeren når som helst. Lukker man, spørger vi ikke igen.
+
+**Ingen klient-JavaScript.** Hvert land er en formular, ligesom sports- og sprogvælgeren. Cookies kan ikke sættes, mens en side renderes, så et valg skal være en handling — og så kan boksen lige så godt renderes på serveren og virke uden JavaScript overhovedet.
+
+Eksisterende brugere har `countryChosen: false` og bliver derfor spurgt én gang. Det er med vilje: de har aldrig valgt.
+
 ## Sprog
 
 Fem sprog: dansk, engelsk, tysk, svensk og norsk. De svarer én til én til landene i `COUNTRIES`, så hvert marked møder sit eget sprog i stedet for engelsk som mellemled. Før faldt alt uden for Danmark tilbage på engelsk — det dårligste valg begge veje, for en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.

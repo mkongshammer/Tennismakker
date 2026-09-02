@@ -12,6 +12,8 @@ export type Preferences = {
   country: string;
   locale: Locale;
   sport: Sport;
+  /** Har man selv valgt land? Er svaret nej, spørger vi én gang. */
+  countryChosen: boolean;
 };
 
 const COOKIE = "rb_prefs";
@@ -34,6 +36,7 @@ export async function getPreferences(): Promise<Preferences> {
         ? (user.locale as Locale)
         : "da",
       sport,
+      countryChosen: user.countryChosen,
     };
   }
 
@@ -47,6 +50,7 @@ export async function getPreferences(): Promise<Preferences> {
         ? (cookieLocale as Locale)
         : "da",
     sport,
+    countryChosen: Boolean(cookieCountry),
   };
 }
 

@@ -6,6 +6,7 @@ import { getPreferences } from "../lib/preferences";
 import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
 import { LanguagePicker } from "../components/LanguagePicker";
+import { CountryModal } from "../components/CountryModal";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
@@ -95,6 +96,10 @@ export default async function RootLayout({
             ender på login-siden, er en blindgyde frem for en genvej.
             Forsiden fører selv de besøgende videre. */}
         {user && <TabBar locale={prefs.locale} unread={unread} />}
+
+        {/* Spørges én gang. Derefter husker cookien det — og for en
+            indlogget bruger følger valget med til enhver enhed. */}
+        {!prefs.countryChosen && <CountryModal locale={prefs.locale} />}
       </body>
     </html>
   );
