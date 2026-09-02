@@ -124,7 +124,7 @@ async function connectivityCheck(): Promise<Check> {
     const currencies = balance.available.map((a) => a.currency).join(", ") || "ingen endnu";
 
     const foreignClubs = country
-      ? await db.club.count({ where: { approved: true, country: { not: country } } })
+      ? await db.club.count({ where: { status: "APPROVED", country: { not: country } } })
       : 0;
 
     // Står platformen i ét land og modtagerne i et andet, er udbetalingerne
