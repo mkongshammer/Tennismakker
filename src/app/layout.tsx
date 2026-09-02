@@ -5,6 +5,7 @@ import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
 import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
+import { LanguagePicker } from "../components/LanguagePicker";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
@@ -81,6 +82,10 @@ export default async function RootLayout({
               <Link href="/vilkaar" className="hover:text-ink">Handelsbetingelser</Link>
               <Link href="/privatliv" className="hover:text-ink">Privatliv</Link>
               <Link href="/databehandleraftale" className="hover:text-ink">Databehandleraftale</Link>
+            </div>
+            <div className="mt-6 border-t border-slate/10 pt-5">
+              <p className="mb-2 text-xs font-bold text-slate">{t("common.language")}</p>
+              <LanguagePicker active={prefs.locale} />
             </div>
           </div>
         </footer>

@@ -10,13 +10,13 @@ export type Sport = (typeof SPORTS)[number];
 
 export const DEFAULT_SPORT: Sport = "TENNIS";
 
-export const SPORT_LABELS: Record<string, { da: string; en: string }> = {
-  TENNIS: { da: "Tennis", en: "Tennis" },
-  PADEL: { da: "Padel", en: "Padel" },
-  BADMINTON: { da: "Badminton", en: "Badminton" },
-  SQUASH: { da: "Squash", en: "Squash" },
-  BORDTENNIS: { da: "Bordtennis", en: "Table tennis" },
-  PICKLEBALL: { da: "Pickleball", en: "Pickleball" },
+export const SPORT_LABELS: Record<string, Record<Locale, string>> = {
+  TENNIS: { da: "Tennis", en: "Tennis", de: "Tennis", sv: "Tennis", no: "Tennis" },
+  PADEL: { da: "Padel", en: "Padel", de: "Padel", sv: "Padel", no: "Padel" },
+  BADMINTON: { da: "Badminton", en: "Badminton", de: "Badminton", sv: "Badminton", no: "Badminton" },
+  SQUASH: { da: "Squash", en: "Squash", de: "Squash", sv: "Squash", no: "Squash" },
+  BORDTENNIS: { da: "Bordtennis", en: "Table tennis", de: "Tischtennis", sv: "Bordtennis", no: "Bordtennis" },
+  PICKLEBALL: { da: "Pickleball", en: "Pickleball", de: "Pickleball", sv: "Pickleball", no: "Pickleball" },
 };
 
 /** Baneunderlag afhænger af sportsgren — court giver kun mening i tennis. */
@@ -29,24 +29,42 @@ export const SURFACES_BY_SPORT: Record<string, string[]> = {
   PICKLEBALL: ["HARD", "INDE"],
 };
 
-export const SURFACE_LABELS: Record<string, { da: string; en: string }> = {
-  GRUS: { da: "Grus", en: "Clay" },
-  HARD: { da: "Hard court", en: "Hard court" },
-  KUNSTGRAES: { da: "Kunstgræs", en: "Artificial grass" },
-  INDE: { da: "Indendørs", en: "Indoor" },
+export const SURFACE_LABELS: Record<string, Record<Locale, string>> = {
+  GRUS: { da: "Grus", en: "Clay", de: "Sand", sv: "Grus", no: "Grus" },
+  HARD: { da: "Hard court", en: "Hard court", de: "Hartplatz", sv: "Hardcourt", no: "Hardcourt" },
+  KUNSTGRAES: { da: "Kunstgræs", en: "Artificial grass", de: "Kunstrasen", sv: "Konstgräs", no: "Kunstgress" },
+  INDE: { da: "Indendørs", en: "Indoor", de: "Halle", sv: "Inomhus", no: "Innendørs" },
 };
 
+// Hvert land har nu sit eget sprog som standard. Før faldt alt uden for
+// Danmark tilbage på engelsk, hvilket er det dårligste valg begge veje:
+// en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
 export const COUNTRIES = [
-  { code: "DK", da: "Danmark", en: "Denmark", currency: "kr", defaultLocale: "da" },
-  { code: "SE", da: "Sverige", en: "Sweden", currency: "kr", defaultLocale: "en" },
-  { code: "NO", da: "Norge", en: "Norway", currency: "kr", defaultLocale: "en" },
-  { code: "DE", da: "Tyskland", en: "Germany", currency: "€", defaultLocale: "en" },
+  { code: "DK", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
+  { code: "SE", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
+  { code: "NO", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
+  { code: "DE", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
 ] as const;
 
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
 
-export const LOCALES = ["da", "en"] as const;
+export const LOCALES = ["da", "en", "de", "sv", "no"] as const;
 export type Locale = (typeof LOCALES)[number];
+
+/**
+ * Sprogene skrevet på sig selv.
+ *
+ * Aldrig "tysk" i en sprogvælger: den, der leder efter tysk, læser ikke
+ * dansk. Et sprognavn skal kunne genkendes af den, der ikke forstår siden,
+ * det står på.
+ */
+export const LOCALE_LABELS: Record<Locale, string> = {
+  da: "Dansk",
+  en: "English",
+  de: "Deutsch",
+  sv: "Svenska",
+  no: "Norsk",
+};
 
 export function countryName(code: string, locale: Locale): string {
   const c = COUNTRIES.find((x) => x.code === code);

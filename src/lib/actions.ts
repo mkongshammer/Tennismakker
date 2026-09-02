@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
+import { LOCALES } from "./sports";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -863,6 +864,28 @@ export async function updatePreferences(formData: FormData) {
 }
 
 /** Skifter valgt sportsgren. Gemmes i cookie, så det følger med rundt. */
+/**
+ * Skifter sprog.
+ *
+ * Gemmes i en cookie, ikke i URL'en. Et sprogvalg er en indstilling, ikke en
+ * adresse: den samme klubside skal kunne deles med naboen, uanset hvilket
+ * sprog hver af jer læser den på. Er man logget ind, ligger valget desuden
+ * på brugeren og følger med til telefonen.
+ */
+export async function setLocale(formData: FormData) {
+  const value = String(formData.get("locale") ?? "da");
+  if (!(LOCALES as readonly string[]).includes(value)) return;
+
+  setPreferenceCookies({ locale: value as any });
+
+  const user = await getCurrentUser();
+  if (user) {
+    await db.user.update({ where: { id: user.id }, data: { locale: value } });
+  }
+
+  revalidatePath("/", "layout");
+}
+
 export async function setSport(formData: FormData) {
   const sport = String(formData.get("sport") ?? "TENNIS");
   setPreferenceCookies({ sport: sport as any });

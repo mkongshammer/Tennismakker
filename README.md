@@ -385,6 +385,18 @@ Der er kun tests ét sted indtil videre: `src/lib/slots.test.ts`, som dækker om
 
 Booking-flowet og betalingssplittet er de næste steder, der bør dækkes.
 
+## Sprog
+
+Fem sprog: dansk, engelsk, tysk, svensk og norsk. De svarer én til én til landene i `COUNTRIES`, så hvert marked møder sit eget sprog i stedet for engelsk som mellemled. Før faldt alt uden for Danmark tilbage på engelsk — det dårligste valg begge veje, for en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
+
+**Typen tvinger fuldstændighed.** Ordbogen er `Record<string, Record<Locale, string>>`. Tilføjes et sprog til `LOCALES`, nægter TypeScript at bygge, indtil hver eneste streng er oversat. Et halvt oversat sprog er værre end intet, fordi fejlen først opdages af brugeren.
+
+**Valget er en indstilling, ikke en adresse.** Sproget ligger i en cookie og på brugeren, ikke i URL'en. Den samme klubside skal kunne deles med naboen, uanset hvilket sprog I hver især læser den på. `<html lang>` følger med, så skærmlæsere og søgemaskiner får det rigtige.
+
+**Sprogene står skrevet på sig selv** i vælgeren — "Deutsch", ikke "Tysk". Den, der leder efter tysk, læser ikke dansk.
+
+**Dækningen er ikke fuld, og det skal man vide.** Oversat er det, en spiller møder: navigation, forside, booking, trænere, medspillere, profil. Ikke oversat er klubadministration, superadmin, handelsbetingelser, privatlivspolitik og alle e-mails — de er dansk. Det er et bevidst sted at stoppe: en klubadministrator i Tyskland er en samtale, man har taget, mens en spiller er en fremmed, der lander på siden. Men det betyder, at et tysk marked kræver mere arbejde end at slå sproget til.
+
 ## Designsystem
 
 Den tidligere palet — cremehvid baggrund med lerfarvet accent — blev skiftet ud. Ikke fordi den var grim, men fordi den er den default, AI-genereret design altid lander på. Den var ikke et valg.
