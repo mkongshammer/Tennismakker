@@ -721,6 +721,10 @@ Den tjekker:
 
 Det er den vigtigste af dem: hvis testbetalingen er grøn, virker kæden for rigtige kunder også.
 
+**Appen kan oprette webhooken selv.** Er tjekket rødt, står der en knap på `/superadmin/opsaetning`, som opretter endpointet hos Stripe med præcis den nøgle, appen selv bruger — så nøgle og endpoint per definition er i samme verden. Stripe udleverer kun signeringsnøglen i selve oprettelseskaldet, og den gemmes i samme kald. Dermed forsvinder både "forkert sandkasse" og "forkert kopieret hemmelighed" som fejlkilder. Findes endpointet allerede, men mangler events, retter knappen dem i stedet.
+
+Logikken bag tjekket og bag knappen ligger samme sted (`src/lib/webhook-setup.ts`), så de aldrig kan blive uenige om, hvad der er rigtigt.
+
 **Bemærk:** webhook-tjekket kan ikke bevise, at `STRIPE_WEBHOOK_SECRET` hører til netop det endpoint — Stripe udleverer kun signeringsnøglen ved oprettelsen. Det kan svare på, om endpointet findes det rigtige sted og lytter på det rigtige, hvilket er de to fejl, der faktisk sker. Selve signaturen viser sig først ved en rigtig betaling.
 
 Det er værd at forstå hvorfor tjekket findes: forkert opsat webhook fejler **tavst**. Betalingen går igennem, pengene flytter sig, og bookingen bliver bare aldrig bekræftet. Og det rammer typisk præcis den dag, man skifter fra sandkasse til live — hvor endpointet, man byggede i sandkassen, pludselig ikke findes.

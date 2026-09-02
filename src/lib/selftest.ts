@@ -14,6 +14,7 @@ import { commissionAt } from "./payments";
 import { sendMail } from "./email";
 import { getSettings, getSettingsWithSource, LABELS, SETTING_KEYS } from "./settings";
 import { describeSubscription, subscriptionIsActive } from "./billing";
+import { inspectWebhook } from "./webhook-setup";
 
 export type Check = {
   name: string;
@@ -126,92 +127,17 @@ async function connectivityCheck(): Promise<Check> {
   }
 }
 
-/** De events, appen skal have for at fungere. Se webhook-ruten. */
-const REQUIRED_EVENTS = [
-  "checkout.session.completed",
-  "account.updated",
-  "customer.subscription.created",
-  "customer.subscription.updated",
-  "customer.subscription.deleted",
-];
-
-const WEBHOOK_PATH = "/api/webhooks/stripe";
-
-const sameUrl = (a: string, b: string) =>
-  a.replace(/\/+$/, "").toLowerCase() === b.replace(/\/+$/, "").toLowerCase();
-
-/**
- * Er webhooken registreret i den samme verden, som nøglen hører til?
- *
- * Sandkasse og live er adskilte hos Stripe: et endpoint oprettet i en
- * sandkasse findes ikke i live, og dets signeringsnøgle validerer ikke
- * live-events. Fejlen er tavs — betalingen går igennem, men bookingen
- * bliver aldrig bekræftet af webhooken — og den rammer typisk præcis den
- * dag, man skifter til live og har mindst lyst til at fejlsøge.
- *
- * Tjekket kan ikke bevise, at signeringsnøglen hører til netop dette
- * endpoint; Stripe udleverer den kun ved oprettelsen. Men det kan svare på,
- * om der overhovedet findes et endpoint til os her, og om det lytter på
- * det, vi har brug for.
- */
+/** Webhooken. Selve logikken bor i webhook-setup.ts, hvor knappen, der
+ * retter op på den, også ligger — så tjek og reparation aldrig kan komme
+ * til at være uenige om, hvad der er rigtigt. */
 async function webhookCheck(): Promise<Check> {
-  const settings = await getSettings();
-  const mode = settings.stripeSecretKey.startsWith("sk_live_") ? "live" : "sandkasse/test";
-
-  if (!(await stripeEnabled())) {
-    return { name: "Webhook", status: "fejl", detail: "Springes over — ingen Stripe-nøgle." };
-  }
-
-  const wanted = `${settings.appUrl}${WEBHOOK_PATH}`;
-
-  let endpoints;
-  try {
-    endpoints = (await (await stripe()).webhookEndpoints.list({ limit: 100 })).data;
-  } catch (err) {
-    return {
-      name: "Webhook",
-      status: "advarsel",
-      detail: `Kunne ikke slå webhooks op: ${err instanceof Error ? err.message : "ukendt fejl"}.`,
-    };
-  }
-
-  const ours = endpoints.find((e) => sameUrl(e.url, wanted));
-
-  if (!ours) {
-    return {
-      name: "Webhook",
-      status: "fejl",
-      detail:
-        endpoints.length === 0
-          ? `Der findes ingen webhooks i ${mode} overhovedet. Opret et endpoint på ${wanted}, og kopiér den nye signeringsnøgle ind under Opsætning.`
-          : `Ingen af de ${endpoints.length} webhooks i ${mode} peger på ${wanted}. Bookinger bliver ikke bekræftet af webhooken.`,
-    };
-  }
-
-  if (ours.status !== "enabled") {
-    return {
-      name: "Webhook",
-      status: "fejl",
-      detail: `Endpointet findes i ${mode}, men er slået fra hos Stripe.`,
-    };
-  }
-
-  const missing = ours.enabled_events.includes("*")
-    ? []
-    : REQUIRED_EVENTS.filter((e) => !ours.enabled_events.includes(e));
-
-  if (missing.length > 0) {
-    return {
-      name: "Webhook",
-      status: "advarsel",
-      detail: `Endpointet findes i ${mode}, men lytter ikke på ${missing.join(", ")}. Tilføj dem hos Stripe.`,
-    };
-  }
-
+  const state = await inspectWebhook();
   return {
     name: "Webhook",
-    status: "ok",
-    detail: `Registreret i ${mode} og lytter på alt, appen har brug for. Om signeringsnøglen passer, viser sig først ved en rigtig betaling.`,
+    status: state.status,
+    detail: state.fixable
+      ? `${state.detail} Kan rettes med ét klik under Opsætning.`
+      : state.detail,
   };
 }
 

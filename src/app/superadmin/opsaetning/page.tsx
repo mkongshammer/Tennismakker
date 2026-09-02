@@ -10,6 +10,8 @@ import Link from "next/link";
 import { getCurrentUser } from "../../../lib/session";
 import { getSettingsWithSource, maskSecret, settingsTableReady } from "../../../lib/settings";
 import { SettingsForm } from "./SettingsForm";
+import { WebhookCard } from "./WebhookCard";
+import { inspectWebhook } from "../../../lib/webhook-setup";
 
 export const dynamic = "force-dynamic";
 
@@ -25,9 +27,10 @@ export default async function OpsaetningPage() {
     );
   }
 
-  const [{ settings, source }, tableReady] = await Promise.all([
+  const [{ settings, source }, tableReady, webhook] = await Promise.all([
     getSettingsWithSource(),
     settingsTableReady(),
+    inspectWebhook(),
   ]);
 
   const anyFromDatabase = Object.values(source).includes("database");
@@ -51,6 +54,8 @@ export default async function OpsaetningPage() {
           produktionsdatabasen, så virker den.
         </p>
       ) : null}
+
+      <WebhookCard state={webhook} />
 
       <SettingsForm
         values={{

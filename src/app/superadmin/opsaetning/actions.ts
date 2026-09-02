@@ -9,6 +9,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "../../../lib/session";
 import { saveSettings, settingsTableReady, SETTING_KEYS, type SettingKey } from "../../../lib/settings";
+import { ensureWebhookEndpoint } from "../../../lib/webhook-setup";
 
 export type SettingsFormState = { error?: string; ok?: string } | null;
 
@@ -109,4 +110,26 @@ export async function resetPlatformSettings(): Promise<void> {
   await saveSettings(Object.fromEntries(SETTING_KEYS.map((k) => [k, null])));
   revalidatePath("/superadmin/opsaetning");
   revalidatePath("/superadmin/selvtest");
+}
+
+/**
+ * Opretter webhooken hos Stripe med den nøgle, appen selv bruger.
+ *
+ * Findes fordi det ellers skal gøres i hånden i Stripes panel, hvor det er
+ * let at ramme den forkerte sandkasse — og hvor signeringsnøglen bagefter
+ * skal kopieres korrekt over. Begge dele forsvinder, når appen gør det selv.
+ */
+export async function createWebhookEndpoint(
+  _prev: unknown,
+  _formData: FormData
+): Promise<SettingsFormState> {
+  await requireSuperadmin();
+  try {
+    const message = await ensureWebhookEndpoint();
+    revalidatePath("/superadmin/opsaetning");
+    revalidatePath("/superadmin/selvtest");
+    return { ok: message };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Webhooken kunne ikke oprettes." };
+  }
 }
