@@ -19,6 +19,7 @@ import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
 import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
+import { getSettings } from "../../../../lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -60,10 +61,10 @@ async function handleEvent(type: string, object: any) {
 
 export async function POST(req: Request) {
   const signature = req.headers.get("stripe-signature");
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = (await getSettings()).stripeWebhookSecret;
 
   if (!secret) {
-    console.error("STRIPE_WEBHOOK_SECRET er ikke sat — webhook afvist.");
+    console.error("Webhook-hemmeligheden er ikke sat — webhook afvist.");
     return new Response("Webhook er ikke konfigureret", { status: 500 });
   }
   if (!signature) {
@@ -79,7 +80,7 @@ export async function POST(req: Request) {
 
   try {
     // Klassisk format: hele objektet ligger i beskeden.
-    const event = stripe().webhooks.constructEvent(rawBody, signature, secret);
+    const event = (await stripe()).webhooks.constructEvent(rawBody, signature, secret);
     type = event.type;
     object = (event as any).data?.object;
   } catch (err) {
@@ -94,7 +95,7 @@ export async function POST(req: Request) {
     try {
       // Hent hele eventet ud fra id'et. Det er samtidig verifikationen:
       // et opdigtet id findes ikke hos Stripe.
-      const full = await stripe().events.retrieve(parsed.id);
+      const full = await (await stripe()).events.retrieve(parsed.id);
       type = full.type;
       object = (full as any).data?.object;
     } catch (retrieveErr) {

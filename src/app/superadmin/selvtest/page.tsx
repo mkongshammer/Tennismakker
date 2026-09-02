@@ -49,7 +49,7 @@ export default async function SelvtestPage() {
       </div>
 
       <section>
-        <h2 className="display mb-3 text-2xl">Opsætning</h2>
+        <h2 className="display mb-3 text-2xl">Tjek</h2>
         <ul className="space-y-2">
           {checks.map((c) => (
             <li key={c.name} className="card py-3">
@@ -100,6 +100,7 @@ export default async function SelvtestPage() {
 
       <div className="flex flex-wrap gap-3">
         <Link href="/superadmin/selvtest" className="btn-court">Kør testen igen</Link>
+        <Link href="/superadmin/opsaetning" className="btn-ghost">Ret opsætningen</Link>
         <Link href="/superadmin" className="btn-ghost">Tilbage</Link>
       </div>
     </div>

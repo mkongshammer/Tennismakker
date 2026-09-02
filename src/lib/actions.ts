@@ -6,6 +6,7 @@ import { addDays, addHours, addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "./db";
+import { getSettings } from "./settings";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
@@ -223,7 +224,7 @@ export async function bookCourtSlot(formData: FormData) {
   // Kan klubben overhovedet modtage penge? Feltet holdes opdateret af
   // Stripes account.updated-webhook, så det er billigt og troværdigt at
   // slå op — i modsætning til at oprette en session bare for at teste.
-  const stripeOn = (process.env.PAYMENT_PROVIDER ?? "mock") === "stripe";
+  const stripeOn = (await getSettings()).paymentProvider === "stripe";
   if (stripeOn && !court.club.stripeChargesEnabled) {
     // Reservationen må ikke blive hængende og blokere tiden for andre.
     await db.booking.update({
@@ -277,7 +278,7 @@ export async function bookCoachSlot(formData: FormData) {
   });
 
   // Samme tjek som ved banebooking, se dér.
-  const stripeOn = (process.env.PAYMENT_PROVIDER ?? "mock") === "stripe";
+  const stripeOn = (await getSettings()).paymentProvider === "stripe";
   if (stripeOn && !coach!.stripeChargesEnabled) {
     await db.booking.update({
       where: { id: booking.id },
@@ -492,7 +493,7 @@ export async function submitClubLead(_prev: unknown, formData: FormData) {
     ].join("\n"),
   });
 
-  const inbox = process.env.ORDERS_EMAIL;
+  const inbox = (await getSettings()).ordersEmail;
   if (inbox) {
     await sendMail({
       to: inbox,
@@ -503,7 +504,7 @@ export async function submitClubLead(_prev: unknown, formData: FormData) {
         ``,
         message || "Ingen besked.",
         ``,
-        `${process.env.APP_URL ?? "https://racketbuddy.app"}/superadmin`,
+        `${(await getSettings()).appUrl}/superadmin`,
       ].join("\n"),
     });
   }
@@ -618,7 +619,7 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
       ``,
       `${clubName} er oprettet. Log ind og se jeres side her:`,
       ``,
-      `${process.env.APP_URL ?? "https://racketbuddy.app"}/login`,
+      `${(await getSettings()).appUrl}/login`,
       `E-mail: ${adminEmail}`,
       `Midlertidig adgangskode: ${tempPassword}`,
       ``,
@@ -724,7 +725,7 @@ export async function approveClub(formData: FormData) {
         `${club.name} er godkendt og synlig for spillere.`,
         ``,
         `Næste schalk: frigiv de tider, gæster må booke.`,
-        `${process.env.APP_URL ?? "https://racketbuddy.app"}/admin`,
+        `${(await getSettings()).appUrl}/admin`,
         ``,
         `RacketBuddy`,
       ].join("\n"),
@@ -1079,7 +1080,7 @@ export async function orderWebsite(_prev: unknown, formData: FormData) {
   });
 
   // Besked til os
-  const inbox = process.env.ORDERS_EMAIL;
+  const inbox = (await getSettings()).ordersEmail;
   if (inbox) {
     await sendMail({
       to: inbox,
@@ -1091,7 +1092,7 @@ export async function orderWebsite(_prev: unknown, formData: FormData) {
         ``,
         notes || "Ingen bemærkninger.",
         ``,
-        `${process.env.APP_URL ?? ""}/superadmin`,
+        `${(await getSettings()).appUrl}/superadmin`,
       ].join("\n"),
     });
   }

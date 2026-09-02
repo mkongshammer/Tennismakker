@@ -638,15 +638,29 @@ Tre steder tager nu højde for det:
 
 De fem demo-klubber, der blev oprettet for at have noget at vise på kortet, falder i denne kategori — de har aldrig haft en Stripe-konto. Det var netop dem, en testbooking ramte, hvilket gjorde problemet synligt.
 
+## Opsætning uden en tur forbi Render
+
+`/superadmin/opsaetning` samler alt det, der ellers ville være miljøvariabler: Stripe-nøgler, webhook-hemmelighed, provision, mailnøgle, afsender, modtageradresse og appens egen adresse. Værdierne gemmes i tabellen `PlatformSetting` og slår igennem med det samme — ingen genstart, intet login hos Render.
+
+**Hvorfor ikke bare miljøvariabler.** At rette en nøgle på Render kræver, at man logger ind der og venter på en genstart. Det er et dårligt sted at have sin provision liggende, når man opdager en fejl søndag aften.
+
+**Rækkefølgen er database → miljø → standard.** Er feltet ikke udfyldt i appen, gælder miljøvariablen præcis som før. En tom tabel opfører sig altså identisk med den gamle opsætning, og der er ingen udrulning, hvor tingene står tomme et øjeblik. Ved hvert felt står det, hvis værdien kommer fra serveren i stedet for fra appen.
+
+**Hemmeligheder krypteres.** Stripe-nøgler og mailnøglen gemmes AES-256-GCM-krypteret, med en nøgle udledt af `AUTH_SECRET`. De sendes aldrig ud til browseren — feltet står tomt med et maskeret spor i pladsholderen, og et tomt felt betyder "behold den, der står". Skiftes `AUTH_SECRET`, kan de gemte hemmeligheder ikke længere læses; så bruger appen miljøvariablerne igen, og nøglerne må tastes ind på ny.
+
+**To ting kan ikke flyttes.** `DATABASE_URL` og `AUTH_SECRET` er adgangen til databasen og nøglen, der låser de gemte hemmeligheder op. De kan i sagens natur ikke ligge i den database, de selv låser op, og rettes fortsat hos Render.
+
+**Tabellen lægges ind ved bygning.** `npm run build` kører `prisma db push`, før `next build`. Fejler det — fx uden `DATABASE_URL` i byggemiljøet — fortsætter bygningen alligevel, og opsætningssiden siger så tydeligt, at tabellen mangler, og hvad man gør ved det. Appen kører videre på miljøvariablerne i mellemtiden.
+
 ## Selvtest af betalingskæden
 
 `/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.
 
 Den tjekker:
 
-- **Konfiguration** — er `PAYMENT_PROVIDER`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` og `APP_URL` sat, og er nøglen test eller live
+- **Opsætning** — én linje: mangler der noget, eller er alt sat. Selve værdierne hører hjemme på `/superadmin/opsaetning`, hvor de også kan rettes
 - **Forbindelse til Stripe** — et rigtigt kald, ikke bare "nøglen ser rigtig ud"
-- **Provisionsregnestykket** — hvad klubben får, hvad vi får, og hvad der er tilbage efter Stripes eget gebyr, ved tre prisniveauer
+- **Provisionsregnestykket** — hvad klubben får, hvad vi får, og hvad der er tilbage efter Stripes eget gebyr. Ét eksempel: satsen er den samme uanset beløb, så flere linjer viste det samme tal tre gange. Vil man se flere beløb, står de på opsætningssiden ved siden af satsen
 - **Modtagere** — hvilke klubber og trænere der kan tage imod penge, hvilke der er halvvejs igennem, og hvilke der ikke er begyndt
 - **Testbetaling** — opretter en rigtig checkout-session mod en klar konto med korrekt gebyrsplit, bekræfter at Stripe accepterer den, og **lukker sessionen igen med det samme**. Ingen betaler noget, men det beviser, at nøgle, Connect-konto, gebyrsplit og valuta hænger sammen.
 

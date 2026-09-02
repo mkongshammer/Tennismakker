@@ -11,6 +11,7 @@
 
 import { stripe } from "./stripe";
 import { db } from "./db";
+import { getSettings } from "./settings";
 
 export type RecipientKind = "CLUB" | "COACH";
 
@@ -70,7 +71,7 @@ export async function ensureConnectAccount(
   if (!recipient) throw new Error("Modtageren findes ikke.");
   if (recipient.stripeAccountId) return recipient.stripeAccountId;
 
-  const account = await stripe().accounts.create({
+  const account = await (await stripe()).accounts.create({
     type: "express",
     country: recipient.country,
     email: recipient.email || undefined,
@@ -96,8 +97,8 @@ export async function createOnboardingLink(
   returnPath: string,
   refreshPath: string
 ): Promise<string> {
-  const base = process.env.APP_URL ?? "https://racketbuddy.app";
-  const link = await stripe().accountLinks.create({
+  const base = (await getSettings()).appUrl;
+  const link = await (await stripe()).accountLinks.create({
     account: accountId,
     type: "account_onboarding",
     return_url: `${base}${returnPath}`,
@@ -114,7 +115,7 @@ export async function refreshAccountStatus(
   const recipient = await loadRecipient(kind, id);
   if (!recipient?.stripeAccountId) return null;
 
-  const account = await stripe().accounts.retrieve(recipient.stripeAccountId);
+  const account = await (await stripe()).accounts.retrieve(recipient.stripeAccountId);
   const chargesEnabled = Boolean(account.charges_enabled);
   const payoutsEnabled = Boolean(account.payouts_enabled);
 

@@ -11,6 +11,7 @@ import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
 import { confirmBookingPayment, platformFeeForBooking, startCheckout } from "../../../lib/payments";
+import { getSettings } from "../../../lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
   // redirect som en intern navigation, og browseren kan i den situation
   // ende med at blive på siden — hvorefter brugeren lander tilbage på
   // profilen uden nogensinde at have set en betalingsside.
-  if ((process.env.PAYMENT_PROVIDER ?? "mock") === "stripe") {
+  if ((await getSettings()).paymentProvider === "stripe") {
     const url = await startCheckout(booking.id);
     return (
       <html lang="da">

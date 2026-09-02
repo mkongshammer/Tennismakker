@@ -455,3 +455,15 @@ model WebsiteOrder {
 
   @@index([status, createdAt])
 }
+
+// ---------- Platformens opsætning ----------
+// Nøgle/værdi for de indstillinger, der ellers ville ligge som
+// miljøvariabler: Stripe-nøgler, provision, afsenderadresse. De ligger her,
+// så de kan rettes fra /superadmin/opsaetning uden en tur forbi Render og en
+// genstart. Mangler en nøgle, bruges miljøvariablen — se src/lib/settings.ts.
+// Hemmeligheder gemmes krypteret i `value`, aldrig i klartekst.
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

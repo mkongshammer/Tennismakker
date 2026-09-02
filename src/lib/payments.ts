@@ -19,6 +19,7 @@
 
 import { db } from "./db";
 import { stripe } from "./stripe";
+import { ensureSettings, getSettings } from "./settings";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -35,11 +36,17 @@ import {
 // betaling koster 1,5% + 1,80 kr, så en banetime til 100 kr giver
 // 10,00 − 3,30 = 6,70 kr tilbage. Ved en lavere sats ville små bookinger
 // koste os penge frem for at tjene dem.
-export const COMMISSION_PCT = 0.10;
+// Satsen kan ændres under Opsætning; dette er den, en tom opsætning bruger.
+export const DEFAULT_COMMISSION_PCT = 0.10;
 
-/** Provisionen af et beløb, afrundet til hele kroner. */
-export function commission(amountKr: number): number {
-  return Math.round(amountKr * COMMISSION_PCT);
+/** Provisionen af et beløb med en given sats, afrundet til hele kroner. */
+export function commissionAt(amountKr: number, pct: number): number {
+  return Math.round(amountKr * pct);
+}
+
+/** Provisionen af et beløb med den sats, der gælder lige nu. */
+export async function commission(amountKr: number): Promise<number> {
+  return commissionAt(amountKr, (await getSettings()).commissionPct);
 }
 
 /**
@@ -80,8 +87,8 @@ export async function platformFeeForBooking(booking: {
  * lavere, se COMMISSION_PCT ovenfor.
  */
 export async function startCheckout(bookingId: string): Promise<string> {
-  const provider = process.env.PAYMENT_PROVIDER ?? "mock";
-  if (provider !== "stripe") return `/checkout/${bookingId}`;
+  const settings = await getSettings();
+  if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
@@ -96,7 +103,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   const recipientId =
     kind === "COACH" ? booking.coachProfileId! : booking.court!.clubId;
 
-  const account = await stripe().accounts.retrieve(
+  const account = await (await stripe()).accounts.retrieve(
     (kind === "COACH" ? booking.coachProfile?.stripeAccountId : booking.court?.club.stripeAccountId) ?? ""
   ).catch(() => null);
 
@@ -113,7 +120,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
       ? `Trænertime hos ${booking.coachProfile?.user.name}`
       : `${booking.court?.club.name} — ${booking.court?.name}`;
 
-  const base = process.env.APP_URL ?? "https://racketbuddy.app";
+  const base = settings.appUrl;
 
   // Hvem betaler Stripes eget gebyr, afhænger af klubbens model.
   //
@@ -131,7 +138,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   // hvilken som helst anden erhvervsdrivende, der tager kortbetaling.
   const isSubscriptionClub = fee === 0 && kind === "CLUB";
 
-  const session = await stripe().checkout.sessions.create({
+  const session = await (await stripe()).checkout.sessions.create({
     mode: "payment",
     // MobilePay slås til i Stripe Dashboard under Payment methods — når
     // det er gjort, dukker det automatisk op her uden kodeændringer.
@@ -182,6 +189,10 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
   if (!booking) throw new Error("Booking findes ikke");
   if (booking.status === "CONFIRMED") return booking; // idempotent
 
+  // Varm opsætningen inden kvitteringerne bygges — skabelonerne læser
+  // adressen synkront, mens de sammensættes.
+  await ensureSettings();
+  const settings = await getSettings();
   const fee = await platformFeeForBooking(booking);
 
   const [updated] = await db.$transaction([
@@ -195,7 +206,7 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
         bookingId,
         amountKr: booking.priceKr,
         platformFee: fee,
-        provider: process.env.PAYMENT_PROVIDER ?? "mock",
+        provider: settings.paymentProvider,
         providerRef: providerRef ?? `mock_${Date.now()}`,
         status: "PAID",
       },
@@ -289,6 +300,8 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   });
   if (!booking) throw new Error("Booking findes ikke");
 
+  await ensureSettings();
+
   const hoursUntil =
     (booking.startsAt.getTime() - Date.now()) / (1000 * 60 * 60);
   const eligible = hoursUntil >= REFUND_WINDOW_HOURS;
@@ -306,7 +319,7 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
       // konto (destination charge sender dem derud automatisk ved betaling).
       // refund_application_fee giver også vores egen andel tilbage — vi har
       // jo ikke leveret noget, når bookingen aflyses.
-      await stripe().refunds.create({
+      await (await stripe()).refunds.create({
         payment_intent: booking.payment.providerRef,
         reverse_transfer: true,
         refund_application_fee: true,

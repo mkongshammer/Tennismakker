@@ -7,15 +7,20 @@ import { SiteHeader } from "../components/SiteHeader";
 import { TabBar } from "../components/TabBar";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
+import { getSettings } from "../lib/settings";
 
-export const metadata: Metadata = {
-  title: "RacketBuddy — book bane, find træner og medspiller",
-  description:
-    "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
-  // icon.png, apple-icon.png og opengraph-image.png i denne mappe
-  // opsamles automatisk af Next.js — ingen <link>-tags nødvendige.
-  metadataBase: new URL(process.env.APP_URL ?? "https://racketbuddy.app"),
-};
+// Asynkron, fordi adressen kan ændres under Opsætning: metadataBase
+// afgør, hvor delelinks og OG-billeder peger hen.
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "RacketBuddy — book bane, find træner og medspiller",
+    description:
+      "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
+    // icon.png, apple-icon.png og opengraph-image.png i denne mappe
+    // opsamles automatisk af Next.js — ingen <link>-tags nødvendige.
+    metadataBase: new URL((await getSettings()).appUrl),
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

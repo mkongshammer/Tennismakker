@@ -66,7 +66,10 @@ export default async function SuperadminPage() {
             {pending.length} venter · {decided.length} behandlet
           </p>
         </div>
-        <Link href="/superadmin/selvtest" className="btn-ghost">Selvtest af betaling</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/superadmin/opsaetning" className="btn-ghost">Opsætning</Link>
+          <Link href="/superadmin/selvtest" className="btn-ghost">Selvtest</Link>
+        </div>
       </div>
 
       <section>

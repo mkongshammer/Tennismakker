@@ -5,25 +5,25 @@
 // i stedet for at blive sendt — så udvikling ikke kræver en konto nogen steder,
 // og så en manglende nøgle i produktion aldrig vælter en booking.
 
+import { getSettings, settingsSnapshot } from "./settings";
+
 type Mail = {
   to: string;
   subject: string;
   body: string; // ren tekst, én besked pr. linje
 };
 
-// Afsenderen skal ligge på et domæne, der er verificeret hos
-// e-mailudbyderen — ellers afvises mailen, eller den lander i spam.
-const FROM = process.env.EMAIL_FROM ?? "RacketBuddy <ikke-svar@racketbuddy.app>";
-
 /**
  * Sender en e-mail. Fejler aldrig hårdt: en booking må ikke gå tabt,
  * fordi mailserveren er nede. Fejl logges i stedet.
  */
 export async function sendMail(mail: Mail): Promise<boolean> {
-  const key = process.env.EMAIL_API_KEY;
+  // Afsenderen skal ligge på et domæne, der er verificeret hos
+  // e-mailudbyderen — ellers afvises mailen, eller den lander i spam.
+  const { emailApiKey: key, emailFrom: from } = await getSettings();
 
   if (!key) {
-    console.log("[e-mail ikke sendt — EMAIL_API_KEY mangler]", {
+    console.log("[e-mail ikke sendt — der er ingen mailnøgle]", {
       til: mail.to,
       emne: mail.subject,
     });
@@ -41,7 +41,7 @@ export async function sendMail(mail: Mail): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: FROM,
+        from,
         to: [mail.to],
         subject: mail.subject,
         text: mail.body,
@@ -69,7 +69,9 @@ function danishDateTime(d: Date): string {
   return `${DAYS[d.getDay()]} d. ${d.getDate()}. ${MONTHS[d.getMonth()]} kl. ${t}`;
 }
 
-const baseUrl = () => process.env.APP_URL ?? "https://racketbuddy.app";
+// Skabelonerne bygger links synkront, mens de sammensættes, så de læser
+// det sidst indlæste snapshot i stedet for at vente på databasen.
+const baseUrl = () => settingsSnapshot().appUrl;
 
 // ---------------------------------------------------------------------------
 // Skabeloner

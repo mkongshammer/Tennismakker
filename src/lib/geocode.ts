@@ -8,10 +8,13 @@
 // Skal det skaleres til mange opslag, er et betalt geokodnings-API
 // (Google, Mapbox) den rigtige vej — så skiftes kun denne fil ud.
 
+import { settingsSnapshot } from "./settings";
+
 export type Coordinates = { latitude: number; longitude: number };
 
-const CONTACT =
-  process.env.APP_URL ?? "https://racketbuddy.app";
+// Nominatim vil have en kontaktadresse i User-Agent. Læses fra det sidst
+// indlæste snapshot, så opslaget ikke skal vente på databasen først.
+const CONTACT = () => settingsSnapshot().appUrl;
 
 /**
  * Finder koordinater for en adresse i Danmark.
@@ -34,7 +37,7 @@ export async function geocode(
     const res = await fetch(url, {
       headers: {
         // Nominatims brugspolitik kræver, at vi kan identificeres
-        "User-Agent": `TennisMakker/1.0 (${CONTACT})`,
+        "User-Agent": `RacketBuddy/1.0 (${CONTACT()})`,
         "Accept-Language": "da",
       },
       cache: "no-store",

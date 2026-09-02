@@ -37,9 +37,9 @@ export async function GET(
   // redirect() kaster en intern undtagelse, som en catch-alt ville sluge.
   // Derfor holdes den helt uden for try/catch — samme faldgrube som
   // beskrevet i README under bookingflowet.
-  if (stripeEnabled() && sessionId) {
+  if ((await stripeEnabled()) && sessionId) {
     try {
-      const session = await stripe().checkout.sessions.retrieve(sessionId);
+      const session = await (await stripe()).checkout.sessions.retrieve(sessionId);
       if (session.payment_status === "paid") {
         const paymentIntentId =
           typeof session.payment_intent === "string"

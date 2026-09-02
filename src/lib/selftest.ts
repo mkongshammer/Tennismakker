@@ -10,8 +10,9 @@
 
 import { db } from "./db";
 import { stripe, stripeEnabled } from "./stripe";
-import { commission, COMMISSION_PCT } from "./payments";
+import { commissionAt } from "./payments";
 import { sendMail } from "./email";
+import { getSettings, getSettingsWithSource, LABELS, SETTING_KEYS } from "./settings";
 
 export type Check = {
   name: string;
@@ -19,45 +20,40 @@ export type Check = {
   detail: string;
 };
 
-/** Konfiguration: er de nødvendige nøgler overhovedet sat? */
-function configChecks(): Check[] {
-  const checks: Check[] = [];
+/**
+ * Ét tjek af opsætningen frem for fire.
+ *
+ * Selve værdierne — nøgler, provision, afsenderadresse — hører hjemme på
+ * /superadmin/opsaetning, hvor de også kan rettes. Her skal der kun stå, om
+ * noget mangler, så selvtesten kan holdes til ét spørgsmål: virker det?
+ */
+async function setupCheck(): Promise<Check> {
+  const { settings, source } = await getSettingsWithSource();
 
-  const provider = process.env.PAYMENT_PROVIDER ?? "mock";
-  checks.push({
-    name: "Betalingsudbyder",
-    status: provider === "stripe" ? "ok" : "advarsel",
-    detail:
-      provider === "stripe"
-        ? "Stripe er slået til. Rigtige betalinger."
-        : `PAYMENT_PROVIDER er "${provider}" — bookinger bekræftes uden betaling.`,
-  });
+  const missing = SETTING_KEYS.filter((k) => source[k] === "standard" && !settings[k]);
+  const mock = settings.paymentProvider !== "stripe";
 
-  checks.push({
-    name: "Stripe-nøgle",
-    status: stripeEnabled() ? "ok" : "fejl",
-    detail: stripeEnabled()
-      ? (process.env.STRIPE_SECRET_KEY ?? "").startsWith("sk_live_")
-        ? "Live-nøgle. Rigtige penge."
-        : "Testnøgle. Ingen rigtige penge flytter sig."
-      : "STRIPE_SECRET_KEY mangler.",
-  });
-
-  checks.push({
-    name: "Webhook-hemmelighed",
-    status: process.env.STRIPE_WEBHOOK_SECRET ? "ok" : "fejl",
-    detail: process.env.STRIPE_WEBHOOK_SECRET
-      ? "Sat. Betalinger kan bekræftes."
-      : "STRIPE_WEBHOOK_SECRET mangler — ingen booking vil nogensinde blive bekræftet.",
-  });
-
-  checks.push({
-    name: "Adresse til links",
-    status: process.env.APP_URL ? "ok" : "advarsel",
-    detail: process.env.APP_URL ?? "APP_URL mangler — mails og links bruger en gættet adresse.",
-  });
-
-  return checks;
+  if (mock) {
+    return {
+      name: "Opsætning",
+      status: "advarsel",
+      detail: "Betalinger står på test — bookinger bekræftes, uden at nogen betaler. Skiftes under Opsætning.",
+    };
+  }
+  if (missing.length > 0) {
+    return {
+      name: "Opsætning",
+      status: "fejl",
+      detail: `Mangler ${missing.map((k) => LABELS[k]).join(", ")}. Sæt det under Opsætning.`,
+    };
+  }
+  return {
+    name: "Opsætning",
+    status: "ok",
+    detail: settings.stripeSecretKey.startsWith("sk_live_")
+      ? "Alt er sat. Live-nøgle — rigtige penge."
+      : "Alt er sat. Testnøgle — ingen rigtige penge flytter sig.",
+  };
 }
 
 /**
@@ -66,20 +62,20 @@ function configChecks(): Check[] {
  * en forkert opsætning giver først en fejl i selve afsendelsen.
  */
 async function emailCheck(): Promise<Check> {
-  const to = process.env.ORDERS_EMAIL;
+  const { emailApiKey, emailFrom, ordersEmail: to } = await getSettings();
 
-  if (!process.env.EMAIL_API_KEY) {
+  if (!emailApiKey) {
     return {
       name: "E-mail",
       status: "advarsel",
-      detail: "EMAIL_API_KEY mangler — kvitteringer logges kun, de sendes ikke.",
+      detail: "Der er ingen mailnøgle — kvitteringer logges kun, de sendes ikke.",
     };
   }
   if (!to) {
     return {
       name: "E-mail",
       status: "advarsel",
-      detail: "Nøglen er sat, men ORDERS_EMAIL mangler, så testen kan ikke sende nogen steder hen.",
+      detail: "Nøglen er sat, men der er ingen modtageradresse, så testen kan ikke sende nogen steder hen.",
     };
   }
 
@@ -89,7 +85,7 @@ async function emailCheck(): Promise<Check> {
     body: [
       "Denne mail er sendt af selvtesten på /superadmin/selvtest.",
       "",
-      `Afsender: ${process.env.EMAIL_FROM ?? "(standard)"}`,
+      `Afsender: ${emailFrom}`,
       "",
       "Kan du læse den her, virker kvitteringer og klubbeskeder også.",
     ].join("\n"),
@@ -106,7 +102,7 @@ async function emailCheck(): Promise<Check> {
 
 /** Kan vi overhovedet nå Stripe med den nøgle, der er sat? */
 async function connectivityCheck(): Promise<Check> {
-  if (!stripeEnabled()) {
+  if (!(await stripeEnabled())) {
     return {
       name: "Forbindelse til Stripe",
       status: "fejl",
@@ -114,7 +110,7 @@ async function connectivityCheck(): Promise<Check> {
     };
   }
   try {
-    const balance = await stripe().balance.retrieve();
+    const balance = await (await stripe()).balance.retrieve();
     return {
       name: "Forbindelse til Stripe",
       status: "ok",
@@ -129,24 +125,28 @@ async function connectivityCheck(): Promise<Check> {
   }
 }
 
-/** Regnestykket bag provisionen — ren matematik, ingen sideeffekter. */
-function feeChecks(): Check[] {
-  const examples = [100, 150, 250];
-  const rows = examples.map((price) => {
-    const fee = commission(price);
-    // Stripes indenlandske kortgebyr: 1,5% + 1,80 kr
-    const stripeFee = Math.round((price * 0.015 + 1.8) * 100) / 100;
-    const net = Math.round((fee - stripeFee) * 100) / 100;
-    return `${price} kr → klub ${price - fee} kr, os ${fee} kr (netto ~${net} kr efter Stripes gebyr)`;
-  });
+/**
+ * Regnestykket bag provisionen — ét eksempel, ikke en prisliste.
+ *
+ * Satsen er den samme uanset beløb, så tre linjer viste tre gange det samme.
+ * Skal man se flere beløb, står de på opsætningssiden ved siden af satsen.
+ */
+async function feeCheck(): Promise<Check> {
+  const pct = (await getSettings()).commissionPct;
+  const price = 100;
+  const fee = commissionAt(price, pct);
+  // Stripes indenlandske kortgebyr: 1,5% + 1,80 kr
+  const stripeFee = Math.round((price * 0.015 + 1.8) * 100) / 100;
+  const net = Math.round((fee - stripeFee) * 100) / 100;
 
-  return [
-    {
-      name: `Provision (${Math.round(COMMISSION_PCT * 100)}%)`,
-      status: "ok",
-      detail: rows.join(" · "),
-    },
-  ];
+  return {
+    name: `Provision (${Math.round(pct * 100)}%)`,
+    status: net > 0 ? "ok" : "advarsel",
+    detail:
+      net > 0
+        ? `${price} kr → klub ${price - fee} kr, os ${fee} kr (netto ~${net} kr efter Stripes gebyr).`
+        : `${price} kr → os ${fee} kr, men Stripes gebyr er ~${stripeFee} kr. Vi taber penge på små bookinger ved den sats.`,
+  };
 }
 
 export type RecipientStatus = {
@@ -160,6 +160,7 @@ export type RecipientStatus = {
 
 /** Hvem kan rent faktisk modtage penge? */
 export async function recipientStatuses(): Promise<RecipientStatus[]> {
+  const pct = Math.round((await getSettings()).commissionPct * 100);
   const [clubs, coaches] = await Promise.all([
     db.club.findMany({
       where: { status: "APPROVED" },
@@ -193,7 +194,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
       billing:
         c.billingModel === "SUBSCRIPTION"
           ? `Abonnement ${c.subscriptionKr} kr/md`
-          : `${Math.round(COMMISSION_PCT * 100)}% provision`,
+          : `${pct}% provision`,
     })),
     ...coaches.map((c: any) => ({
       kind: "Træner" as const,
@@ -201,7 +202,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
       id: c.id,
       hasAccount: Boolean(c.stripeAccountId),
       chargesEnabled: c.stripeChargesEnabled,
-      billing: `${Math.round(COMMISSION_PCT * 100)}% provision`,
+      billing: `${pct}% provision`,
     })),
   ];
 }
@@ -213,7 +214,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
  * nøgle, Connect-konto, gebyrsplit og valuta.
  */
 export async function testCheckoutSession(): Promise<Check> {
-  if (!stripeEnabled()) {
+  if (!(await stripeEnabled())) {
     return { name: "Testbetaling", status: "fejl", detail: "Ingen Stripe-nøgle." };
   }
 
@@ -232,11 +233,13 @@ export async function testCheckoutSession(): Promise<Check> {
   }
 
   const priceKr = club.priceHour || 100;
-  const fee = club.billingModel === "SUBSCRIPTION" ? 0 : commission(priceKr);
-  const base = process.env.APP_URL ?? "https://racketbuddy.app";
+  const settings = await getSettings();
+  const fee =
+    club.billingModel === "SUBSCRIPTION" ? 0 : commissionAt(priceKr, settings.commissionPct);
+  const base = settings.appUrl;
 
   try {
-    const session = await stripe().checkout.sessions.create({
+    const session = await (await stripe()).checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       line_items: [
@@ -259,7 +262,7 @@ export async function testCheckoutSession(): Promise<Check> {
     });
 
     // Luk sessionen med det samme — den må aldrig kunne betales
-    await stripe().checkout.sessions.expire(session.id).catch(() => null);
+    await (await stripe()).checkout.sessions.expire(session.id).catch(() => null);
 
     return {
       name: "Testbetaling",
@@ -280,15 +283,17 @@ export async function runSelfTest(): Promise<{
   checks: Check[];
   recipients: RecipientStatus[];
 }> {
-  const [connectivity, email, checkout, recipients] = await Promise.all([
+  const [setup, connectivity, email, fees, checkout, recipients] = await Promise.all([
+    setupCheck(),
     connectivityCheck(),
     emailCheck(),
+    feeCheck(),
     testCheckoutSession(),
     recipientStatuses(),
   ]);
 
   return {
-    checks: [...configChecks(), connectivity, email, ...feeChecks(), checkout],
+    checks: [setup, connectivity, email, fees, checkout],
     recipients,
   };
 }

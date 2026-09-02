@@ -27,6 +27,7 @@ export default async function AdminPage({
   searchParams: { stripe?: string };
 }) {
   const user = await getCurrentUser();
+  const stripeOn = await stripeEnabled();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
     return (
@@ -121,7 +122,7 @@ export default async function AdminPage({
         </section>
       )}
 
-      {stripeEnabled() && (
+      {stripeOn && (
         <section className="card">
           <p className="display text-xl">Udbetalinger</p>
           {club.stripeChargesEnabled ? (

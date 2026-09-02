@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
 import { startCheckout } from "../../../../lib/payments";
+import { getSettings } from "../../../../lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export async function GET(
   if (booking.status === "CANCELLED") redirect("/profil");
 
   // Mock-tilstand: den gamle checkout-side håndterer flowet selv
-  if ((process.env.PAYMENT_PROVIDER ?? "mock") !== "stripe") {
+  if ((await getSettings()).paymentProvider !== "stripe") {
     redirect(`/checkout/${booking.id}`);
   }
 
