@@ -706,6 +706,20 @@ De fem demo-klubber, der blev oprettet for at have noget at vise på kortet, fal
 
 **Tabellen lægges ind ved bygning.** `npm run build` kører `prisma db push`, før `next build`. Fejler det — fx uden `DATABASE_URL` i byggemiljøet — fortsætter bygningen alligevel, og opsætningssiden siger så tydeligt, at tabellen mangler, og hvad man gør ved det. Appen kører videre på miljøvariablerne i mellemtiden.
 
+## Fra sandkasse til live
+
+Ét felt styrer det: den hemmelige Stripe-nøgle under `/superadmin/opsaetning`. Skiftes `sk_test_…` ud med `sk_live_…`, flytter hele appen med i samme øjeblik. Der er ingen anden kontakt.
+
+Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
+
+**Webhooken.** Endpointet og dets signeringsnøgle findes kun i den verden, de blev oprettet i. Tryk på "Opret webhooken hos Stripe" igen efter skiftet — knappen bruger den nye nøgle og gemmer den nye signeringsnøgle.
+
+**Kundeportalen.** Konfigureres pr. tilstand under Settings → Billing → Customer portal.
+
+**Klubbernes og trænernes Connect-konti.** Et `acct_`-id fra sandkassen eksisterer ikke i live. Alle klubber og trænere skal igennem udbetalingsopsætningen forfra. Bookinger fejler heldigvis sikkert imens — de afvises frem for at sende penge det forkerte sted hen.
+
+Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
+
 ## Selvtest af betalingskæden
 
 `/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.

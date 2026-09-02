@@ -4,14 +4,18 @@
 // ét kald: nøgler, forbindelse, webhook, modtagerkonti og gebyrberegning.
 //
 // Formålet er at fjerne behovet for at klikke sig igennem en rigtig
-// booking bare for at se, om noget virker. Alle tjek er skrivefri —
-// bortset fra checkout-testen, som opretter en session og lukker den igen
-// med det samme, uden at nogen betaler noget.
+// booking bare for at se, om noget virker.
+//
+// To tjek skriver: checkout-testen opretter en session hos Stripe og lukker
+// den igen med det samme, uden at nogen betaler noget. Og listen over
+// modtagere spørger Stripe om hver konto og retter databasen, hvis den var
+// forældet. Resten er rene opslag.
 
 import { db } from "./db";
 import { stripe, stripeEnabled } from "./stripe";
 import { commissionAt } from "./payments";
 import { sendMail } from "./email";
+import { refreshAccountStatus } from "./connect";
 import { getSettings, getSettingsWithSource, LABELS, SETTING_KEYS } from "./settings";
 import { describeSubscription, subscriptionIsActive } from "./billing";
 import { inspectWebhook } from "./webhook-setup";
@@ -177,6 +181,7 @@ export type RecipientStatus = {
 /** Hvem kan rent faktisk modtage penge? */
 export async function recipientStatuses(): Promise<RecipientStatus[]> {
   const pct = Math.round((await getSettings()).commissionPct * 100);
+  const canAsk = await stripeEnabled();
   const [clubs, coaches] = await Promise.all([
     db.club.findMany({
       where: { status: "APPROVED" },
@@ -201,13 +206,38 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
     }),
   ]);
 
+  // Spørg Stripe frem for at tro på databasen.
+  //
+  // Feltet i databasen er sidst kendte status, og den kan være forældet på
+  // netop den måde, der gør mest skade: efter et skift fra sandkasse til
+  // live står der stadig, at klubben er klar, mens dens konto slet ikke
+  // findes i den nye verden. refreshAccountStatus skriver samtidig det
+  // rigtige ned, så resten af appen også holder op med at tage fejl.
+  const verified = new Map<string, boolean>();
+  if (canAsk) {
+    await Promise.all(
+      [
+        ...clubs.map((c: any) => ["CLUB" as const, c.id, c.stripeAccountId] as const),
+        ...coaches.map((c: any) => ["COACH" as const, c.id, c.stripeAccountId] as const),
+      ]
+        .filter(([, , accountId]) => Boolean(accountId))
+        .map(async ([kind, id]) => {
+          const status = await refreshAccountStatus(kind, id).catch(() => null);
+          verified.set(`${kind}-${id}`, Boolean(status?.chargesEnabled));
+        })
+    );
+  }
+
+  const ready = (kind: "CLUB" | "COACH", id: string, fallback: boolean) =>
+    verified.has(`${kind}-${id}`) ? verified.get(`${kind}-${id}`)! : fallback;
+
   return [
     ...clubs.map((c: any) => ({
       kind: "Klub" as const,
       name: c.name,
       id: c.id,
       hasAccount: Boolean(c.stripeAccountId),
-      chargesEnabled: c.stripeChargesEnabled,
+      chargesEnabled: ready("CLUB", c.id, c.stripeChargesEnabled),
       // Står der SUBSCRIPTION, men betales der ikke, skal det kunne ses her
       // frem for at ligne en indtægt, der ikke findes.
       billing:
@@ -220,7 +250,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
       name: c.user.name,
       id: c.id,
       hasAccount: Boolean(c.stripeAccountId),
-      chargesEnabled: c.stripeChargesEnabled,
+      chargesEnabled: ready("COACH", c.id, c.stripeChargesEnabled),
       billing: `${pct}% provision`,
     })),
   ];

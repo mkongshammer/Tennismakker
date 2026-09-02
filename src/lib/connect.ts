@@ -115,9 +115,19 @@ export async function refreshAccountStatus(
   const recipient = await loadRecipient(kind, id);
   if (!recipient?.stripeAccountId) return null;
 
-  const account = await (await stripe()).accounts.retrieve(recipient.stripeAccountId);
-  const chargesEnabled = Boolean(account.charges_enabled);
-  const payoutsEnabled = Boolean(account.payouts_enabled);
+  // Kan kontoen ikke slås op, tæller den som ude af stand til at modtage
+  // penge — ikke som "uændret".
+  //
+  // Det afgørende tilfælde er skiftet fra sandkasse til live: Connect-konti
+  // findes kun i den verden, de blev oprettet i, så et acct_-id fra test
+  // eksisterer ikke, når nøglen er live. Uden dette ville databasen blive
+  // ved med at påstå, at klubben var klar, mens enhver booking blev afvist.
+  const account = await (await stripe()).accounts
+    .retrieve(recipient.stripeAccountId)
+    .catch(() => null);
+
+  const chargesEnabled = Boolean(account?.charges_enabled);
+  const payoutsEnabled = Boolean(account?.payouts_enabled);
 
   if (kind === "CLUB") {
     await db.club.update({
