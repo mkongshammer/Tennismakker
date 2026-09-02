@@ -1,19 +1,20 @@
-import { Fill, LegalPage, Section } from "../LegalPage";
+import { LegalPage, Section } from "../LegalPage";
+import { COMPANY } from "../company";
 
 export const metadata = { title: "Privatlivspolitik — RacketBuddy" };
 
 export default function PrivatlivPage() {
   return (
-    <LegalPage title="Privatlivspolitik" updated="29. august 2026">
+    <LegalPage draft={false} title="Privatlivspolitik" updated="2. september 2026">
       <Section n="1" title="Dataansvarlig">
         <p>
-          <Fill>virksomhedsnavn</Fill>, CVR <Fill>CVR-nummer</Fill>,{" "}
-          <Fill>adresse</Fill>, er dataansvarlig for de oplysninger, du giver os,
+          {COMPANY.name}, {COMPANY.registration}, med adresse{" "}
+          {COMPANY.address}, er dataansvarlig for de oplysninger, du giver os,
           når du opretter en profil og bruger platformen.
         </p>
         <p>
           Har du spørgsmål til behandlingen af dine oplysninger, kan du skrive
-          til <Fill>e-mail</Fill>.
+          til {COMPANY.email}.
         </p>
         <p>
           Bruger du platformen som medlem af en klub, er klubben selvstændigt
@@ -33,7 +34,7 @@ export default function PrivatlivPage() {
         </ul>
         <p>
           Vi opbevarer ikke dine kortoplysninger. Betalinger håndteres af{" "}
-          <Fill>betalingsudbyder</Fill>, som er selvstændigt dataansvarlig for
+          Stripe, Inc., som er selvstændigt dataansvarlig for
           betalingsdata.
         </p>
       </Section>
@@ -67,9 +68,9 @@ export default function PrivatlivPage() {
           aktivt vælger at slå til.
         </p>
         <p>
-          Vi bruger følgende databehandlere: <Fill>hostingudbyder</Fill>{" "}
-          (drift), <Fill>betalingsudbyder</Fill> (betaling) og{" "}
-          <Fill>e-mailudbyder</Fill> (udsendelse af kvitteringer). Der er indgået
+          Vi bruger følgende databehandlere: Render Services, Inc. (drift,
+          servere i Frankfurt), Stripe, Inc. (betaling) og Resend, Inc.
+          (udsendelse af kvitteringer). Der er indgået
           databehandleraftaler med dem alle.
         </p>
         <p>
@@ -80,9 +81,11 @@ export default function PrivatlivPage() {
 
       <Section n="5" title="Overførsel til lande uden for EU/EØS">
         <p>
-          <Fill>Udfyld: om nogen af jeres databehandlere ligger uden for EU/EØS,
-          og på hvilket grundlag overførslen sker — typisk EU-Kommissionens
-          standardkontraktbestemmelser</Fill>.
+          Ja. Vores servere og database ligger i Frankfurt, altså inden for EU. Men
+          selskabet bag RacketBuddy er amerikansk, og både betalingsformidling
+          (Stripe) og udsendelse af e-mail (Resend) sker fra USA. Overførslerne
+          hviler på EU-Kommissionens standardkontraktbestemmelser og de
+          respektive udbyderes egne overførselsordninger..
         </p>
       </Section>
 
@@ -107,7 +110,7 @@ export default function PrivatlivPage() {
         <p>
           Bliver vi opmærksomme på, at vi har oplysninger om et barn under 18 uden
           samtykke fra en forælder, sletter vi dem hurtigst muligt. Kontakt os på{" "}
-          <Fill>e-mail</Fill>, hvis du mener, det er tilfældet.
+          {COMPANY.email}, hvis du mener, det er tilfældet.
         </p>
       </Section>
 
@@ -122,7 +125,7 @@ export default function PrivatlivPage() {
           <li>gøre indsigelse mod behandling, der sker efter en interesseafvejning</li>
         </ul>
         <p>
-          Skriv til <Fill>e-mail</Fill>, så svarer vi inden for en måned.
+          Skriv til {COMPANY.email}, så svarer vi inden for en måned. Du kan også slette din konto selv under Min profil.
         </p>
         <p>
           Er du utilfreds med vores behandling, kan du klage til Datatilsynet,
@@ -138,8 +141,9 @@ export default function PrivatlivPage() {
         <p>
           Vi bruger ikke cookies til statistik, markedsføring eller sporing på
           tværs af hjemmesider.{" "}
-          <Fill>Tilføjer I analyseværktøjer senere, skal denne del opdateres, og
-          der skal indhentes samtykke</Fill>.
+          Vi tæller sidevisninger i et samlet tal pr. dag. Vi gemmer hverken
+          cookie, IP-adresse eller hvilke sider der blev set, så tallet kan ikke
+          føres tilbage til dig. Derfor er der ingen samtykke at bede om..
         </p>
       </Section>
 

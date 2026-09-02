@@ -333,6 +333,26 @@ Ud over en enkelt time kan trænere sælge forløb — fx et 10-turskort eller e
 
 ---
 
+## Pakkeforløb
+
+Et klippekort hos én træner: ti timer betalt på én gang. Det var indtil nu kun tekst på profilen — "aftales direkte med træneren" — så den største enkeltbetaling en træner sælger, foregik helt uden om platformen, og uden provision.
+
+**Modellen er den enkleste, der holder.** Købet er én betaling, og hver booking hos den træner trækker et klip i stedet for en betaling. Ingen udløbsdato, ingen delvis refusion, ingen overførsel mellem trænere. Alt det kan tilføjes, når nogen har spurgt om det.
+
+**Provisionen tages af hele pakken ved købet**, ikke ved hvert klip. Ellers skulle vi holde regnskab med, hvor meget af en betaling der var tjent hjem, hver gang en time blev brugt.
+
+**`sessionsUsed` frem for at slette klip.** En elev skal kunne se, hvad der er brugt, og vi skal kunne svare på det, hvis der bliver spurgt.
+
+**Klippet trækkes betinget.** `updateMany` med `sessionsUsed: { lt: total }` frem for at læse, tælle og skrive: to bookinger på samme tid kan ellers bruge det sidste klip to gange. Databasen afgør det, ikke rækkefølgen af to forespørgsler.
+
+## Sletning af konto
+
+Rækken i `User` slettes ikke — den anonymiseres. Bookinger og betalinger peger på brugeren, og dem må vi ikke slette: transaktioner skal kunne dokumenteres i fem år. GDPR anerkender netop den slags retlige forpligtelser som grund til at beholde data, og databeskyttelse handler om personoplysninger, ikke om at et beløb har skiftet hænder.
+
+Alt personhenførbart fjernes eller overskrives, og tilbage står en række, der stadig kan bære en bogføringspost, men ikke siger noget om et menneske. Det, der kan slettes helt, bliver det: beskeder, opslag, swipes, anmeldelser, trænerprofil, halvfærdige logins og ubetalte reservationer.
+
+E-mailfeltet er unikt i databasen og kan derfor ikke bare tømmes. Det sættes til en tilfældig adresse på `@slettet.invalid` — et domæne, der ikke kan findes, og som ingen kan modtage post på.
+
 ## Trænerens ledige tider
 
 Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var det et tekstfelt med rå JSON — det virkede, men ingen træner udfylder det, og en enkelt manglende tuborgklamme gjorde profilen ubookbar uden nogen forklaring.

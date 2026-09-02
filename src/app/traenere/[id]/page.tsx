@@ -10,6 +10,9 @@ import { describeLength, lessonPriceKr } from "../../../lib/slots";
 import { getPreferences } from "../../../lib/preferences";
 import { translator } from "../../../lib/i18n";
 import { BOOKING_WINDOW_DAYS, freeSlots } from "../../../lib/coaching";
+import { creditsWith } from "../../../lib/packages";
+import { buyPackage } from "../../../lib/actions";
+import { SubmitButton } from "../../../components/SubmitButton";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
 import { Stars } from "../../../components/ReviewForm";
 
@@ -39,6 +42,7 @@ export default async function TraenerPage({
 
   const free = await freeSlots(coach);
   const t = translator((await getPreferences()).locale);
+  const credits = user ? await creditsWith(user.id, coach.id) : [];
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
   const length = describeLength(coach.lessonMinutes);
 
@@ -98,8 +102,14 @@ export default async function TraenerPage({
         <div className="mt-6">
           <h2 className="display mb-1 text-xl">{t("coach.packages")}</h2>
           <p className="mb-3 text-sm text-slate/60">
-            {t("coach.packagesNote")}
+            {t("coach.packagesBuyNote")}
           </p>
+
+          {credits.map((c) => (
+            <p key={c.purchaseId} className="mb-3 rounded-xl bg-court/10 p-3 text-sm font-semibold text-court">
+              {t("coach.creditsLeft", { n: c.left, name: c.name })}
+            </p>
+          ))}
           <ul className="space-y-3">
             {coach.packages.map((p: any) => (
               <li key={p.id} className="card">
@@ -111,6 +121,19 @@ export default async function TraenerPage({
                   {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
                 </p>
                 {p.description && <p className="mt-2 text-sm">{p.description}</p>}
+                {user ? (
+                  <form action={buyPackage} className="mt-3">
+                    <input type="hidden" name="packageId" value={p.id} />
+                    <input type="hidden" name="coachProfileId" value={coach.id} />
+                    <SubmitButton pendingText="Åbner betaling…">
+                      {t("coach.buyPackage")}
+                    </SubmitButton>
+                  </form>
+                ) : (
+                  <Link href="/login" className="btn-ghost mt-3 inline-block">
+                    {t("coach.loginToBuy")}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

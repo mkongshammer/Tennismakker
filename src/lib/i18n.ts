@@ -1064,6 +1064,35 @@ const T: Dict = {
     no: "Lenken er utløpt eller brukt. Be om en ny.",
   },
 
+  "coach.buyPackage": {
+    da: "Køb pakken",
+    en: "Buy the package",
+    de: "Paket kaufen",
+    sv: "Köp paketet",
+    no: "Kjøp pakken",
+  },
+  "coach.packagesBuyNote": {
+    da: "Betales på én gang. Timerne bookes bagefter som almindelige tider — de trækkes fra pakken i stedet for at koste noget.",
+    en: "Paid in one go. You book the sessions afterwards like any other time — they come off the package instead of costing anything.",
+    de: "Auf einmal bezahlt. Die Stunden buchst du danach wie jede andere Zeit — sie gehen vom Paket ab, statt etwas zu kosten.",
+    sv: "Betalas på en gång. Timmarna bokar du sedan som vanliga tider — de dras från paketet i stället för att kosta något.",
+    no: "Betales på én gang. Timene booker du etterpå som vanlige tider — de trekkes fra pakken i stedet for å koste noe.",
+  },
+  "coach.creditsLeft": {
+    da: "Du har {n} timer tilbage på {name}. De bruges automatisk, når du booker.",
+    en: "You have {n} sessions left on {name}. They are used automatically when you book.",
+    de: "Du hast noch {n} Stunden auf {name}. Sie werden beim Buchen automatisch verwendet.",
+    sv: "Du har {n} timmar kvar på {name}. De används automatiskt när du bokar.",
+    no: "Du har {n} timer igjen på {name}. De brukes automatisk når du booker.",
+  },
+  "coach.loginToBuy": {
+    da: "Log ind for at købe",
+    en: "Log in to buy",
+    de: "Zum Kaufen anmelden",
+    sv: "Logga in för att köpa",
+    no: "Logg inn for å kjøpe",
+  },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",

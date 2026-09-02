@@ -22,6 +22,7 @@ import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
 import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
 import { getSettings } from "../../../../lib/settings";
+import { confirmPackagePurchase } from "../../../../lib/packages";
 import { syncSubscription } from "../../../../lib/subscription";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,13 @@ async function handleEvent(type: string, object: any) {
           const sub = await (await stripe()).subscriptions.retrieve(subscriptionId);
           await syncSubscription(sub as any);
         }
+        return;
+      }
+
+      // Et pakkekøb er også en betaling, bare uden en booking bagved.
+      const purchaseId = session.metadata?.purchaseId;
+      if (purchaseId) {
+        await confirmPackagePurchase(purchaseId);
         return;
       }
 

@@ -112,3 +112,65 @@ export async function overview(): Promise<{ periods: Period[]; rows: Row[] }> {
     ],
   };
 }
+
+export type MoneyRow = { label: string; note?: string; values: string[] };
+
+const kr = (n: number) => `${n.toLocaleString("da-DK")} kr`;
+
+/**
+ * Hvad der faktisk kom ind.
+ *
+ * Kun betalinger med status PAID tælles. En reservation, der aldrig blev
+ * betalt, er ikke omsætning — og et tal, der tæller hensigter med, er
+ * værre end intet tal, fordi man tror på det.
+ *
+ * Abonnementerne står for sig: de opkræves månedligt af Stripe og optræder
+ * ikke som Payment-rækker her. Beløbet er derfor det, der løber lige nu,
+ * ikke det der er kommet ind i perioden.
+ */
+export async function economy(): Promise<{
+  periods: Period[];
+  rows: MoneyRow[];
+  subscriptionMonthly: number;
+  subscriptionClubs: number;
+}> {
+  const ps = periods();
+
+  const sums = await Promise.all(
+    ps.map((p) =>
+      db.payment.aggregate({
+        _sum: { amountKr: true, platformFee: true },
+        _count: true,
+        where: { status: "PAID", ...(p.since ? { createdAt: { gte: p.since } } : {}) },
+      })
+    )
+  );
+
+  const subscribers = await db.club.findMany({
+    where: { billingModel: "SUBSCRIPTION", subscriptionStatus: { in: ["active", "trialing"] } },
+    select: { subscriptionKr: true },
+  });
+
+  return {
+    periods: ps,
+    rows: [
+      {
+        label: "Betalinger",
+        note: "gennemført",
+        values: sums.map((s) => String(s._count)),
+      },
+      {
+        label: "Beløb gennem platformen",
+        note: "klubbens og vores tilsammen",
+        values: sums.map((s) => kr(s._sum.amountKr ?? 0)),
+      },
+      {
+        label: "Vores andel",
+        note: "før Stripes gebyr",
+        values: sums.map((s) => kr(s._sum.platformFee ?? 0)),
+      },
+    ],
+    subscriptionMonthly: subscribers.reduce((sum, c) => sum + c.subscriptionKr, 0),
+    subscriptionClubs: subscribers.length,
+  };
+}

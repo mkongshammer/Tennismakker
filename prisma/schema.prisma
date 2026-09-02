@@ -47,6 +47,7 @@ model User {
   reviews         Review[]
   loginChallenges LoginChallenge[]
   passwordResets  PasswordReset[]
+  packagePurchases PackagePurchase[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -323,6 +324,7 @@ model CoachProfile {
   bookings Booking[]
   reviews  Review[]
   packages CoachPackage[]
+  packagePurchases PackagePurchase[]
 }
 
 // ---------- Modul A: Makker-matching ----------
@@ -430,6 +432,7 @@ model CoachPackage {
   priceKr        Int // samlet pris
   active         Boolean      @default(true)
   createdAt      DateTime     @default(now())
+  purchases      PackagePurchase[]
 
   @@index([coachProfileId])
 }
@@ -470,7 +473,10 @@ model WebsiteOrder {
   notes       String?
   // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
   status      String   @default("NEW")
-  priceKr     Int      @default(5000)
+  priceKr     Int
+  // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
+  // klippet gives tilbage, hvis bookingen aflyses.
+  packagePurchaseId String?      @default(5000)
   internalNote String?
   clubId      String?
   createdAt   DateTime @default(now())
@@ -534,4 +540,31 @@ model PasswordReset {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// ---------- Køb af pakkeforløb ----------
+// Et klippekort hos én træner. Købet betales på én gang, og hver booking
+// hos den træner trækker et klip i stedet for en betaling.
+//
+// sessionsUsed frem for at slette klip: en elev skal kunne se, hvad der er
+// brugt, og vi skal kunne svare på det, hvis der bliver spurgt.
+model PackagePurchase {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  coachProfileId String
+  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id])
+  packageId      String
+  package        CoachPackage @relation(fields: [packageId], references: [id])
+
+  name         String // navnet da det blev købt — pakken kan ændres senere
+  sessions     Int
+  sessionsUsed Int    @default(0)
+  priceKr      Int
+  platformFee  Int    @default(0)
+
+  status    String   @default("HOLD") // "HOLD" | "PAID" | "CANCELLED"
+  createdAt DateTime @default(now())
+
+  @@index([userId, coachProfileId, status])
 }

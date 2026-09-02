@@ -6,6 +6,7 @@ import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
+import { DeleteAccount } from "../../components/DeleteAccount";
 import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
@@ -258,6 +259,9 @@ export default async function ProfilPage({
           </ul>
         </section>
       )}
+
+      <DeleteAccount />
+
     </div>
   );
 }

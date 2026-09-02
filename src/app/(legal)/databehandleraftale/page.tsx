@@ -1,13 +1,14 @@
-import { Fill, LegalPage, Section } from "../LegalPage";
+import { LegalPage, Section } from "../LegalPage";
+import { COMPANY } from "../company";
 
 export const metadata = { title: "Databehandleraftale — RacketBuddy" };
 
 export default function DatabehandleraftalePage() {
   return (
-    <LegalPage title="Databehandleraftale" updated="29. august 2026">
+    <LegalPage draft={false} title="Databehandleraftale" updated="2. september 2026">
       <p className="text-slate/70">
         Denne aftale indgås mellem klubben (<strong>den dataansvarlige</strong>)
-        og <Fill>virksomhedsnavn</Fill>, CVR <Fill>CVR-nummer</Fill> (
+        og {COMPANY.name}, {COMPANY.registration} (
         <strong>databehandleren</strong>), når klubben opretter sig på Tennis
         Makker. Den opfylder kravet i databeskyttelsesforordningens artikel 28,
         stk. 3.
@@ -67,8 +68,9 @@ export default function DatabehandleraftalePage() {
           om egne baner, bookinger og medlemmer.
         </p>
         <p>
-          <Fill>Udfyld: hvor ofte tages backup, hvor længe gemmes den, og
-          hvordan testes gendannelse</Fill>.
+          Databasen sikkerhedskopieres dagligt af vores hostingudbyder, og
+          kopierne opbevares i syv dage. Gendannelse sker efter aftale med
+          klubben og testes ved større ændringer af databasen..
         </p>
       </Section>
 
@@ -79,16 +81,14 @@ export default function DatabehandleraftalePage() {
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
-            <Fill>hostingudbyder</Fill> — drift af server og database,{" "}
-            <Fill>land</Fill>
+            Render Services, Inc. — drift af server og database, servere i
+            Frankfurt (EU)
           </li>
           <li>
-            <Fill>betalingsudbyder</Fill> — betalingsformidling,{" "}
-            <Fill>land</Fill>
+            Stripe, Inc. — betalingsformidling, USA
           </li>
           <li>
-            <Fill>e-mailudbyder</Fill> — udsendelse af kvitteringer og beskeder,{" "}
-            <Fill>land</Fill>
+            Resend, Inc. — udsendelse af kvitteringer og beskeder, USA
           </li>
         </ul>
         <p>
@@ -104,9 +104,10 @@ export default function DatabehandleraftalePage() {
 
       <Section n="6" title="Overførsel til tredjelande">
         <p>
-          <Fill>Udfyld: om oplysninger overføres uden for EU/EØS, til hvilket
-          land, og på hvilket overførselsgrundlag — typisk EU-Kommissionens
-          standardkontraktbestemmelser. Overføres intet, skrives det her</Fill>.
+          Ja. Server og database ligger i Frankfurt inden for EU, men
+          databehandleren selv, betalingsformidling og e-mailudsendelse sker fra
+          USA. Overførslerne hviler på EU-Kommissionens
+          standardkontraktbestemmelser..
         </p>
       </Section>
 

@@ -11,6 +11,8 @@ import { getSettings } from "./settings";
 import { COUNTRIES, LOCALES } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
+import { eraseAccount } from "./erasure";
+import { spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -211,6 +213,26 @@ export async function submitNewPassword(_prev: unknown, formData: FormData) {
   redirect("/login?nulstillet=1");
 }
 
+/**
+ * Sletter din egen konto.
+ *
+ * Kræver, at man skriver ordet — en knap alene er for let at ramme, og det
+ * her kan ikke fortrydes. Bookinger og betalinger bliver stående, men uden
+ * noget der peger på et menneske; se src/lib/erasure.ts for hvorfor.
+ */
+export async function deleteMyAccount(_prev: unknown, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  if (String(formData.get("confirm") ?? "").trim().toUpperCase() !== "SLET") {
+    return { error: "Skriv SLET i feltet for at bekræfte." };
+  }
+
+  await eraseAccount(user!.id);
+  destroySession();
+  redirect("/?slettet=1");
+}
+
 export async function logout() {
   destroySession();
   redirect("/");
@@ -370,6 +392,23 @@ export async function bookCourtSlot(formData: FormData) {
 }
 
 /** Booker en trænertime. */
+/** Køber et pakkeforløb hos en træner. */
+export async function buyPackage(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const packageId = String(formData.get("packageId") ?? "");
+  const coachId = String(formData.get("coachProfileId") ?? "");
+
+  const url = await startPackageCheckout(user!.id, packageId).catch((err) => {
+    console.error("Pakkekøb fejlede:", err);
+    return null;
+  });
+
+  if (!url) redirect(`/traenere/${coachId}?fejl=betaling`);
+  redirect(url);
+}
+
 export async function bookCoachSlot(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -397,18 +436,27 @@ export async function bookCoachSlot(formData: FormData) {
 
   if (await isTaken(coachProfileId, startsAt, endsAt)) fail("optaget");
 
+  // Har eleven et klippekort hos træneren, bruges et klip frem for en
+  // betaling. Timen er allerede betalt, dengang pakken blev købt.
+  const spentCredit = await spendCredit(user.id, coachProfileId);
+
   const booking = await db.booking.create({
     data: {
       kind: "COACH",
-      status: "HOLD",
+      status: spentCredit ? "CONFIRMED" : "HOLD",
+      packagePurchaseId: spentCredit,
       startsAt,
       endsAt,
-      priceKr: lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
+      priceKr: spentCredit ? 0 : lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
       holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
       userId: user.id,
       coachProfileId,
     },
   });
+
+  // Blev der brugt et klip, er der ingenting at betale — timen er allerede
+  // købt. Så springes checkout helt over.
+  if (spentCredit) redirect("/profil?klip=1");
 
   // Samme tjek som ved banebooking, se dér.
   const stripeOn = (await getSettings()).paymentProvider === "stripe";

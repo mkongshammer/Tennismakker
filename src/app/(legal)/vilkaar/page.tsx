@@ -1,15 +1,15 @@
-import { Fill, LegalPage, Section } from "../LegalPage";
+import { LegalPage, Section } from "../LegalPage";
+import { COMPANY } from "../company";
 
 export const metadata = { title: "Handelsbetingelser — RacketBuddy" };
 
 export default function VilkaarPage() {
   return (
-    <LegalPage title="Handelsbetingelser" updated="29. august 2026">
+    <LegalPage draft={false} title="Handelsbetingelser" updated="2. september 2026">
       <Section n="1" title="Hvem du handler med">
         <p>
-          RacketBuddy drives af <Fill>virksomhedsnavn</Fill>, CVR{" "}
-          <Fill>CVR-nummer</Fill>, <Fill>adresse</Fill>. Du kan kontakte os på{" "}
-          <Fill>e-mail</Fill>.
+          RacketBuddy drives af {COMPANY.name}, {COMPANY.registration}, med
+          adresse {COMPANY.address}. Du kan kontakte os på {COMPANY.email}.
         </p>
         <p>
           RacketBuddy er en formidlingsplatform. Når du booker en bane, indgår
@@ -41,7 +41,7 @@ export default function VilkaarPage() {
           inklusive moms.
         </p>
         <p>
-          Vi modtager betaling med <Fill>betalingsmetoder</Fill>. Beløbet
+          Vi modtager betaling med betalingskort (Visa og Mastercard). Beløbet
           trækkes ved bekræftelsen.
         </p>
       </Section>
@@ -126,13 +126,15 @@ export default function VilkaarPage() {
 
       <Section n="10" title="Klage">
         <p>
-          Er du utilfreds, så kontakt os først på <Fill>e-mail</Fill>. Fører det
+          Er du utilfreds, så kontakt os først på {COMPANY.email}. Fører det
           ikke til en løsning, kan du klage til Nævnenes Hus, Toldboden 2, 8800
-          Viborg, via <Fill>naevneneshus.dk</Fill>.
+          Viborg, via naevneneshus.dk. Det gælder, fordi vi retter vores
+          tjeneste mod forbrugere i Danmark, selv om selskabet er registreret i
+          USA — dine rettigheder som dansk forbruger følger dig.
         </p>
         <p>
           Du kan også bruge EU-Kommissionens klageportal på{" "}
-          <Fill>ec.europa.eu/odr</Fill>.
+          ec.europa.eu/odr.
         </p>
       </Section>
 
