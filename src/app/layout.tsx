@@ -56,11 +56,18 @@ export default async function RootLayout({
           locale={prefs.locale}
         />
 
-        <main className="has-tabbar mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10">
+        {/* Pladsen til bundlinjen afsættes kun, når bundlinjen faktisk er
+            der — ellers ville en udlogget besøgende få 68 tomme pixels
+            nederst på hver eneste side. */}
+        <main
+          className={`mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}
+        >
           {children}
         </main>
 
-        <footer className="has-tabbar mt-20 border-t border-slate/10 bg-chalk md:pb-0">
+        <footer
+          className={`mt-20 border-t border-slate/10 bg-chalk md:pb-0 ${user ? "has-tabbar" : ""}`}
+        >
           <div className="mx-auto max-w-6xl px-4 py-10">
             <p className="display text-lg">
               Racket<span className="text-court">Buddy</span>
@@ -77,7 +84,11 @@ export default async function RootLayout({
           </div>
         </footer>
 
-        <TabBar locale={prefs.locale} unread={unread} />
+        {/* Bundlinjen er navigation i det, man har adgang til. Udlogget er
+            der intet at navigere rundt i endnu, og fire faner, der alle
+            ender på login-siden, er en blindgyde frem for en genvej.
+            Forsiden fører selv de besøgende videre. */}
+        {user && <TabBar locale={prefs.locale} unread={unread} />}
       </body>
     </html>
   );

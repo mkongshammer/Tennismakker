@@ -410,6 +410,8 @@ Fire punkter i bundlinjen: Book bane, Find træner, Find medspiller, Beskeder. P
 
 Beskeder har et tal med ulæste. Det er et ægte tal, ikke en pyntet prik: har man ingen ulæste, er der ingenting at se. Et badge, der lyser uden grund, holder op med at betyde noget efter anden gang.
 
+**Bundlinjen vises kun, når man er logget ind.** Udlogget er der ikke noget at navigere rundt i endnu, og fire faner, der alle ender på login-siden, er en blindgyde frem for en genvej. Forsiden fører selv de besøgende videre. Pladsen til bundlinjen (`has-tabbar`) afsættes samme sted, så en udlogget side ikke får tomme pixels nederst.
+
 ## Sådan kommer en klub i gang
 
 Den tungeste del af at være klub hos os var, at man skulle frigive hver enkelt time i hånden — tyve klik om ugen, hver uge. Det er skiftet ud med tre ting:
