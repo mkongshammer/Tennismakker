@@ -160,7 +160,7 @@ export async function closeMatchRequest(formData: FormData) {
   revalidatePath("/profil");
 }
 
-// ---------------- Booking (ink + træner) ----------------
+// ---------------- Booking (bane + træner) ----------------
 
 const HOLD_MINUTES = 10;
 
@@ -395,7 +395,7 @@ export async function syncNow() {
 }
 
 /**
- * Frigiver gæstetider (MANUAL-integration): klubben vælger ink, dato,
+ * Frigiver gæstetider (MANUAL-integration): klubben vælger bane, dato,
  * tidsrum og pris, og vi opretter én time ad gangen i det interval.
  */
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
@@ -408,7 +408,7 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const priceKr = Number(formData.get("priceKr") ?? 0);
 
   const court = await db.court.findFirst({ where: { id: courtId, clubId } });
-  if (!court) return { error: "Vælg en ink der hører til klubben." };
+  if (!court) return { error: "Vælg en bane, der hører til klubben." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Vælg en dato." };
   if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
     return { error: "Sluttidspunktet skal ligge efter starttidspunktet." };

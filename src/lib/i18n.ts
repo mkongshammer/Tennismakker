@@ -50,7 +50,7 @@ const T: Dict = {
   // Book bane
   "book.title": { da: "Book bane", en: "Book a court" },
   "book.intro": {
-    da: "Find en ledig ink i en klub nær dig.",
+    da: "Find en ledig bane i en klub nær dig.",
     en: "Find an available court at a club near you.",
   },
   "book.noClubs": {

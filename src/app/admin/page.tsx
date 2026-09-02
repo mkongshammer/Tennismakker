@@ -373,7 +373,7 @@ export default async function AdminPage({
             <p className="mt-1 text-slate/70">
               Bruger I både os og en anden platform, kan vi ikke se hinandens
               bookinger. Frigiv derfor forskellige tider til hver kanal — eller
-              afsæt en ink til hver. Så kan den samme time ikke sælges to gange.
+              afsæt en bane til hver. Så kan den samme time ikke sælges to gange.
             </p>
             <p className="mt-2 text-slate/70">
               Tag altid tiden ud af jeres eget system, når I frigiver den her.

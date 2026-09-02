@@ -45,7 +45,7 @@ const BOOKING_FRESHNESS_MS = 60_000;
  * Baggrund: en ICAL-klub spejles normalt hvert kvarter af cron-jobbet. Har
  * klubben solgt tiden ad en anden kanal i mellemtiden — i deres eget system
  * eller på en anden platform, der skriver tilbage til det — ville vi sælge
- * en optaget ink. Et enkelt opslag her skærer vinduet ned fra 15 minutter
+ * en optaget bane. Et enkelt opslag her skærer vinduet ned fra 15 minutter
  * til under et minut.
  *
  * Det fjerner ikke risikoen. En kanal, der ikke skriver tilbage til klubbens
@@ -69,8 +69,8 @@ export async function refreshBeforeBooking(clubId: string): Promise<void> {
  * gemmer optaget-tiderne. Kaldes fra admin ("Synkronisér nu") og kan
  * kaldes fra et cron-job.
  *
- * Bane-matching: et event knyttes til den ink, hvis navn optræder i
- * eventets tekst (fx "Bane 2"). Nævner eventet ingen ink, tolkes det som
+ * Bane-matching: et event knyttes til den bane, hvis navn optræder i
+ * eventets tekst (fx "Bane 2"). Nævner eventet ingen bane, tolkes det som
  * optaget på alle baner — det er den sikre antagelse, da vi hellere må
  * skjule en ledig tid end sælge en optaget.
  */
