@@ -274,6 +274,9 @@ model Booking {
   startsAt      DateTime
   endsAt        DateTime
   priceKr       Int
+  // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
+  // klippet gives tilbage, hvis bookingen aflyses.
+  packagePurchaseId String?
   holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
   createdAt     DateTime  @default(now())
 
@@ -473,10 +476,7 @@ model WebsiteOrder {
   notes       String?
   // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
   status      String   @default("NEW")
-  priceKr     Int
-  // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
-  // klippet gives tilbage, hvis bookingen aflyses.
-  packagePurchaseId String?      @default(5000)
+  priceKr     Int      @default(5000)
   internalNote String?
   clubId      String?
   createdAt   DateTime @default(now())
