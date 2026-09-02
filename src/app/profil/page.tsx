@@ -131,7 +131,7 @@ export default async function ProfilPage({
             <Link href="/admin" className="btn-ghost">Klub-administration</Link>
           )}
           {user.role === "SUPERADMIN" && (
-            <Link href="/superadmin" className="btn-ghost">Klubgodkendelser</Link>
+            <Link href="/superadmin" className="btn-ghost">Superadmin</Link>
           )}
         </section>
       )}
@@ -140,7 +140,7 @@ export default async function ProfilPage({
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
           <p className="text-slate/60">
-            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-court underline">book en ink</Link> eller{" "}
+            Ingen bookinger endnu — <Link href="/book" className="font-semibold text-court underline">book en bane</Link> eller{" "}
             <Link href="/traenere" className="font-semibold text-court underline">en træner</Link>.
           </p>
         )}
