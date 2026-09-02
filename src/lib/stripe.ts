@@ -30,3 +30,28 @@ export async function stripe(): Promise<Stripe> {
   }
   return client.stripe;
 }
+
+/**
+ * Hvilket land vores egen Stripe-konto står i.
+ *
+ * Afgør, om en udbetaling til en klub er indenlandsk eller
+ * grænseoverskridende — og det ændrer, hvad Stripe tillader. Slås op én
+ * gang pr. proces; en konto skifter ikke land, mens serveren kører.
+ */
+let platformCountry: string | null = null;
+
+export async function platformAccountCountry(): Promise<string | null> {
+  if (platformCountry) return platformCountry;
+  try {
+    // Et kald uden konto-id henter vores egen konto. Typerne kræver et id,
+    // fordi den samme metode også slår forbundne konti op — deraf casten,
+    // som er begrænset til denne ene linje.
+    const accounts = (await stripe()).accounts as unknown as {
+      retrieve(): Promise<{ country?: string | null }>;
+    };
+    platformCountry = (await accounts.retrieve()).country ?? null;
+  } catch {
+    platformCountry = null;
+  }
+  return platformCountry;
+}

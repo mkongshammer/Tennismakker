@@ -706,6 +706,18 @@ De fem demo-klubber, der blev oprettet for at have noget at vise på kortet, fal
 
 **Tabellen lægges ind ved bygning.** `npm run build` kører `prisma db push`, før `next build`. Fejler det — fx uden `DATABASE_URL` i byggemiljøet — fortsætter bygningen alligevel, og opsætningssiden siger så tydeligt, at tabellen mangler, og hvad man gør ved det. Appen kører videre på miljøvariablerne i mellemtiden.
 
+## Når platformen og klubberne står i hvert sit land
+
+Platformens Stripe-konto behøver ikke være dansk. Er den det ikke, bliver udbetalingerne til klubberne grænseoverskridende, og det ændrer tre ting.
+
+**`on_behalf_of` er ikke tilladt.** Stripe understøtter ikke destination charges med `on_behalf_of`, når udbetalingen krydser en grænse. Vi bruger den parameter til abonnementsklubber, netop for at flytte Stripes gebyr over på klubben, når vores egen andel er 0 kr. Sættes den alligevel, afvises kaldet, og hver eneste booking hos en abonnementsklub fejler.
+
+`startCheckout()` slår derfor parameteren fra, når platformens land ikke er det samme som klubbens. Så bærer vi gebyret i stedet — og det er, hvad abonnementet skal dække. Landet slås op én gang pr. proces i `platformAccountCountry()`.
+
+**Stripe skal slå det til.** Grænseoverskridende udbetalinger afgøres af Stripe ud fra platformens profil. Er de ikke slået til, skal Stripe Support kontaktes. Selvtestens forbindelsestjek viser nu platformens land og siger til, hvis klubberne ligger et andet sted.
+
+**Det koster.** Stripe tager et gebyr pr. grænseoverskridende udbetaling, og betalinger i DKK, der udbetales i en anden valuta, veksles undervejs. Provisionsregnestykket i selvtesten regner med danske indenlandske kortgebyrer og passer derfor ikke, når platformen ligger uden for landet — tallene dér er et gulv, ikke et facit.
+
 ## Fra sandkasse til live
 
 Ét felt styrer det: den hemmelige Stripe-nøgle under `/superadmin/opsaetning`. Skiftes `sk_test_…` ud med `sk_live_…`, flytter hele appen med i samme øjeblik. Der er ingen anden kontakt.

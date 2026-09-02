@@ -18,7 +18,7 @@
 // 3. Webhook (payment_intent.succeeded) kalder confirmBookingPayment() nedenfor.
 
 import { db } from "./db";
-import { stripe } from "./stripe";
+import { platformAccountCountry, stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
 import { describeLength } from "./slots";
 import { subscriptionIsActive } from "./billing";
@@ -146,7 +146,17 @@ export async function startCheckout(bookingId: string): Promise<string> {
   // fee er kun 0 for en klub, hvis abonnementet betales — se
   // platformFeeForBooking. Derfor er dette samtidig tjekket på, om klubben
   // skal bære Stripes gebyr selv.
-  const isSubscriptionClub = fee === 0 && kind === "CLUB";
+  //
+  // MEN: står platformen og klubben i hvert sit land, er udbetalingen
+  // grænseoverskridende, og dér tillader Stripe ikke `on_behalf_of` på en
+  // destination charge. Kaldet ville blive afvist, og bookingen fejle for
+  // enhver abonnementsklub. Så bærer vi gebyret i stedet — det er, hvad
+  // abonnementet skal dække.
+  const platformCountry = await platformAccountCountry();
+  const sameCountry = Boolean(
+    platformCountry && account.country && platformCountry === account.country
+  );
+  const isSubscriptionClub = fee === 0 && kind === "CLUB" && sameCountry;
 
   const session = await (await stripe()).checkout.sessions.create({
     mode: "payment",

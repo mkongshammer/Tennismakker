@@ -12,7 +12,7 @@
 // forældet. Resten er rene opslag.
 
 import { db } from "./db";
-import { stripe, stripeEnabled } from "./stripe";
+import { platformAccountCountry, stripe, stripeEnabled } from "./stripe";
 import { commissionAt } from "./payments";
 import { sendMail } from "./email";
 import { refreshAccountStatus } from "./connect";
@@ -116,11 +116,30 @@ async function connectivityCheck(): Promise<Check> {
     };
   }
   try {
-    const balance = await (await stripe()).balance.retrieve();
+    const [balance, country] = await Promise.all([
+      (await stripe()).balance.retrieve(),
+      platformAccountCountry(),
+    ]);
+
+    const currencies = balance.available.map((a) => a.currency).join(", ") || "ingen endnu";
+
+    const foreignClubs = country
+      ? await db.club.count({ where: { approved: true, country: { not: country } } })
+      : 0;
+
+    // Står platformen i ét land og modtagerne i et andet, er udbetalingerne
+    // grænseoverskridende. Det er understøttet, men Stripe skal slå det til
+    // for kontoen, og det koster et gebyr pr. udbetaling — værd at kunne se
+    // her frem for at opdage det på den første rigtige booking.
+    const crossBorder =
+      foreignClubs > 0
+        ? ` Kontoen står i ${country}, men ${foreignClubs === 1 ? "én klub ligger" : `${foreignClubs} klubber ligger`} i et andet land — udbetalingerne er altså grænseoverskridende og skal være slået til hos Stripe.`
+        : "";
+
     return {
       name: "Forbindelse til Stripe",
       status: "ok",
-      detail: `Svarer. Valutaer i saldoen: ${balance.available.map((a) => a.currency).join(", ") || "ingen endnu"}.`,
+      detail: `Svarer. Konto i ${country ?? "ukendt land"}. Valutaer i saldoen: ${currencies}.${crossBorder}`,
     };
   } catch (err) {
     return {
