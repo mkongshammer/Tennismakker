@@ -5,6 +5,7 @@
 // os tilliden hos alle andre — og hos den gæst der står foran en låst låge.
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { SuperadminAccess } from "./SuperadminAccess";
 import { getSettings } from "../../lib/settings";
 import { describeSubscription, subscriptionIsActive } from "../../lib/billing";
 import { format } from "date-fns";
@@ -73,7 +74,11 @@ export default async function SuperadminPage() {
           <Link href="/superadmin/opsaetning" className="btn-ghost">Opsætning</Link>
           <Link href="/superadmin/selvtest" className="btn-ghost">Selvtest</Link>
         </div>
+
       </div>
+
+
+      <SuperadminAccess />
 
       <section>
         <h2 className="display mb-1 text-2xl">Klubhenvendelser</h2>

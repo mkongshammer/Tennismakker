@@ -231,3 +231,34 @@ export function cancellationNotice(opts: {
     ].join("\n"),
   };
 }
+
+/**
+ * Engangskoden til et login i to trin.
+ *
+ * Emnefeltet siger, hvad det handler om, uden at afsløre koden — emner
+ * vises på en låst skærm. Advarslen nederst er der, fordi en kode, man
+ * ikke selv har bedt om, er det tidligste tegn på, at nogen kender
+ * adgangskoden.
+ */
+export function loginCode(opts: {
+  to: string;
+  name: string;
+  code: string;
+  minutes: number;
+}): Mail {
+  return {
+    to: opts.to,
+    subject: "Din kode til RacketBuddy",
+    body: [
+      `Hej ${opts.name}`,
+      "",
+      "Kode til login:",
+      opts.code,
+      "",
+      `Koden gælder i ${opts.minutes} minutter og kan kun bruges én gang.`,
+      "",
+      "Har du ikke selv forsøgt at logge ind, kender nogen din adgangskode.",
+      "Skift den med det samme.",
+    ].join("\n"),
+  };
+}

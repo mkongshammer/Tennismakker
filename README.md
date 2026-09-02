@@ -401,6 +401,24 @@ Før var det en boks med fire lande midt på forsiden. Den stod i vejen for alle
 
 **Ingen klient-JavaScript.** Ja og nej er hver sin formular, ligesom sprog- og sportsvælgeren.
 
+## Login i to trin
+
+En superadmin kan se og ændre alt. Adgangskoden alene er ikke nok til den konto: den kan lækkes fra et andet site, gættes eller kigges over skulderen. Efter adgangskoden sendes derfor en sekscifret kode til den mail, kontoen hører til, og sessionen oprettes først, når koden er indtastet.
+
+Valgene bag `src/lib/twofactor.ts`:
+
+- **Koden gemmes hashet.** Et udtræk af databasen skal ikke give adgang.
+- **Fem forsøg, så er udfordringen død.** Uden det kan seks cifre gættes.
+- **Ti minutter.** Længe nok til at finde mailen, kort nok til at en kode, der bliver liggende i en indbakke, ikke er en nøgle for evigt.
+- **Rækken slettes, når koden er brugt.** En kode, der stadig ligger i databasen bagefter, er en kode, der kan bruges igen.
+- **Samme svar til "forkert mail" og "forkert adgangskode".** Fortæller man "den mail findes ikke", har man givet en liste over, hvem der har en konto.
+
+**Risikoen skal siges højt:** virker afsendelsen af e-mail ikke, kan ingen superadmin logge ind. Derfor tjekker selvtesten e-mail hver gang.
+
+**En bremse på gentagne forsøg** ligger i hukommelsen: otte fejl i træk mod samme adresse, så er der lukket i ti minutter. Det dækker det, der faktisk sker — nogen der prøver adgangskoder i hurtig rækkefølge. Begrænsningen er, at tælleren nulstilles ved genstart og ikke deles mellem flere servere. Kører appen en dag på flere maskiner, skal den flyttes i databasen eller foran appen.
+
+**Adgangskoder vises én gang.** Formularen på `/superadmin` laver koden på serveren og viser den på skærmen. Den sendes ikke på mail: en mail bliver liggende, videresendt og indekseret. Kan den ikke hentes frem igen, er den stadig en hemmelighed.
+
 ## Sprog
 
 Seks valg, fem ordbøger: dansk, britisk engelsk, amerikansk engelsk, tysk, svensk og norsk. De svarer én til én til landene i `COUNTRIES`, så hvert marked møder sit eget sprog i stedet for engelsk som mellemled. Før faldt alt uden for Danmark tilbage på engelsk — det dårligste valg begge veje, for en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.

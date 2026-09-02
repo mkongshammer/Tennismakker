@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
 import { COUNTRIES, LOCALES } from "./sports";
+import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -32,6 +33,39 @@ import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from
 import { rebookSameSlot } from "./rebook";
 
 // ---------------- Auth ----------------
+
+/**
+ * En bremse på gentagne loginforsøg.
+ *
+ * Holdes i hukommelsen med vilje: det kræver ingen tabel, og det dækker det,
+ * der faktisk sker — nogen der prøver adgangskoder i hurtig rækkefølge mod
+ * den samme konto. Begrænsningen er, at tælleren nulstilles ved genstart og
+ * ikke deles mellem flere servere. Kører appen en dag på flere maskiner,
+ * skal den flyttes i databasen eller foran appen.
+ */
+const attempts = new Map<string, { count: number; until: number }>();
+const MAX_ATTEMPTS = 8;
+const LOCKOUT_MS = 10 * 60 * 1000;
+
+function tooManyAttempts(email: string): boolean {
+  const entry = attempts.get(email);
+  if (!entry) return false;
+  if (Date.now() > entry.until) {
+    attempts.delete(email);
+    return false;
+  }
+  return entry.count >= MAX_ATTEMPTS;
+}
+
+function registerFailedAttempt(email: string) {
+  const entry = attempts.get(email);
+  const count = entry && Date.now() <= entry.until ? entry.count + 1 : 1;
+  attempts.set(email, { count, until: Date.now() + LOCKOUT_MS });
+}
+
+function clearAttempts(email: string) {
+  attempts.delete(email);
+}
 
 export async function signup(_prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -78,15 +112,72 @@ export async function signup(_prev: unknown, formData: FormData) {
   redirect("/profil");
 }
 
+/**
+ * Log ind.
+ *
+ * Samme svar uanset om det er mailen eller adgangskoden, der er forkert.
+ * Fortæller man "den mail findes ikke", har man givet en liste over, hvem
+ * der har en konto.
+ *
+ * For en superadmin stopper vi her og sender en kode til kontoens egen
+ * mail. Sessionen oprettes først, når koden er indtastet — se
+ * src/lib/twofactor.ts.
+ */
 export async function login(_prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+
+  const blocked = tooManyAttempts(email);
+  if (blocked) return { error: "auth.errTooMany" };
+
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-    return { error: "Forkert e-mail eller adgangskode." };
+    registerFailedAttempt(email);
+    return { error: "auth.errWrong" };
   }
+
+  clearAttempts(email);
+
+  if (needsEmailCode(user)) {
+    const challengeId = await startEmailChallenge(user);
+    // Id'et er ikke hemmeligt — koden er. Cookien er kortlivet, så en
+    // halvfærdig login ikke ligger og venter i en browser i ugevis.
+    cookies().set("rb_login", challengeId, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60,
+      path: "/",
+    });
+    redirect("/login/kode");
+  }
+
   await createSession(user.id);
   redirect("/profil");
+}
+
+/** Andet trin: koden fra mailen. */
+export async function verifyLoginCode(_prev: unknown, formData: FormData) {
+  const challengeId = cookies().get("rb_login")?.value;
+  if (!challengeId) return { error: "auth.errExpired" };
+
+  const result = await verifyEmailChallenge(challengeId, String(formData.get("code") ?? ""));
+
+  if (!result.ok) {
+    if (result.reason !== "forkert") cookies().delete("rb_login");
+    return {
+      error:
+        result.reason === "forkert"
+          ? "auth.errCodeWrong"
+          : result.reason === "opbrugt"
+            ? "auth.errCodeUsed"
+            : "auth.errCodeExpired",
+    };
+  }
+
+  cookies().delete("rb_login");
+  await createSession(result.userId);
+  redirect("/superadmin");
 }
 
 export async function logout() {

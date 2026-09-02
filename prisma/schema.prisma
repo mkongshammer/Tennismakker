@@ -45,6 +45,7 @@ model User {
   swipesGiven     Swipe[]        @relation("swipesGiven")
   swipesReceived  Swipe[]        @relation("swipesReceived")
   reviews         Review[]
+  loginChallenges LoginChallenge[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -486,4 +487,23 @@ model PlatformSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ---------- Login i to trin ----------
+// Adgangskoden alene er ikke nok for en superadmin: den kan lækkes, gættes
+// eller genbruges fra et andet site. Koden her sendes til den mail, kontoen
+// hører til, og skal indtastes bagefter. Rækken slettes i samme øjeblik den
+// er brugt — og en kode, der ligger i databasen efter brug, er en kode, der
+// kan bruges igen.
+model LoginChallenge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Hashet, ikke i klartekst. Et databaseudtræk skal ikke give adgang.
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

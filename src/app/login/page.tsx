@@ -1,31 +1,29 @@
-"use client";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
+import { LoginForm } from "./LoginForm";
 
-import Link from "next/link";
-import { useFormState } from "react-dom";
-import { login } from "../../lib/actions";
-import { SubmitButton } from "../../components/SubmitButton";
+export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
-  const [state, action] = useFormState(login, null);
+export default async function LoginPage() {
+  const t = translator((await getPreferences()).locale);
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="display mb-6 text-3xl">Log ind</h1>
-      <form action={action} className="card space-y-4">
-        <div>
-          <label className="label" htmlFor="email">E-mail</label>
-          <input className="input" id="email" name="email" type="email" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="password">Adgangskode</label>
-          <input className="input" id="password" name="password" type="password" required />
-        </div>
-        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <SubmitButton className="btn-ink w-full" pendingText="Logger ind…">Log ind</SubmitButton>
-        <p className="text-center text-sm text-slate/60">
-          Ny her? <Link href="/signup" className="font-semibold text-court underline">Opret profil</Link>
-        </p>
-      </form>
+      <h1 className="display mb-6 text-3xl">{t("nav.login")}</h1>
+      <LoginForm
+        labels={{
+          email: t("auth.email"),
+          password: t("auth.password"),
+          submit: t("nav.login"),
+          pending: t("auth.loggingIn"),
+          newHere: t("auth.newHere"),
+          signup: t("nav.signup"),
+        }}
+        errors={{
+          "auth.errWrong": t("auth.errWrong"),
+          "auth.errTooMany": t("auth.errTooMany"),
+        }}
+      />
     </div>
   );
 }
