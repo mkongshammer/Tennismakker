@@ -17,8 +17,8 @@
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { getSettings } from "./settings";
-import { commission } from "./payments";
 import { platformAccountCountry } from "./stripe";
+import { commissionAt } from "./billing";
 
 export type Credit = {
   purchaseId: string;
@@ -105,7 +105,7 @@ export async function startPackageCheckout(
   }
 
   const settings = await getSettings();
-  const fee = await commission(pack.priceKr);
+  const fee = commissionAt(pack.priceKr, settings.commissionPct);
 
   const purchase = await db.packagePurchase.create({
     data: {

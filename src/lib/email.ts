@@ -355,3 +355,37 @@ export function coachDecision(opts: {
     ].join("\n"),
   };
 }
+
+
+/**
+ * Ny anmodning til træneren.
+ *
+ * Uden den ville en anmodning ligge og spærre en tid, indtil træneren
+ * tilfældigvis åbnede sin profil. Eleven venter, tiden er låst, og ingen
+ * ved det.
+ */
+export function coachRequestNotice(opts: {
+  to: string;
+  coachName: string;
+  playerName: string;
+  playerLevel: number;
+  startsAt: Date;
+  priceKr: number;
+  withCredit: boolean;
+}): Mail {
+  return {
+    to: opts.to,
+    subject: `Ny anmodning: ${danishDateTime(opts.startsAt)}`,
+    body: [
+      `Hej ${opts.coachName}`,
+      "",
+      `${opts.playerName} (niveau ${opts.playerLevel}) vil booke en time hos dig:`,
+      danishDateTime(opts.startsAt),
+      opts.withCredit ? "Betales med klip fra et pakkeforløb." : `${opts.priceKr} kr`,
+      "",
+      "Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",
+      "",
+      `Godkend eller afvis her: ${baseUrl()}/profil`,
+    ].join("\n"),
+  };
+}

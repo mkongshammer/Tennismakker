@@ -46,3 +46,20 @@ export function describeSubscription(club: {
       return "Ikke startet — der betales ikke noget endnu.";
   }
 }
+
+// ---------------------------------------------------------------------------
+// Provisionens regnestykke
+// ---------------------------------------------------------------------------
+//
+// Ligger her og ikke i payments.ts, fordi pakkeforløbene også skal regne
+// den — og payments.ts skal kunne give et klip tilbage ved en aflysning.
+// Med regnestykket i payments ville de to filer importere hinanden, og en
+// cirkulær import virker lige indtil den dag, den ikke gør.
+
+/** Satsen en tom opsætning bruger. */
+export const DEFAULT_COMMISSION_PCT = 0.1;
+
+/** Provisionen af et beløb med en given sats, afrundet til hele kroner. */
+export function commissionAt(amountKr: number, pct: number): number {
+  return Math.round(amountKr * pct);
+}

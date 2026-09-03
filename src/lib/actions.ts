@@ -12,7 +12,7 @@ import { COUNTRIES, LOCALES, LOCALE_LIVE, SPORTS, type Locale } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
-import { spendCredit, startPackageCheckout } from "./packages";
+import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
   lessonPriceKr,
@@ -24,7 +24,7 @@ import { billingPortalUrl, startSubscriptionCheckout } from "./subscription";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
-import { coachDecision, matchAcceptedNotice, sendMail } from "./email";
+import { coachDecision, coachRequestNotice, matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 import { recordSwipe } from "./swipe";
 import { createReview } from "./reviews";
@@ -471,17 +471,35 @@ export async function bookCoachSlot(formData: FormData) {
   //
   // Klippet fra et pakkeforløb bruges heller ikke endnu. Det trækkes ved
   // godkendelsen, så en afvist anmodning ikke koster eleven et klip.
+  const price = lessonPriceKr(coach!.priceHour, coach!.lessonMinutes);
+  const credits = await creditsWith(user.id, coachProfileId);
+
   await db.booking.create({
     data: {
       kind: "COACH",
       status: "REQUESTED",
       startsAt,
       endsAt,
-      priceKr: lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
+      priceKr: price,
       userId: user.id,
       coachProfileId,
     },
   });
+
+  const coachUser = await db.user.findUnique({ where: { id: coach!.userId } });
+  if (coachUser) {
+    await sendMail(
+      coachRequestNotice({
+        to: coachUser.email,
+        coachName: coachUser.name,
+        playerName: user.name,
+        playerLevel: user.level,
+        startsAt,
+        priceKr: price,
+        withCredit: credits.length > 0,
+      })
+    );
+  }
 
   redirect("/profil?anmodet=1");
 }

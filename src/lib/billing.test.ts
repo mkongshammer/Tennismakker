@@ -7,7 +7,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { describeSubscription, subscriptionIsActive } from "./billing";
+import { commissionAt, describeSubscription, subscriptionIsActive } from "./billing";
 
 const klub = (billingModel: string, subscriptionStatus: string | null) => ({
   billingModel,
@@ -54,4 +54,25 @@ test("statussen kan siges til et menneske", () => {
     describeSubscription({ subscriptionStatus: "past_due", subscriptionKr: 199 }),
     "Betalingen fejlede. Kortet skal fornys."
   );
+});
+
+// ---------------------------------------------------------------------------
+// Provisionens regnestykke
+// ---------------------------------------------------------------------------
+
+test("provisionen afrundes til hele kroner", () => {
+  assert.equal(commissionAt(100, 0.1), 10);
+  assert.equal(commissionAt(150, 0.1), 15);
+  assert.equal(commissionAt(255, 0.1), 26); // 25,5 rundes op
+  assert.equal(commissionAt(245, 0.1), 25); // 24,5 rundes op til 25
+});
+
+test("nul procent giver nul", () => {
+  assert.equal(commissionAt(1000, 0), 0);
+});
+
+test("et pakkeforloeb regnes af hele beloebet", () => {
+  // 10 timer à 300 kr = 3.000 kr, vores andel 300 kr — taget en gang ved
+  // koebet, ikke ved hvert klip.
+  assert.equal(commissionAt(3000, 0.1), 300);
 });

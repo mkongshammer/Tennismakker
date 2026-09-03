@@ -1,6 +1,8 @@
 import { addHours, addMinutes } from "date-fns";
 import { isOffered, isTaken } from "../../../../lib/coaching";
 import { lessonEnd, lessonPriceKr } from "../../../../lib/slots";
+import { creditsWith } from "../../../../lib/packages";
+import { coachRequestNotice, sendMail } from "../../../../lib/email";
 import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
 import { releaseExpiredHolds, startCheckout } from "../../../../lib/payments";
@@ -114,20 +116,40 @@ export async function POST(req: Request) {
       return apiError("Tiden er lige blevet taget.", 409);
     }
 
+    // Samme regel som på nettet: en trænertime er en anmodning, træneren
+    // skal godkende. Uden dette kunne mobilappen booke uden om
+    // godkendelsen — og så var den ingenting værd.
     const booking = await db.booking.create({
       data: {
         kind: "COACH",
-        status: "HOLD",
+        status: "REQUESTED",
         startsAt,
         endsAt: lessonEndsAt,
         priceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
-        holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
         userId: auth.user.id,
         coachProfileId: coachId,
       },
     });
-    const checkoutUrl = await startCheckout(booking.id);
-    return json({ id: booking.id, checkoutUrl }, 201);
+
+    const coachUser = await db.user.findUnique({ where: { id: coach.userId } });
+    if (coachUser) {
+      const credits = await creditsWith(auth.user.id, coachId);
+      await sendMail(
+        coachRequestNotice({
+          to: coachUser.email,
+          coachName: coachUser.name,
+          playerName: auth.user.name,
+          playerLevel: auth.user.level,
+          startsAt,
+          priceKr: booking.priceKr,
+          withCredit: credits.length > 0,
+        })
+      );
+    }
+
+    // Ingen checkoutUrl: der er ingenting at betale, før træneren har sagt
+    // ja. Appen skal vise "afventer trænerens svar".
+    return json({ id: booking.id, status: "REQUESTED" }, 201);
   }
 
   return apiError("Angiv enten courtId eller coachProfileId.");

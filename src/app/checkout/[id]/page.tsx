@@ -33,6 +33,9 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
     );
   }
   if (booking.status === "CONFIRMED") redirect("/profil?betalt=1");
+  // Samme vagt som i start-ruten: en time, træneren ikke har godkendt, kan
+  // ikke betales.
+  if (booking.status === "REQUESTED") redirect("/profil?afventer=1");
 
   // Stripe er slået til: denne side er kun en gennemgangsstation. Den
   // egentlige betaling foregår hos Stripe, aldrig her.

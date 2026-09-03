@@ -22,6 +22,7 @@ import { platformAccountCountry, stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
 import { describeLength } from "./slots";
 import { subscriptionIsActive } from "./billing";
+import { refundCredit } from "./packages";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -38,13 +39,8 @@ import {
 // betaling koster 1,5% + 1,80 kr, så en banetime til 100 kr giver
 // 10,00 − 3,30 = 6,70 kr tilbage. Ved en lavere sats ville små bookinger
 // koste os penge frem for at tjene dem.
-// Satsen kan ændres under Opsætning; dette er den, en tom opsætning bruger.
-export const DEFAULT_COMMISSION_PCT = 0.10;
-
-/** Provisionen af et beløb med en given sats, afrundet til hele kroner. */
-export function commissionAt(amountKr: number, pct: number): number {
-  return Math.round(amountKr * pct);
-}
+export { DEFAULT_COMMISSION_PCT, commissionAt } from "./billing";
+import { commissionAt } from "./billing";
 
 /** Provisionen af et beløb med den sats, der gælder lige nu. */
 export async function commission(amountKr: number): Promise<number> {
@@ -209,6 +205,11 @@ export async function confirmBookingPayment(bookingId: string, providerRef?: str
   });
   if (!booking) throw new Error("Booking findes ikke");
   if (booking.status === "CONFIRMED") return booking; // idempotent
+  // Sidste bælte: en anmodning uden trænerens ja må ikke kunne bekræftes,
+  // heller ikke af en webhook der kommer fra en anden vej.
+  if (booking.status === "REQUESTED") {
+    throw new Error("Timen er ikke godkendt af træneren endnu.");
+  }
 
   // Varm opsætningen inden kvitteringerne bygges — skabelonerne læser
   // adressen synkront, mens de sammensættes.
@@ -352,6 +353,18 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
     where: { id: bookingId },
     data: { status: "CANCELLED" },
   });
+
+  // Blev timen betalt med et klip fra et pakkeforløb, skal klippet tilbage.
+  // Der er ingen betaling at refundere — eleven har betalt for pakken, og
+  // et klip, der forsvinder ved en aflysning, er penge, de har mistet.
+  //
+  // Klippet gives tilbage uanset frist. En for sen aflysning koster
+  // klippet i praksis alligevel, hvis træneren ikke kan sælge tiden — men
+  // det er en samtale mellem elev og træner, ikke noget systemet skal
+  // afgøre på deres vegne.
+  if (booking.packagePurchaseId) {
+    await refundCredit(booking.packagePurchaseId);
+  }
 
   let refunded: number | null = null;
   if (paid && eligible) {
