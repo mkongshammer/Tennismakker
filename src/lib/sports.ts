@@ -162,15 +162,16 @@ export const LIVE_COUNTRIES = COUNTRIES.filter((c) => c.live);
 /**
  * Sprogene, man kan vælge nu.
  *
- * Dansk og engelsk står altid åbne: engelsk er ikke et markedsvalg, men den
- * internationale reserve for enhver, der lander på siden. De tre andre
- * følger deres marked — at tilbyde tysk er i sig selv en påstand om, at man
- * retter sig mod Tyskland, og det gør vi ikke endnu.
+ * Kun dansk indtil videre. Ordbøgerne er færdige for alle seks, og de står
+ * grå i vælgeren, så de fortæller, hvor vi er på vej hen — men et sprog,
+ * man kan vælge, er en påstand om et marked. Vi sælger kun i Danmark.
+ *
+ * Åbnes et marked, sættes både `live` på landet og flaget her.
  */
 export const LOCALE_LIVE: Record<Locale, boolean> = {
   da: true,
-  en: true,
-  "en-US": true,
+  en: false,
+  "en-US": false,
   de: false,
   sv: false,
   no: false,

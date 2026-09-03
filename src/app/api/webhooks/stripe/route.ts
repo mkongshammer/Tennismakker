@@ -131,6 +131,14 @@ export async function POST(req: Request) {
     try {
       // Hent hele eventet ud fra id'et. Det er samtidig verifikationen:
       // et opdigtet id findes ikke hos Stripe.
+      // Et evt_test_-id på en live-nøgle er en efterladt test-event fra en
+      // sandkasse. Den kan ikke hentes, og det er ikke en fejl — så den
+      // skal ikke fylde en stak i logfilen.
+      if (parsed.id?.startsWith("evt_test_")) {
+        console.log("Stripe-webhook: ignorerer test-event i live:", parsed.id);
+        return new Response("ok", { status: 200 });
+      }
+
       const full = await (await stripe()).events.retrieve(parsed.id);
       type = full.type;
       object = (full as any).data?.object;
