@@ -63,6 +63,46 @@ async function setupCheck(): Promise<Check> {
 }
 
 /**
+ * Er Stripes kundeportal sat op?
+ *
+ * Den bruges af knappen, hvor en abonnementsklub selv skifter kort eller
+ * siger op. Portalen konfigureres én gang pr. tilstand, og sandkassen tæller
+ * ikke i live. Uden den får klubben en fejl i stedet for en side — og det
+ * opdager man typisk, når en klub skriver, at deres kort er udløbet.
+ */
+async function portalCheck(): Promise<Check> {
+  if (!(await stripeEnabled())) {
+    return { name: "Kundeportal", status: "advarsel", detail: "Springes over — ingen Stripe-nøgle." };
+  }
+
+  try {
+    const configs = await (await stripe()).billingPortal.configurations.list({ limit: 5 });
+    const active = configs.data.filter((c) => c.active);
+
+    if (active.length === 0) {
+      return {
+        name: "Kundeportal",
+        status: "advarsel",
+        detail:
+          "Ikke sat op i denne tilstand. Abonnementsklubber kan ikke selv skifte kort eller opsige. Slås til under Settings → Billing → Customer portal.",
+      };
+    }
+
+    return {
+      name: "Kundeportal",
+      status: "ok",
+      detail: "Sat op. Klubber kan selv skifte kort, se fakturaer og opsige.",
+    };
+  } catch (err) {
+    return {
+      name: "Kundeportal",
+      status: "advarsel",
+      detail: err instanceof Error ? err.message : "Kunne ikke slås op.",
+    };
+  }
+}
+
+/**
  * Sender en rigtig testmail til den adresse, bestillinger går til.
  * Det er den eneste måde at vide, om afsenderdomænet er verificeret —
  * en forkert opsætning giver først en fejl i selve afsendelsen.
@@ -336,13 +376,19 @@ export async function testCheckoutSession(): Promise<Check> {
     });
 
     // Luk sessionen med det samme — den må aldrig kunne betales
+    // Stripe udfylder selv listen ud fra det, der er slået til i panelet.
+    // Det er derfor det eneste sted, man kan se hvad en kunde FAKTISK får
+    // at vælge imellem — panelet viser hvad der er tilladt, ikke hvad der
+    // virker for netop denne betaling og valuta.
+    const methods = (session.payment_method_types ?? []).join(", ") || "ingen";
+
     await (await stripe()).checkout.sessions.expire(session.id).catch(() => null);
 
     return {
       name: "Testbetaling",
       status: "ok",
-      detail: `Stripe accepterede en betaling på ${priceKr} kr til ${club.name}: ${priceKr - fee} kr til klubben, ${fee} kr til os. Sessionen blev lukket igen med det samme.`,
-    };
+      detail: `Stripe accepterede en betaling på ${priceKr} kr til ${club.name}. Kunden kan vælge: ${methods}.`,
+    };;
   } catch (err) {
     return {
       name: "Testbetaling",
@@ -357,18 +403,20 @@ export async function runSelfTest(): Promise<{
   checks: Check[];
   recipients: RecipientStatus[];
 }> {
-  const [setup, connectivity, webhook, email, fees, checkout, recipients] = await Promise.all([
-    setupCheck(),
-    connectivityCheck(),
-    webhookCheck(),
-    emailCheck(),
-    feeCheck(),
-    testCheckoutSession(),
-    recipientStatuses(),
-  ]);
+  const [setup, connectivity, webhook, portal, email, fees, checkout, recipients] =
+    await Promise.all([
+      setupCheck(),
+      connectivityCheck(),
+      webhookCheck(),
+      portalCheck(),
+      emailCheck(),
+      feeCheck(),
+      testCheckoutSession(),
+      recipientStatuses(),
+    ]);
 
   return {
-    checks: [setup, connectivity, webhook, email, fees, checkout],
+    checks: [setup, connectivity, webhook, portal, email, fees, checkout],
     recipients,
   };
 }

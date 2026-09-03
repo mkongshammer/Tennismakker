@@ -874,6 +874,8 @@ Den tjekker:
 
 - **Opsætning** — én linje: mangler der noget, eller er alt sat. Selve værdierne hører hjemme på `/superadmin/opsaetning`, hvor de også kan rettes
 - **Forbindelse til Stripe** — et rigtigt kald, ikke bare "nøglen ser rigtig ud"
+- **Kundeportal** — er Stripes selvbetjening sat op i denne tilstand? Den bruges af knappen, hvor en abonnementsklub selv skifter kort eller siger op. Portalen konfigureres én gang pr. tilstand, og sandkassen tæller ikke i live
+- **Betalingsmetoder** — testbetalingen viser nu, hvad kunden faktisk kan vælge imellem. Stripe udfylder selv listen ud fra panelet, så det er det eneste sted, man kan se om fx MobilePay virker for netop denne valuta og konto — panelet viser hvad der er *tilladt*, ikke hvad der virker
 - **Webhook** — findes der et endpoint hos Stripe, der peger på vores adresse, i den samme verden som nøglen? Sandkasse og live er adskilte: et endpoint oprettet i en sandkasse findes ikke i live, og dets signeringsnøgle validerer ikke live-events. Tjekket kigger også efter, om endpointet lytter på alle de events, appen behøver
 - **Provisionsregnestykket** — hvad klubben får, hvad vi får, og hvad der er tilbage efter Stripes eget gebyr. Ét eksempel: satsen er den samme uanset beløb, så flere linjer viste det samme tal tre gange. Vil man se flere beløb, står de på opsætningssiden ved siden af satsen
 - **Modtagere** — hvilke klubber og trænere der kan tage imod penge, hvilke der er halvvejs igennem, og hvilke der ikke er begyndt

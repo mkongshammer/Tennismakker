@@ -1,57 +1,49 @@
-"use client";
+import { getPreferences } from "../../lib/preferences";
+import { translator, t as translate } from "../../lib/i18n";
+import { SignupForm } from "./SignupForm";
 
-import Link from "next/link";
-import { useFormState } from "react-dom";
-import { signup } from "../../lib/actions";
-import { LEVELS } from "../../lib/levels";
-import { SubmitButton } from "../../components/SubmitButton";
+export const dynamic = "force-dynamic";
 
-export default function SignupPage() {
-  const [state, action] = useFormState(signup, null);
+/**
+ * Sætningen om vilkår har to links midt i sig, og de står forskellige
+ * steder på forskellige sprog. Derfor deles den op omkring pladsholderne
+ * frem for at blive limet sammen af stumper — se kommentaren ved t().
+ */
+function splitTerms(sentence: string) {
+  const [before, rest = ""] = sentence.split("{terms}");
+  const [middle, after = ""] = rest.split("{privacy}");
+  return { before, middle, after };
+}
+
+export default async function SignupPage() {
+  const { locale } = await getPreferences();
+  const t = translator(locale);
+  const parts = splitTerms(translate("auth.termsNote", locale));
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="display mb-6 text-3xl">Opret profil</h1>
-      <form action={action} className="card space-y-4">
-        <div>
-          <label className="label" htmlFor="name">Navn</label>
-          <input className="input" id="name" name="name" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="email">E-mail</label>
-          <input className="input" id="email" name="email" type="email" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="password">Adgangskode (mindst 8 tegn)</label>
-          <input className="input" id="password" name="password" type="password" minLength={8} required />
-        </div>
-        <div>
-          <label className="label" htmlFor="role">Jeg er</label>
-          <select className="input" id="role" name="role" defaultValue="PLAYER">
-            <option value="PLAYER">Spiller — jeg vil finde makkere og booke baner</option>
-            <option value="COACH">Træner — jeg vil tage imod bookinger</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="label" htmlFor="level">Niveau</label>
-            <select className="input" id="level" name="level" defaultValue="3">
-              {Object.entries(LEVELS).map(([num, l]) => (
-                <option key={num} value={num}>{num} — {l.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="area">Område</label>
-            <input className="input" id="area" name="area" placeholder="fx Odense C" />
-          </div>
-        </div>
-        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <SubmitButton className="btn-court w-full" pendingText="Opretter…">Opret profil</SubmitButton>
-        <p className="text-center text-sm text-slate/60">
-          Har du en konto? <Link href="/login" className="font-semibold text-court underline">Log ind</Link>
-        </p>
-      </form>
+      <h1 className="display mb-6 text-3xl">{t("nav.signup")}</h1>
+      <SignupForm
+        labels={{
+          name: t("auth.name"),
+          email: t("auth.email"),
+          password: t("auth.passwordMin"),
+          iAm: t("auth.iAm"),
+          rolePlayer: t("auth.rolePlayer"),
+          roleCoach: t("auth.roleCoach"),
+          level: t("common.level"),
+          area: t("common.area"),
+          submit: t("nav.signup"),
+          pending: t("auth.creating"),
+          haveAccount: t("auth.haveAccount"),
+          login: t("nav.login"),
+        }}
+        terms={{
+          ...parts,
+          termsText: t("auth.termsLink"),
+          privacyText: t("auth.privacyLink"),
+        }}
+      />
     </div>
   );
 }

@@ -1279,6 +1279,28 @@ const T: Dict = {
     no: "Ingenting for deg. Du betaler bare banen eller trenertimen til klubbens egen pris. Vår andel tas av klubbens betaling, ikke lagt på toppen av din.",
   },
 
+  "auth.termsNote": {
+    da: "Ved at oprette en profil accepterer du {terms} og {privacy}.",
+    en: "By creating a profile you accept our {terms} and {privacy}.",
+    de: "Mit dem Erstellen eines Profils akzeptierst du {terms} und {privacy}.",
+    sv: "Genom att skapa ett konto godkänner du {terms} och {privacy}.",
+    no: "Ved å opprette en profil godtar du {terms} og {privacy}.",
+  },
+  "auth.termsLink": {
+    da: "handelsbetingelserne",
+    en: "the terms of sale",
+    de: "die Handelsbedingungen",
+    sv: "köpvillkoren",
+    no: "salgsbetingelsene",
+  },
+  "auth.privacyLink": {
+    da: "privatlivspolitikken",
+    en: "the privacy policy",
+    de: "die Datenschutzerklärung",
+    sv: "integritetspolicyn",
+    no: "personvernerklæringen",
+  },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",
