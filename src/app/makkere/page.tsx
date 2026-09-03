@@ -6,6 +6,7 @@ import { getCurrentUser } from "../../lib/session";
 import { acceptMatchRequest } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
+import { SportPicker } from "../../components/SportPicker";
 import { translator } from "../../lib/i18n";
 import { MATCH_TYPES } from "../../lib/levels";
 
@@ -17,13 +18,17 @@ export default async function MakkerePage({
   searchParams: { omraade?: string; niveau?: string };
 }) {
   const user = await getCurrentUser();
-  const t = translator((await getPreferences()).locale);
+  const prefs = await getPreferences();
+  const t = translator(prefs.locale);
   const area = searchParams.omraade?.trim();
   const level = searchParams.niveau ? Number(searchParams.niveau) : undefined;
 
   const requests = await db.matchRequest.findMany({
     where: {
       status: "OPEN",
+      // Kun opslag i den sportsgren, man selv har valgt. En badmintonspiller
+      // skal ikke skulle læse sig igennem padel-opslag for at finde ét.
+      sport: prefs.sport,
       ...(area ? { area: { contains: area } } : {}),
       // Matching-princip: vis opslag inden for ±1 niveau
       ...(level ? { level: { gte: level - 1, lte: level + 1 } } : {}),
@@ -38,6 +43,9 @@ export default async function MakkerePage({
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="display text-3xl">{t("partners.title")}</h1>
+          <div className="mt-3">
+            <SportPicker active={prefs.sport} locale={prefs.locale} />
+          </div>
           <p className="text-slate/70">{t("partners.intro")}</p>
         </div>
         <Link href="/makkere/ny" className="btn-court">{t("partners.createPost")}</Link>

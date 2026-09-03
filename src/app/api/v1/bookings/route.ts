@@ -19,7 +19,7 @@ export async function GET(req: Request) {
   const bookings = await db.booking.findMany({
     where: {
       userId: auth.user.id,
-      status: { in: ["HOLD", "CONFIRMED"] },
+      status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
       startsAt: { gte: new Date() },
     },
     include: {

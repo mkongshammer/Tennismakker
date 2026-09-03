@@ -160,10 +160,23 @@ model Club {
 // Vokser det, flyttes lagringen til S3 eller lignende: alt, der læser og
 // skriver billeder, går gennem src/lib/images.ts, så det er ét sted.
 model Image {
-  id     String @id @default(cuid())
-  clubId String
-  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  kind   String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO"
+  id     String  @id @default(cuid())
+  clubId String?
+  club   Club?   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  // Et billede hører til EN af de to: en klub eller en træner.
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+
+  // Et profilbillede vises først, når et menneske har set det.
+  //
+  // Der findes ingen automatisk moderering her, og det er et bevidst valg:
+  // en tjeneste, der skal godkende billeder, koster penge og en nøgle, og
+  // med under tyve trænere er det hurtigere og mere pålideligt at kigge
+  // selv. Superadmin godkender på /superadmin.
+  approved Boolean @default(false)
+
+  kind   String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO" | "COACH"
   mime   String
 
   // Ét af to: enten ligger filen hos en lagringstjeneste (storageKey +
@@ -180,6 +193,7 @@ model Image {
   createdAt DateTime @default(now())
 
   @@index([clubId, kind])
+  @@index([coachProfileId])
 }
 
 // ---------- Klubbens nyheder ----------
@@ -328,6 +342,7 @@ model CoachProfile {
   reviews  Review[]
   packages CoachPackage[]
   packagePurchases PackagePurchase[]
+  images   Image[]
 }
 
 // ---------- Modul A: Makker-matching ----------

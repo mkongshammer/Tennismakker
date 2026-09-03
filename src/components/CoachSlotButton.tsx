@@ -1,8 +1,11 @@
 "use client";
 
-// Trænerens ledige-tid-knapper. Booking kalder nu Stripe (opretter en
-// checkout-session), så et klik kan tage et par sekunder — uden en
-// spinner ser det ud som om, klikket ikke virkede.
+// Trænerens ledige-tid-knapper.
+//
+// Et klik sender en anmodning, ikke en booking: træneren skal godkende,
+// før timen er solgt, og der trækkes ingen penge før da. Spinneren er der,
+// fordi opslaget mod databasen kan tage et øjeblik — uden den ser det ud,
+// som om klikket ikke virkede.
 import { useFormStatus } from "react-dom";
 import { bookCoachSlot } from "../lib/actions";
 

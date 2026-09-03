@@ -40,7 +40,7 @@ export async function freeSlots(coach: CoachTimes, days = BOOKING_WINDOW_DAYS): 
   const booked = await db.booking.findMany({
     where: {
       coachProfileId: coach.id,
-      status: { in: ["HOLD", "CONFIRMED"] },
+      status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
       endsAt: { gt: new Date() },
     },
     select: { startsAt: true, endsAt: true },
@@ -73,7 +73,7 @@ export async function isTaken(
   const clash = await db.booking.findFirst({
     where: {
       coachProfileId,
-      status: { in: ["HOLD", "CONFIRMED"] },
+      status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
       startsAt: { lt: endsAt },
       endsAt: { gt: startsAt },
     },

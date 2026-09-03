@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
-import { COUNTRIES, LOCALES, LOCALE_LIVE, type Locale } from "./sports";
+import { COUNTRIES, LOCALES, LOCALE_LIVE, SPORTS, type Locale } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
@@ -24,7 +24,7 @@ import { billingPortalUrl, startSubscriptionCheckout } from "./subscription";
 import { createSession, destroySession, getCurrentUser } from "./session";
 import { releaseExpiredHolds, cancelAndRefund } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
-import { matchAcceptedNotice, sendMail } from "./email";
+import { coachDecision, matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
 import { recordSwipe } from "./swipe";
 import { createReview } from "./reviews";
@@ -70,6 +70,12 @@ function clearAttempts(email: string) {
   attempts.delete(email);
 }
 
+/** Mindst én gyldig sportsgren. Tennis er reserven, ikke et valg. */
+function normaliseSports(input: string[]): string[] {
+  const valid = input.filter((s) => (SPORTS as readonly string[]).includes(s));
+  return valid.length > 0 ? valid : ["TENNIS"];
+}
+
 export async function signup(_prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
@@ -98,17 +104,28 @@ export async function signup(_prev: unknown, formData: FormData) {
     },
   });
 
-  // Trænere får automatisk en tom trænerprofil de kan udfylde
+  // Trænerprofilen oprettes med det, træneren selv har skrevet. Før stod
+  // prisen fast på 350 kr og sportsgrenen på tennis, uanset hvem der
+  // oprettede sig — og en træner, der skal rette sin egen pris bagefter,
+  // opdager det først, når en elev har booket til den forkerte.
   if (role === "COACH") {
+    const sports = normaliseSports(formData.getAll("sports").map(String));
+    const priceHour = Math.min(5000, Math.max(50, Number(formData.get("priceHour") ?? 350)));
+    const headline = String(formData.get("headline") ?? "").trim();
+
     await db.coachProfile.create({
       data: {
         userId: user.id,
-        headline: "Ny træner på RacketBuddy",
-        priceHour: 350,
+        headline: headline || "Ny træner på RacketBuddy",
+        sports: sports.join(","),
+        priceHour,
         specialties: "",
         area: area || "Ukendt område",
       },
     });
+
+    // Trænerens egne sportsgrene gælder også som spiller.
+    await db.user.update({ where: { id: user.id }, data: { sports: sports.join(",") } });
   }
 
   await createSession(user.id);
@@ -439,39 +456,34 @@ export async function bookCoachSlot(formData: FormData) {
 
   if (await isTaken(coachProfileId, startsAt, endsAt)) fail("optaget");
 
-  // Har eleven et klippekort hos træneren, bruges et klip frem for en
-  // betaling. Timen er allerede betalt, dengang pakken blev købt.
-  const spentCredit = await spendCredit(user.id, coachProfileId);
+  // Samme tjek som ved banebooking, se dér. Det sker FØR anmodningen
+  // oprettes: en træner, der ikke kan modtage penge, skal ikke sidde og
+  // godkende timer, der aldrig kan betales.
+  const stripeOn = (await getSettings()).paymentProvider === "stripe";
+  if (stripeOn && !coach!.stripeChargesEnabled) fail("betaling");
 
-  const booking = await db.booking.create({
+  // En anmodning, ikke en booking.
+  //
+  // En træner kan være syg, have en turnering eller bare ikke ville tage
+  // netop den elev. Før blev tiden solgt, og træneren fik det at vide
+  // bagefter. Nu spørger vi først, og der trækkes ingen penge, før
+  // træneren har sagt ja — så en afvisning ikke skal refunderes.
+  //
+  // Klippet fra et pakkeforløb bruges heller ikke endnu. Det trækkes ved
+  // godkendelsen, så en afvist anmodning ikke koster eleven et klip.
+  await db.booking.create({
     data: {
       kind: "COACH",
-      status: spentCredit ? "CONFIRMED" : "HOLD",
-      packagePurchaseId: spentCredit,
+      status: "REQUESTED",
       startsAt,
       endsAt,
-      priceKr: spentCredit ? 0 : lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
-      holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
+      priceKr: lessonPriceKr(coach!.priceHour, coach!.lessonMinutes),
       userId: user.id,
       coachProfileId,
     },
   });
 
-  // Blev der brugt et klip, er der ingenting at betale — timen er allerede
-  // købt. Så springes checkout helt over.
-  if (spentCredit) redirect("/profil?klip=1");
-
-  // Samme tjek som ved banebooking, se dér.
-  const stripeOn = (await getSettings()).paymentProvider === "stripe";
-  if (stripeOn && !coach!.stripeChargesEnabled) {
-    await db.booking.update({
-      where: { id: booking.id },
-      data: { status: "CANCELLED" },
-    });
-    fail("betaling");
-  }
-
-  redirect(`/checkout/${booking.id}/start`);
+  redirect("/profil?anmodet=1");
 }
 
 export async function cancelBooking(formData: FormData) {
@@ -481,7 +493,7 @@ export async function cancelBooking(formData: FormData) {
 
   // Kun egne bookinger, og kun dem der stadig er aktive
   const booking = await db.booking.findFirst({
-    where: { id, userId: user.id, status: { in: ["HOLD", "CONFIRMED"] } },
+    where: { id, userId: user.id, status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] } },
   });
   if (!booking) return;
 
@@ -888,6 +900,87 @@ export async function submitSwipe(formData: FormData) {
     redirect(`/beskeder/${result.threadId}?nyt=1`);
   }
   revalidatePath("/spillere");
+}
+
+// ---------------- Trænerens svar på en anmodning ----------------
+
+/** Trænerprofilen for den, der er logget ind. Kaster, hvis der ikke er en. */
+async function requireOwnCoachProfile() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const coach = await db.coachProfile.findUnique({ where: { userId: user!.id } });
+  if (!coach) redirect("/profil");
+  return coach!;
+}
+
+/**
+ * Træneren siger ja.
+ *
+ * Har eleven et klippekort, bruges klippet her — og først her. Ellers får
+ * eleven et døgn til at betale, hvorefter tiden frigives igen.
+ */
+export async function approveCoachBooking(formData: FormData) {
+  const coach = await requireOwnCoachProfile();
+  const id = String(formData.get("bookingId") ?? "");
+
+  const booking = await db.booking.findFirst({
+    where: { id, coachProfileId: coach.id, status: "REQUESTED" },
+    include: { user: true, coachProfile: { include: { user: true } } },
+  });
+  if (!booking) redirect("/profil/traener");
+
+  const credit = await spendCredit(booking!.userId, coach.id);
+
+  const updated = await db.booking.update({
+    where: { id: booking!.id },
+    data: credit
+      ? { status: "CONFIRMED", priceKr: 0, packagePurchaseId: credit, holdExpiresAt: null }
+      : { status: "HOLD", holdExpiresAt: addHours(new Date(), 24) },
+  });
+
+  await sendMail(
+    coachDecision({
+      to: booking!.user.email,
+      playerName: booking!.user.name,
+      coachName: booking!.coachProfile!.user.name,
+      startsAt: booking!.startsAt,
+      approved: true,
+      paidWithCredit: Boolean(credit),
+      bookingId: updated.id,
+    })
+  );
+
+  revalidatePath("/profil/traener");
+  redirect("/profil/traener?svar=godkendt");
+}
+
+/** Træneren siger nej. Der er ingenting at refundere, fordi der ikke er betalt. */
+export async function declineCoachBooking(formData: FormData) {
+  const coach = await requireOwnCoachProfile();
+  const id = String(formData.get("bookingId") ?? "");
+
+  const booking = await db.booking.findFirst({
+    where: { id, coachProfileId: coach.id, status: "REQUESTED" },
+    include: { user: true, coachProfile: { include: { user: true } } },
+  });
+  if (!booking) redirect("/profil/traener");
+
+  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED" } });
+
+  await sendMail(
+    coachDecision({
+      to: booking!.user.email,
+      playerName: booking!.user.name,
+      coachName: booking!.coachProfile!.user.name,
+      startsAt: booking!.startsAt,
+      approved: false,
+      paidWithCredit: false,
+      bookingId: booking!.id,
+    })
+  );
+
+  revalidatePath("/profil/traener");
+  redirect("/profil/traener?svar=afvist");
 }
 
 // ---------------- Anmeldelser ----------------

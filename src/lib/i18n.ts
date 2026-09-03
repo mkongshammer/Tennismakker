@@ -1301,6 +1301,78 @@ const T: Dict = {
     no: "personvernerklæringen",
   },
 
+  "auth.coachHeadline": {
+    da: "Kort om dig",
+    en: "Short about you",
+    de: "Kurz über dich",
+    sv: "Kort om dig",
+    no: "Kort om deg",
+  },
+  "auth.coachHeadlinePlaceholder": {
+    da: "fx DTF-uddannet træner, speciale i serv",
+    en: "e.g. certified coach, serve specialist",
+    de: "z. B. lizenzierter Trainer, Spezialgebiet Aufschlag",
+    sv: "t.ex. utbildad tränare, specialitet serve",
+    no: "f.eks. sertifisert trener, spesialitet serv",
+  },
+  "auth.coachSports": {
+    da: "Hvilke sportsgrene træner du i?",
+    en: "Which sports do you coach?",
+    de: "In welchen Sportarten trainierst du?",
+    sv: "Vilka sporter tränar du i?",
+    no: "Hvilke sporter trener du i?",
+  },
+  "auth.coachPrice": {
+    da: "Din pris pr. time (kr)",
+    en: "Your price per hour (kr)",
+    de: "Dein Preis pro Stunde (kr)",
+    sv: "Ditt pris per timme (kr)",
+    no: "Din pris per time (kr)",
+  },
+  "auth.coachAreaNote": {
+    da: "Skriv hvor du træner — det er dét, spillerne søger på.",
+    en: "Write where you coach — that is what players search by.",
+    de: "Schreib, wo du trainierst — danach suchen die Spieler.",
+    sv: "Skriv var du tränar — det är det spelarna söker på.",
+    no: "Skriv hvor du trener — det er det spillerne søker på.",
+  },
+  "auth.coachRest": {
+    da: "Pakkeforløb, ledige tider og billede sætter du op bagefter.",
+    en: "You set up packages, available times and a photo afterwards.",
+    de: "Pakete, freie Zeiten und ein Foto richtest du danach ein.",
+    sv: "Paket, lediga tider och foto sätter du upp efteråt.",
+    no: "Pakkeforløp, ledige tider og bilde setter du opp etterpå.",
+  },
+
+  "profile.awaitingCoach": {
+    da: "Afventer trænerens svar",
+    en: "Waiting for the coach",
+    de: "Warte auf den Trainer",
+    sv: "Väntar på tränaren",
+    no: "Venter på treneren",
+  },
+  "coach.requestTime": {
+    da: "Anmod om tid",
+    en: "Request a time",
+    de: "Zeit anfragen",
+    sv: "Begär en tid",
+    no: "Be om en tid",
+  },
+  "coach.requestNote": {
+    da: "Træneren skal godkende, før timen er din. Der trækkes ingen penge, før den er godkendt.",
+    en: "The coach must approve before the session is yours. Nothing is charged until then.",
+    de: "Der Trainer muss zustimmen, bevor die Stunde dir gehört. Vorher wird nichts abgebucht.",
+    sv: "Tränaren måste godkänna innan timmen är din. Inget dras innan dess.",
+    no: "Treneren må godkjenne før timen er din. Ingenting trekkes før den er godkjent.",
+  },
+  "profile.requested": {
+    da: "Anmodning sendt. Du hører fra træneren.",
+    en: "Request sent. You will hear from the coach.",
+    de: "Anfrage gesendet. Du hörst vom Trainer.",
+    sv: "Förfrågan skickad. Du hör från tränaren.",
+    no: "Forespørsel sendt. Du hører fra treneren.",
+  },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",

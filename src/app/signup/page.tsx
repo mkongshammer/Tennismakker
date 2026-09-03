@@ -37,7 +37,14 @@ export default async function SignupPage() {
           pending: t("auth.creating"),
           haveAccount: t("auth.haveAccount"),
           login: t("nav.login"),
+          coachHeadline: t("auth.coachHeadline"),
+          coachHeadlinePlaceholder: t("auth.coachHeadlinePlaceholder"),
+          coachSports: t("auth.coachSports"),
+          coachPrice: t("auth.coachPrice"),
+          coachAreaNote: t("auth.coachAreaNote"),
+          coachRest: t("auth.coachRest"),
         }}
+        locale={locale}
         terms={{
           ...parts,
           termsText: t("auth.termsLink"),

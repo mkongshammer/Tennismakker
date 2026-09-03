@@ -7,6 +7,8 @@ import { getCurrentUser } from "../../lib/session";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { DeleteAccount } from "../../components/DeleteAccount";
+import { CoachRequests } from "../../components/CoachRequests";
+import { creditsWith } from "../../lib/packages";
 import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
@@ -24,11 +26,36 @@ export default async function ProfilPage({
 }) {
   const user = await getCurrentUser();
   const t = translator((await getPreferences()).locale);
+
+  // Er brugeren træner, hentes de anmodninger, der venter på svar. Klippene
+  // slås op pr. anmodning, så træneren kan se, om timen betales med et
+  // klippekort frem for et beløb.
+  const coachRequests = user!.coachProfile
+    ? await db.booking.findMany({
+        where: {
+          coachProfileId: user!.coachProfile.id,
+          status: "REQUESTED",
+          endsAt: { gt: new Date() },
+        },
+        include: { user: true },
+        orderBy: { startsAt: "asc" },
+      })
+    : [];
+
+  const requestCredits = new Map<string, number>();
+  for (const r of coachRequests) {
+    const left = await creditsWith(r.userId, user!.coachProfile!.id);
+    requestCredits.set(r.id, left.reduce((n: number, c: any) => n + c.left, 0));
+  }
   if (!user) redirect("/login");
 
   const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
     db.booking.findMany({
-      where: { userId: user.id, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { gte: new Date() } },
+      where: {
+      userId: user.id,
+      status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
+      startsAt: { gte: new Date() },
+    },
       include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
       orderBy: { startsAt: "asc" },
     }),
@@ -137,6 +164,8 @@ export default async function ProfilPage({
         </section>
       )}
 
+      <CoachRequests requests={coachRequests as any} credits={requestCredits} />
+
       <section>
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
@@ -158,7 +187,13 @@ export default async function ProfilPage({
                 </p>
                 <p className="text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
-                  {t(b.status === "HOLD" ? "profile.awaitingPayment" : "profile.confirmed")}
+                  {t(
+                    b.status === "REQUESTED"
+                      ? "profile.awaitingCoach"
+                      : b.status === "HOLD"
+                        ? "profile.awaitingPayment"
+                        : "profile.confirmed"
+                  )}
                 </p>
                 {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
                   <div className="mt-2 rounded-lg bg-court/5 p-2.5 text-sm">

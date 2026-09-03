@@ -291,3 +291,67 @@ export function passwordResetLink(opts: {
     ].join("\n"),
   };
 }
+
+/**
+ * Trænerens svar på en anmodning om en time.
+ *
+ * Ét skabelon til både ja og nej. Et afslag skal ikke se ud som en fejl —
+ * det er et almindeligt svar, og eleven skal kunne se, at der ikke er
+ * trukket penge.
+ */
+export function coachDecision(opts: {
+  to: string;
+  playerName: string;
+  coachName: string;
+  startsAt: Date;
+  approved: boolean;
+  paidWithCredit: boolean;
+  bookingId: string;
+}): Mail {
+  const when = danishDateTime(opts.startsAt);
+
+  if (!opts.approved) {
+    return {
+      to: opts.to,
+      subject: `${opts.coachName} kan ikke tage timen ${when}`,
+      body: [
+        `Hej ${opts.playerName}`,
+        "",
+        `${opts.coachName} kan desværre ikke tage timen ${when}.`,
+        "",
+        "Der er ikke trukket penge, og der er ikke brugt et klip.",
+        "",
+        `Find en anden tid: ${baseUrl()}/traenere`,
+      ].join("\n"),
+    };
+  }
+
+  if (opts.paidWithCredit) {
+    return {
+      to: opts.to,
+      subject: `Timen ${when} er bekræftet`,
+      body: [
+        `Hej ${opts.playerName}`,
+        "",
+        `${opts.coachName} har sagt ja til timen ${when}.`,
+        "",
+        "Der er brugt et klip fra dit pakkeforløb, så der er ingenting at betale.",
+        "",
+        `Se den her: ${baseUrl()}/profil`,
+      ].join("\n"),
+    };
+  }
+
+  return {
+    to: opts.to,
+    subject: `${opts.coachName} har sagt ja — betal for timen ${when}`,
+    body: [
+      `Hej ${opts.playerName}`,
+      "",
+      `${opts.coachName} har sagt ja til timen ${when}.`,
+      "",
+      "Timen er din, når den er betalt. Du har et døgn, derefter frigives tiden igen:",
+      `${baseUrl()}/checkout/${opts.bookingId}/start`,
+    ].join("\n"),
+  };
+}

@@ -142,7 +142,8 @@ export default async function TraenerPage({
 
       <h2 className="display mb-1 mt-8 text-2xl">{t("coach.timesTitle", { days: BOOKING_WINDOW_DAYS })}</h2>
       <p className="mb-3 text-sm text-slate">
-        {t("coach.lessonLine", { length, price: lessonPrice })}
+        {t("coach.lessonLine", { length, price: lessonPrice })}{" "}
+        {t("coach.requestNote")}
       </p>
 
       {byDay.size === 0 && (

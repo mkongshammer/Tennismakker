@@ -115,6 +115,12 @@ export default function TraenerProfilPage() {
             Tiderne gentages hver uge. Eleverne kan kun booke de timer, du
             markerer her — og kun dem, der ikke allerede er booket.
           </p>
+          <p className="mb-3 text-sm">
+            <a href="/profil/traener/pakker" className="font-semibold text-court underline">
+              Opret pakkeforløb
+            </a>{" "}
+            <span className="text-slate">— klippekort eleverne kan købe på én gang.</span>
+          </p>
           <WeeklyCalendar
             name="weeklySlots"
             defaultValue={profile.weeklySlots}
