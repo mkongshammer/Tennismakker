@@ -3,13 +3,17 @@
 import { useFormState } from "react-dom";
 import { releaseGuestSlots } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
+import { BlockedFirst } from "../../components/BlockedFirst";
 
 export function ReleaseForm({
   courts,
   defaultPrice,
+  externalSystem,
 }: {
   courts: { id: string; name: string }[];
   defaultPrice: number;
+  /** Klubbens eget bookingsystem, hvis de har et. Så kræves spærring først. */
+  externalSystem: string | null;
 }) {
   const [state, action] = useFormState(releaseGuestSlots, null);
   const today = new Date().toISOString().slice(0, 10);
@@ -48,6 +52,8 @@ export function ReleaseForm({
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
       {state?.ok && <p className="text-sm font-semibold text-ink">{state.ok}</p>}
+      <BlockedFirst system={externalSystem} />
+
       <SubmitButton pendingText="Frigiver…">Frigiv tider</SubmitButton>
     </form>
   );

@@ -3,6 +3,7 @@
 import { useFormState } from "react-dom";
 import { createRule } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
+import { BlockedFirst } from "../../components/BlockedFirst";
 
 const DAYS = [
   { v: "1", label: "Man" },
@@ -17,9 +18,12 @@ const DAYS = [
 export function RuleForm({
   courts,
   defaultPrice,
+  externalSystem,
 }: {
   courts: { id: string; name: string }[];
   defaultPrice: number;
+  /** Klubbens eget bookingsystem, hvis de har et. Så kræves spærring først. */
+  externalSystem: string | null;
 }) {
   const [state, action] = useFormState(createRule, null);
 
@@ -98,6 +102,9 @@ export function RuleForm({
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
       {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+
+      <BlockedFirst system={externalSystem} />
+
 
       <SubmitButton pendingText="Aktiverer…">Aktivér reglen</SubmitButton>
       <p className="text-xs text-slate">

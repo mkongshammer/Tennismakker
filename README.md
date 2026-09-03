@@ -902,6 +902,23 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Klubber med eget bookingsystem: spær først, frigiv bagefter
+
+Halbooking har ingen grænseflade, tredjeparter kan skrive til. Der findes partnerintegrationer (kasseapparater, adgangskontrol), men de er aftaler med Globus Data, ikke en åben API. Så vi kan ikke reservere en tid i Halbooking, når den bookes hos os.
+
+Den rækkefølge, der gør dobbeltbooking umulig, kræver ingen integration:
+
+1. Klubben spærrer timerne i sit eget system.
+2. Klubben frigiver dem hos os.
+3. Timerne findes nu kun ét sted.
+4. Booker en gæst, skriver klubben navnet på — bogføring, ikke beskyttelse.
+
+**Systemet håndhæver rækkefølgen.** Har klubben et eget system (`integrationType !== "NATIVE"`), kræver både reglen og enkeltfrigivelsen et flueben på, at spærringen er sket. Serveren afviser uden — `requireBlockedFirst()` i actions.ts stoler ikke på, at knappen var der.
+
+Den omvendte rækkefølge, som mailen før opfordrede til ("før tiden ind, så den ikke bliver dobbeltbooket"), har et tidsvindue, hvor et medlem kan nå at booke samme time i klubbens system. Mailen siger nu i stedet: skriv navnet på, tiden er spærret i forvejen.
+
+**Genkendelse er ikke integration.** `src/lib/detect.ts` kigger på klubbens hjemmeside og genkender Halbooking, Matchi m.fl. Det bruges til at sige rent ud, hvad der er muligt — ikke til at love, at vi kan læse fra systemet.
+
 ## Selvtest af betalingskæden
 
 `/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.

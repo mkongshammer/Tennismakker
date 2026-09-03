@@ -137,9 +137,12 @@ export function clubBookingNotice(opts: {
   ];
 
   if (opts.needsClubEntry) {
+    // Tiden er spærret i klubbens system i forvejen — det krævede vi, da
+    // den blev frigivet. Så det her handler om, at klubben kan se, hvem
+    // der kommer, ikke om at forhindre en dobbeltbooking.
     lines.push(
-      `VIGTIGT: Før tiden ind i ${opts.externalSystem ?? "jeres eget bookingsystem"},`,
-      `så banen ikke bliver dobbeltbooket.`,
+      `Skriv ${opts.playerName} på tiden i ${opts.externalSystem ?? "jeres eget bookingsystem"},`,
+      `så I kan se hvem der kommer. Tiden er spærret dér i forvejen.`,
       ``
     );
   }

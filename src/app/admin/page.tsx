@@ -431,6 +431,7 @@ export default async function AdminPage({
           <RuleForm
             courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
             defaultPrice={club.priceHour}
+            externalSystem={club.integrationType !== "NATIVE" ? (club.externalSystem ?? "jeres eget bookingsystem") : null}
           />
 
           {rules.length > 0 && (
@@ -508,6 +509,7 @@ export default async function AdminPage({
           <ReleaseForm
             courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
             defaultPrice={club.priceHour}
+            externalSystem={club.integrationType !== "NATIVE" ? (club.externalSystem ?? "jeres eget bookingsystem") : null}
           />
 
           <h3 className="mb-2 mt-6 font-bold">Frigivne enkelttider</h3>

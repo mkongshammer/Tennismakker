@@ -633,6 +633,30 @@ export async function syncNow() {
  * Frigiver gæstetider (MANUAL-integration): klubben vælger bane, dato,
  * tidsrum og pris, og vi opretter én time ad gangen i det interval.
  */
+
+/**
+ * Klubber med eget bookingsystem skal spærre tiden dér, FØR den frigives
+ * hos os. Det er den ene regel, der gør dobbeltbooking umulig.
+ *
+ * Den omvendte rækkefølge — frigiv hos os, før ind i Halbooking bagefter —
+ * har et tidsvindue, hvor et medlem kan nå at booke samme time i klubbens
+ * system. Med spærringen først findes tiden kun ét sted: hos os.
+ *
+ * Derfor kræver vi et aktivt ja, og serveren stoler ikke på, at knappen
+ * var der. Halbooking har ingen grænseflade, vi kan skrive til, så det
+ * her er ikke en formalitet — det er hele beskyttelsen.
+ */
+async function requireBlockedFirst(clubId: string, formData: FormData): Promise<string | null> {
+  const club = await db.club.findUnique({
+    where: { id: clubId },
+    select: { integrationType: true, externalSystem: true },
+  });
+  const hasOwnSystem = club && club.integrationType !== "NATIVE";
+  if (!hasOwnSystem) return null;
+  if (formData.get("blockedFirst") === "on") return null;
+  return `Spær tiderne i ${club!.externalSystem ?? "jeres eget bookingsystem"} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.`;
+}
+
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const { clubId } = await requireClubAdmin();
 
@@ -641,6 +665,9 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const fromHour = Number(formData.get("fromHour") ?? 0);
   const toHour = Number(formData.get("toHour") ?? 0);
   const priceKr = Number(formData.get("priceKr") ?? 0);
+
+  const blocked = await requireBlockedFirst(clubId, formData);
+  if (blocked) return { error: blocked };
 
   const court = await db.court.findFirst({ where: { id: courtId, clubId } });
   if (!court) return { error: "Vælg en bane, der hører til klubben." };
@@ -1283,6 +1310,9 @@ export async function createRule(_prev: unknown, formData: FormData) {
   const fromHour = Number(formData.get("fromHour") ?? 0);
   const toHour = Number(formData.get("toHour") ?? 0);
   const priceKr = Number(formData.get("priceKr") ?? 0);
+
+  const blocked = await requireBlockedFirst(clubId, formData);
+  if (blocked) return { error: blocked };
 
   if (days.length === 0) return { error: "Vælg mindst én ugedag." };
   if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
