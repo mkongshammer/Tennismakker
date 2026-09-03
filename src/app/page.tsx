@@ -209,6 +209,25 @@ export default async function Home() {
         </section>
       )}
 
+      {/* Spørgsmålene med de tal, systemet faktisk kører med. Står der 24
+          timer her, skal koden også sige 24 — se REFUND_WINDOW_HOURS. */}
+      <section>
+        <h2 className="display text-2xl sm:text-3xl">{t("home.faqTitle")}</h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          {[
+            { q: t("home.faq1Q"), a: t("home.faq1A") },
+            { q: t("home.faq2Q"), a: t("home.faq2A") },
+            { q: t("home.faq3Q"), a: t("home.faq3A") },
+            { q: t("home.faq4Q"), a: t("home.faq4A") },
+          ].map((item) => (
+            <div key={item.q} className="card">
+              <p className="display text-lg">{item.q}</p>
+              <p className="mt-2 text-sm leading-relaxed text-slate">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Klub-pitch */}
       <section className="overflow-hidden rounded-2xl bg-ink px-6 py-10 text-chalk sm:px-10">
         <div className="chalk-line mb-6 max-w-[220px]" />

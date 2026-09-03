@@ -491,13 +491,21 @@ Seks valg, fem ordbøger: dansk, britisk engelsk, amerikansk engelsk, tysk, sven
 
 ## Mærket
 
-Én tegning bruges alle steder: favicon, app-ikon, splash og logoet i toppen af siden. En ketsjer med streng og en boldgul kugle på mørkeblå. `optic` (#D8FF3E) står i paletten som "bolden — sparsomt", og det er præcis dét, den bruges til her.
+To ketsjere, der læner mod hinanden — en hvid og en boldgul — på mørkeblå. Ketsjeren alene sagde kun "ketsjersport". To siger "dig og en makker", og det er den halvdel af produktet, ingen gætter sig til: baner kan man booke mange steder, men makkeren er det svære.
 
-**Bolden har én søm, ikke to.** Ved 32 px forsvinder detaljer alligevel, og to buer gjorde bolden aflang i stedet for rund. Ikonet er tegnet for den mindste størrelse, det skal overleve, ikke den største.
+Tegnet for 44 px, ikke for 512. Ved den størrelse forsvinder strengene, og tilbage står to former, der stadig kan skelnes fra hinanden — det er dét, en favicon skal kunne.
 
-Filerne genereres fra samme SVG: `src/app/icon.svg` (favicon), `icon.png`, `apple-icon.png`, `opengraph-image.png` og `mobile/assets/*`. Skal mærket ændres, ændres SVG'en, og resten genskabes derfra — ellers driver web og app fra hinanden.
+Alle filer genereres fra `src/app/icon.svg`: favicon, `icon.png`, `apple-icon.png` og `mobile/assets/*`. Skal mærket ændres, ændres SVG'en, og resten genskabes derfra — ellers driver web og app fra hinanden.
 
-**Titlen i fanen følger sproget.** `generateMetadata` slår `meta.title` og `meta.description` op i ordbogen. En tysker, der har valgt tysk, skal ikke have en dansk fane stående.
+**Titlen i fanen følger sproget.** `generateMetadata` slår `meta.title` og `meta.description` op i ordbogen.
+
+## Betalingsmetoder
+
+Checkout låser ikke længere til `["card"]`. Uden `payment_method_types` bruger Stripe de metoder, der er slået til i panelet, og en ny metode kræver derfor ingen kodeændring.
+
+Det gjaldt ikke før: kommentaren i koden lovede, at MobilePay ville dukke op automatisk, mens linjen nedenunder gjorde det umuligt. Den slags leder man efter i den forkerte ende i en time.
+
+MobilePay afregnes i øvrigt som en korttransaktion hos Stripe, ikke som en bankoverførsel. Om den kan slås til for netop denne konto, afgør Stripe ud fra kontoens profil, og svaret står under Payment methods i panelet.
 
 ## Forsiden
 

@@ -160,9 +160,10 @@ export async function startCheckout(bookingId: string): Promise<string> {
 
   const session = await (await stripe()).checkout.sessions.create({
     mode: "payment",
-    // MobilePay slås til i Stripe Dashboard under Payment methods — når
-    // det er gjort, dukker det automatisk op her uden kodeændringer.
-    payment_method_types: ["card"],
+    // Ingen payment_method_types: så bruger Stripe de metoder, der er slået
+    // til i panelet. Var den låst til ["card"], ville MobilePay aldrig dukke
+    // op, uanset hvad man slog til — og det er præcis den slags, man leder
+    // efter i den forkerte ende i en time.
     line_items: [
       {
         price_data: {

@@ -1,21 +1,24 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="116" fill="#0F2138"/>
 
-  <!-- Ketsjeren: hoved, streng og et håndtag der faktisk kan ses -->
-  <g transform="rotate(-32 236 236)">
-    <rect x="218" y="300" width="36" height="150" rx="18" fill="#FFFFFF"/>
-    <ellipse cx="236" cy="196" rx="106" ry="128" fill="#0F2138"/>
-    <g stroke="#FFFFFF" stroke-width="9" opacity="0.32">
-      <path d="M236 76 V316"/><path d="M180 90 V302"/><path d="M292 90 V302"/>
-      <path d="M132 196 H340"/><path d="M142 140 H330"/><path d="M142 252 H330"/>
+  <!-- To ketsjere: dig og din makker. De rører hinanden, men dækker ikke -->
+  <g transform="rotate(-20 168 236)">
+    <rect x="152" y="300" width="32" height="132" rx="16" fill="#FFFFFF"/>
+    <ellipse cx="168" cy="216" rx="78" ry="94" fill="#0F2138"/>
+    <g stroke="#FFFFFF" stroke-width="7" opacity="0.28">
+      <path d="M168 128 V304"/><path d="M128 140 V292"/><path d="M208 140 V292"/>
+      <path d="M94 216 H242"/><path d="M102 176 H234"/><path d="M102 256 H234"/>
     </g>
-    <ellipse cx="236" cy="196" rx="106" ry="128" fill="none" stroke="#FFFFFF" stroke-width="30"/>
+    <ellipse cx="168" cy="216" rx="78" ry="94" fill="none" stroke="#FFFFFF" stroke-width="24"/>
   </g>
 
-  <!-- Bolden, fri af håndtaget -->
-  <circle cx="372" cy="384" r="66" fill="#D8FF3E"/>
-  <!-- Én søm, ikke to. Ved 32 px forsvinder detaljer alligevel, og to buer
-       gjorde bolden aflang i stedet for rund. -->
-  <path d="M324 424 A 68 68 0 0 1 404 336" fill="none" stroke="#0F2138"
-        stroke-width="11" stroke-linecap="round" opacity="0.85"/>
+  <g transform="rotate(20 344 236)">
+    <rect x="328" y="300" width="32" height="132" rx="16" fill="#D8FF3E"/>
+    <ellipse cx="344" cy="216" rx="78" ry="94" fill="#0F2138"/>
+    <g stroke="#D8FF3E" stroke-width="7" opacity="0.26">
+      <path d="M344 128 V304"/><path d="M304 140 V292"/><path d="M384 140 V292"/>
+      <path d="M270 216 H418"/><path d="M278 176 H410"/><path d="M278 256 H410"/>
+    </g>
+    <ellipse cx="344" cy="216" rx="78" ry="94" fill="none" stroke="#D8FF3E" stroke-width="24"/>
+  </g>
 </svg>

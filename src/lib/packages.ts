@@ -144,7 +144,10 @@ export async function startPackageCheckout(
 
   const session = await (await stripe()).checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["card"],
+    // Ingen payment_method_types: så bruger Stripe de metoder, der er slået
+    // til i panelet. Var den låst til ["card"], ville MobilePay aldrig dukke
+    // op, uanset hvad man slog til — og det er præcis den slags, man leder
+    // efter i den forkerte ende i en time.
     line_items: [
       {
         price_data: {
