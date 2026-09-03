@@ -942,6 +942,20 @@ Tretten ting tjekket i koden og på Render. Fem var problemer.
 - Ingen fejlovervågning. Fejl står kun i Renders log, og ingen får besked. Sentry har en gratis plan, der er rigelig.
 - `HOLD_MINUTES` er defineret to steder.
 
+## Prismodel: én pris, ingen provision
+
+199 kr om måneden pr. klub. Banebookinger går ubeskåret til klubbens egen konto — `platformFeeForBooking()` returnerer 0 for alt med en `courtId`.
+
+**Trænertimer er stadig på provision.** En træner er selvstændig og har ikke et abonnement; 199 kr om måneden for en person, der giver to timer om ugen, ville lukke ned for trænerne, før de kom i gang. `commissionPct` gælder derfor kun `kind: "COACH"` og pakkeforløb.
+
+**Konsekvensen af manglende betaling er ny.** Før faldt en klub uden aktivt abonnement tilbage på 10% af hver booking, så der altid var en indtægt. Med én pris findes den reserve ikke, og uden en konsekvens kunne en klub bruge platformen gratis for evigt.
+
+Løsningen: `requireActiveSubscription()` spærrer for at frigive nye tider. Både faste regler og enkelttider afviser, hvis abonnementet ikke er aktivt.
+
+**Kun nye tider spærres.** Bookinger, en gæst har betalt for, står ved magt. Gæsten kan ikke gøre for, at klubbens kort er udløbet, og en aflyst spilletid er en dårlig måde at inddrive 199 kr på.
+
+`Club.billingModel` bliver stående i skemaet med værdien SUBSCRIPTION for alle. At migrere feltet væk er en større ting end en konstant, og feltet koster ingenting at lade ligge.
+
 ## Selvtest af betalingskæden
 
 `/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.

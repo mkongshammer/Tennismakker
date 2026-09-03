@@ -1272,8 +1272,8 @@ const T: Dict = {
     no: "Hva koster det å bruke RacketBuddy?",
   },
   "home.faq4A": {
-    da: "Ingenting for dig. Du betaler kun banen eller trænertimen, og prisen er klubbens egen. Vores andel tages af klubbens betaling, ikke lagt oveni din.",
-    en: "Nothing for you. You only pay for the court or the coaching session, at the club's own price. Our share comes out of the club's payment, not added on top of yours.",
+    da: "Ingenting for dig. Du betaler kun banen eller trænertimen, og prisen er klubbens egen. Klubben betaler et fast abonnement til os \u2014 der lægges intet oveni din pris.",
+    en: "Nothing for you. You only pay for the court or the coaching session, at the club's own price. The club pays us a flat monthly fee \u2014 nothing is added on top of your price.",
     de: "Für dich nichts. Du zahlst nur den Platz oder die Trainerstunde zum Preis des Clubs. Unser Anteil kommt aus der Zahlung des Clubs, nicht obendrauf.",
     sv: "Ingenting för dig. Du betalar bara banan eller tränartimmen till klubbens eget pris. Vår andel tas från klubbens betalning, inte ovanpå din.",
     no: "Ingenting for deg. Du betaler bare banen eller trenertimen til klubbens egen pris. Vår andel tas av klubbens betaling, ikke lagt på toppen av din.",

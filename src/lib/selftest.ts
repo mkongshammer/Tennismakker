@@ -211,20 +211,36 @@ async function webhookCheck(): Promise<Check> {
  * Skal man se flere beløb, står de på opsætningssiden ved siden af satsen.
  */
 async function feeCheck(): Promise<Check> {
-  const pct = (await getSettings()).commissionPct;
-  const price = 100;
-  const fee = commissionAt(price, pct);
-  // Stripes indenlandske kortgebyr: 1,5% + 1,80 kr
-  const stripeFee = Math.round((price * 0.015 + 1.8) * 100) / 100;
-  const net = Math.round((fee - stripeFee) * 100) / 100;
+  // Provisionen er væk for banebookinger. Det, der kan gå galt nu, er en
+  // klub der står som abonnent uden at betale — den kan ikke frigive tider,
+  // og det opdager man helst her frem for i en telefonsamtale.
+  const clubs = await db.club.findMany({
+    where: { status: "APPROVED" },
+    select: { name: true, billingModel: true, subscriptionStatus: true },
+  });
+
+  if (clubs.length === 0) {
+    return {
+      name: "Abonnementer",
+      status: "advarsel",
+      detail: "Ingen godkendte klubber endnu.",
+    };
+  }
+
+  const unpaid = clubs.filter((c: any) => !subscriptionIsActive(c));
+
+  if (unpaid.length === 0) {
+    return {
+      name: "Abonnementer",
+      status: "ok",
+      detail: `${clubs.length} ${clubs.length === 1 ? "klub" : "klubber"} betaler. Banebookinger går ubeskåret til klubben; vi lever af abonnementet.`,
+    };
+  }
 
   return {
-    name: `Provision (${Math.round(pct * 100)}%)`,
-    status: net > 0 ? "ok" : "advarsel",
-    detail:
-      net > 0
-        ? `${price} kr → klub ${price - fee} kr, os ${fee} kr (netto ~${net} kr efter Stripes gebyr).`
-        : `${price} kr → os ${fee} kr, men Stripes gebyr er ~${stripeFee} kr. Vi taber penge på små bookinger ved den sats.`,
+    name: "Abonnementer",
+    status: "advarsel",
+    detail: `${unpaid.length} af ${clubs.length} klubber har ikke aktivt abonnement og kan derfor ikke frigive nye tider: ${unpaid.map((c: any) => c.name).join(", ")}.`,
   };
 }
 

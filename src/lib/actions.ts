@@ -12,6 +12,7 @@ import { COUNTRIES, LOCALES, LOCALE_LIVE, SPORTS, type Locale } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
+import { subscriptionIsActive } from "./billing";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -666,6 +667,30 @@ async function requireBlockedFirst(clubId: string, formData: FormData): Promise<
   return `Spær tiderne i ${club!.externalSystem ?? "jeres eget bookingsystem"} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.`;
 }
 
+
+/**
+ * Klubben skal have et betalt abonnement for at frigive tider.
+ *
+ * Det er konsekvensen af, at provisionen er væk. Før faldt en klub uden
+ * betaling tilbage på 10% af hver booking, så der altid var en indtægt.
+ * Med én pris findes den reserve ikke, og uden en konsekvens kunne en klub
+ * bruge platformen gratis for evigt.
+ *
+ * Kun NYE tider spærres. Bookinger, en gæst allerede har betalt for, står
+ * ved magt — gæsten kan ikke gøre for, at klubbens kort er udløbet, og en
+ * aflyst spilletid er en dårlig måde at inddrive 199 kr på.
+ */
+async function requireActiveSubscription(clubId: string): Promise<string | null> {
+  const club = await db.club.findUnique({
+    where: { id: clubId },
+    select: { billingModel: true, subscriptionStatus: true, subscriptionKr: true },
+  });
+  if (!club) return "Klubben findes ikke.";
+  if (subscriptionIsActive(club)) return null;
+
+  return `Abonnementet er ikke aktivt. Start det under "Jeres aftale" (${club.subscriptionKr} kr/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.`;
+}
+
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const { clubId } = await requireClubAdmin();
 
@@ -674,6 +699,9 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const fromHour = Number(formData.get("fromHour") ?? 0);
   const toHour = Number(formData.get("toHour") ?? 0);
   const priceKr = Number(formData.get("priceKr") ?? 0);
+
+  const unpaid = await requireActiveSubscription(clubId);
+  if (unpaid) return { error: unpaid };
 
   const blocked = await requireBlockedFirst(clubId, formData);
   if (blocked) return { error: blocked };
@@ -829,8 +857,9 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
   const courtCount = Number(formData.get("courtCount") ?? 0);
   const priceHour = Number(formData.get("priceHour") ?? 0);
   const externalSystem = String(formData.get("externalSystem") ?? "").trim();
-  const billingModel =
-    String(formData.get("billingModel")) === "SUBSCRIPTION" ? "SUBSCRIPTION" : "COMMISSION";
+  // Der findes kun én model. Feltet bliver stående i databasen, fordi en
+  // migrering af hver eksisterende klub er en større ting end en konstant.
+  const billingModel = "SUBSCRIPTION";
 
   const adminName = String(formData.get("adminName") ?? "").trim();
   const adminEmail = String(formData.get("adminEmail") ?? "").trim().toLowerCase();
@@ -1325,6 +1354,9 @@ export async function createRule(_prev: unknown, formData: FormData) {
   const fromHour = Number(formData.get("fromHour") ?? 0);
   const toHour = Number(formData.get("toHour") ?? 0);
   const priceKr = Number(formData.get("priceKr") ?? 0);
+
+  const unpaid = await requireActiveSubscription(clubId);
+  if (unpaid) return { error: unpaid };
 
   const blocked = await requireBlockedFirst(clubId, formData);
   if (blocked) return { error: blocked };

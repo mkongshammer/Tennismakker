@@ -54,13 +54,6 @@ export function CreateClubForm() {
           <label className="label" htmlFor="externalSystem">Deres bookingsystem</label>
           <input className="input" id="externalSystem" name="externalSystem" placeholder="fx Halbooking" />
         </div>
-        <div>
-          <label className="label" htmlFor="billingModel">Aftale</label>
-          <select className="input" id="billingModel" name="billingModel" defaultValue="COMMISSION">
-            <option value="COMMISSION">10% provision</option>
-            <option value="SUBSCRIPTION">199 kr/md abonnement</option>
-          </select>
-        </div>
       </div>
 
       <div className="border-t border-slate/10 pt-4">

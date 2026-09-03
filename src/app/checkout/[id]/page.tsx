@@ -100,7 +100,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
         <p className="text-xs text-slate/50">
           {fee > 0
             ? `Heraf går ${fee} kr til RacketBuddy — de resterende ${booking.priceKr - fee} kr udbetales automatisk til ${booking.kind === "COURT" ? "klubben" : "træneren"}.`
-            : `Hele beløbet udbetales til klubben. Klubben betaler et fast abonnement i stedet for provision.`}
+            : `Hele beløbet udbetales til klubben.`}
         </p>
         <form action={pay}>
           <button className="btn-court w-full">Betal {booking.priceKr} kr (demo)</button>

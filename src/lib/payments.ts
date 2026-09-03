@@ -60,22 +60,20 @@ export async function platformFeeForBooking(booking: {
   priceKr: number;
   courtId?: string | null;
 }): Promise<number> {
+  // Trænertimer er på provision. En træner er selvstændig og har ikke et
+  // abonnement — 199 kr om måneden for en person, der giver to timer om
+  // ugen, ville lukke ned for trænerne, før de kom i gang.
   if (booking.kind === "COACH") return commission(booking.priceKr);
 
-  if (!booking.courtId) return commission(booking.priceKr);
-
-  const court = await db.court.findUnique({
-    where: { id: booking.courtId },
-    include: { club: { select: { billingModel: true, subscriptionStatus: true } } },
-  });
-
-  // Kun et abonnement, der rent faktisk betales, fritager for provision.
-  // At stå som SUBSCRIPTION i databasen er en aftale, ikke en betaling — og
-  // uden dette tjek ville en klub, der aldrig fik lagt et kort ind eller
-  // hvis kort er udløbet, køre gratis på begge modeller samtidig.
-  if (court && subscriptionIsActive(court.club)) return 0;
-
-  return commission(booking.priceKr);
+  // Banebookinger: intet fradrag. Hele beløbet går til klubben, og vi lever
+  // af abonnementet.
+  //
+  // Før faldt en klub uden aktivt abonnement tilbage på 10% provision. Den
+  // model findes ikke længere: der er én pris, og konsekvensen af manglende
+  // betaling er, at klubben ikke kan frigive nye tider — se
+  // requireActiveSubscription() i actions.ts. Vi tager ikke penge fra en
+  // booking, klubben har fået ind.
+  return 0;
 }
 
 /**

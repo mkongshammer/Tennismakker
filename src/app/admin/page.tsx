@@ -187,15 +187,19 @@ export default async function AdminPage({
 
       <section className="card">
         <p className="display text-xl">Jeres aftale</p>
-        {club.billingModel === "SUBSCRIPTION" ? (
+        <>
           <>
             <p className="mt-2">
-              <span className="font-bold">Abonnement — {club.subscriptionKr} kr/md.</span>{" "}
+              <span className="font-bold">{club.subscriptionKr} kr/md.</span>{" "}
               I beholder hele beløbet for hver gæstebooking.
             </p>
+            <p className="mt-1 text-sm text-slate">
+              Tider kan kun frigives, mens abonnementet er aktivt. Bookinger,
+              en gæst har betalt for, står ved magt uanset hvad.
+            </p>
             <p className="mt-1 text-sm text-slate/60">
-              Fast pris uanset hvor mange bookinger der kommer ind. Bedst når I
-              har mange ledige tider at fylde.
+              Fast pris uanset hvor mange bookinger der kommer ind. Vi tager
+              intet af den enkelte booking — hele beløbet går til jer.
             </p>
 
             {subscriptionIsActive(club) ? (
@@ -232,18 +236,7 @@ export default async function AdminPage({
               </>
             )}
           </>
-        ) : (
-          <>
-            <p className="mt-2">
-              <span className="font-bold">Provision — {pct}% af hver gæstebooking.</span>{" "}
-              Ingen fast betaling.
-            </p>
-            <p className="mt-1 text-sm text-slate/60">
-              I betaler kun, når I tjener penge. Kommer der ingen bookinger,
-              koster det jer ingenting.
-            </p>
-          </>
-        )}
+        </>
         <p className="mt-3 text-sm text-slate/60">
           Vil I skifte model, så skriv til os.
         </p>
