@@ -31,7 +31,7 @@ export default function HjemmesidePage() {
   return (
     <div className="space-y-14">
       <section className="rounded-2xl bg-ink px-6 py-12 text-chalk sm:px-10 sm:py-16">
-        <p className="eyebrow text-chalk/70">Til klubber</p>
+        <p className="eyebrow text-chalk/90">Til klubber</p>
         <h1 className="display mt-2 max-w-2xl text-3xl sm:text-5xl">
           En hjemmeside klubben ikke skal passe
         </h1>

@@ -71,7 +71,7 @@ export default async function KlubPage({
       {/* Klubbens hoved — udseendet følger klubbens valgte tema */}
       {club.theme === "MARKANT" ? (
         <section className="rounded-2xl bg-ink px-6 py-14 text-chalk sm:px-10 sm:py-20">
-          <p className="eyebrow text-chalk/60">
+          <p className="eyebrow text-chalk/85">
             {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
           </p>
           <h1
@@ -155,7 +155,7 @@ export default async function KlubPage({
                 className="mb-4 h-16 w-16 rounded-xl bg-chalk/95 object-contain p-1.5 sm:h-20 sm:w-20"
               />
             )}
-            <p className="eyebrow text-chalk/75">
+            <p className="eyebrow text-chalk">
               {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
             </p>
             <h1 className="display mt-1 text-3xl drop-shadow-sm sm:text-5xl">

@@ -96,9 +96,14 @@ h3 {
   @apply mb-1.5 block text-sm font-semibold text-slate;
 }
 
-/* Etiket over en overskrift: fortæller hvor man er, ikke hvad man skal føle */
+/* Etiket over en overskrift: fortæller hvor man er, ikke hvad man skal føle.
+   Klassen sætter bevidst ikke en farve. Den stod før på court-blå, og fordi
+   komponentklasserne her ligger uden for Tailwinds lag, vandt de over et
+   text-chalk skrevet i markup'en — så etiketten blev blå på en grøn bane og
+   var næsten ikke til at læse. Farven afhænger af baggrunden og hører
+   derfor til på det sted, hvor baggrunden bestemmes. */
 .eyebrow {
-  @apply text-xs font-bold uppercase tracking-[0.14em] text-court;
+  @apply text-xs font-bold uppercase tracking-[0.14em];
 }
 
 /* Synligt fokus overalt — man skal kunne se hvor man er uden mus */
