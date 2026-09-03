@@ -112,7 +112,10 @@ export async function signup(_prev: unknown, formData: FormData) {
   }
 
   await createSession(user.id);
-  redirect("/profil");
+  // Videre til det, man kom for. En ny profil er tom, så profilsiden er
+  // det mindst interessante sted at lande — bookingsiden er dér, produktet
+  // er.
+  redirect("/book");
 }
 
 /**
