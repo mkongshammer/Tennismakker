@@ -8,7 +8,6 @@ import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { DeleteAccount } from "../../components/DeleteAccount";
 import { CoachRequests } from "../../components/CoachRequests";
-import { creditsWith } from "../../lib/packages";
 import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
@@ -42,10 +41,22 @@ export default async function ProfilPage({
       })
     : [];
 
+  // Ét opslag for alle anmodninger, ikke ét pr. anmodning. Med tyve
+  // anmodninger var det før tyve forespørgsler for at åbne profilen.
   const requestCredits = new Map<string, number>();
-  for (const r of coachRequests) {
-    const left = await creditsWith(r.userId, user!.coachProfile!.id);
-    requestCredits.set(r.id, left.reduce((n: number, c: any) => n + c.left, 0));
+  if (coachRequests.length > 0) {
+    const playerIds = Array.from(new Set(coachRequests.map((r: any) => r.userId as string)));
+    const purchases = await db.packagePurchase.findMany({
+      where: { coachProfileId: user!.coachProfile!.id, status: "PAID", userId: { in: playerIds } },
+      select: { userId: true, sessions: true, sessionsUsed: true },
+    });
+    const leftByPlayer = new Map<string, number>();
+    for (const p of purchases) {
+      leftByPlayer.set(p.userId, (leftByPlayer.get(p.userId) ?? 0) + (p.sessions - p.sessionsUsed));
+    }
+    for (const r of coachRequests) {
+      requestCredits.set(r.id, leftByPlayer.get(r.userId) ?? 0);
+    }
   }
   if (!user) redirect("/login");
 

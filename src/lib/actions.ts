@@ -78,6 +78,13 @@ function normaliseSports(input: string[]): string[] {
 
 export async function signup(_prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  // Samme bremse som ved login, nøglet på adressen. Uden den kan et script
+  // oprette tusind konti på et minut, og hver af dem fylder i overblikket.
+  if (tooManyAttempts(`signup:${email}`)) {
+    return { error: "For mange forsøg. Prøv igen om lidt." };
+  }
+  registerFailedAttempt(`signup:${email}`);
   const password = String(formData.get("password") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const role = String(formData.get("role") ?? "PLAYER");
@@ -101,6 +108,8 @@ export async function signup(_prev: unknown, formData: FormData) {
       level: Math.min(7, Math.max(1, level)),
       area: area || null,
       passwordHash: await bcrypt.hash(password, 10),
+      // Knappen sad under sætningen om vilkårene. Det er accepten.
+      termsAcceptedAt: new Date(),
     },
   });
 
@@ -739,6 +748,12 @@ function slugify(name: string): string {
 // skulle beskytte imod, så nu findes oprettelsen slet ikke offentligt.
 
 export async function submitClubLead(_prev: unknown, formData: FormData) {
+  // Offentlig formular uden login. Bremsen er pr. proces og nulstilles ved
+  // genstart — nok til at stoppe et script, ikke en målrettet angriber.
+  const key = `submitClubLead:${String(formData.get("email") ?? "").trim().toLowerCase()}`;
+  if (tooManyAttempts(key)) return { error: "For mange forsøg. Prøv igen om lidt." };
+  registerFailedAttempt(key);
+
   const clubName = String(formData.get("clubName") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
   const contactName = String(formData.get("contactName") ?? "").trim();
@@ -1476,6 +1491,12 @@ export async function joinClub(_prev: unknown, formData: FormData) {
 // ---------------- Hjemmeside som ydelse ----------------
 
 export async function orderWebsite(_prev: unknown, formData: FormData) {
+  // Offentlig formular uden login. Bremsen er pr. proces og nulstilles ved
+  // genstart — nok til at stoppe et script, ikke en målrettet angriber.
+  const key = `orderWebsite:${String(formData.get("email") ?? "").trim().toLowerCase()}`;
+  if (tooManyAttempts(key)) return { error: "For mange forsøg. Prøv igen om lidt." };
+  registerFailedAttempt(key);
+
   const clubName = String(formData.get("clubName") ?? "").trim();
   const contactName = String(formData.get("contactName") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();

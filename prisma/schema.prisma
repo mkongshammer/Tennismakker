@@ -29,6 +29,10 @@ model User {
   // blevet spurgt — og så ville vi enten spørge alle hver gang eller
   // aldrig spørge nogen.
   countryChosen Boolean @default(false)
+  // Hvornår handelsbetingelserne blev accepteret. Uden et tidsstempel kan
+  // vi ikke vise, at nogen sagde ja — og "de stod på siden" er ikke et
+  // bevis, hvis det en dag bliver en tvist.
+  termsAcceptedAt DateTime?
   locale       String   @default("da") // se LOCALES i src/lib/sports.ts
   sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
   bio          String?

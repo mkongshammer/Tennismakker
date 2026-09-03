@@ -919,6 +919,29 @@ Den omvendte rækkefølge, som mailen før opfordrede til ("før tiden ind, så 
 
 **Genkendelse er ikke integration.** `src/lib/detect.ts` kigger på klubbens hjemmeside og genkender Halbooking, Matchi m.fl. Det bruges til at sige rent ud, hvad der er muligt — ikke til at love, at vi kan læse fra systemet.
 
+## Gennemgang af platformen, 3. september 2026
+
+Tretten ting tjekket i koden og på Render. Fem var problemer.
+
+**Tidszone (kritisk, rettet).** Serveren kørte UTC, og al tidsregning bruger serverens lokale tid: `setHours`, `getDay`, `format`, "er tiden passeret". En regel for "kl. 9" blev til kl. 9 UTC, altså 11 dansk sommertid. Værst ved døgngrænsen: kl. 00.30 dansk tid er kl. 22.30 UTC dagen før, så "tirsdag" blev til mandag. Og en iCal-feed fra et dansk system kom ind med rigtig tidszone og blev sammenlignet mod UTC-tider — to timers forskydning og dermed dobbeltbookinger. Rettet med `TZ=Europe/Copenhagen` i miljøet. Databasen var tom, så intet gammelt skulle rettes.
+
+**Byggekommandoen (kritisk, skal rettes i Renders panel).** `prisma db push --accept-data-loss` kører ved hver udrulning. Flaget betyder, at Prisma må slette kolonner og tabeller uden at spørge, hvis skemaet ændrer sig. Med en tom database var det bekvemt; med rigtige klubber er det en måde at miste data på ved en fejl i en commit. Fjern flaget. Uden det stopper Prisma og siger, hvad der ville gå tabt, og så tager man stilling.
+
+**Sundhedstjek (rettet).** Render havde ingen sti at spørge, så trafik blev sendt til en instans, så snart processen var startet — også hvis databasen var væk. `/api/health` spørger databasen og svarer 503, hvis den ikke er der. Stien skal sættes i Renders panel under Health Check Path.
+
+**Bremse på offentlige formularer (rettet).** Oprettelse, klubhenvendelse og hjemmesidebestilling havde ingen. Et script kunne oprette tusind konti på et minut. Samme bremse som ved login, nøglet på adressen.
+
+**Accept af vilkår (rettet).** Der blev ikke gemt hvornår. `termsAcceptedAt` sættes nu ved oprettelse. "De stod på siden" er ikke et bevis, hvis det en dag bliver en tvist.
+
+**Mindre, noteret:**
+
+- Oprettelsen afslører, om en adresse allerede findes ("der findes allerede en konto"). Login er beskyttet mod det; oprettelsen er ikke. Standardløsningen er at svare det samme uanset og sende en mail til adressen i stedet. Ikke gjort.
+- Mobilappen forventer stadig en `checkoutUrl` ved trænerbooking. Den får nu `status: "REQUESTED"` i stedet og skal vise "afventer trænerens svar".
+- Adgangskode skal være mindst 8 tegn ved oprettelse og 10 ved nulstilling. Bør være det samme.
+- Billeder ligger i databasen. Fint nu; ved hundrede klubber med otte billeder hver bør de flyttes til R2 — `storage.ts` har allerede vejen.
+- Ingen fejlovervågning. Fejl står kun i Renders log, og ingen får besked. Sentry har en gratis plan, der er rigelig.
+- `HOLD_MINUTES` er defineret to steder.
+
 ## Selvtest af betalingskæden
 
 `/superadmin/selvtest` kører hele betalingsopsætningen igennem på serveren og viser resultatet ét sted. Formålet er at slippe for at klikke sig igennem en rigtig booking hver gang, man vil vide, om noget virker.
