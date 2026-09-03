@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
-import { COUNTRIES, LOCALES } from "./sports";
+import { COUNTRIES, LOCALES, LOCALE_LIVE, type Locale } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
@@ -1048,7 +1048,9 @@ export async function updatePreferences(formData: FormData) {
 export async function setCountry(formData: FormData) {
   const code = String(formData.get("country") ?? "");
   const country = COUNTRIES.find((c) => c.code === code);
-  if (!country) return;
+  // Ikke bare "findes landet", men "sælger vi der". Ellers kan man sætte
+  // sig selv til et marked, hvor der ikke findes en eneste bane.
+  if (!country?.live) return;
 
   const alreadyPickedLanguage = Boolean(cookies().get("rb_prefs_locale")?.value);
   const locale = alreadyPickedLanguage ? undefined : (country.defaultLocale as any);
@@ -1099,6 +1101,8 @@ export async function dismissCountryChoice() {
 export async function setLocale(formData: FormData) {
   const value = String(formData.get("locale") ?? "da");
   if (!(LOCALES as readonly string[]).includes(value)) return;
+  // Sprog for markeder, vi ikke er i, kan ses men ikke vælges.
+  if (!LOCALE_LIVE[value as Locale]) return;
 
   setPreferenceCookies({ locale: value as any });
 

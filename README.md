@@ -491,13 +491,27 @@ Seks valg, fem ordbøger: dansk, britisk engelsk, amerikansk engelsk, tysk, sven
 
 ## Mærket
 
-To ketsjere, der læner mod hinanden — en hvid og en boldgul — på mørkeblå. Ketsjeren alene sagde kun "ketsjersport". To siger "dig og en makker", og det er den halvdel af produktet, ingen gætter sig til: baner kan man booke mange steder, men makkeren er det svære.
+Kun ordet i toppen af siden: **RacketBuddy**, med Buddy i banens blå. Der var et tegnet mærke ved siden af, men det gjorde ikke noget for et navn, der allerede er læseligt — to ting, der siger det samme, siger det svagere.
 
-Tegnet for 44 px, ikke for 512. Ved den størrelse forsvinder strengene, og tilbage står to former, der stadig kan skelnes fra hinanden — det er dét, en favicon skal kunne.
+Faviconet er en tennisbold: boldgul kugle med to hvide sømme på mørkeblå. Samme geometri som tennisbolden på forsiden, så det er den samme bold hele vejen igennem.
 
-Alle filer genereres fra `src/app/icon.svg`: favicon, `icon.png`, `apple-icon.png` og `mobile/assets/*`. Skal mærket ændres, ændres SVG'en, og resten genskabes derfra — ellers driver web og app fra hinanden.
+Tre forsøg gik forud, og de er værd at kende, fordi de fejlede på samme måde. Strengegitter, to krydsede ketsjere, ring med bold i midten — alle tre var fine ved 512 px og grød under 64. Et favicon skal tegnes for 32 px. To sømme og en cirkel er, hvad der er plads til.
 
-**Titlen i fanen følger sproget.** `generateMetadata` slår `meta.title` og `meta.description` op i ordbogen.
+Alle filer genereres fra `src/app/icon.svg`: favicon, `icon.png`, `apple-icon.png`, delebilledet og `mobile/assets/*`.
+
+## Markeder, der ikke er åbnet endnu
+
+`COUNTRIES` har fire lande, men kun Danmark har `live: true`. De tre andre står i listen, fordi sproget og valutaen er klar — men vi tilbyder dem ikke.
+
+Det får tre konsekvenser i koden:
+
+**Gættet på land** peger kun på lande, vi sælger i. En tysker får ikke tilbudt at skifte til Tyskland, for det ville føre til en tom side på tysk.
+
+**Landevalget afviser** et land, der ikke er åbnet. Ikke bare "findes landet", men "sælger vi der".
+
+**Sprogene står grå** i footeren for de markeder, der ikke er åbnet. De er med alligevel, fordi de fortæller, hvor vi er på vej hen. Dansk og engelsk står altid åbne: engelsk er ikke et markedsvalg, men reserven for enhver, der lander på siden.
+
+Åbnes et marked, sættes `live: true` på landet og `LOCALE_LIVE` for sproget. Så følger resten med.
 
 ## Betalingsmetoder
 

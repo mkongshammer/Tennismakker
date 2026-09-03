@@ -34,25 +34,27 @@ function countryFromLanguage(header: string | null): string | null {
 
   // Har tagget en region ("da-DK"), er den det bedste svar, vi kan få.
   const region = first.split("-")[1]?.toUpperCase();
-  if (region && COUNTRIES.some((c) => c.code === region)) return region;
+  if (region && COUNTRIES.some((c) => c.code === region && c.live)) return region;
 
   // Ellers: sproget alene. "nb" og "nn" er begge norsk.
   const language = first.split("-")[0];
   const normalised = language === "nb" || language === "nn" ? "no" : language;
-  return COUNTRIES.find((c) => c.defaultLocale === normalised)?.code ?? null;
+  return COUNTRIES.find((c) => c.defaultLocale === normalised && c.live)?.code ?? null;
 }
 
 /**
  * Hvilket land den besøgende ser ud til at være i, hvis vi kan gætte det.
- * Lande, vi ikke er i endnu, tæller som et blankt svar — der er ikke noget
- * at tilbyde en franskmand endnu.
+ *
+ * Kun lande, vi rent faktisk sælger i, tæller. Der er ikke noget at tilbyde
+ * en tysker endnu, og et tilbud om at skifte til Tyskland ville føre til en
+ * tom side på tysk.
  */
 export function detectCountry(): string | null {
   const h = headers();
 
   for (const name of COUNTRY_HEADERS) {
     const value = h.get(name)?.trim().toUpperCase();
-    if (value && COUNTRIES.some((c) => c.code === value)) return value;
+    if (value && COUNTRIES.some((c) => c.code === value && c.live)) return value;
   }
 
   return countryFromLanguage(h.get("accept-language"));

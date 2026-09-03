@@ -36,14 +36,19 @@ export const SURFACE_LABELS: Record<string, Record<BaseLocale, string>> = {
   INDE: { da: "Indendørs", en: "Indoor", de: "Halle", sv: "Inomhus", no: "Innendørs" },
 };
 
-// Hvert land har nu sit eget sprog som standard. Før faldt alt uden for
+// Hvert land har sit eget sprog som standard. Før faldt alt uden for
 // Danmark tilbage på engelsk, hvilket er det dårligste valg begge veje:
 // en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
+//
+// `live` siger, om vi rent faktisk sælger der. Landene står i listen, fordi
+// sproget og valutaen er klar — men vi tilbyder ikke et land, hvor der ikke
+// er en eneste klub. En tysker, der får siden på tysk og så ingen baner
+// finder, er en dårligere oplevelse end en tysker, der læser dansk.
 export const COUNTRIES = [
-  { code: "DK", flag: "🇩🇰", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
-  { code: "SE", flag: "🇸🇪", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
-  { code: "NO", flag: "🇳🇴", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
-  { code: "DE", flag: "🇩🇪", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
+  { code: "DK", live: true, flag: "🇩🇰", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
+  { code: "SE", live: false, flag: "🇸🇪", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
+  { code: "NO", live: false, flag: "🇳🇴", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
+  { code: "DE", live: false, flag: "🇩🇪", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
 ] as const;
 
 export type CountryCode = (typeof COUNTRIES)[number]["code"];
@@ -150,3 +155,23 @@ export const SPORT_COLORS: Record<string, string> = {
 export function sportColor(sport: string): string {
   return SPORT_COLORS[sport] ?? SPORT_COLORS.TENNIS;
 }
+
+/** Landene, vi rent faktisk sælger i. Resten venter. */
+export const LIVE_COUNTRIES = COUNTRIES.filter((c) => c.live);
+
+/**
+ * Sprogene, man kan vælge nu.
+ *
+ * Dansk og engelsk står altid åbne: engelsk er ikke et markedsvalg, men den
+ * internationale reserve for enhver, der lander på siden. De tre andre
+ * følger deres marked — at tilbyde tysk er i sig selv en påstand om, at man
+ * retter sig mod Tyskland, og det gør vi ikke endnu.
+ */
+export const LOCALE_LIVE: Record<Locale, boolean> = {
+  da: true,
+  en: true,
+  "en-US": true,
+  de: false,
+  sv: false,
+  no: false,
+};
