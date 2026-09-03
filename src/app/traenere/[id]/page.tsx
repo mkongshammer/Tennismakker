@@ -11,6 +11,8 @@ import { getPreferences } from "../../../lib/preferences";
 import { translator } from "../../../lib/i18n";
 import { BOOKING_WINDOW_DAYS, freeSlots } from "../../../lib/coaching";
 import { creditsWith } from "../../../lib/packages";
+import { approvedCoachPhotoId } from "../../../lib/images";
+import { imageUrl } from "../../../lib/imageUrl";
 import { buyPackage } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
@@ -43,6 +45,7 @@ export default async function TraenerPage({
   const free = await freeSlots(coach);
   const t = translator((await getPreferences()).locale);
   const credits = user ? await creditsWith(user.id, coach.id) : [];
+  const photoId = await approvedCoachPhotoId(coach.id);
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
   const length = describeLength(coach.lessonMinutes);
 
@@ -72,8 +75,17 @@ export default async function TraenerPage({
       )}
 
       <div className="card">
-        <div className="flex items-baseline justify-between">
-          <h1 className="display text-3xl">{coach.user.name}</h1>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {photoId ? (
+              <img
+                src={imageUrl(photoId)}
+                alt=""
+                className="h-20 w-20 shrink-0 rounded-full object-cover"
+              />
+            ) : null}
+            <h1 className="display text-3xl">{coach.user.name}</h1>
+          </div>
           <p className="display text-2xl text-court">{coach.priceHour} kr/t</p>
         </div>
         <div className="mt-2">

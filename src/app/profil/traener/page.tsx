@@ -116,10 +116,13 @@ export default function TraenerProfilPage() {
             markerer her — og kun dem, der ikke allerede er booket.
           </p>
           <p className="mb-3 text-sm">
+            <a href="/profil/traener/billede" className="font-semibold text-court underline">
+              Sæt et billede på
+            </a>
+            <span className="text-slate"> · </span>
             <a href="/profil/traener/pakker" className="font-semibold text-court underline">
               Opret pakkeforløb
-            </a>{" "}
-            <span className="text-slate">— klippekort eleverne kan købe på én gang.</span>
+            </a>
           </p>
           <WeeklyCalendar
             name="weeklySlots"

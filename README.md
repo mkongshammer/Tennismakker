@@ -353,6 +353,28 @@ Alt personhenførbart fjernes eller overskrives, og tilbage står en række, der
 
 E-mailfeltet er unikt i databasen og kan derfor ikke bare tømmes. Det sættes til en tilfældig adresse på `@slettet.invalid` — et domæne, der ikke kan findes, og som ingen kan modtage post på.
 
+## Trænerens anmodninger
+
+Booking af en trænertime er en anmodning, ikke en booking. Træneren godkender eller afviser, og der trækkes ingen penge, før træneren har sagt ja.
+
+**Hvorfor spørge først.** En træner kan være syg, have en turnering eller bare ikke ville tage netop den elev. Før blev tiden solgt, og træneren fik det at vide bagefter — og en afvisning skulle refunderes. Nu spørger vi først, og en afvisning koster ingenting, fordi der ikke er betalt.
+
+**Klippet bruges ved godkendelsen**, ikke ved anmodningen. Ellers ville en afvist anmodning koste eleven et klip.
+
+**Anmodninger spærrer tiden**, indtil træneren svarer. De udløber ikke af sig selv — en træner kan tage en dag om at svare, og tiden skal ikke gå til en anden imens. Til gengæld får træneren en mail med det samme, så den ikke ligger uset.
+
+**Godkendt uden klip giver et døgn til at betale.** Derefter frigives tiden igen af den almindelige oprydning.
+
+**Man kan ikke betale for en anmodning.** Checkout-ruten, checkout-siden og bekræftelsen afviser alle status `REQUESTED`. Uden det kunne man åbne adressen direkte og betale for en time, træneren aldrig havde godkendt — og så var godkendelsen ingenting værd.
+
+## Trænerens billede
+
+Et profilbillede vises først, når superadmin har set det. Det er den eneste moderering, der findes, og det er et bevidst valg: en tjeneste, der skal godkende billeder, koster penge og en nøgle, og med under tyve trænere er det hurtigere og mere pålideligt at kigge selv.
+
+Billedet beskæres til en firkant på 600 px og vises som en cirkel. Ét billede pr. træner; et nyt erstatter det gamle og skal ses igennem igen, også hvis det gamle var godkendt.
+
+Et afvist billede slettes. Det skal ikke ligge og vente på at blive godkendt ved en fejl.
+
 ## Trænerens ledige tider
 
 Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var det et tekstfelt med rå JSON — det virkede, men ingen træner udfylder det, og en enkelt manglende tuborgklamme gjorde profilen ubookbar uden nogen forklaring.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imageUrl } from "../../lib/imageUrl";
 import { db } from "../../lib/db";
 import { coachRatings } from "../../lib/reviews";
 import { getPreferences } from "../../lib/preferences";
@@ -22,7 +23,12 @@ export default async function TraenerePage({
       sports: { contains: prefs.sport },
       ...(area ? { area: { contains: area } } : {}),
     },
-    include: { user: true, packages: { where: { active: true } } },
+    include: {
+      user: true,
+      packages: { where: { active: true } },
+      // Kun godkendte billeder. Et ugodkendt findes ikke for offentligheden.
+      images: { where: { approved: true }, take: 1, select: { id: true } },
+    },
     orderBy: { priceHour: "asc" },
   });
 
@@ -53,7 +59,23 @@ export default async function TraenerePage({
         {coaches.map((c) => (
           <li key={c.id} className="card">
             <div className="flex items-baseline justify-between">
-              <p className="text-lg font-bold">{c.user.name}</p>
+              <div className="flex items-center gap-3">
+                {c.images?.[0] ? (
+                  <img
+                    src={imageUrl(c.images[0].id)}
+                    alt=""
+                    className="h-12 w-12 shrink-0 rounded-full object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-mist font-bold text-slate"
+                  >
+                    {c.user.name.charAt(0)}
+                  </span>
+                )}
+                <p className="text-lg font-bold">{c.user.name}</p>
+              </div>
               <p className="display text-xl text-court">{c.priceHour} kr/t</p>
             </div>
             <div className="mt-1">

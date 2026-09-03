@@ -151,3 +151,86 @@ export async function remove(clubId: string, imageId: string) {
 }
 
 export { imageUrl } from "./imageUrl";
+
+// ---------------------------------------------------------------------------
+// Trænerens profilbillede
+// ---------------------------------------------------------------------------
+
+/**
+ * Gemmer et profilbillede til en træner — ugodkendt.
+ *
+ * Billedet vises ikke offentligt, før superadmin har set det. Det er den
+ * eneste moderering, der findes, og det er et bevidst valg: en tjeneste,
+ * der skal godkende billeder, koster penge og en nøgle, og med under tyve
+ * trænere er det hurtigere og mere pålideligt at kigge selv.
+ *
+ * Kvadratisk og lille. Et profilbillede vises som en cirkel ved siden af et
+ * navn, og et foto i fuld opløsning ville bare være 3 MB, ingen ser.
+ */
+export async function storeCoachPhoto(
+  coachProfileId: string,
+  file: File
+): Promise<StoreResult> {
+  if (!file || file.size === 0) return { ok: false, error: "Vælg en fil." };
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return { ok: false, error: "Billedet må højst fylde 12 MB." };
+  }
+  if (!ALLOWED.includes(file.type)) {
+    return { ok: false, error: "Brug et JPEG-, PNG- eller HEIC-billede." };
+  }
+
+  const input = Buffer.from(await file.arrayBuffer());
+  let processed: Buffer;
+  let width: number;
+  let height: number;
+
+  try {
+    const out = await sharp(input, { failOn: "none" })
+      .rotate()
+      .resize({ width: 600, height: 600, fit: "cover", position: "attention" })
+      .jpeg({ quality: 84, mozjpeg: true })
+      .toBuffer({ resolveWithObject: true });
+    processed = out.data;
+    width = out.info.width;
+    height = out.info.height;
+  } catch {
+    return { ok: false, error: "Filen kunne ikke læses som et billede." };
+  }
+
+  // Ét billede pr. træner. Det gamle ryddes, også hvis det var godkendt —
+  // et nyt billede skal ses igen, før det vises.
+  const old = await db.image.findMany({ where: { coachProfileId } });
+  for (const o of old) await del(o.storageKey);
+  await db.image.deleteMany({ where: { coachProfileId } });
+
+  const stored = await put(
+    `traenere/${coachProfileId}/profil-${randomUUID()}.jpg`,
+    processed,
+    "image/jpeg"
+  );
+
+  const image = await db.image.create({
+    data: {
+      coachProfileId,
+      kind: "COACH",
+      mime: "image/jpeg",
+      storageKey: stored.storageKey,
+      publicUrl: stored.publicUrl,
+      bytes: stored.bytes,
+      width,
+      height,
+      approved: false,
+    },
+  });
+
+  return { ok: true, id: image.id };
+}
+
+/** Trænerens billede, hvis det er godkendt. Ellers ingenting. */
+export async function approvedCoachPhotoId(coachProfileId: string): Promise<string | null> {
+  const image = await db.image.findFirst({
+    where: { coachProfileId, approved: true },
+    select: { id: true },
+  });
+  return image?.id ?? null;
+}

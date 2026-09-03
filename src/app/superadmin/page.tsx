@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
 import { Overblik } from "./Overblik";
+import { CoachPhotos } from "./CoachPhotos";
 import { Oekonomi } from "./Oekonomi";
 import { getSettings } from "../../lib/settings";
 import { describeSubscription, subscriptionIsActive } from "../../lib/billing";
@@ -79,6 +80,8 @@ export default async function SuperadminPage() {
 
       </div>
 
+
+      <CoachPhotos />
 
       <Overblik />
 
