@@ -12,6 +12,7 @@ import { IntegrationForm } from "./IntegrationForm";
 import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
+import { PeopleForm } from "./PeopleForm";
 import { ImageForms } from "./ImageForms";
 import { startClubPayoutSetup } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
