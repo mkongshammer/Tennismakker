@@ -55,6 +55,7 @@ export default async function AdminPage({
       members: true,
       posts: { orderBy: { createdAt: "desc" }, take: 10 },
       images: { orderBy: { sortOrder: "asc" } },
+      people: { orderBy: { sortOrder: "asc" } },
     },
   });
   if (!club) redirect("/");
@@ -316,6 +317,15 @@ export default async function AdminPage({
             </>
           )}
         </div>
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Bestyrelse og kontaktpersoner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vises på jeres side under Kontakt. I vedligeholder den selv — der skal
+          ikke sendes en mail til os, når kassereren skifter.
+        </p>
+        <PeopleForm people={club.people as any} />
       </section>
 
       <section>

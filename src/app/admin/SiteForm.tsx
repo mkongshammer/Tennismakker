@@ -36,6 +36,31 @@ export function SiteForm({ club }: { club: any }) {
       </div>
 
       <div>
+        <label className="label" htmlFor="membershipInfo">Kontingent og indmeldelse</label>
+        <textarea
+          className="input"
+          id="membershipInfo"
+          name="membershipInfo"
+          rows={4}
+          maxLength={2000}
+          defaultValue={club.membershipInfo ?? ""}
+          placeholder="fx Voksne 1.200 kr/år, juniorer 600 kr, familie 2.400 kr. Indmeldelse ved at skrive til kassereren."
+        />
+        <p className="mt-1 text-xs text-slate">Vises under &quot;Bliv medlem&quot;.</p>
+      </div>
+
+      <div>
+        <label className="label" htmlFor="address">Adresse</label>
+        <input
+          className="input"
+          id="address"
+          name="address"
+          defaultValue={club.address ?? ""}
+          placeholder="Stadionvej 12, 4000 Roskilde"
+        />
+      </div>
+
+      <div>
         <label className="label" htmlFor="practicalInfo">Praktisk</label>
         <textarea
           className="input"

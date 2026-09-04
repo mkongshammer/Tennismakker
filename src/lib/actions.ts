@@ -1072,6 +1072,47 @@ export async function declineCoachBooking(formData: FormData) {
   redirect("/profil/traener?svar=afvist");
 }
 
+// ---------------- Bestyrelsen på klubsiden ----------------
+
+export async function addClubPerson(_prev: unknown, formData: FormData) {
+  // clubId kommer fra sessionen, ikke fra formularen. Et skjult felt kan
+  // ændres af den, der sender det.
+  const { clubId } = await requireClubAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const role = String(formData.get("role") ?? "").trim();
+  if (name.length < 2) return { error: "Skriv et navn." };
+  if (role.length < 2) return { error: "Skriv en rolle, fx Formand." };
+
+  // Nye personer lægges nederst. Rækkefølgen er den, klubben taster dem i,
+  // og formanden bliver typisk tastet først.
+  const count = await db.clubPerson.count({ where: { clubId } });
+
+  await db.clubPerson.create({
+    data: {
+      clubId,
+      name,
+      role,
+      email: String(formData.get("email") ?? "").trim() || null,
+      phone: String(formData.get("phone") ?? "").trim() || null,
+      sortOrder: count,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: "Tilføjet." };
+}
+
+export async function removeClubPerson(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("personId") ?? "");
+
+  // deleteMany med clubId i betingelsen: en klub kan ikke slette en anden
+  // klubs bestyrelse ved at gætte et id.
+  await db.clubPerson.deleteMany({ where: { id, clubId } });
+  revalidatePath("/admin");
+}
+
 // ---------------- Anmeldelser ----------------
 
 export async function submitReview(_prev: unknown, formData: FormData) {
@@ -1465,6 +1506,8 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
       tagline: String(formData.get("tagline") ?? "").trim() || null,
       about: String(formData.get("about") ?? "").trim() || null,
       practicalInfo: String(formData.get("practicalInfo") ?? "").trim() || null,
+      membershipInfo: String(formData.get("membershipInfo") ?? "").trim() || null,
+      address: String(formData.get("address") ?? "").trim() || null,
       contactEmail: String(formData.get("contactEmail") ?? "").trim() || null,
       contactPhone: String(formData.get("contactPhone") ?? "").trim() || null,
       priceHour: Math.max(0, Number(formData.get("priceHour") ?? 0)),

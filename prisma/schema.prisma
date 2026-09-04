@@ -117,6 +117,10 @@ model Club {
   tagline        String? // én linje under navnet
   about          String? // om klubben
   practicalInfo  String? // adgang, parkering, omklædning, nøglebrik
+  // Kontingent og indmeldelse. Fritekst, fordi ingen to klubber har den
+  // samme struktur: nogle har tre satser, andre har familiemedlemskab og
+  // et indmeldelsesgebyr. Faste felter ville passe til halvdelen af dem.
+  membershipInfo String?
   contactEmail   String?
   websiteUrl     String?
   joinCode       String? @unique // medlemmer melder sig ind med denne kode
@@ -150,6 +154,7 @@ model Club {
   reviews Review[]
   rules   GuestRule[]
   posts   ClubPost[]
+  people  ClubPerson[]
   images  Image[]
 }
 
@@ -586,4 +591,31 @@ model PackagePurchase {
   createdAt DateTime @default(now())
 
   @@index([userId, coachProfileId, status])
+}
+
+
+// ---------- Bestyrelse og kontaktpersoner ----------
+//
+// Enhver dansk forening har en bestyrelse på hjemmesiden. Det er ikke
+// pynt: det er dét, medlemmerne leder efter, når de skal have fat i nogen,
+// og det er en del af at være en forening.
+//
+// Egen tabel frem for fritekst, fordi rækkefølgen og rollerne betyder
+// noget, og fordi en mailadresse skal kunne klikkes.
+model ClubPerson {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name  String
+  role  String // "Formand", "Kasserer", "Baneansvarlig" — klubben skriver selv
+  email String?
+  phone String?
+
+  // Lav rækkefølge først. Formanden står øverst, ikke den der blev tastet
+  // ind først.
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, sortOrder])
 }

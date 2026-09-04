@@ -41,6 +41,7 @@ export default async function KlubPage({
       courts: { orderBy: { name: "asc" } },
       posts: { orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], take: 3 },
       images: { where: { kind: "PHOTO" }, orderBy: { sortOrder: "asc" }, take: 8 },
+      people: { orderBy: { sortOrder: "asc" } },
       _count: { select: { members: true } },
     },
   });
@@ -310,6 +311,11 @@ export default async function KlubPage({
               : "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}
             Har du fået en kode af klubben, kan du tilmelde dig her.
           </p>
+          {club.membershipInfo && (
+            <p className="mt-4 max-w-xl whitespace-pre-line text-chalk/80">
+              {club.membershipInfo}
+            </p>
+          )}
           <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">
             Indløs kode
           </Link>
@@ -368,6 +374,27 @@ export default async function KlubPage({
           </div>
         </dl>
       </section>
+
+      {/* Bestyrelsen. Klubben vedligeholder den selv fra administrationen. */}
+      {club.people.length > 0 && (
+        <section className="card">
+          <h2 className="display text-xl">Bestyrelse</h2>
+          <ul className="mt-3 grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
+            {club.people.map((person: any) => (
+              <li key={person.id}>
+                <p className="font-bold">{person.name}</p>
+                <p className="text-slate">{person.role}</p>
+                {person.email && (
+                  <a href={`mailto:${person.email}`} className="text-court underline">
+                    {person.email}
+                  </a>
+                )}
+                {person.phone && <p className="text-slate">{person.phone}</p>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
