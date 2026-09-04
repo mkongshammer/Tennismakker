@@ -155,6 +155,7 @@ model Club {
   rules   GuestRule[]
   posts   ClubPost[]
   people  ClubPerson[]
+  systemLogin ClubSystemLogin?
   images  Image[]
 }
 
@@ -618,4 +619,38 @@ model ClubPerson {
   createdAt DateTime @default(now())
 
   @@index([clubId, sortOrder])
+}
+
+// ---------- Klubbens adgang til sit eget bookingsystem ----------
+//
+// Til klubber, der ikke kan eller vil forlade fx Halbooking: vi logger ind
+// som dem og fører bookingen ind, så deres eget system er opdateret uden at
+// klubben rører ved noget.
+//
+// Adgangskoden krypteres med samme mekanik som Stripe-nøglerne. Den er
+// klubbens, ikke vores — og den giver adgang til hele deres bookingsystem,
+// så den skal behandles som det, den er.
+//
+// Egen tabel frem for felter på Club: så kan rækken slettes, når en klub
+// stopper, uden at røre resten af klubben, og en klub uden automatisering
+// har ingen tom hemmelighed liggende.
+model ClubSystemLogin {
+  id     String @id @default(cuid())
+  clubId String @unique
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /** Adressen på klubbens eget system, fx "jerklub.halbooking.dk". */
+  baseUrl  String
+  username String
+  /** Krypteret. Se src/lib/crypto-box.ts. */
+  password String
+
+  /** Sidste gang en automatisering lykkedes. Null = aldrig prøvet. */
+  lastOkAt   DateTime?
+  lastError  String?
+  lastTriedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([clubId])
 }

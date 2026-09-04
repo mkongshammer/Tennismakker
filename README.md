@@ -914,6 +914,24 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Automatisering mod klubbens eget bookingsystem
+
+Til klubber, der ikke kan forlade fx Halbooking — en lang kontrakt, eller bare uvilje mod at skifte. Vi logger ind som dem i en usynlig browser og fører bookingen ind, så deres system er opdateret uden at klubben rører ved noget.
+
+Globus Data har oplyst, at de tolererer det, og at deres software ikke opdateres. Det sidste er afgørende: browserautomatisering knækker normalt, fordi HTML'en flytter sig, og en side der ikke ændres, flytter sig ikke.
+
+**Egen service, ikke en del af hovedappen.** `automation/` bygges som Docker med Playwrights eget browserbillede. To grunde: browseren kræver ~1 GB og et snes systembiblioteker, og lagde man det i hovedappens byggetrin, ville hver udrulning af hjemmesiden afhænge af, at et browserbillede kan hentes. En browser, der hænger, tager desuden hukommelsen med sig — her kan den kun tage denne service ned.
+
+**Pengene trækkes efter verifikationen, aldrig før.** `/book` reserverer, henter siden igen og læser, om tiden nu står som optaget. Først når svaret er `verified: true`, må gæsten trækkes. En automatisering, der fejler tavst, ville ellers efterlade en betalt booking uden bane — og to hold på samme bane.
+
+**Adgangskoden krypteres** med samme mekanik som Stripe-nøglerne, nu løftet ud i `src/lib/crypto-box.ts`, så der ikke findes to udgaver af krypteringskode i projektet. Egen tabel frem for felter på `Club`: rækken kan slettes, når en klub stopper, og en klub uden automatisering har ingen tom hemmelighed liggende.
+
+**Selektorerne er ikke skrevet endnu, og det er med vilje.** De står i `automation/src/selectors.js` som gæt. De kan ikke skrives på forhånd — en selektor mod en side, man ikke har set, er kode, der ser rigtig ud og ikke virker.
+
+`/superadmin/automatisering` finder dem: den logger ind, lister hvert felt, hver knap og hvert link med de attributter man vælger dem ud fra, dumper skemaets celler og tager et skærmbillede. Udfyld `selectors.js` ud fra det, udrul, prøv igen. Regn med et par runder.
+
+**Opsætning:** opret en Docker-service på Render med rodmappen `automation`, sæt `AUTOMATION_SECRET` på den, og sæt `AUTOMATION_URL` og `AUTOMATION_SECRET` på hovedservicen. Servicen må ikke være offentligt tilgængelig — den logger ind i klubbers bookingsystemer.
+
 ## Klubbens eget domæne
 
 En klub kan få sin side på `booking.jerklub.dk` eller `jerklub.dk`. Tre dele skal passe sammen.
