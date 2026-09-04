@@ -437,3 +437,66 @@ export function membershipReceipt(opts: {
     ].join("\n"),
   };
 }
+
+/**
+ * Besked 14 dage før en automatisk fornyelse.
+ *
+ * Den er ikke høflighed, den er en forudsætning. En tilbagevendende
+ * betaling uden varsel er både dårlig skik og noget, forbrugerbeskyttelse
+ * ser skævt til. Linket til at slå den fra står tydeligt, ikke i en
+ * fodnote.
+ */
+export function renewalNotice(opts: {
+  to: string;
+  name: string;
+  clubName: string;
+  typeName: string;
+  seasonName: string;
+  priceKr: number;
+  chargeDate: Date;
+  clubSlug: string;
+}): Mail {
+  return {
+    to: opts.to,
+    subject: `${opts.clubName}: dit kontingent fornyes ${danishDate(opts.chargeDate)}`,
+    body: [
+      `Hej ${opts.name}`,
+      "",
+      `Dit medlemskab i ${opts.clubName} fornyes automatisk til den nye sæson.`,
+      "",
+      `Sæson: ${opts.seasonName} (${opts.typeName})`,
+      `Beløb: ${opts.priceKr} kr`,
+      `Trækkes: ${danishDate(opts.chargeDate)}`,
+      "",
+      "Skal det ikke fornyes, kan du slå det fra her — så sker der ingenting:",
+      `${baseUrl()}/profil`,
+      "",
+      "Du kan slå det fra indtil dagen før.",
+    ].join("\n"),
+  };
+}
+
+/** Fornyelsen kunne ikke gennemføres. */
+export function renewalFailed(opts: {
+  to: string;
+  name: string;
+  clubName: string;
+  seasonName: string;
+  reason: string;
+  clubSlug: string;
+}): Mail {
+  return {
+    to: opts.to,
+    subject: `${opts.clubName}: kontingentet blev ikke fornyet`,
+    body: [
+      `Hej ${opts.name}`,
+      "",
+      `Vi kunne ikke fornye dit medlemskab til ${opts.seasonName}.`,
+      "",
+      `Årsag: ${opts.reason}`,
+      "",
+      "Der er ikke trukket noget. Vil du stadig være medlem, kan du tilmelde",
+      `dig her: ${baseUrl()}/klub/${opts.clubSlug}`,
+    ].join("\n"),
+  };
+}

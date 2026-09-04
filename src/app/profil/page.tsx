@@ -317,6 +317,13 @@ export default async function ProfilPage({
         }}
       />
 
+      <p className="text-sm">
+        <a href="/profil/kvitteringer" className="font-semibold text-court underline">
+          Se dine kvitteringer
+        </a>
+        <span className="text-slate"> — alt du har betalt, til dit eget regnskab.</span>
+      </p>
+
       <DeleteAccount />
 
     </div>

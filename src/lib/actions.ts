@@ -16,6 +16,9 @@ import { subscriptionIsActive } from "./billing";
 import { mayBook } from "./club-rules";
 import { createFixedSlot, removeFixedSlot } from "./fixed-slots";
 import { countsAsMember, joinMembership } from "./memberships";
+import { buyPunchCard, spendPunch } from "./punch-cards";
+import { signUpForTeam } from "./teams";
+import { setAutoRenew, startCardSetup } from "./renewals";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -429,6 +432,31 @@ export async function bookCourtSlot(formData: FormData) {
       needsClubEntry,
     },
   });
+
+  // Har medlemmet et klippekort i klubben, bruges et klip frem for en
+  // betaling. Timen er købt i forvejen — samme princip som trænernes
+  // klippekort.
+  //
+  // Kun hvis timen koster noget. Er den gratis i forvejen, ville et klip
+  // være spildt.
+  if (slot!.priceKr > 0) {
+    const punch = await spendPunch(user.id, court.clubId);
+    if (punch) {
+      const confirmed = await db.booking.update({
+        where: { id: booking.id },
+        data: {
+          status: "CONFIRMED",
+          priceKr: 0,
+          punchPurchaseId: punch,
+          holdExpiresAt: null,
+        },
+      });
+      await notifyBookingConfirmed(confirmed).catch((err) =>
+        console.error("Kunne ikke sende kvittering for klip:", err)
+      );
+      redirect("/profil?klip=1");
+    }
+  }
 
   // Er timen gratis, er der ingenting at betale, og Stripe afviser i
   // øvrigt et beløb på nul. Bookingen bekræftes med det samme.
@@ -1119,6 +1147,131 @@ export async function declineCoachBooking(formData: FormData) {
 
   revalidatePath("/profil/traener");
   redirect("/profil/traener?svar=afvist");
+}
+
+// ---------------- Sæsonhold ----------------
+
+export async function createSeasonTeam(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (name.length < 2) return { error: "Giv holdet et navn." };
+
+  const fromDate = new Date(String(formData.get("fromDate") ?? ""));
+  const toDate = new Date(String(formData.get("toDate") ?? ""));
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+    return { error: "Vælg både en start- og en slutdato." };
+  }
+  if (toDate < fromDate) return { error: "Sæsonen skal slutte efter den begynder." };
+
+  await db.seasonTeam.create({
+    data: {
+      clubId,
+      name,
+      description: String(formData.get("description") ?? "").trim() || null,
+      sport: String(formData.get("sport") ?? "TENNIS"),
+      dayOfWeek: Math.min(6, Math.max(0, Number(formData.get("dayOfWeek") ?? 2))),
+      hour: Math.min(23, Math.max(0, Number(formData.get("hour") ?? 17))),
+      minutes: Math.min(180, Math.max(30, Number(formData.get("minutes") ?? 60))),
+      fromDate,
+      toDate,
+      priceKr: Math.max(0, Number(formData.get("priceKr") ?? 0)),
+      capacity: Math.max(0, Number(formData.get("capacity") ?? 0)),
+      levelFrom: Math.min(5, Math.max(1, Number(formData.get("levelFrom") ?? 1))),
+      levelTo: Math.min(5, Math.max(1, Number(formData.get("levelTo") ?? 5))),
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: `${name} er oprettet og åbent for tilmelding.` };
+}
+
+export async function closeSeasonTeam(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("teamId") ?? "");
+  await db.seasonTeam.updateMany({ where: { id, clubId }, data: { active: false } });
+  revalidatePath("/admin");
+}
+
+export async function joinSeasonTeam(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const slug = String(formData.get("slug") ?? "");
+  const result = await signUpForTeam(user!.id, String(formData.get("teamId") ?? ""));
+
+  if (!result.ok) redirect(`/klub/${slug}?hold=${encodeURIComponent(result.error)}`);
+  if (result.checkoutUrl) redirect(result.checkoutUrl);
+  redirect(`/klub/${slug}?hold=ok`);
+}
+
+// ---------------- Klubbens klippekort ----------------
+
+export async function createPunchCard(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const sessions = Number(formData.get("sessions") ?? 0);
+  const priceKr = Math.max(0, Number(formData.get("priceKr") ?? 0));
+
+  if (name.length < 2) return { error: "Giv klippekortet et navn." };
+  if (!Number.isInteger(sessions) || sessions < 2 || sessions > 100) {
+    return { error: "Antal timer skal være mellem 2 og 100." };
+  }
+
+  await db.clubPunchCard.create({
+    data: {
+      clubId,
+      name,
+      description: String(formData.get("description") ?? "").trim() || null,
+      sessions,
+      priceKr,
+      validDays: Math.max(0, Number(formData.get("validDays") ?? 0)),
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: `${name} er oprettet.` };
+}
+
+export async function closePunchCard(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("cardId") ?? "");
+  await db.clubPunchCard.updateMany({ where: { id, clubId }, data: { active: false } });
+  revalidatePath("/admin");
+}
+
+export async function buyClubPunchCard(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const slug = String(formData.get("slug") ?? "");
+  const result = await buyPunchCard(user!.id, String(formData.get("cardId") ?? ""));
+
+  if (!result.ok) redirect(`/klub/${slug}?klippekort=${encodeURIComponent(result.error)}`);
+  if (result.checkoutUrl) redirect(result.checkoutUrl);
+  redirect(`/klub/${slug}?klippekort=ok`);
+}
+
+// ---------------- Automatisk fornyelse ----------------
+
+/** Gemmer et kort, så næste sæson kan opkræves automatisk. */
+export async function saveCardForRenewal() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  redirect(await startCardSetup(user!.id, "/profil"));
+}
+
+export async function toggleAutoRenew(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  await setAutoRenew(
+    user!.id,
+    String(formData.get("membershipId") ?? ""),
+    formData.get("on") === "1"
+  );
+  revalidatePath("/profil");
 }
 
 // ---------------- Kontingent ----------------

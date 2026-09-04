@@ -24,6 +24,8 @@ import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/
 import { getSettings } from "../../../../lib/settings";
 import { confirmPackagePurchase } from "../../../../lib/packages";
 import { confirmMembership } from "../../../../lib/memberships";
+import { confirmTeamSignup } from "../../../../lib/teams";
+import { confirmPunchPurchase } from "../../../../lib/punch-cards";
 import { syncSubscription } from "../../../../lib/subscription";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +52,18 @@ async function handleEvent(type: string, object: any) {
 
       // Et pakkekøb er også en betaling, bare uden en booking bagved.
       // Kontingent: klubbens indtægt, ikke en booking.
+      const teamSignupId = session.metadata?.teamSignupId;
+      if (teamSignupId) {
+        await confirmTeamSignup(teamSignupId);
+        return;
+      }
+
+      const punchPurchaseId = session.metadata?.punchPurchaseId;
+      if (punchPurchaseId) {
+        await confirmPunchPurchase(punchPurchaseId);
+        return;
+      }
+
       const membershipId = session.metadata?.membershipId;
       if (membershipId) {
         await confirmMembership(membershipId);

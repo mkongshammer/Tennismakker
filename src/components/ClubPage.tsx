@@ -16,7 +16,9 @@ import { getClubAvailability } from "../lib/integrations";
 import { BookingGrid } from "./BookingGrid";
 import { clubRatings } from "../lib/reviews";
 import { countsAsMember, openTypes } from "../lib/memberships";
-import { joinClubMembership } from "../lib/actions";
+import { openTeams } from "../lib/teams";
+import { punchesIn } from "../lib/punch-cards";
+import { buyClubPunchCard, joinClubMembership, joinSeasonTeam } from "../lib/actions";
 import { SubmitButton } from "./SubmitButton";
 import { sportLabel } from "../lib/sports";
 import { imageUrl } from "../lib/imageUrl";
@@ -66,7 +68,12 @@ export async function ClubPage({
   // Ikke bare "koblet til klubben", men "tæller som medlem" — har klubben
   // kontingent hos os, skal det være betalt og løbende. Se countsAsMember.
   const isMember = await countsAsMember(user?.clubId ?? null, club.id, user?.id ?? null);
-  const memberships = await openTypes(club.id);
+  const [memberships, teams, punchCards, myPunches] = await Promise.all([
+    openTypes(club.id),
+    openTeams(club.id),
+    db.clubPunchCard.findMany({ where: { clubId: club.id, active: true } }),
+    user ? punchesIn(user.id, club.id) : Promise.resolve([]),
+  ]);
 
   const today = startOfDay(new Date());
   const dayOffset = Math.min(6, Math.max(0, Number(searchParams.dag ?? 0) || 0));
@@ -325,9 +332,110 @@ export async function ClubPage({
         </section>
       )}
 
+      {teams.length > 0 && (
+        <section className="card">
+          <h2 className="display text-2xl">Sæsonhold</h2>
+          <p className="mt-1 text-sm text-slate">
+            Træning på et fast hold hele sæsonen. Pladsen er din, når der er
+            betalt.
+          </p>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {teams.map((team) => (
+              <li key={team.id} className="rounded-xl border border-slate/15 p-4">
+                <p className="font-bold">{team.name}</p>
+                <p className="mt-0.5 text-sm text-slate">
+                  {["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"][team.dayOfWeek]} kl.{" "}
+                  {String(team.hour).padStart(2, "0")}:00 · {team.minutes} min ·
+                  niveau {team.levelFrom}–{team.levelTo}
+                </p>
+                <p className="text-sm text-slate">
+                  {team.fromDate.toLocaleDateString("da-DK", { day: "numeric", month: "short" })} –{" "}
+                  {team.toDate.toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" })}
+                  {team.coachName && ` · ${team.coachName}`}
+                </p>
+                {team.description && (
+                  <p className="mt-1 text-sm text-slate">{team.description}</p>
+                )}
+                <p className="display mt-2 text-xl text-court">
+                  {team.priceKr > 0 ? `${team.priceKr} kr` : "Gratis"}
+                </p>
+                {team.full ? (
+                  <p className="mt-2 text-sm font-semibold text-slate">Fuldtegnet</p>
+                ) : user ? (
+                  <form action={joinSeasonTeam} className="mt-3">
+                    <input type="hidden" name="teamId" value={team.id} />
+                    <input type="hidden" name="slug" value={club.slug} />
+                    <SubmitButton pendingText="Åbner…">Tilmeld</SubmitButton>
+                  </form>
+                ) : (
+                  <Link href="/login" className="btn-ghost mt-3 inline-block">
+                    Log ind for at tilmelde
+                  </Link>
+                )}
+                {team.capacity > 0 && !team.full && (
+                  <p className="mt-2 text-xs text-slate-light">
+                    {team.capacity - team.taken} pladser tilbage
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {punchCards.length > 0 && (
+        <section className="card">
+          <h2 className="display text-2xl">Klippekort</h2>
+          <p className="mt-1 text-sm text-slate">
+            Flere banetimer betalt på én gang. Klippet bruges automatisk, når
+            du booker.
+          </p>
+
+          {myPunches.map((p) => (
+            <p key={p.purchaseId} className="mt-3 rounded-xl bg-court/10 p-3 text-sm font-semibold text-court">
+              Du har {p.left} af {p.total} timer tilbage på {p.name}
+              {p.expiresAt &&
+                ` — gælder til ${p.expiresAt.toLocaleDateString("da-DK")}`}
+            </p>
+          ))}
+
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {punchCards.map((card: any) => (
+              <li key={card.id} className="rounded-xl border border-slate/15 p-4">
+                <p className="font-bold">{card.name}</p>
+                <p className="mt-0.5 text-sm text-slate">
+                  {card.sessions} timer
+                  {card.validDays > 0 && ` · gælder ${card.validDays} dage`}
+                </p>
+                {card.description && (
+                  <p className="mt-1 text-sm text-slate">{card.description}</p>
+                )}
+                <p className="display mt-2 text-xl text-court">
+                  {card.priceKr} kr
+                  <span className="ml-2 text-sm font-normal text-slate">
+                    {Math.round(card.priceKr / card.sessions)} kr pr. time
+                  </span>
+                </p>
+                {user ? (
+                  <form action={buyClubPunchCard} className="mt-3">
+                    <input type="hidden" name="cardId" value={card.id} />
+                    <input type="hidden" name="slug" value={club.slug} />
+                    <SubmitButton pendingText="Åbner…">Køb</SubmitButton>
+                  </form>
+                ) : (
+                  <Link href="/login" className="btn-ghost mt-3 inline-block">
+                    Log ind for at købe
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* Medlemskab */}
       {club.joinCode && !isMember && (
-        <section className="rounded-2xl bg-ink px-6 py-8 text-chalk sm:px-10">
+      <section className="rounded-2xl bg-ink px-6 py-8 text-chalk sm:px-10">
           <h2 className="display text-2xl">Bliv medlem</h2>
           <p className="mt-2 max-w-xl text-chalk/80">
             {club.memberPriceHour != null

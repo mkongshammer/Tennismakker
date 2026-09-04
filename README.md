@@ -914,6 +914,44 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Sæsonhold
+
+Træningshold over en sæson: "Voksne begyndere, tirsdag 18-19, forår 2026". Halbookings "Book sæsonhold".
+
+**Holdet reserverer ikke banen.** Klubben lægger holdene i sit skema og spærrer tiden med en fast bane, hvis den skal låses. Ville vi selv oprette 22 bookinger pr. hold, ville en aflyst træning i efterårsferien kræve, at nogen huskede at slette syv bookinger — én pr. deltager.
+
+**Pladsen er først reserveret, når der er betalt.** Alternativet ville betyde, at et hold på otte kunne stå fuldtegnet med otte halvfærdige tilmeldinger, og klubben ville tro, de var solgt.
+
+## Klubbens klippekort
+
+Ti banetimer betalt på én gang. Trænerne har det i forvejen; dette er klubbens egen udgave til banetid.
+
+Klippet trækkes betinget i databasen — `updateMany` med en betingelse på `sessionsUsed` — så to bookinger på samme tid ikke kan bruge det sidste klip to gange. Det er databasen, der afgør rækkefølgen, ikke to forespørgsler.
+
+**Til forskel fra trænernes kan klubbens klip udløbe.** En klub, der sælger et sommerklippekort, skal ikke have folk til at møde op med klip fra 2023.
+
+**Klippet bruges kun, hvis timen koster noget.** Er den gratis i forvejen — et medlem med fri banetid — ville et klip være spildt.
+
+## Kvitteringer
+
+Ingen ny tabel. Alt er betalt i forvejen og står i `Payment`, `Membership`, `TeamSignup`, `PackagePurchase` og `ClubPunchPurchase`. En fakturatabel ved siden af ville være en kopi, der kunne komme til at sige noget andet end betalingen selv.
+
+**Derfor er der heller ikke et fakturanummer.** Et nummer skulle være fortløbende pr. klub for at være en rigtig faktura, og det er en bogføringsforpligtelse, klubben har over for SKAT — ikke en, vi kan påtage os på deres vegne. Det er kvitteringer, og de hedder det.
+
+## Automatisk fornyelse af kontingent
+
+Den funktion, jeg holdt tilbage længst. Et kontingent på 1.200 kroner, der bliver trukket hos et medlem, som troede de var meldt ud, er den slags fejl en forening husker i årevis.
+
+Tre spærrer:
+
+1. **Medlemmet slår den aktivt til.** Ikke et forudafkrydset felt.
+2. **Besked 14 dage før hver opkrævning**, med et link til at slå den fra. Det er også, hvad forbrugerbeskyttelse forventer af en tilbagevendende betaling.
+3. **Opkrævning kun hvis klubben selv har oprettet den nye sæson** og koblet den til den gamle via `renewsFromId`. Vi gætter ikke på næste års pris.
+
+Kortet gemmes hos Stripe med en setup-session, ikke hos os — vi har et kunde-id og intet andet. Opkrævningen er `off_session`, som kræver netop den slags samtykke.
+
+Fornyelserne kører i det eksisterende cron-job. Egen cron ville være renere, men Render tager penge pr. job, og de to har samme rytme. Fejler fornyelserne, tager de ikke synkroniseringen med sig: en fejlet opkrævning er ærgerlig, en klub uden opdateret kalender er værre.
+
 ## Kontingent
 
 Klubbens indtægt, og den funktion der afgør, om en klub kan forlade Halbooking. Booking kan man leve uden i en måned; kontingentet er hele foreningens økonomi.

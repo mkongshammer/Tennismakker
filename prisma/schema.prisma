@@ -33,6 +33,8 @@ model User {
   // vi ikke vise, at nogen sagde ja — og "de stod på siden" er ikke et
   // bevis, hvis det en dag bliver en tvist.
   termsAcceptedAt DateTime?
+  /// Stripe-kunde, hvis personen har gemt et kort til fornyelse.
+  stripeCustomerId String?
   locale       String   @default("da") // se LOCALES i src/lib/sports.ts
   sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
   bio          String?
@@ -53,6 +55,8 @@ model User {
   passwordResets  PasswordReset[]
   fixedSlots      FixedSlot[]
   memberships     Membership[]
+  teamSignups     TeamSignup[]
+  punchPurchases  ClubPunchPurchase[]
   packagePurchases PackagePurchase[]
 }
 
@@ -169,6 +173,8 @@ model Club {
   people  ClubPerson[]
   systemLogin ClubSystemLogin?
   membershipTypes MembershipType[]
+  seasonTeams     SeasonTeam[]
+  punchCards      ClubPunchCard[]
   images  Image[]
 }
 
@@ -317,6 +323,8 @@ model Booking {
   packagePurchaseId String?
   /// Hører timen til en fast bane? Så kan hele sæsonen fjernes på én gang.
   fixedSlotId       String?
+  /// Blev timen betalt med et klip fra klubbens klippekort?
+  punchPurchaseId   String?
   holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
   createdAt     DateTime  @default(now())
 
@@ -369,6 +377,7 @@ model CoachProfile {
   packages CoachPackage[]
   packagePurchases PackagePurchase[]
   images   Image[]
+  seasonTeams SeasonTeam[]
 }
 
 // ---------- Modul A: Makker-matching ----------
@@ -754,6 +763,13 @@ model MembershipType {
   /// Højst så mange medlemmer. 0 = intet loft.
   capacity Int @default(0)
 
+  /// Fornyer denne sæson en tidligere? Så tilbydes medlemmerne fra den
+  /// automatisk fornyelse. Uden koblingen ville vi ikke vide, hvem der
+  /// skulle have tilbuddet.
+  renewsFromId String?  @unique
+  renewsFrom   MembershipType? @relation("renewal", fields: [renewsFromId], references: [id])
+  renewedBy    MembershipType? @relation("renewal")
+
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   memberships Membership[]
@@ -782,8 +798,119 @@ model Membership {
   stripeSessionId String?
   paidAt          DateTime?
 
+  /// Må vi opkræve næste sæson automatisk? Kræver et gemt kort, og
+  /// medlemmet får besked 14 dage før. Se src/lib/renewals.ts.
+  autoRenew Boolean @default(false)
+
   createdAt DateTime @default(now())
 
   @@unique([typeId, userId])
   @@index([userId, status])
+}
+
+// ---------- Sæsonhold ----------
+//
+// Træningshold over en sæson: "Voksne begyndere, tirsdag 18-19, forår
+// 2026". Halbookings "Book sæsonhold".
+//
+// Egen model frem for at genbruge FixedSlot, fordi et hold har flere
+// deltagere, en træner og et loft — hvor en fast bane har én person.
+model SeasonTeam {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  sport       String @default("TENNIS")
+
+  /// Hvem underviser. Valgfri: nogle hold er selvorganiserede.
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
+
+  /// 0 = søndag. Holdet mødes samme tid hver uge.
+  dayOfWeek Int
+  hour      Int
+  minutes   Int @default(60)
+
+  fromDate DateTime
+  toDate   DateTime
+
+  priceKr  Int
+  capacity Int     @default(0)
+  active   Boolean @default(true)
+
+  /// Niveau, så folk kan finde det rigtige hold. 1-5 som spillerne.
+  levelFrom Int @default(1)
+  levelTo   Int @default(5)
+
+  createdAt DateTime     @default(now())
+  signups   TeamSignup[]
+
+  @@index([clubId, active])
+}
+
+model TeamSignup {
+  id     String     @id @default(cuid())
+  teamId String
+  team   SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status  String @default("PENDING") // "PENDING" | "PAID" | "CANCELLED"
+  priceKr Int
+
+  stripeSessionId String?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@unique([teamId, userId])
+  @@index([userId, status])
+}
+
+// ---------- Klubbens klippekort ----------
+//
+// Ti banetimer betalt på én gang. Findes hos trænerne i forvejen
+// (CoachPackage); dette er klubbens egen udgave til banetid.
+//
+// Klippet trækkes ved booking i stedet for en betaling, præcis som
+// trænernes — se src/lib/packages.ts for det mønster.
+model ClubPunchCard {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  sessions    Int
+  priceKr     Int
+  active      Boolean @default(true)
+
+  /// Klippene udløber efter så mange dage. 0 = de udløber aldrig.
+  validDays Int @default(0)
+
+  createdAt DateTime           @default(now())
+  purchases ClubPunchPurchase[]
+
+  @@index([clubId, active])
+}
+
+model ClubPunchPurchase {
+  id     String        @id @default(cuid())
+  cardId String
+  card   ClubPunchCard @relation(fields: [cardId], references: [id])
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId String
+
+  name         String
+  sessions     Int
+  sessionsUsed Int    @default(0)
+  priceKr      Int
+
+  status    String    @default("HOLD") // "HOLD" | "PAID" | "CANCELLED"
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, clubId, status])
 }

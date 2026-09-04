@@ -15,6 +15,7 @@ import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
 import { FixedSlotForm } from "./FixedSlotForm";
 import { MembershipForm } from "./MembershipForm";
+import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
 import { ImageForms } from "./ImageForms";
 import { startClubPayoutSetup } from "../../lib/actions";
@@ -65,6 +66,18 @@ export default async function AdminPage({
   if (!club) redirect("/");
 
   // Faste baner hører til banerne, ikke til klubben, så de hentes for sig.
+  const [seasonTeams, punchCards] = await Promise.all([
+    db.seasonTeam.findMany({
+      where: { clubId: club.id },
+      orderBy: [{ active: "desc" }, { dayOfWeek: "asc" }],
+      include: { _count: { select: { signups: { where: { status: "PAID" } } } } },
+    }),
+    db.clubPunchCard.findMany({
+      where: { clubId: club.id },
+      orderBy: [{ active: "desc" }, { createdAt: "desc" }],
+    }),
+  ]);
+
   const membershipTypes = await db.membershipType.findMany({
     where: { clubId: club.id },
     orderBy: [{ active: "desc" }, { sortOrder: "asc" }],
@@ -353,6 +366,38 @@ export default async function AdminPage({
             paid: t._count.memberships,
           }))}
         />
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Sæsonhold</h2>
+        <p className="mb-4 text-sm text-slate">
+          Træningshold over en sæson. Medlemmerne tilmelder sig fra jeres
+          side og betaler online. Pengene går til klubbens konto.
+        </p>
+        <TeamForm
+          teams={seasonTeams.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            dayOfWeek: t.dayOfWeek,
+            hour: t.hour,
+            fromDate: t.fromDate,
+            toDate: t.toDate,
+            priceKr: t.priceKr,
+            capacity: t.capacity,
+            active: t.active,
+            paid: t._count.signups,
+          }))}
+          locale="da"
+        />
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Klippekort</h2>
+        <p className="mb-4 text-sm text-slate">
+          Flere banetimer betalt på én gang. Klippet trækkes automatisk, når
+          medlemmet booker — i stedet for en betaling.
+        </p>
+        <PunchCardForm cards={punchCards as any} />
       </section>
 
       <section className="card">

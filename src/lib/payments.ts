@@ -23,6 +23,7 @@ import { ensureSettings, getSettings } from "./settings";
 import { describeLength } from "./slots";
 import { subscriptionIsActive } from "./billing";
 import { refundCredit } from "./packages";
+import { refundPunch } from "./punch-cards";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -369,6 +370,11 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   // afgøre på deres vegne.
   if (booking.packagePurchaseId) {
     await refundCredit(booking.packagePurchaseId);
+  }
+
+  // Samme for klubbens klippekort.
+  if (booking.punchPurchaseId) {
+    await refundPunch(booking.punchPurchaseId);
   }
 
   let refunded: number | null = null;
