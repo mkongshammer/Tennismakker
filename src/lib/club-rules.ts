@@ -46,6 +46,14 @@ export async function mayBook(
         status: { in: ["HOLD", "CONFIRMED"] },
         startsAt: { gte: new Date() },
         court: { clubId: club.id },
+        // Faste baner tæller ikke med. En sæson er let 22 timer, og med et
+        // loft på to aktive bookinger ville et medlem med fast bane aldrig
+        // kunne booke noget andet — heller ikke en enkelt ekstra time.
+        //
+        // Loftet er der for at forhindre hamstring af de frie tider. En
+        // fast bane er tildelt af klubben og har intet med hamstring at
+        // gøre.
+        fixedSlotId: null,
       },
     });
 

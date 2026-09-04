@@ -19,6 +19,7 @@
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { getSettings } from "./settings";
+import { membershipReceipt, sendMail } from "./email";
 
 /**
  * Er personen medlem af klubben lige nu?
@@ -106,7 +107,17 @@ export type JoinResult =
 export async function joinMembership(userId: string, typeId: string): Promise<JoinResult> {
   const type = await db.membershipType.findUnique({
     where: { id: typeId },
-    include: { club: { select: { id: true, name: true, slug: true } } },
+    include: {
+      club: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          stripeAccountId: true,
+          stripeChargesEnabled: true,
+        },
+      },
+    },
   });
   if (!type || !type.active) return { ok: false, error: "Kontingentet er ikke åbent." };
   if (type.toDate < new Date()) return { ok: false, error: "Sæsonen er slut." };
@@ -143,8 +154,32 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
     return { ok: true, checkoutUrl: null };
   }
 
+  // Kontingentet er klubbens penge, ikke vores. Uden transfer_data ville
+  // det lande på VORES Stripe-konto — vi ville sidde på en forenings
+  // medlemsindtægt, mens skærmen lovede, at den gik direkte til klubben.
+  //
+  // Kan klubben ikke tage imod betaling endnu, siger vi det, frem for at
+  // lade Stripe fejle med en besked, ingen kan bruge.
+  if (!type.club.stripeAccountId || !type.club.stripeChargesEnabled) {
+    await db.membership.update({
+      where: { id: membership.id },
+      data: { status: "CANCELLED" },
+    });
+    return {
+      ok: false,
+      error:
+        "Klubben kan ikke tage imod betaling endnu. Skriv til klubben — de mangler at fuldføre deres udbetalingsopsætning.",
+    };
+  }
+
   const session = await (await stripe()).checkout.sessions.create({
     mode: "payment",
+    payment_intent_data: {
+      // Ingen provision. Kontingentet går ubeskåret til klubben; vi lever
+      // af abonnementet.
+      transfer_data: { destination: type.club.stripeAccountId },
+      metadata: { membershipId: membership.id },
+    },
     line_items: [
       {
         price_data: {
@@ -158,9 +193,6 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
         quantity: 1,
       },
     ],
-    // Kontingentet går ubeskåret til klubben. Vi lever af abonnementet, og
-    // et fradrag i foreningens medlemsindtægt ville være en anden aftale,
-    // end den vi har solgt.
     metadata: { membershipId: membership.id },
     success_url: `${settings.appUrl}/klub/${type.club.slug}?kontingent=ok`,
     cancel_url: `${settings.appUrl}/klub/${type.club.slug}?kontingent=afbrudt`,
@@ -195,8 +227,46 @@ export async function confirmMembership(membershipId: string): Promise<void> {
 
   // Medlemskabet er det, der kobler personen til klubben. Uden dette er de
   // stadig gæst og betaler gæstepris for hver bane.
-  await db.user.update({
+  //
+  // En klubadministrator får IKKE sin clubId overskrevet. Melder formanden
+  // i én klub sig ind i nabolklubben, ville han ellers miste adgangen til
+  // sin egen klubs administration — og det opdager man som en meget
+  // ubehagelig telefonsamtale.
+  const person = await db.user.findUnique({
     where: { id: membership.userId },
-    data: { clubId: membership.type.clubId },
+    select: { role: true, clubId: true },
   });
+
+  if (person && person.role !== "CLUB_ADMIN") {
+    await db.user.update({
+      where: { id: membership.userId },
+      data: { clubId: membership.type.clubId },
+    });
+  }
+
+  // Kvittering. Et kontingent er ofte over tusind kroner, og et medlem skal
+  // have noget på skrift — både for sin egen skyld og til klubbens
+  // bogføring.
+  const full = await db.membership.findUnique({
+    where: { id: membershipId },
+    include: {
+      user: true,
+      type: { include: { club: { select: { name: true } } } },
+    },
+  });
+
+  if (full) {
+    await sendMail(
+      membershipReceipt({
+        to: full.user.email,
+        name: full.user.name,
+        clubName: full.type.club.name,
+        typeName: full.type.name,
+        seasonName: full.type.seasonName,
+        fromDate: full.type.fromDate,
+        toDate: full.type.toDate,
+        priceKr: full.priceKr,
+      })
+    ).catch((err) => console.error("Kunne ikke sende kontingentkvittering:", err));
+  }
 }

@@ -402,11 +402,11 @@ const T: Dict = {
     no: "Dere beholder deres eget bookingsystem. Vi viser bare tidene dere selv frigir, til spillere utenfra — og sender betalingen videre til dere.",
   },
   "club.pitchPricing": {
-    da: "Vælg mellem {pct}% pr. booking eller et fast månedsbeløb.",
-    en: "Choose between {pct}% per booking or a fixed monthly fee.",
-    de: "Wählt zwischen {pct}% pro Buchung oder einem festen Monatsbetrag.",
-    sv: "Välj mellan {pct}% per bokning eller ett fast månadsbelopp.",
-    no: "Velg mellom {pct}% per booking eller et fast månedsbeløp.",
+    da: "199 kr om måneden. Ingen provision — hele gæstens betaling går til klubben.",
+    en: "199 kr a month. No commission — the guest's full payment goes to the club.",
+    de: "199 kr im Monat. Keine Provision — die gesamte Zahlung des Gastes geht an den Club.",
+    sv: "199 kr i månaden. Ingen provision — hela gästens betalning går till klubben.",
+    no: "199 kr i måneden. Ingen provisjon — hele gjestens betaling går til klubben.",
   },
 
   // Trænere, liste og profil
@@ -1201,11 +1201,11 @@ const T: Dict = {
     no: "Avlys inntil 24 timer før",
   },
   "home.trustCancelBody": {
-    da: "Aflyser du mere end 24 timer før spilletid, får du hele beløbet tilbage automatisk — også vores andel. Tættere på kan klubben ikke nå at sælge tiden igen.",
-    en: "Cancel more than 24 hours before the slot and you get the full amount back automatically — our share too. Any closer and the club cannot resell the time.",
-    de: "Sagst du mehr als 24 Stunden vorher ab, bekommst du alles automatisch zurück — auch unseren Anteil. Näher dran kann der Club die Zeit nicht mehr weiterverkaufen.",
-    sv: "Avbokar du mer än 24 timmar före speltid får du hela beloppet tillbaka automatiskt — även vår andel. Närmare än så hinner klubben inte sälja tiden igen.",
-    no: "Avlyser du mer enn 24 timer før spilletid, får du hele beløpet tilbake automatisk — også vår andel. Nærmere enn det rekker ikke klubben å selge tiden igjen.",
+    da: "Aflyser du mere end 24 timer før spilletid, får du hele beløbet tilbage automatisk. Tættere på kan klubben ikke nå at sælge tiden igen.",
+    en: "Cancel more than 24 hours before the slot and you get the full amount back automatically. Any closer and the club cannot resell the time.",
+    de: "Sagst du mehr als 24 Stunden vorher ab, bekommst du alles automatisch zurück. Näher dran kann der Club die Zeit nicht mehr weiterverkaufen.",
+    sv: "Avbokar du mer än 24 timmar före speltid får du hela beloppet tillbaka automatiskt. Närmare än så hinner klubben inte sälja tiden igen.",
+    no: "Avlyser du mer enn 24 timer før spilletid, får du hele beløpet tilbake automatisk. Nærmere enn det rekker ikke klubben å selge tiden igjen.",
   },
   "home.ctaSignup": {
     da: "Opret profil — det er gratis",

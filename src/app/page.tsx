@@ -49,7 +49,6 @@ export default async function Home() {
     db.user.count({ where: { role: "PLAYER", country: prefs.country } }),
   ]);
 
-  const pct = Math.round((await getSettings()).commissionPct * 100);
   const tint = sportColor(prefs.sport);
 
   return (
@@ -233,7 +232,7 @@ export default async function Home() {
         <div className="chalk-line mb-6 max-w-[220px]" />
         <h2 className="display text-2xl sm:text-3xl">{t("club.boardQuestion")}</h2>
         <p className="mt-3 max-w-2xl text-chalk/80">
-          {t("club.pitch")} {t("club.pitchPricing", { pct })}
+          {t("club.pitch")} {t("club.pitchPricing")}
         </p>
         <Link href="/opret-klub" className="btn-court mt-6">
           {t("club.signup")}

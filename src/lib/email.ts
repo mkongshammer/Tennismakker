@@ -64,6 +64,11 @@ const MONTHS = [
   "juli", "august", "september", "oktober", "november", "december",
 ];
 
+/** Kun dato. En sæson har ikke et klokkeslæt. */
+function danishDate(d: Date): string {
+  return d.toLocaleDateString("da-DK", { day: "numeric", month: "long", year: "numeric" });
+}
+
 function danishDateTime(d: Date): string {
   const t = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   return `${DAYS[d.getDay()]} d. ${d.getDate()}. ${MONTHS[d.getMonth()]} kl. ${t}`;
@@ -389,6 +394,46 @@ export function coachRequestNotice(opts: {
       "Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",
       "",
       `Godkend eller afvis her: ${baseUrl()}/profil`,
+    ].join("\n"),
+  };
+}
+
+/**
+ * Kvittering for kontingent.
+ *
+ * Et kontingent er ofte over tusind kroner, og et medlem skal have noget på
+ * skrift — både for sin egen skyld og til klubbens bogføring. Beløbet og
+ * perioden står med i klartekst, så mailen kan bruges som dokumentation.
+ */
+export function membershipReceipt(opts: {
+  to: string;
+  name: string;
+  clubName: string;
+  typeName: string;
+  seasonName: string;
+  fromDate: Date;
+  toDate: Date;
+  priceKr: number;
+}): Mail {
+  const period = `${danishDate(opts.fromDate)} – ${danishDate(opts.toDate)}`;
+
+  return {
+    to: opts.to,
+    subject: `Kontingent i ${opts.clubName} — ${opts.seasonName}`,
+    body: [
+      `Hej ${opts.name}`,
+      "",
+      `Dit medlemskab i ${opts.clubName} er registreret.`,
+      "",
+      `Type: ${opts.typeName}`,
+      `Sæson: ${opts.seasonName}`,
+      `Gælder: ${period}`,
+      opts.priceKr > 0 ? `Betalt: ${opts.priceKr} kr` : "Pris: gratis",
+      "",
+      "Du kan nu booke klubbens baner til medlemspris. Se dine bookinger",
+      `her: ${baseUrl()}/profil`,
+      "",
+      "Denne mail er din kvittering. Gem den til dit eget regnskab.",
     ].join("\n"),
   };
 }
