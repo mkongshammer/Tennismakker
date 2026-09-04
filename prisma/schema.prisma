@@ -639,13 +639,13 @@ model ClubSystemLogin {
   clubId String @unique
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
-  /** Adressen på klubbens eget system, fx "jerklub.halbooking.dk". */
+  /// Adressen på klubbens eget system, fx "jerklub.halbooking.dk".
   baseUrl  String
   username String
-  /** Krypteret. Se src/lib/crypto-box.ts. */
+  /// Krypteret. Se src/lib/crypto-box.ts.
   password String
 
-  /** Sidste gang en automatisering lykkedes. Null = aldrig prøvet. */
+  /// Sidste gang en automatisering lykkedes. Null = aldrig prøvet.
   lastOkAt   DateTime?
   lastError  String?
   lastTriedAt DateTime?
