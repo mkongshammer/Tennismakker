@@ -15,6 +15,9 @@ import { releaseExpiredHolds } from "../lib/payments";
 import { getClubAvailability } from "../lib/integrations";
 import { BookingGrid } from "./BookingGrid";
 import { clubRatings } from "../lib/reviews";
+import { countsAsMember, openTypes } from "../lib/memberships";
+import { joinClubMembership } from "../lib/actions";
+import { SubmitButton } from "./SubmitButton";
 import { sportLabel } from "../lib/sports";
 import { imageUrl } from "../lib/imageUrl";
 
@@ -60,7 +63,10 @@ export async function ClubPage({
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   await releaseExpiredHolds();
 
-  const isMember = Boolean(user && user.clubId === club.id);
+  // Ikke bare "koblet til klubben", men "tæller som medlem" — har klubben
+  // kontingent hos os, skal det være betalt og løbende. Se countsAsMember.
+  const isMember = await countsAsMember(user?.clubId ?? null, club.id, user?.id ?? null);
+  const memberships = await openTypes(club.id);
 
   const today = startOfDay(new Date());
   const dayOffset = Math.min(6, Math.max(0, Number(searchParams.dag ?? 0) || 0));
@@ -329,6 +335,48 @@ export async function ClubPage({
               : "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}
             Har du fået en kode af klubben, kan du tilmelde dig her.
           </p>
+          {memberships.length > 0 && (
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+              {memberships.map((m) => (
+                <li key={m.id} className="rounded-xl bg-chalk/10 p-4">
+                  <p className="font-bold text-chalk">
+                    {m.name} — {m.seasonName}
+                  </p>
+                  <p className="mt-0.5 text-sm text-chalk/70">
+                    {m.fromDate.toLocaleDateString("da-DK", { day: "numeric", month: "short" })} –{" "}
+                    {m.toDate.toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                  {m.description && (
+                    <p className="mt-1 text-sm text-chalk/70">{m.description}</p>
+                  )}
+                  <p className="display mt-2 text-xl text-optic">
+                    {m.priceKr > 0 ? `${m.priceKr} kr` : "Gratis"}
+                  </p>
+                  {m.full ? (
+                    <p className="mt-2 text-sm font-semibold text-chalk/60">Fuldtegnet</p>
+                  ) : user ? (
+                    <form action={joinClubMembership} className="mt-3">
+                      <input type="hidden" name="typeId" value={m.id} />
+                      <input type="hidden" name="slug" value={club.slug} />
+                      <SubmitButton className="btn-court" pendingText="Åbner…">
+                        Tilmeld
+                      </SubmitButton>
+                    </form>
+                  ) : (
+                    <Link href="/login" className="btn-court mt-3 inline-block">
+                      Log ind for at tilmelde
+                    </Link>
+                  )}
+                  {m.capacity > 0 && !m.full && (
+                    <p className="mt-2 text-xs text-chalk/50">
+                      {m.capacity - m.taken} pladser tilbage
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
           {club.membershipInfo && (
             <p className="mt-4 max-w-xl whitespace-pre-line text-chalk/80">
               {club.membershipInfo}

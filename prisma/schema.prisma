@@ -52,6 +52,7 @@ model User {
   loginChallenges LoginChallenge[]
   passwordResets  PasswordReset[]
   fixedSlots      FixedSlot[]
+  memberships     Membership[]
   packagePurchases PackagePurchase[]
 }
 
@@ -167,6 +168,7 @@ model Club {
   posts   ClubPost[]
   people  ClubPerson[]
   systemLogin ClubSystemLogin?
+  membershipTypes MembershipType[]
   images  Image[]
 }
 
@@ -719,4 +721,69 @@ model FixedSlot {
 
   @@index([courtId, dayOfWeek, hour])
   @@index([userId])
+}
+
+// ---------- Kontingent ----------
+//
+// Klubbens indtægt. Det er den funktion, der afgør, om en klub kan forlade
+// Halbooking: booking kan man leve uden i en måned, men kontingentet er
+// hele foreningens økonomi.
+//
+// Sæsoner frem for løbende måneder, fordi det er sådan danske klubber gør
+// det: "Sommer 01.05 – 30.09" med en fast pris, ikke 1/12 om måneden. En
+// månedlig model ville tvinge klubberne til at lave deres vedtægter om.
+model MembershipType {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// Fx "Ungsenior", "Senior", "Junior", "Familie".
+  name        String
+  description String?
+
+  /// Sæsonens navn og periode, fx "Sommer 2026" 01.05–30.09.
+  seasonName String
+  fromDate   DateTime
+  toDate     DateTime
+
+  priceKr Int
+
+  /// Er den åben for tilmelding lige nu?
+  active Boolean @default(true)
+
+  /// Højst så mange medlemmer. 0 = intet loft.
+  capacity Int @default(0)
+
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  memberships Membership[]
+
+  @@index([clubId, active])
+}
+
+// Et medlems kontingent for én sæson.
+//
+// Egen række pr. sæson frem for et felt på User: så har klubben en historik,
+// og et medlem kan have både et sommer- og et vinterkontingent samtidig.
+// Et felt ville betyde, at fornyelsen overskrev sidste sæson, og så kan
+// ingen svare på, hvem der var medlem i 2025.
+model Membership {
+  id     String         @id @default(cuid())
+  typeId String
+  type   MembershipType @relation(fields: [typeId], references: [id])
+  userId String
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// "PENDING" | "PAID" | "CANCELLED". Kun PAID gør en til medlem.
+  status  String @default("PENDING")
+  priceKr Int
+
+  /// Stripes betaling, så en kvittering kan findes igen.
+  stripeSessionId String?
+  paidAt          DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([typeId, userId])
+  @@index([userId, status])
 }

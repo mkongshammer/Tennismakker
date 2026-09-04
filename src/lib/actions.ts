@@ -15,6 +15,7 @@ import { eraseAccount } from "./erasure";
 import { subscriptionIsActive } from "./billing";
 import { mayBook } from "./club-rules";
 import { createFixedSlot, removeFixedSlot } from "./fixed-slots";
+import { countsAsMember, joinMembership } from "./memberships";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -376,10 +377,17 @@ export async function bookCourtSlot(formData: FormData) {
   // Hent klubbens kalender på ny, hvis spejlet er mere end et minut gammelt
   await refreshBeforeBooking(court.clubId);
 
+  // isMember SKAL med. Uden den hentede vi gæsteprisen, mens siden viste
+  // medlemsprisen — et medlem så "0 kr" og blev sendt til en betaling på
+  // fuld pris. Den slags opdager man som en klage, ikke som en fejl i en
+  // log.
+  const isMember = await countsAsMember(user.clubId ?? null, court.clubId, user.id);
+
   const { slots, needsClubEntry } = await getClubAvailability(
     court.clubId,
     startsAt,
-    endsAt
+    endsAt,
+    { isMember }
   );
   const slot = slots.find(
     (s) => s.courtId === courtId && s.startsAt.getTime() === startsAt.getTime()
@@ -1111,6 +1119,75 @@ export async function declineCoachBooking(formData: FormData) {
 
   revalidatePath("/profil/traener");
   redirect("/profil/traener?svar=afvist");
+}
+
+// ---------------- Kontingent ----------------
+
+export async function createMembershipType(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const seasonName = String(formData.get("seasonName") ?? "").trim();
+  const priceKr = Math.max(0, Number(formData.get("priceKr") ?? 0));
+  const capacity = Math.max(0, Number(formData.get("capacity") ?? 0));
+  const description = String(formData.get("description") ?? "").trim() || null;
+
+  if (name.length < 2) return { error: "Giv kontingentet et navn, fx Senior." };
+  if (seasonName.length < 2) return { error: "Skriv sæsonens navn, fx Sommer 2026." };
+
+  const fromDate = new Date(String(formData.get("fromDate") ?? ""));
+  const toDate = new Date(String(formData.get("toDate") ?? ""));
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+    return { error: "Vælg både en start- og en slutdato for sæsonen." };
+  }
+  if (toDate < fromDate) return { error: "Sæsonen skal slutte efter den begynder." };
+
+  const count = await db.membershipType.count({ where: { clubId } });
+
+  await db.membershipType.create({
+    data: { clubId, name, seasonName, description, fromDate, toDate, priceKr, capacity, sortOrder: count },
+  });
+
+  revalidatePath("/admin");
+  return { ok: `${name} — ${seasonName} er oprettet og åben for tilmelding.` };
+}
+
+/**
+ * Lukker for tilmelding frem for at slette.
+ *
+ * Medlemmer, der har betalt, har en række, der peger på typen. En sletning
+ * ville tage deres kontingent med — og dermed beviset for, at de har
+ * betalt.
+ */
+export async function closeMembershipType(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("typeId") ?? "");
+  await db.membershipType.updateMany({ where: { id, clubId }, data: { active: false } });
+  revalidatePath("/admin");
+}
+
+export async function openMembershipType(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("typeId") ?? "");
+  await db.membershipType.updateMany({ where: { id, clubId }, data: { active: true } });
+  revalidatePath("/admin");
+}
+
+/** Medlemmets tilmelding. Sender videre til betaling, hvis der er noget at betale. */
+export async function joinClubMembership(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const typeId = String(formData.get("typeId") ?? "");
+  const slug = String(formData.get("slug") ?? "");
+
+  const result = await joinMembership(user!.id, typeId);
+
+  if (!result.ok) {
+    redirect(`/klub/${slug}?kontingent=${encodeURIComponent(result.error)}`);
+  }
+  if (result.checkoutUrl) redirect(result.checkoutUrl);
+  redirect(`/klub/${slug}?kontingent=ok`);
 }
 
 // ---------------- Faste baner ----------------

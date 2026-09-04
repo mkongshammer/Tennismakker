@@ -2,6 +2,7 @@ import { addHours, addMinutes } from "date-fns";
 import { isOffered, isTaken } from "../../../../lib/coaching";
 import { lessonEnd, lessonPriceKr } from "../../../../lib/slots";
 import { creditsWith } from "../../../../lib/packages";
+import { countsAsMember } from "../../../../lib/memberships";
 import { coachRequestNotice, sendMail } from "../../../../lib/email";
 import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
@@ -72,7 +73,8 @@ export async function POST(req: Request) {
     const { slots, needsClubEntry } = await getClubAvailability(
       court.clubId,
       startsAt,
-      endsAt
+      endsAt,
+      { isMember: await countsAsMember(auth.user.clubId ?? null, court.clubId, auth.user.id) }
     );
     const slot = slots.find(
       (s) => s.courtId === court.id && s.startsAt.getTime() === startsAt.getTime()

@@ -23,6 +23,7 @@ import { confirmBookingPayment } from "../../../../lib/payments";
 import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
 import { getSettings } from "../../../../lib/settings";
 import { confirmPackagePurchase } from "../../../../lib/packages";
+import { confirmMembership } from "../../../../lib/memberships";
 import { syncSubscription } from "../../../../lib/subscription";
 
 export const dynamic = "force-dynamic";
@@ -48,6 +49,13 @@ async function handleEvent(type: string, object: any) {
       }
 
       // Et pakkekøb er også en betaling, bare uden en booking bagved.
+      // Kontingent: klubbens indtægt, ikke en booking.
+      const membershipId = session.metadata?.membershipId;
+      if (membershipId) {
+        await confirmMembership(membershipId);
+        return;
+      }
+
       const purchaseId = session.metadata?.purchaseId;
       if (purchaseId) {
         await confirmPackagePurchase(purchaseId);

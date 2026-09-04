@@ -914,6 +914,31 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Kontingent
+
+Klubbens indtægt, og den funktion der afgør, om en klub kan forlade Halbooking. Booking kan man leve uden i en måned; kontingentet er hele foreningens økonomi.
+
+**Sæsoner frem for løbende måneder.** "Sommer 01.05 – 30.09" til en fast pris, som danske klubber gør det. En månedlig model ville tvinge klubberne til at lave deres vedtægter om for at bruge os.
+
+**Betaling én gang pr. sæson, ikke automatisk fornyelse.** Fornyelse med gemt kort kan bygges, men den skal være rigtig: et kontingent, der bliver trukket hos et medlem, der troede de var meldt ud, er den slags fejl en forening husker. Indtil da åbner klubben den nye sæson, og medlemmet tilmelder sig igen.
+
+**Egen række pr. sæson frem for et felt på User.** Så har klubben en historik, og et medlem kan have både sommer- og vinterkontingent samtidig. Et felt ville betyde, at fornyelsen overskrev sidste sæson — og så kan ingen svare på, hvem der var medlem i 2025.
+
+**Kontingentet går ubeskåret til klubben.** Vi tager intet af det; vi lever af abonnementet. Et fradrag i foreningens medlemsindtægt ville være en anden aftale end den, vi har solgt.
+
+**En kontingenttype lukkes, den slettes ikke.** Medlemmer, der har betalt, har en række, der peger på typen. En sletning ville tage deres kontingent med — og dermed beviset for, at de har betalt.
+
+### To modeller for medlemskab, side om side
+
+`countsAsMember()` afgør prisen, og den håndterer to virkeligheder:
+
+- Klubber **uden** kontingent hos os bruger tilmeldingskoden. Der er `User.clubId` hele sandheden.
+- Klubber **med** kontingent skal have betalingen til at gælde, ellers ville et medlem, hvis sæson sluttede i september, booke til medlemspris resten af året.
+
+Reglen: koblet til klubben, OG hvis klubben har kontingenter, skal et af dem være betalt og løbende. Uden det sidste led ville de klubber, der ikke bruger vores kontingent, miste deres medlemspriser den dag funktionen blev udrullet.
+
+**En fejl fundet undervejs, værd at kende.** `bookCourtSlot` hentede ledigheden uden `isMember`, så prisen ved booking altid var gæsteprisen — mens klubsiden viste medlemsprisen. Et medlem så "0 kr" og blev sendt til en betaling på fuld pris. Samme fejl i mobil-API'et. Begge rettet; den slags opdager man som en klage, ikke som en fejl i en log.
+
 ## Faste baner
 
 Samme bane, samme ugedag, samme klokkeslæt, hele sæsonen. Den funktion, en tennisklub spørger om først.
