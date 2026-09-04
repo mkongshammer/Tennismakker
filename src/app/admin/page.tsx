@@ -13,6 +13,7 @@ import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
+import { DomainForm } from "./DomainForm";
 import { ImageForms } from "./ImageForms";
 import { startClubPayoutSetup } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
@@ -297,56 +298,18 @@ export default async function AdminPage({
 
         <div className="card mt-4">
           <p className="font-bold">Eget domæne</p>
-          {club.customDomain ? (
-            <>
-              <p className="data mt-1">{club.customDomain}</p>
-              <p className="mt-1 text-sm text-slate">
-                {club.domainStatus === "LIVE"
-                  ? "Aktivt. Jeres side ligger på jeres eget domæne."
-                  : "Registreret. Vi giver besked, når det er slået igennem."}
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-1 text-sm text-slate">
-                Jeres side kan ligge på klubbens eget domæne i stedet for hos
-                os. Vi sætter det op for jer.
-              </p>
-              <Link href="/hjemmeside" className="btn-ghost mt-3">
-                Læs om det
-              </Link>
-            </>
-          )}
-        </div>
-      </section>
-
-      <section className="card">
-        <h2 className="display mb-1 text-2xl">Bestyrelse og kontaktpersoner</h2>
-        <p className="mb-4 text-sm text-slate">
-          Vises på jeres side under Kontakt. I vedligeholder den selv — der skal
-          ikke sendes en mail til os, når kassereren skifter.
-        </p>
-        <PeopleForm people={club.people as any} />
-      </section>
-
-      <section>
-        <h2 className="display mb-1 text-2xl">Medlemmer</h2>
-        <p className="mb-4 text-sm text-slate">
-          {club.joinCode
-            ? "Del koden med jeres medlemmer, så booker de til medlemspris."
-            : "Lav en kode, I kan dele med medlemmerne."}
-        </p>
-        <div className="card flex flex-wrap items-center justify-between gap-4">
-          {club.joinCode ? (
-            <p className="data text-2xl font-bold">{club.joinCode}</p>
-          ) : (
-            <p className="text-slate">Ingen kode endnu</p>
-          )}
-          <form action={generateJoinCode}>
-            <button className="btn-ghost">
-              {club.joinCode ? "Lav en ny kode" : "Lav en kode"}
-            </button>
-          </form>
+          <p className="mt-1 text-sm text-slate">
+            Jeres side kan ligge på klubbens eget domæne i stedet for hos os.
+            Så står der jerklub.dk i adresselinjen, og vores navigation vises
+            ikke.
+          </p>
+          <div className="mt-4">
+            <DomainForm
+              clubId={club.id}
+              domain={club.customDomain}
+              status={club.domainStatus}
+            />
+          </div>
         </div>
         <p className="mt-2 text-xs text-slate">
           Laver I en ny kode, holder den gamle op med at virke. Medlemmer der

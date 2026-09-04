@@ -9,22 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
 //
 // Vores egne værtsnavne skal naturligvis fortsætte som normalt.
 
-const OWN_HOSTS = [
-  "localhost",
-  "127.0.0.1",
-  "racketbuddy.app",
-  "www.racketbuddy.app",
-  "tennis-makker.onrender.com",
-];
-
-function isOwnHost(host: string): boolean {
-  const clean = host.split(":")[0].toLowerCase();
-  return (
-    OWN_HOSTS.includes(clean) ||
-    clean.endsWith(".onrender.com") ||
-    clean.endsWith(".vercel.app")
-  );
-}
+import { isOwnHost } from "./lib/hosts";
 
 export function middleware(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
@@ -33,15 +18,24 @@ export function middleware(req: NextRequest) {
   const clean = host.split(":")[0].toLowerCase();
   const url = req.nextUrl.clone();
 
-  // Klubbens egen side serveres fra roden af deres domæne. Alt andet —
-  // login, betaling, beskeder — kører videre på vores eget domæne, så vi
-  // ikke skal håndtere sessioner på tværs af mange domæner.
+  // Klubbens egen side serveres fra roden af deres domæne.
   if (url.pathname === "/") {
     url.pathname = `/domaene/${clean}`;
     return NextResponse.rewrite(url);
   }
 
-  return NextResponse.next();
+  // Alt andet — login, betaling, beskeder, profiler — hører på vores eget
+  // domæne. To grunde: sessionscookien skal ikke findes i tyve varianter,
+  // og Stripes returadresser peger på appUrl uanset hvor man kom fra.
+  //
+  // Uden denne omdirigering ville en klubs domæne kunne vise hele
+  // RacketBuddy — inklusive andre klubbers sider — hvilket er forvirrende
+  // for den besøgende og noget rod for søgemaskiner.
+  const own = new URL(req.url);
+  own.host = "racketbuddy.app";
+  own.protocol = "https:";
+  own.port = "";
+  return NextResponse.redirect(own, 308);
 }
 
 export const config = {

@@ -5,6 +5,7 @@ import "./globals.css";
 import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
 import { SiteHeader } from "../components/SiteHeader";
+import { isOwnHost } from "../lib/hosts";
 import { TabBar } from "../components/TabBar";
 import { LanguagePicker } from "../components/LanguagePicker";
 import { CountrySuggestion } from "../components/CountrySuggestion";
@@ -38,6 +39,12 @@ export const viewport: Viewport = {
   themeColor: "#0F2138",
 };
 
+/**
+ * Er siden hentet på en klubs eget domæne?
+ *
+ * Så skal vores navigation ikke vises. Klubben har betalt for en
+ * hjemmeside, ikke for en RacketBuddy-side med deres navn på.
+ */
 export default async function RootLayout({
   children,
 }: {
@@ -53,6 +60,11 @@ export default async function RootLayout({
   // forsinke siden for den, der kigger på den.
   void recordView(headers().get("user-agent"));
 
+  // Ligger siden på en klubs eget domæne, skjules vores egen navigation og
+  // bundlinje. Klubben har betalt for en hjemmeside, ikke for en
+  // RacketBuddy-side med deres navn på.
+  const onOwnDomain = !isOwnHost(headers().get("host") ?? "");
+
   return (
     <html lang={prefs.locale}>
       <head>
@@ -66,10 +78,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-screen">
-        <SiteHeader
+        {onOwnDomain ? null : (
+          <SiteHeader
           user={user ? { name: user.name, role: user.role } : null}
           locale={prefs.locale}
         />
+        )}
 
         {/* Pladsen til bundlinjen afsættes kun, når bundlinjen faktisk er
             der — ellers ville en udlogget besøgende få 68 tomme pixels
@@ -85,6 +99,14 @@ export default async function RootLayout({
           {children}
         </main>
 
+        {onOwnDomain ? (
+          <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light">
+            Booking og betaling leveret af{" "}
+            <a href="https://racketbuddy.app" className="underline">
+              RacketBuddy
+            </a>
+          </footer>
+        ) : (
         <footer
           className={`mt-20 border-t border-slate/10 bg-chalk md:pb-0 ${user ? "has-tabbar" : ""}`}
         >
@@ -108,6 +130,7 @@ export default async function RootLayout({
             </div>
           </div>
         </footer>
+        )}
 
         {/* Bundlinjen er navigation i det, man har adgang til. Udlogget er
             der intet at navigere rundt i endnu, og fire faner, der alle

@@ -1674,9 +1674,20 @@ export async function updateOrderStatus(formData: FormData) {
  * — det er blandt andet det, opsætningsgebyret dækker.
  */
 export async function setCustomDomain(_prev: unknown, formData: FormData) {
-  await requireSuperadmin();
+  // Både superadmin og klubbens egen administrator. Klubben skal selv kunne
+  // skrive sit domæne ind — DNS-posten skal de oprette alligevel, og at
+  // skulle skrive til os for at få feltet udfyldt er et led for meget.
+  const me = await getCurrentUser();
+  if (!me) redirect("/login");
 
-  const clubId = String(formData.get("clubId") ?? "").trim();
+  const clubId =
+    me!.role === "SUPERADMIN"
+      ? String(formData.get("clubId") ?? "").trim()
+      : (me!.clubId ?? "");
+
+  if (me!.role !== "SUPERADMIN" && me!.role !== "CLUB_ADMIN") {
+    return { error: "Du har ikke adgang til klubben." };
+  }
   const domain = String(formData.get("domain") ?? "")
     .trim()
     .toLowerCase()
@@ -1702,9 +1713,10 @@ export async function setCustomDomain(_prev: unknown, formData: FormData) {
   });
 
   revalidatePath("/superadmin");
+  revalidatePath("/admin");
   return {
     ok: domain
-      ? `${domain} er registreret. Peg klubbens DNS mod os, tilføj domænet hos hostingudbyderen, og sæt status til aktiv.`
+      ? `${domain} er gemt. Opret DNS-posten nedenfor, og skriv til os når den er oprettet.`
       : "Domænet er fjernet.",
   };
 }

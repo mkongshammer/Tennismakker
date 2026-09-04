@@ -914,6 +914,20 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Klubbens eget domæne
+
+En klub kan få sin side på `booking.jerklub.dk` eller `jerklub.dk`. Tre dele skal passe sammen.
+
+**Værtsnavnet afgør klubben.** `src/middleware.ts` genkender et fremmed værtsnavn og omskriver `/` til `/domaene/<host>`, som slår klubben op og renderer `ClubPage`. Middleware kører på edge og kan ikke tale med databasen — derfor omskrivningen frem for et opslag.
+
+**Siden renderes, den omdirigerer ikke.** Det var fejlen før: `/domaene/<host>` sendte videre til `/klub/<slug>`, så en besøgende på klubbens domæne endte på racketbuddy.app et sekund senere. Klubben havde betalt for en hjemmeside, der afleverede deres trafik hos os. Klubsiden er nu trukket ud i `src/components/ClubPage.tsx` og bruges af begge ruter — samme kode, ét sted at vedligeholde.
+
+**Vores navigation vises ikke.** Layoutet læser værtsnavnet og skjuler header og bundlinje på et fremmed domæne. Tilbage står en enkelt linje: booking leveret af RacketBuddy. `isOwnHost()` ligger i `src/lib/hosts.ts`, fordi både middleware og layout skal bruge den samme vurdering — to kopier af den liste driver fra hinanden, og resultatet er "RacketBuddy · Book bane" i toppen af en klubs hjemmeside.
+
+**Alt andet end roden omdirigeres til vores domæne.** Login, betaling, beskeder og profiler hører hos os: sessionscookien skal ikke findes i tyve varianter, og Stripes returadresser peger på `appUrl` uanset hvor man kom fra. Uden det kunne en klubs domæne vise hele RacketBuddy, inklusive andre klubbers sider.
+
+**Det manuelle led, som ikke kan bygges væk.** Domænet skal tilføjes hos Render, før certifikatet kan udstedes, og det kan ikke gøres fra koden. Klubben opretter DNS-posten, skriver til os, og vi tilføjer domænet. `DomainForm` siger det højt — en klub, der tror det sker automatisk, ringer på dag to.
+
 ## Klubber med eget bookingsystem: spær først, frigiv bagefter
 
 Halbooking har ingen grænseflade, tredjeparter kan skrive til. Der findes partnerintegrationer (kasseapparater, adgangskontrol), men de er aftaler med Globus Data, ikke en åben API. Så vi kan ikke reservere en tid i Halbooking, når den bookes hos os.
