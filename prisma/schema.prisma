@@ -766,9 +766,13 @@ model MembershipType {
   /// Fornyer denne sæson en tidligere? Så tilbydes medlemmerne fra den
   /// automatisk fornyelse. Uden koblingen ville vi ikke vide, hvem der
   /// skulle have tilbuddet.
-  renewsFromId String?  @unique
-  renewsFrom   MembershipType? @relation("renewal", fields: [renewsFromId], references: [id])
-  renewedBy    MembershipType? @relation("renewal")
+  ///
+  /// Almindeligt felt, ikke en Prisma-relation. En selvrelation kræver et
+  /// @unique, og et unikt indeks på en eksisterende tabel er noget Prisma
+  /// advarer om — med god grund, for det kan fejle på data, der allerede
+  /// er der. Vi slår kun id'et op direkte, så relationen ville ikke give
+  /// noget, den ikke koster.
+  renewsFromId String?
 
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
