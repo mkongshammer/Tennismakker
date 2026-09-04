@@ -134,6 +134,16 @@ model Club {
   // "NONE" | "REQUESTED" | "PENDING_DNS" | "LIVE"
   domainStatus String  @default("NONE")
   memberPriceHour Int? // medlemspris; er den sat, betaler medlemmer den
+  /// Hvor mange dage frem et medlem kan booke. Klubberne har vidt
+  /// forskellig praksis — nogle syv dage, andre en hel sæson.
+  memberWindowDays Int @default(14)
+  /// Hvor mange aktive bookinger et medlem må have ad gangen. Uden et loft
+  /// kan én person reservere hele ugen, og det er den klage, en
+  /// bestyrelse hører først.
+  memberMaxActive  Int @default(2)
+  /// Hvor mange dage frem en gæst udefra kan booke. Typisk kortere end
+  /// medlemmernes, så medlemmerne får første ret til de gode tider.
+  guestWindowDays  Int @default(7)
 
   address   String? // gadeadresse, bruges til kortet og til at finde vej
   latitude  Float?
@@ -654,3 +664,14 @@ model ClubSystemLogin {
 
   @@index([clubId])
 }
+
+// ---------- Klubbens regler for medlemmers booking ----------
+//
+// Det, der gør RacketBuddy til en erstatning frem for et tillæg: medlemmer
+// booker på klubbens vilkår, ikke på vores. En klub kan ikke forlade
+// Halbooking, hvis deres medlemmer skulle begynde at betale for at booke
+// deres egne baner.
+//
+// Feltet står på Club frem for i en regeltabel, fordi alle klubber har de
+// samme tre knapper. Bliver der behov for regler pr. bane eller pr.
+// medlemsgruppe, er det en anden model.

@@ -914,6 +914,24 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Medlemmer booker på klubbens vilkår
+
+Det, der gør RacketBuddy til en erstatning frem for et tillæg. En klub kan ikke forlade Halbooking, hvis deres medlemmer skal begynde at betale for at booke deres egne baner.
+
+**Sæt medlemsprisen til 0, og bookingen bekræftes uden betaling.** Stripe afviser i øvrigt et beløb på nul, så vejen udenom var ikke bare pænere — den var nødvendig. Kvitteringen med dørkoden sendes stadig; derfor er `notifyBookingConfirmed()` nu eksporteret fra payments.ts.
+
+**Tre regler, som enhver dansk klub har en holdning til:**
+
+- `memberWindowDays` — hvor mange dage frem et medlem kan booke. Standard 14.
+- `guestWindowDays` — det samme for gæster. Standard 7, altså kortere, så medlemmerne får første ret til de gode tider.
+- `memberMaxActive` — hvor mange aktive bookinger et medlem må have. Standard 2. Uden et loft kan én person reservere hele ugen, og det er den klage, en bestyrelse hører først.
+
+Loftet gælder kun medlemmer. En gæst betaler for hver time og har ingen grund til at hamstre; et medlem, der booker gratis, har.
+
+**Reglerne håndhæves på serveren, ikke kun i skemaet.** Knapperne på siden er ikke den eneste vej ind, og et loft man kan omgå med en formular er intet loft. Afvisningen vises som en læsbar besked på klubbens side, ikke som en fejlkode.
+
+**Regnestykket ligger i `club-rules-core.ts` uden importer**, så det kan afprøves uden database — seks tests dækker gæst mod medlem, medlem af en anden klub, og gratis mod betalt. `club-rules.ts` lægger databasedelen ovenpå.
+
 ## Automatisering mod klubbens eget bookingsystem
 
 Til klubber, der ikke kan forlade fx Halbooking — en lang kontrakt, eller bare uvilje mod at skifte. Vi logger ind som dem i en usynlig browser og fører bookingen ind, så deres system er opdateret uden at klubben rører ved noget.

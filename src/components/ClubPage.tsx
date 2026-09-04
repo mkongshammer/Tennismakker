@@ -41,7 +41,7 @@ export async function ClubPage({
   ownDomain = false,
 }: {
   slug: string;
-  searchParams: { dag?: string; optaget?: string; fejl?: string };
+  searchParams: { dag?: string; optaget?: string; fejl?: string; afvist?: string };
   /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */
   ownDomain?: boolean;
 }) {
@@ -187,6 +187,14 @@ export async function ClubPage({
             )}
           </div>
         </section>
+      )}
+
+      {/* Afvist af klubbens egne regler. Beskeden kommer fra club-rules.ts
+          og er skrevet til at kunne læses af den, der blev afvist. */}
+      {searchParams.afvist && (
+        <p className="rounded-xl border-2 border-court/30 bg-court/5 p-4 text-sm font-semibold">
+          {searchParams.afvist}
+        </p>
       )}
 
       {(searchParams.optaget || searchParams.fejl) && (

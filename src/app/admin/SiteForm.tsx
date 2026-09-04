@@ -103,6 +103,60 @@ export function SiteForm({ club }: { club: any }) {
             placeholder="Tom = samme som gæstepris"
           />
         </div>
+
+      <div className="rounded-xl bg-mist p-4">
+        <p className="font-bold">Medlemmernes vilkår</p>
+        <p className="mt-1 text-sm text-slate">
+          Sæt medlemsprisen til 0, hvis kontingentet dækker banetid. Så booker
+          medlemmer uden at igennem en betaling — kun gæster betaler.
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div>
+            <label className="label" htmlFor="memberWindowDays">
+              Medlemmer booker (dage frem)
+            </label>
+            <input
+              className="input"
+              id="memberWindowDays"
+              name="memberWindowDays"
+              type="number"
+              min={1}
+              max={365}
+              defaultValue={club.memberWindowDays}
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="memberMaxActive">
+              Aktive bookinger pr. medlem
+            </label>
+            <input
+              className="input"
+              id="memberMaxActive"
+              name="memberMaxActive"
+              type="number"
+              min={0}
+              max={50}
+              defaultValue={club.memberMaxActive}
+            />
+            <p className="mt-1 text-xs text-slate">0 = intet loft.</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="guestWindowDays">
+              Gæster booker (dage frem)
+            </label>
+            <input
+              className="input"
+              id="guestWindowDays"
+              name="guestWindowDays"
+              type="number"
+              min={1}
+              max={365}
+              defaultValue={club.guestWindowDays}
+            />
+          </div>
+        </div>
+      </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

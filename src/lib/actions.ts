@@ -13,6 +13,7 @@ import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./two
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
 import { subscriptionIsActive } from "./billing";
+import { mayBook } from "./club-rules";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -23,7 +24,7 @@ import {
 import { isOffered, isTaken } from "./coaching";
 import { billingPortalUrl, startSubscriptionCheckout } from "./subscription";
 import { createSession, destroySession, getCurrentUser } from "./session";
-import { releaseExpiredHolds, cancelAndRefund } from "./payments";
+import { cancelAndRefund, notifyBookingConfirmed, releaseExpiredHolds } from "./payments";
 import { getClubAvailability, refreshBeforeBooking, syncClubCalendar } from "./integrations";
 import { coachDecision, coachRequestNotice, matchAcceptedNotice, sendMail } from "./email";
 import { loadThread, MAX_MESSAGE_LENGTH } from "./messages";
@@ -384,6 +385,28 @@ export async function bookCourtSlot(formData: FormData) {
   );
   if (!slot) fail("optaget");
 
+  // Klubbens regler: hvor langt frem, og hvor mange ad gangen. Tjekket
+  // sker her på serveren og ikke kun i skemaet — knapperne på siden er
+  // ikke den eneste vej ind, og et loft man kan omgå med en formular er
+  // intet loft.
+  const clubRules = await db.club.findUnique({
+    where: { id: court.clubId },
+    select: {
+      id: true,
+      priceHour: true,
+      memberPriceHour: true,
+      memberWindowDays: true,
+      memberMaxActive: true,
+      guestWindowDays: true,
+    },
+  });
+  if (clubRules) {
+    const allowed = await mayBook(clubRules, user.id, user.clubId ?? null, startsAt);
+    if (!allowed.ok) {
+      redirect(`/klub/${slug}?afvist=${encodeURIComponent(allowed.reason)}`);
+    }
+  }
+
   const booking = await db.booking.create({
     data: {
       kind: "COURT",
@@ -397,6 +420,23 @@ export async function bookCourtSlot(formData: FormData) {
       needsClubEntry,
     },
   });
+
+  // Er timen gratis, er der ingenting at betale, og Stripe afviser i
+  // øvrigt et beløb på nul. Bookingen bekræftes med det samme.
+  //
+  // Det er dét, der gør os til en erstatning frem for et tillæg: et medlem,
+  // der betaler kontingent, skal ikke igennem en betalingsside for at
+  // bruge sin egen klubs bane.
+  if (slot!.priceKr <= 0) {
+    const confirmed = await db.booking.update({
+      where: { id: booking.id },
+      data: { status: "CONFIRMED", holdExpiresAt: null },
+    });
+    await notifyBookingConfirmed(confirmed).catch((err) =>
+      console.error("Kunne ikke sende kvittering for gratis booking:", err)
+    );
+    redirect("/profil?gratis=1");
+  }
 
   // Bekræft at betalingen kan startes, FØR brugeren sendes videre — så en
   // klub uden Stripe-opsætning giver en pæn fejl i stedet for en blindgyde.
@@ -1512,6 +1552,9 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
       contactPhone: String(formData.get("contactPhone") ?? "").trim() || null,
       priceHour: Math.max(0, Number(formData.get("priceHour") ?? 0)),
       memberPriceHour,
+      memberWindowDays: Math.min(365, Math.max(1, Number(formData.get("memberWindowDays") ?? 14))),
+      memberMaxActive: Math.min(50, Math.max(0, Number(formData.get("memberMaxActive") ?? 2))),
+      guestWindowDays: Math.min(365, Math.max(1, Number(formData.get("guestWindowDays") ?? 7))),
       openHour,
       closeHour,
       hasLock,

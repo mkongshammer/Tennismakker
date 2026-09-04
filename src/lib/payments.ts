@@ -261,7 +261,14 @@ function lessonMinutesOf(booking: any): number {
 }
 
 /** Sender kvittering til spilleren og besked til klub eller træner. */
-async function notifyBookingConfirmed(booking: any) {
+/**
+ * Kvittering til gæsten og besked til klubben.
+ *
+ * Eksporteret, fordi en gratis medlemsbooking bekræftes uden at gå gennem
+ * betalingen — og kvitteringen med dørkoden skal sendes uanset, om der blev
+ * trukket penge.
+ */
+export async function notifyBookingConfirmed(booking: any) {
   const what = bookingLabel(booking);
 
   await sendMail(
