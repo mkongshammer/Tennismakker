@@ -914,6 +914,22 @@ Men tre ting følger ikke med, fordi de bor i Stripe og ikke hos os:
 
 Det sidste var værd at hærde. `stripeChargesEnabled` i databasen er sidst kendte status, og efter skiftet ville den blive ved med at påstå, at klubben var klar, mens enhver booking blev afvist. Nu gælder to ting: `refreshAccountStatus()` skriver `false`, hvis kontoen slet ikke kan slås op, i stedet for at lade den gamle værdi stå — og selvtestens liste over modtagere spørger Stripe om hver enkelt konto frem for at tro på databasen. Listen retter altså samtidig det, den finder forkert.
 
+## Faste baner
+
+Samme bane, samme ugedag, samme klokkeslæt, hele sæsonen. Den funktion, en tennisklub spørger om først.
+
+**Klubben tildeler, medlemmet booker ikke selv.** Det er sådan det foregår i virkeligheden: faste baner fordeles af bestyrelsen efter anciennitet eller lodtrækning, og der er flere ansøgere end tider. En selvbetjent "book fast bane" ville give den til den, der sad ved computeren klokken otte den rigtige morgen.
+
+**Reglen står i `FixedSlot`; timerne oprettes som almindelige `Booking`-rækker.** Det er valget, der betyder mest: så virker ledighed, aflysning, kvitteringer, dørkoder og klubbens overblik uændret. Der er én slags booking i resten af systemet, og det er den, alt andet allerede kan håndtere. En "virtuel" booking, der regnes ud hver gang nogen ser på kalenderen, ville skulle indarbejdes i hvert eneste opslag — og glemmes i ét af dem.
+
+**En optaget uge springes over, resten oprettes.** Alternativet — at afvise hele sæsonen, fordi én uge er booket — ville betyde, at en klub ikke kunne tildele en fast bane, hvis nogen tilfældigvis havde taget en enkelt tid. De oversprungne datoer meldes tilbage, så klubben selv kan tage stilling.
+
+**Ophævelse fjerner kun kommende timer.** Spillede timer bliver stående; de er historie, og en klub skal kunne se, hvem der har brugt banen.
+
+Højst et år ad gangen. En fast bane, der løber til 2035, ville oprette hundredvis af bookinger og gøre kalenderen ubrugelig.
+
+Datoregningen ligger i `fixed-slots-core.ts` uden importer, så den kan afprøves — seks tests dækker sæsonlængde, inklusive slutdato, og at søndag er dag 0.
+
 ## Medlemmer booker på klubbens vilkår
 
 Det, der gør RacketBuddy til en erstatning frem for et tillæg. En klub kan ikke forlade Halbooking, hvis deres medlemmer skal begynde at betale for at booke deres egne baner.

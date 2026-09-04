@@ -14,6 +14,7 @@ import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
 import { subscriptionIsActive } from "./billing";
 import { mayBook } from "./club-rules";
+import { createFixedSlot, removeFixedSlot } from "./fixed-slots";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -1110,6 +1111,81 @@ export async function declineCoachBooking(formData: FormData) {
 
   revalidatePath("/profil/traener");
   redirect("/profil/traener?svar=afvist");
+}
+
+// ---------------- Faste baner ----------------
+
+export async function assignFixedSlot(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const courtId = String(formData.get("courtId") ?? "");
+  const userId = String(formData.get("userId") ?? "");
+  const dayOfWeek = Number(formData.get("dayOfWeek") ?? -1);
+  const hour = Number(formData.get("hour") ?? -1);
+  const priceKr = Math.max(0, Number(formData.get("priceKr") ?? 0));
+  const note = String(formData.get("note") ?? "").trim() || null;
+
+  // Banen og medlemmet skal høre til klubben. Begge id'er kommer fra en
+  // formular og kan ændres af den, der sender den.
+  const court = await db.court.findFirst({ where: { id: courtId, clubId } });
+  if (!court) return { error: "Vælg en bane, der hører til klubben." };
+
+  const member = await db.user.findFirst({ where: { id: userId, clubId } });
+  if (!member) return { error: "Vælg et medlem af klubben." };
+
+  if (!(dayOfWeek >= 0 && dayOfWeek <= 6)) return { error: "Vælg en ugedag." };
+  if (!(hour >= 0 && hour <= 23)) return { error: "Vælg et klokkeslæt." };
+
+  const fromDate = new Date(String(formData.get("fromDate") ?? ""));
+  const toDate = new Date(String(formData.get("toDate") ?? ""));
+  if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+    return { error: "Vælg både en start- og en slutdato." };
+  }
+  if (toDate < fromDate) return { error: "Slutdatoen skal ligge efter startdatoen." };
+
+  // Et år ad gangen. En fast bane, der løber til 2035, ville oprette
+  // hundredvis af bookinger og gøre kalenderen ubrugelig.
+  const days = (toDate.getTime() - fromDate.getTime()) / 86_400_000;
+  if (days > 400) return { error: "Vælg en periode på højst et år." };
+
+  const result = await createFixedSlot({
+    courtId,
+    userId,
+    dayOfWeek,
+    hour,
+    fromDate,
+    toDate,
+    priceKr,
+    note,
+  });
+
+  revalidatePath("/admin");
+
+  if (result.clashes.length > 0) {
+    return {
+      ok: `${result.created} tider oprettet. ${result.clashes.length} blev sprunget over, fordi der allerede lå en booking: ${result.clashes
+        .slice(0, 5)
+        .map((d) => d.toLocaleDateString("da-DK", { day: "numeric", month: "short" }))
+        .join(", ")}${result.clashes.length > 5 ? " m.fl." : ""}.`,
+    };
+  }
+
+  return { ok: `${result.created} tider oprettet hele perioden igennem.` };
+}
+
+export async function dropFixedSlot(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("slotId") ?? "");
+
+  // Reglen skal høre til en af klubbens baner.
+  const slot = await db.fixedSlot.findFirst({
+    where: { id, court: { clubId } },
+    select: { id: true },
+  });
+  if (!slot) return;
+
+  await removeFixedSlot(slot.id);
+  revalidatePath("/admin");
 }
 
 // ---------------- Bestyrelsen på klubsiden ----------------

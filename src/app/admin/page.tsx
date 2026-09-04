@@ -13,6 +13,7 @@ import { ReleaseForm } from "./ReleaseForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
+import { FixedSlotForm } from "./FixedSlotForm";
 import { DomainForm } from "./DomainForm";
 import { ImageForms } from "./ImageForms";
 import { startClubPayoutSetup } from "../../lib/actions";
@@ -61,6 +62,13 @@ export default async function AdminPage({
     },
   });
   if (!club) redirect("/");
+
+  // Faste baner hører til banerne, ikke til klubben, så de hentes for sig.
+  const fixedSlots = await db.fixedSlot.findMany({
+    where: { court: { clubId: club.id } },
+    include: { court: { select: { name: true } }, user: { select: { name: true } } },
+    orderBy: [{ dayOfWeek: "asc" }, { hour: "asc" }],
+  });
 
   const courtIds = club.courts.map((c: any) => c.id);
   const today = startOfDay(new Date());
@@ -315,6 +323,30 @@ export default async function AdminPage({
           Laver I en ny kode, holder den gamle op med at virke. Medlemmer der
           allerede er meldt ind, bliver ved med at være det.
         </p>
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Faste baner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Samme bane, samme ugedag, hele sæsonen. Klubben tildeler dem —
+          medlemmet booker dem ikke selv. Tiderne oprettes som almindelige
+          bookinger, så de spærrer banen og kan aflyses enkeltvis.
+        </p>
+        <FixedSlotForm
+          courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+          members={club.members.map((m: any) => ({ id: m.id, name: m.name }))}
+          slots={fixedSlots as any}
+          defaultPrice={club.memberPriceHour ?? club.priceHour}
+        />
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Bestyrelse og kontaktpersoner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vises på jeres side under Kontakt. I vedligeholder den selv — der
+          skal ikke sendes en mail til os, når kassereren skifter.
+        </p>
+        <PeopleForm people={club.people as any} />
       </section>
 
       <section>

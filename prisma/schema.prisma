@@ -51,6 +51,7 @@ model User {
   reviews         Review[]
   loginChallenges LoginChallenge[]
   passwordResets  PasswordReset[]
+  fixedSlots      FixedSlot[]
   packagePurchases PackagePurchase[]
 }
 
@@ -243,6 +244,7 @@ model Court {
   bookings     Booking[]
   guestSlots   GuestSlot[]
   externalBusy ExternalBusy[]
+  fixedSlots FixedSlot[]
 }
 
 // ---------- Frigivelsesregler ----------
@@ -311,6 +313,8 @@ model Booking {
   // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
   // klippet gives tilbage, hvis bookingen aflyses.
   packagePurchaseId String?
+  /// Hører timen til en fast bane? Så kan hele sæsonen fjernes på én gang.
+  fixedSlotId       String?
   holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
   createdAt     DateTime  @default(now())
 
@@ -675,3 +679,44 @@ model ClubSystemLogin {
 // Feltet står på Club frem for i en regeltabel, fordi alle klubber har de
 // samme tre knapper. Bliver der behov for regler pr. bane eller pr.
 // medlemsgruppe, er det en anden model.
+
+// ---------- Fast bane ----------
+//
+// Samme bane, samme ugedag, samme klokkeslæt, hele sæsonen. Det er den
+// funktion, en tennisklub spørger om først, og den vi manglede tydeligst
+// over for Halbooking.
+//
+// Klubben tildeler den, medlemmet booker den ikke selv. Det er sådan det
+// foregår i virkeligheden: faste baner fordeles af bestyrelsen efter
+// anciennitet eller lodtrækning, og der er flere ansøgere end tider. En
+// selvbetjent "book fast bane" ville give den til den, der sad ved
+// computeren klokken 8 den rigtige morgen.
+//
+// Rækken her er reglen. De enkelte timer oprettes som almindelige
+// Booking-rækker, så ledighed, aflysning, kvitteringer og dørkoder virker
+// uændret — én slags booking i resten af systemet.
+model FixedSlot {
+  id      String @id @default(cuid())
+  courtId String
+  court   Court  @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// 0 = søndag, som Date.getDay().
+  dayOfWeek Int
+  /// Hele timer, 0-23.
+  hour      Int
+
+  /// Første og sidste dag i perioden, begge inklusive.
+  fromDate DateTime
+  toDate   DateTime
+
+  /// Prisen pr. time. Typisk 0: en fast bane er ofte dækket af kontingentet.
+  priceKr Int @default(0)
+
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([courtId, dayOfWeek, hour])
+  @@index([userId])
+}
