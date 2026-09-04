@@ -1,8 +1,25 @@
 <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="116" fill="#0F2138"/>
-  <circle cx="256" cy="256" r="168" fill="#D8FF3E"/>
-  <path d="M124 212 a200 200 0 0 1 200 -92" fill="none" stroke="#FFFFFF"
-        stroke-width="24" stroke-linecap="round"/>
-  <path d="M388 300 a200 200 0 0 1 -200 92" fill="none" stroke="#FFFFFF"
-        stroke-width="24" stroke-linecap="round"/>
+
+  <!-- Dig -->
+  <g stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" fill="none">
+    <circle cx="178" cy="152" r="48" fill="#FFFFFF" stroke="none"/>
+    <path d="M178 212 V318"/>
+    <path d="M178 318 L134 404"/>
+    <path d="M178 318 L214 404"/>
+    <path d="M178 248 L112 286"/>
+  </g>
+
+  <!-- Din makker. Den indre arm mødes med din: det er hele pointen. -->
+  <g stroke="#D8FF3E" stroke-width="34" stroke-linecap="round" fill="none">
+    <circle cx="334" cy="152" r="48" fill="#D8FF3E" stroke="none"/>
+    <path d="M334 212 V318"/>
+    <path d="M334 318 L298 404"/>
+    <path d="M334 318 L378 404"/>
+    <path d="M334 248 L400 286"/>
+  </g>
+
+  <!-- Armene der mødes, tegnet som én streg over begge -->
+  <path d="M178 248 L334 224" stroke="#FFFFFF" stroke-width="34" stroke-linecap="round" fill="none"/>
+  <path d="M334 224 L256 236" stroke="#D8FF3E" stroke-width="34" stroke-linecap="round" fill="none"/>
 </svg>

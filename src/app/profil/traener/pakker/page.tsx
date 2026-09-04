@@ -41,7 +41,7 @@ export default async function PakkerPage() {
         </p>
       </div>
 
-      <PackageForm />
+      <PackageForm priceHour={user.coachProfile.priceHour} />
 
       {packages.length > 0 && (
         <section>

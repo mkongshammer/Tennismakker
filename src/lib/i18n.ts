@@ -1373,6 +1373,28 @@ const T: Dict = {
     no: "Forespørsel sendt. Du hører fra treneren.",
   },
 
+  "profile.lessonAgain": {
+    da: "Book samme time igen",
+    en: "Book the same session again",
+    de: "Dieselbe Stunde erneut buchen",
+    sv: "Boka samma tid igen",
+    no: "Book samme time igjen",
+  },
+  "profile.lessonAgainNote": {
+    da: "Samme træner, samme tid, næste uge. Træneren skal godkende, og der trækkes ingen penge før da.",
+    en: "Same coach, same time, next week. The coach approves first, and nothing is charged until then.",
+    de: "Gleicher Trainer, gleiche Zeit, nächste Woche. Der Trainer bestätigt zuerst, vorher wird nichts abgebucht.",
+    sv: "Samma tränare, samma tid, nästa vecka. Tränaren godkänner först, och inget dras innan dess.",
+    no: "Samme trener, samme tid, neste uke. Treneren godkjenner først, og ingenting trekkes før da.",
+  },
+  "profile.lessonsPast": {
+    da: "Dine tidligere trænertimer",
+    en: "Your past coaching sessions",
+    de: "Deine vergangenen Trainerstunden",
+    sv: "Dina tidigare tränartimmar",
+    no: "Dine tidligere trenertimer",
+  },
+
   // Klubber
   "club.pending": {
     da: "Afventer godkendelse",

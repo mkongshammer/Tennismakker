@@ -8,12 +8,13 @@ import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { DeleteAccount } from "../../components/DeleteAccount";
 import { CoachRequests } from "../../components/CoachRequests";
+import { RepeatLessons } from "../../components/RepeatLessons";
 import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
 import { PlayAgain } from "../../components/PlayAgain";
-import { getRepeatableBookings } from "../../lib/rebook";
+import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
@@ -60,7 +61,7 @@ export default async function ProfilPage({
   }
   if (!user) redirect("/login");
 
-  const [bookings, myRequests, myMatches, coachBookings, toReview] = await Promise.all([
+  const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons] = await Promise.all([
     db.booking.findMany({
       where: {
       userId: user.id,
@@ -88,6 +89,7 @@ export default async function ProfilPage({
         })
       : Promise.resolve([]),
     pendingReviews(user.id),
+    getRepeatableLessons(user!.id),
   ]);
 
   const repeatable = (await getRepeatableBookings(user.id)).map((r) => ({
@@ -305,6 +307,15 @@ export default async function ProfilPage({
           </ul>
         </section>
       )}
+
+      <RepeatLessons
+        lessons={pastLessons as any}
+        labels={{
+          title: t("profile.lessonsPast"),
+          button: t("profile.lessonAgain"),
+          note: t("profile.lessonAgainNote"),
+        }}
+      />
 
       <DeleteAccount />
 

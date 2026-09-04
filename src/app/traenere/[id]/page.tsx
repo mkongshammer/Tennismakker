@@ -131,6 +131,14 @@ export default async function TraenerPage({
                 </div>
                 <p className="text-sm text-slate/60">
                   {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
+                  {p.priceKr < coach.priceHour * p.sessions && (
+                    <>
+                      {" · "}
+                      <span className="font-bold text-court">
+                        spar {coach.priceHour * p.sessions - p.priceKr} kr
+                      </span>
+                    </>
+                  )}
                 </p>
                 {p.description && <p className="mt-2 text-sm">{p.description}</p>}
                 {user ? (

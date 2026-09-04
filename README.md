@@ -353,6 +353,18 @@ Alt personhenførbart fjernes eller overskrives, og tilbage står en række, der
 
 E-mailfeltet er unikt i databasen og kan derfor ikke bare tømmes. Det sættes til en tilfældig adresse på `@slettet.invalid` — et domæne, der ikke kan findes, og som ingen kan modtage post på.
 
+## Hvorfor genbook og pakkerabat findes
+
+En elev og en træner, der aftaler næste time på banen og afregner med MobilePay, forsvinder ud af platformen. Det kan ikke forhindres — kun gøres mindre attraktivt end alternativet. To ting gør det:
+
+**Klippekort binder tid fremad.** En elev med ti betalte klip har ingen grund til at overføre penge; timerne er købt, og booking er ét klik. Derfor viser både trænerens formular og elevens visning nu besparelsen: `spar X kr` i forhold til enkelttimer. Er pakken ikke billigere end at betale pr. gang, siger formularen det højt til træneren, før de gemmer — en pakke uden rabat er der ingen grund til at købe.
+
+**Genbook står, hvor telefonen er i hånden.** "Book samme time igen" ligger på profilen, lige under de overståede timer: samme træner, samme ugedag, samme klokkeslæt, næste uge. Ét tryk mod at finde trænerens nummer, skrive, aftale og overføre.
+
+`getRepeatableLessons()` viser højst tre og kun én pr. træner og ugentligt tidspunkt — otte identiske knapper er ikke otte gange så nyttigt. `rebookLesson()` henter længden fra trænerens nuværende indstilling, ikke fra den gamle booking: har træneren skiftet fra 60 til 45 minutter, er det de 45, der kan bookes.
+
+Genbook af en trænertime returnerer ingen betalingsadresse. Det er en anmodning, træneren skal godkende, præcis som en almindelig booking.
+
 ## Trænerens anmodninger
 
 Booking af en trænertime er en anmodning, ikke en booking. Træneren godkender eller afviser, og der trækkes ingen penge, før træneren har sagt ja.

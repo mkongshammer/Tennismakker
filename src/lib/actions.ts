@@ -34,7 +34,7 @@ import { setPreferenceCookies } from "./preferences";
 import { detectBookingSystem, testFeed } from "./detect";
 import { store as storeImage, remove as removeImage } from "./images";
 import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from "./connect";
-import { rebookSameSlot } from "./rebook";
+import { rebookLesson, rebookSameSlot } from "./rebook";
 
 // ---------------- Auth ----------------
 
@@ -1313,6 +1313,29 @@ export async function setSport(formData: FormData) {
 // ikke er sandt.
 
 /** Finder samme ugedag og klokkeslæt næste uge. */
+/**
+ * Book samme trænertime igen, næste uge.
+ *
+ * Ligger her ved siden af rebookNextWeek, fordi de to hører sammen for
+ * læseren — men logikken er i rebook.ts, så mobilappen kan bruge den samme.
+ */
+export async function rebookLessonNextWeek(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const result = await rebookLesson(user!.id, String(formData.get("bookingId")));
+
+  if (result.ok) {
+    revalidatePath("/profil");
+    redirect(result.usedCredit ? "/profil?anmodet=klip" : "/profil?anmodet=1");
+  }
+
+  // Er tiden væk eller ikke længere tilbudt, sendes eleven til trænerens
+  // side frem for en fejlbesked. Der er andre tider dér.
+  if (result.coachProfileId) redirect(`/traenere/${result.coachProfileId}?fejl=${result.reason}`);
+  redirect("/traenere");
+}
+
 export async function rebookNextWeek(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
