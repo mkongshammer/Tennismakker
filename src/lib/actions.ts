@@ -928,25 +928,20 @@ export async function updateLeadStatus(formData: FormData) {
 export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
   await requireSuperadmin();
 
+  // Kun det, klubben ikke kan gøre selv: oprette sig og få et login.
+  //
+  // Adresse, baner, priser og bookingsystem stod her før, og det var
+  // forkert: klubben kender sine banenavne bedre end vi gør, og de bygger
+  // en hal til uden at spørge os først. Alt det udfylder de selv fra
+  // /admin efter første login.
   const clubName = String(formData.get("clubName") ?? "").trim();
   const city = String(formData.get("city") ?? "").trim();
-  const address = String(formData.get("address") ?? "").trim();
-  const courtCount = Number(formData.get("courtCount") ?? 0);
-  const priceHour = Number(formData.get("priceHour") ?? 0);
-  const externalSystem = String(formData.get("externalSystem") ?? "").trim();
-  // Der findes kun én model. Feltet bliver stående i databasen, fordi en
-  // migrering af hver eksisterende klub er en større ting end en konstant.
-  const billingModel = "SUBSCRIPTION";
 
   const adminName = String(formData.get("adminName") ?? "").trim();
   const adminEmail = String(formData.get("adminEmail") ?? "").trim().toLowerCase();
   const leadId = String(formData.get("leadId") ?? "").trim();
 
   if (!clubName || !city) return { error: "Udfyld klubbens navn og by." };
-  if (!(courtCount >= 1 && courtCount <= 40)) {
-    return { error: "Antal baner skal være mellem 1 og 40." };
-  }
-  if (!(priceHour >= 0)) return { error: "Angiv en pris på 0 kr eller derover." };
   if (!adminName || !adminEmail.includes("@")) {
     return { error: "Udfyld administratorens navn og en gyldig e-mail." };
   }
@@ -960,30 +955,20 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
     slug = `${base}-${i}`;
   }
 
-  const coords = address ? await geocode(address, city) : null;
-
   const club = await db.club.create({
     data: {
       slug,
       name: clubName,
       city,
-      address: address || null,
-      latitude: coords?.latitude ?? null,
-      longitude: coords?.longitude ?? null,
-      priceHour,
+      // Ingen baner oprettes. Klubben tilføjer dem selv med rigtige navne
+      // — "Bane 1 til 4" passer sjældent på en klub, der kalder dem
+      // Centercourt og Grusbane Nord.
+      priceHour: 0,
       integrationType: "MANUAL",
-      externalSystem: externalSystem || null,
-      billingModel,
+      billingModel: "SUBSCRIPTION",
       country: "DK",
       status: "APPROVED",
       approvedAt: new Date(),
-      courts: {
-        create: Array.from({ length: courtCount }, (_, i) => ({
-          name: `Bane ${i + 1}`,
-          sport: "TENNIS",
-          surface: "GRUS",
-        })),
-      },
     },
   });
 
@@ -1147,6 +1132,56 @@ export async function declineCoachBooking(formData: FormData) {
 
   revalidatePath("/profil/traener");
   redirect("/profil/traener?svar=afvist");
+}
+
+// ---------------- Baner ----------------
+
+export async function addCourt(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  if (name.length < 1) return { error: "Giv banen et navn." };
+
+  const exists = await db.court.findFirst({ where: { clubId, name } });
+  if (exists) return { error: `Der findes allerede en bane, der hedder ${name}.` };
+
+  await db.court.create({
+    data: { clubId, name, surface: String(formData.get("surface") ?? "GRUS") },
+  });
+
+  revalidatePath("/admin");
+  return { ok: `${name} er oprettet.` };
+}
+
+export async function renameCourt(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("courtId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (name.length < 1) return;
+
+  await db.court.updateMany({
+    where: { id, clubId },
+    data: { name, surface: String(formData.get("surface") ?? "GRUS") },
+  });
+  revalidatePath("/admin");
+}
+
+/**
+ * Sletter en bane, men kun hvis den aldrig er blevet booket.
+ *
+ * En bane med bookinger er historie: kvitteringer, betalinger og
+ * bogføring peger på den. Sletning ville efterlade en betaling uden en
+ * bane, og så kan ingen svare på, hvad pengene var for.
+ */
+export async function removeCourt(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const id = String(formData.get("courtId") ?? "");
+
+  const bookings = await db.booking.count({ where: { courtId: id, court: { clubId } } });
+  if (bookings > 0) return;
+
+  await db.court.deleteMany({ where: { id, clubId } });
+  revalidatePath("/admin");
 }
 
 // ---------------- Sæsonhold ----------------
@@ -1846,14 +1881,31 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
   const accessCode = String(formData.get("accessCode") ?? "").trim();
   const accessInstructions = String(formData.get("accessInstructions") ?? "").trim();
 
+  // Adressen skal blive til en prik på kortet under Book bane. Den blev
+  // geokodet ved oprettelsen, dengang vi tastede den — nu skriver klubben
+  // den selv, og så skal opslaget ske her. Uden det ville en klub, der
+  // rettede sin adresse, forsvinde fra kortet.
+  const address = String(formData.get("address") ?? "").trim();
+  const existing = await db.club.findUnique({
+    where: { id: clubId },
+    select: { address: true, city: true, latitude: true },
+  });
+
+  const addressChanged = address && address !== existing?.address;
+  const coords =
+    addressChanged || (address && existing?.latitude == null)
+      ? await geocode(address, existing?.city ?? "").catch(() => null)
+      : null;
+
   await db.club.update({
     where: { id: clubId },
     data: {
+      ...(coords ? { latitude: coords.latitude, longitude: coords.longitude } : {}),
       tagline: String(formData.get("tagline") ?? "").trim() || null,
       about: String(formData.get("about") ?? "").trim() || null,
       practicalInfo: String(formData.get("practicalInfo") ?? "").trim() || null,
       membershipInfo: String(formData.get("membershipInfo") ?? "").trim() || null,
-      address: String(formData.get("address") ?? "").trim() || null,
+      address: address || null,
       contactEmail: String(formData.get("contactEmail") ?? "").trim() || null,
       contactPhone: String(formData.get("contactPhone") ?? "").trim() || null,
       priceHour: Math.max(0, Number(formData.get("priceHour") ?? 0)),

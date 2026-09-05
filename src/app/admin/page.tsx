@@ -14,6 +14,7 @@ import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
 import { FixedSlotForm } from "./FixedSlotForm";
+import { CourtForm } from "./CourtForm";
 import { MembershipForm } from "./MembershipForm";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -56,7 +57,10 @@ export default async function AdminPage({
   const club = await db.club.findUnique({
     where: { id: user.clubId },
     include: {
-      courts: { orderBy: { name: "asc" } },
+      courts: {
+        orderBy: { name: "asc" },
+        include: { _count: { select: { bookings: true } } },
+      },
       members: true,
       posts: { orderBy: { createdAt: "desc" }, take: 10 },
       images: { orderBy: { sortOrder: "asc" } },
@@ -631,15 +635,19 @@ export default async function AdminPage({
       </section>
 
       <section>
-        <h2 className="display mb-3 text-2xl">Baner</h2>
-        <ul className="grid gap-3 sm:grid-cols-3">
-          {club.courts.map((c: any) => (
-            <li key={c.id} className="card py-3">
-              <p className="font-bold">{c.name}</p>
-              <p className="text-sm text-slate/60">{SURFACES[c.surface] ?? c.surface}</p>
-            </li>
-          ))}
-        </ul>
+        <h2 className="display mb-1 text-2xl">Baner</h2>
+        <p className="mb-4 text-sm text-slate">
+          I opretter og navngiver dem selv. Bygger I en hal til, tilføjer I
+          banen her.
+        </p>
+        <CourtForm
+          courts={club.courts.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            surface: c.surface,
+            bookings: c._count?.bookings ?? 0,
+          }))}
+        />
       </section>
     </div>
   );

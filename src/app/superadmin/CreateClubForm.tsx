@@ -33,27 +33,10 @@ export function CreateClubForm() {
         </div>
       </div>
 
-      <div>
-        <label className="label" htmlFor="address">Adresse (til kortet)</label>
-        <input className="input" id="address" name="address" placeholder="fx Tennisvej 12" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="courtCount">Antal baner</label>
-          <input className="input" id="courtCount" name="courtCount" type="number" min={1} max={40} defaultValue={4} required />
-        </div>
-        <div>
-          <label className="label" htmlFor="priceHour">Gæstepris pr. time</label>
-          <input className="input" id="priceHour" name="priceHour" type="number" min={0} defaultValue={100} required />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="externalSystem">Deres bookingsystem</label>
-          <input className="input" id="externalSystem" name="externalSystem" placeholder="fx Halbooking" />
-        </div>
       </div>
 
       <div className="border-t border-slate/10 pt-4">
