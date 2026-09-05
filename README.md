@@ -1027,6 +1027,22 @@ Loftet gælder kun medlemmer. En gæst betaler for hver time og har ingen grund 
 
 **Regnestykket ligger i `club-rules-core.ts` uden importer**, så det kan afprøves uden database — seks tests dækker gæst mod medlem, medlem af en anden klub, og gratis mod betalt. `club-rules.ts` lægger databasedelen ovenpå.
 
+## Automatisk spærring i klubbens eget system
+
+Den vej, WannaSport bruger. Klubben giver os et login, og så spærrer vi selv de tider, de frigiver hos os — i stedet for at de skal gøre det i hånden og sætte et flueben.
+
+**To faser, adskilt med vilje.** `ensureBlocks()` ser hvilke tider der er til salg og skriver en række for hver, der mangler at blive spærret; det er kun database og går hurtigt. `processBlocks()` tager rækkerne og kører browseren. Var det ét skridt, ville en klub, der frigiver tyve tider, sidde og vente på tyve browsersessioner — og en fejl halvvejs ville efterlade halvdelen spærret, uden at nogen vidste hvilke.
+
+**Egen tabel, fordi regeltider ikke findes som rækker.** De regnes ud af `GuestRule` i farten, så der er ikke noget at sætte et flag på. `SystemBlock` er kvitteringen: denne bane, dette tidspunkt, spærret hos klubben, og hvornår.
+
+**Fjorten dage frem, ti ad gangen.** Længere ville betyde hundredvis af browsersessioner for en klub, der frigiver hverdage året rundt. Uden et loft pr. kørsel ville et cron-job med to hundrede ventende tider køre i to timer og blive dræbt undervejs.
+
+**Efter fem forsøg står tiden som fejlet**, og klubben får den at se med besked om at spærre den i hånden. En række, der forsøges i det uendelige, er en fejl, ingen opdager.
+
+**Fluebenet forsvinder, når vi har et login.** At bede klubben love, at de har gjort vores arbejde, ville være noget rod.
+
+**Vi fjerner ikke spærringer i klubbens system.** Det kræver en anden automatisering, og en fejl dér ville frigive en tid, en gæst har betalt for. Fjerner klubben adgangen, bliver spærringerne stående, og de rydder selv op.
+
 ## Automatisering mod klubbens eget bookingsystem
 
 Til klubber, der ikke kan forlade fx Halbooking — en lang kontrakt, eller bare uvilje mod at skifte. Vi logger ind som dem i en usynlig browser og fører bookingen ind, så deres system er opdateret uden at klubben rører ved noget.

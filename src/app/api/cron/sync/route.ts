@@ -1,4 +1,5 @@
 import { runRenewals } from "../../../../lib/renewals";
+import { ensureBlocks, processBlocks } from "../../../../lib/system-blocks";
 // Baggrundsjob: synkroniserer alle klubber med kalenderfeed og rydder
 // udløbne reservationer.
 //
@@ -53,6 +54,19 @@ export async function GET(req: Request) {
   //
   // Fejler den, må den ikke tage synkroniseringen med sig — en fejlet
   // opkrævning er ærgerlig, en klub uden opdateret kalender er værre.
+  // Spærringer i klubbernes egne systemer. Hver er en browsersession, så
+  // der tages ti ad gangen — resten venter til næste kørsel.
+  const withLogin = await db.clubSystemLogin.findMany({ select: { clubId: true } });
+  for (const l of withLogin) {
+    await ensureBlocks(l.clubId).catch((err) =>
+      console.error("ensureBlocks fejlede:", err)
+    );
+  }
+  const blocks = await processBlocks(10).catch((err) => {
+    console.error("Spærringer fejlede:", err);
+    return { blocked: 0, failed: 0, skipped: 0 };
+  });
+
   const renewals = await runRenewals().catch((err) => {
     console.error("Fornyelser fejlede:", err);
     return { notified: 0, charged: 0, failed: 0 };
@@ -63,5 +77,6 @@ export async function GET(req: Request) {
     klubber: results.length,
     resultater: results,
     fornyelser: renewals,
+    spaerringer: blocks,
   });
 }

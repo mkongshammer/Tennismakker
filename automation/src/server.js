@@ -271,11 +271,11 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.url === "/inspect") return json(res, 200, await inspect(body));
-    if (req.url === "/book") {
+    if (req.url === "/block" || req.url === "/book") {
       for (const k of ["court", "date", "time"]) {
         if (!body[k]) return json(res, 400, { error: `Mangler: ${k}` });
       }
-      return json(res, 200, await book(body));
+      return json(res, 200, req.url === "/block" ? await block(body) : await book(body));
     }
     return json(res, 404, { error: "Ukendt endepunkt." });
   } catch (err) {
@@ -288,3 +288,18 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Automatisering lytter på ${PORT}`);
 });
+
+// ---------------------------------------------------------------------------
+// Spærring
+// ---------------------------------------------------------------------------
+//
+// Samme handling som en booking, men med et andet formål: vi reserverer
+// tiden i klubbens system, så deres egne medlemmer ikke kan tage den, mens
+// den er til salg hos os.
+//
+// Genbruger book() med vilje. Halbooking kender ikke forskel på en
+// reservation og en spærring — det er den samme knap — og to næsten ens
+// stier ville betyde to steder at rette, når selektorerne ændrer sig.
+async function block(opts) {
+  return book(opts);
+}

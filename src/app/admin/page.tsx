@@ -16,6 +16,8 @@ import { PeopleForm } from "./PeopleForm";
 import { FixedSlotForm } from "./FixedSlotForm";
 import { CourtForm } from "./CourtForm";
 import { PriceRuleForm } from "./PriceRuleForm";
+import { SystemLoginForm } from "./SystemLoginForm";
+import { blockSummary } from "../../lib/system-blocks";
 import { MembershipForm } from "./MembershipForm";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -81,6 +83,11 @@ export default async function AdminPage({
       where: { clubId: club.id },
       orderBy: [{ active: "desc" }, { createdAt: "desc" }],
     }),
+  ]);
+
+  const [systemLogin, blocks] = await Promise.all([
+    db.clubSystemLogin.findUnique({ where: { clubId: club.id } }),
+    blockSummary(club.id),
   ]);
 
   const priceRules = await db.priceRule.findMany({
@@ -464,6 +471,25 @@ export default async function AdminPage({
           </ul>
         )}
       </section>
+
+      {club.integrationType !== "NATIVE" && (
+        <section className="card">
+          <h2 className="display mb-1 text-2xl">
+            Lad os spærre tiderne i {club.externalSystem ?? "jeres system"}
+          </h2>
+          <p className="mb-4 text-sm text-slate">
+            Giver I os et login, spærrer vi selv de tider, I frigiver — så
+            skal I ikke gøre det i hånden hver gang.
+          </p>
+          <SystemLoginForm
+            system={club.externalSystem ?? "jeres system"}
+            saved={systemLogin ? { baseUrl: systemLogin.baseUrl, username: systemLogin.username } : null}
+            lastOkAt={systemLogin?.lastOkAt ?? null}
+            lastError={systemLogin?.lastError ?? null}
+            summary={systemLogin ? blocks : null}
+          />
+        </section>
+      )}
 
       <section>
         <h2 className="display mb-1 text-2xl">Sådan finder vi jeres ledige tider</h2>

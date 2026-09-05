@@ -15,6 +15,8 @@ import { eraseAccount } from "./erasure";
 import { subscriptionIsActive } from "./billing";
 import { mayBook } from "./club-rules";
 import { createFixedSlot, removeFixedSlot } from "./fixed-slots";
+import { ensureBlocks } from "./system-blocks";
+import { removeLogin, saveLogin } from "./automation";
 import { countsAsMember, joinMembership } from "./memberships";
 import { buyPunchCard, spendPunch } from "./punch-cards";
 import { signUpForTeam } from "./teams";
@@ -740,6 +742,16 @@ async function requireBlockedFirst(clubId: string, formData: FormData): Promise<
   });
   const hasOwnSystem = club && club.integrationType !== "NATIVE";
   if (!hasOwnSystem) return null;
+
+  // Har klubben givet os et login, spærrer automatiseringen tiderne for
+  // dem. Så skal de ikke bede om et flueben på noget, vi selv gør — det
+  // ville være at bede dem love, at de har gjort vores arbejde.
+  const login = await db.clubSystemLogin.findUnique({
+    where: { clubId },
+    select: { id: true },
+  });
+  if (login) return null;
+
   if (formData.get("blockedFirst") === "on") return null;
   return `Spær tiderne i ${club!.externalSystem ?? "jeres eget bookingsystem"} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.`;
 }
@@ -805,6 +817,13 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
     }
   }
 
+
+  // Er der et login, sættes de nye tider i kø til spærring. Selve
+  // browserarbejdet sker i cron — en klub skal ikke vente på tyve
+  // browsersessioner, fordi de trykkede Frigiv.
+  await ensureBlocks(clubId).catch((err) =>
+    console.error("Kunne ikke sætte spærringer i kø:", err)
+  );
   revalidatePath("/admin");
   return created > 0
     ? { ok: `${created} tider frigivet til gæster.` }
@@ -1132,6 +1151,47 @@ export async function declineCoachBooking(formData: FormData) {
 
   revalidatePath("/profil/traener");
   redirect("/profil/traener?svar=afvist");
+}
+
+// ---------------- Adgang til klubbens eget system ----------------
+
+export async function saveSystemLogin(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const baseUrl = String(formData.get("baseUrl") ?? "").trim();
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!baseUrl.includes(".")) return { error: "Skriv adressen på jeres system." };
+  if (!username || !password) return { error: "Udfyld både brugernavn og adgangskode." };
+
+  await saveLogin(clubId, baseUrl, username, password);
+
+  // Sæt straks de kommende tider i kø, så klubben ser noget ske. Selve
+  // browserarbejdet klares af cron inden for et kvarter.
+  await ensureBlocks(clubId).catch((err) =>
+    console.error("Kunne ikke sætte spærringer i kø:", err)
+  );
+
+  revalidatePath("/admin");
+  return {
+    ok: "Adgangen er gemt. Vi spærrer jeres frigivne tider inden for et kvarter.",
+  };
+}
+
+/**
+ * Fjerner adgangen.
+ *
+ * Spærringerne bliver stående i klubbens eget system — vi kan ikke fjerne
+ * dem uden adgangen, og en automatisk oprydning ville i øvrigt kunne
+ * frigive en tid, en gæst har betalt for. Klubben rydder selv op, og
+ * beskeden siger det.
+ */
+export async function removeSystemLogin() {
+  const { clubId } = await requireClubAdmin();
+  await removeLogin(clubId);
+  await db.systemBlock.deleteMany({ where: { clubId, status: "PENDING" } });
+  revalidatePath("/admin");
 }
 
 // ---------------- Priser efter tidspunkt ----------------
@@ -1896,6 +1956,12 @@ export async function createRule(_prev: unknown, formData: FormData) {
     },
   });
 
+
+  // Nye regeltider sættes i kø til spærring hos klubben, hvis vi har et
+  // login. Selve browserarbejdet sker i cron.
+  await ensureBlocks(clubId).catch((err) =>
+    console.error("Kunne ikke sætte spærringer i kø:", err)
+  );
   revalidatePath("/admin");
   return { ok: "Reglen er aktiv. Tiderne er nu synlige for gæster." };
 }

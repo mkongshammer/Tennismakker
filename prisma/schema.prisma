@@ -263,6 +263,7 @@ model Court {
   /// En hal og en grusbane koster sjældent det samme.
   priceHour       Int?
   memberPriceHour Int?
+  systemBlocks SystemBlock[]
 }
 
 // ---------- Frigivelsesregler ----------
@@ -958,4 +959,37 @@ model PriceRule {
   createdAt DateTime @default(now())
 
   @@index([clubId])
+}
+
+// ---------- Spærringer i klubbens eget system ----------
+//
+// Når en klub frigiver tider hos os, skal de samme tider spærres i deres
+// eget system — ellers kan et medlem booke dem dér, og så er banen solgt to
+// gange. Indtil nu gjorde klubben det i hånden og satte et flueben på, at
+// det var sket.
+//
+// Med et login kan automatiseringen gøre det i stedet. Egen tabel, fordi
+// regeltider ikke findes som rækker: de regnes ud af GuestRule i farten, og
+// der er derfor ikke noget at sætte et flag på.
+//
+// Rækken her er kvitteringen: den siger, at netop denne bane på netop dette
+// tidspunkt er spærret hos klubben, og hvornår det skete.
+model SystemBlock {
+  id      String @id @default(cuid())
+  clubId  String
+  courtId String
+  court   Court  @relation(fields: [courtId], references: [id], onDelete: Cascade)
+
+  startsAt DateTime
+
+  /// "PENDING" | "BLOCKED" | "FAILED"
+  status   String    @default("PENDING")
+  error    String?
+  attempts Int       @default(0)
+  blockedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([courtId, startsAt])
+  @@index([clubId, status])
 }
