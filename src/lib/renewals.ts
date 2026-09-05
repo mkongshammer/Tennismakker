@@ -148,7 +148,9 @@ export async function runRenewals(): Promise<RenewalRun> {
 
       // Fase 2: opkræv, men kun hvis beskeden er sendt (rækken findes).
       if (startsInDays <= 1 && already?.status === "PENDING") {
-        const ok = await chargeRenewal(already.id, type.stripeAccountId ?? null);
+        // Kontoen ligger på klubben, ikke på kontingenttypen. Beløbet skal
+        // til foreningen, ikke til os.
+        const ok = await chargeRenewal(already.id, type.club.stripeAccountId ?? null);
         if (ok) out.charged++;
         else out.failed++;
       }
