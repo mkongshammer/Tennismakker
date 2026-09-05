@@ -289,6 +289,7 @@ export async function ClubPage({
             name: c.name,
             surface: c.surface,
             sport: c.sport,
+            indoor: c.indoor,
           }))}
           slots={slots.map((s) => ({
             courtId: s.courtId,

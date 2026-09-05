@@ -11,7 +11,15 @@ import { addCourt, renameCourt, removeCourt } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
 import { SURFACES } from "../../lib/levels";
 
-type Court = { id: string; name: string; surface: string; bookings: number };
+type Court = {
+  id: string;
+  name: string;
+  surface: string;
+  indoor: boolean;
+  priceHour: number | null;
+  memberPriceHour: number | null;
+  bookings: number;
+};
 
 export function CourtForm({ courts }: { courts: Court[] }) {
   const [state, action] = useFormState(addCourt, null);
@@ -41,8 +49,39 @@ export function CourtForm({ courts }: { courts: Court[] }) {
                     ))}
                   </select>
                 </div>
+                <label className="flex items-center gap-2 pb-2 text-sm">
+                  <input type="checkbox" name="indoor" defaultChecked={c.indoor} />
+                  Indendørs
+                </label>
+                <div className="w-28">
+                  <label className="label" htmlFor={`price-${c.id}`}>Pris</label>
+                  <input
+                    className="input"
+                    id={`price-${c.id}`}
+                    name="priceHour"
+                    type="number"
+                    min={0}
+                    placeholder="klubbens"
+                    defaultValue={c.priceHour ?? ""}
+                  />
+                </div>
+                <div className="w-28">
+                  <label className="label" htmlFor={`mprice-${c.id}`}>Medlem</label>
+                  <input
+                    className="input"
+                    id={`mprice-${c.id}`}
+                    name="memberPriceHour"
+                    type="number"
+                    min={0}
+                    placeholder="klubbens"
+                    defaultValue={c.memberPriceHour ?? ""}
+                  />
+                </div>
                 <SubmitButton className="btn-ghost" pendingText="Gemmer…">Gem</SubmitButton>
               </form>
+              <p className="mt-1 text-xs text-slate-light">
+                Tomme prisfelter betyder klubbens almindelige pris.
+              </p>
 
               {c.bookings === 0 ? (
                 <form action={removeCourt} className="mt-2">
@@ -75,6 +114,10 @@ export function CourtForm({ courts }: { courts: Court[] }) {
               ))}
             </select>
           </div>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <input type="checkbox" name="indoor" />
+            Indendørs
+          </label>
           <SubmitButton pendingText="Tilføjer…">Tilføj</SubmitButton>
         </div>
         {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}

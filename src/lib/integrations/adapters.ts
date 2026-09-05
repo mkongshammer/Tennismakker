@@ -1,5 +1,6 @@
 import { addDays, addHours } from "date-fns";
 import { db } from "../db";
+import { priceFor } from "../pricing";
 import { hourDate } from "../slots";
 import type {
   AdapterInput,
@@ -17,7 +18,12 @@ async function openingHourSlots(
 ) {
   const club = await db.club.findUnique({
     where: { id: clubId },
-    include: { courts: { orderBy: { name: "asc" } } },
+    include: {
+      courts: { orderBy: { name: "asc" } },
+      // Prisreglerne hentes én gang og bruges til hver celle. Et opslag
+      // pr. celle ville være hundredvis pr. sidevisning.
+      priceRules: { orderBy: { sortOrder: "asc" } },
+    },
   });
   if (!club) return null;
 
@@ -34,10 +40,14 @@ async function openingHourSlots(
           surface: court.surface,
           startsAt,
           endsAt: addHours(startsAt, 1),
-          priceKr:
-            isMember && club.memberPriceHour != null
-              ? club.memberPriceHour
-              : club.priceHour,
+          indoor: court.indoor,
+          priceKr: priceFor({
+            club,
+            court,
+            startsAt,
+            rules: club.priceRules,
+            isMember: Boolean(isMember),
+          }),
         });
       }
     }

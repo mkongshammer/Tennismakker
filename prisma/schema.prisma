@@ -175,6 +175,7 @@ model Club {
   membershipTypes MembershipType[]
   seasonTeams     SeasonTeam[]
   punchCards      ClubPunchCard[]
+  priceRules      PriceRule[]
   images  Image[]
 }
 
@@ -253,6 +254,15 @@ model Court {
   guestSlots   GuestSlot[]
   externalBusy ExternalBusy[]
   fixedSlots FixedSlot[]
+
+  /// Indendørs eller udendørs. En hal koster typisk mere og kan spilles i
+  /// hele vinteren; en grusbane kan hverken det ene eller det andet.
+  indoor Boolean @default(false)
+
+  /// Egen pris for netop denne bane. Null = klubbens almindelige pris.
+  /// En hal og en grusbane koster sjældent det samme.
+  priceHour       Int?
+  memberPriceHour Int?
 }
 
 // ---------- Frigivelsesregler ----------
@@ -917,4 +927,35 @@ model ClubPunchPurchase {
   createdAt DateTime  @default(now())
 
   @@index([userId, clubId, status])
+}
+
+
+// ---------- Priser efter tidspunkt ----------
+//
+// Prime time koster mere. Enhver klub med en hal har den regel, og indtil
+// nu havde vi én pris for alle baner på alle tider.
+//
+// Reglen slår banens egen pris, som slår klubbens. Mest specifik vinder —
+// ellers ville en klub skulle gentage hallens pris i hver eneste regel.
+model PriceRule {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// Kommasepareret liste af bane-id'er. Tom = alle klubbens baner.
+  courtIds String @default("")
+  /// Kommasepareret 0-6, 0 = søndag. Tom = alle ugedage.
+  daysOfWeek String @default("")
+
+  fromHour Int
+  toHour   Int
+
+  priceKr         Int
+  memberPriceHour Int?
+
+  label     String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([clubId])
 }

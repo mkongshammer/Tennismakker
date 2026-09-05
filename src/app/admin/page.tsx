@@ -15,6 +15,7 @@ import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
 import { FixedSlotForm } from "./FixedSlotForm";
 import { CourtForm } from "./CourtForm";
+import { PriceRuleForm } from "./PriceRuleForm";
 import { MembershipForm } from "./MembershipForm";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -81,6 +82,11 @@ export default async function AdminPage({
       orderBy: [{ active: "desc" }, { createdAt: "desc" }],
     }),
   ]);
+
+  const priceRules = await db.priceRule.findMany({
+    where: { clubId: club.id },
+    orderBy: { sortOrder: "asc" },
+  });
 
   const membershipTypes = await db.membershipType.findMany({
     where: { clubId: club.id },
@@ -645,8 +651,23 @@ export default async function AdminPage({
             id: c.id,
             name: c.name,
             surface: c.surface,
+            indoor: c.indoor,
+            priceHour: c.priceHour,
+            memberPriceHour: c.memberPriceHour,
             bookings: c._count?.bookings ?? 0,
           }))}
+        />
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Priser efter tidspunkt</h2>
+        <p className="mb-4 text-sm text-slate">
+          Prime time koster mere. Uden regler her gælder banens pris, og har
+          banen ingen, gælder klubbens.
+        </p>
+        <PriceRuleForm
+          courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+          rules={priceRules as any}
         />
       </section>
     </div>

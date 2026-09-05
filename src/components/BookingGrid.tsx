@@ -15,7 +15,14 @@ import { bookCourtSlot } from "../lib/actions";
 import { sportColor, surfaceLabel } from "../lib/sports";
 import type { Locale } from "../lib/sports";
 
-export type Court = { id: string; name: string; surface: string; sport: string };
+export type Court = {
+  id: string;
+  name: string;
+  surface: string;
+  sport: string;
+  /** Indendørs bane. Vises, fordi det afgør om man kan spille i regnvejr. */
+  indoor?: boolean;
+};
 export type Slot = { courtId: string; startsAt: string; priceKr: number };
 
 function clock(iso: string) {
@@ -184,6 +191,7 @@ export function BookingGrid({
                         <span className="relative z-10 block font-semibold">{court.name}</span>
                         <span className="relative z-10 block text-xs text-chalk/80">
                           {surfaceLabel(court.surface, locale)}
+                          {court.indoor ? " · indendørs" : ""}
                         </span>
                         <span className="data relative z-10 mt-1 block font-bold">
                           {slot.priceKr} kr
@@ -210,6 +218,7 @@ export function BookingGrid({
                     <span className="block font-bold text-ink">{c.name}</span>
                     <span className="block text-xs font-normal text-slate">
                       {surfaceLabel(c.surface, locale)}
+                      {c.indoor ? " · indendørs" : ""}
                     </span>
                   </th>
                 ))}

@@ -15,6 +15,8 @@ export type AvailableSlot = {
   courtId: string;
   courtName: string;
   surface: string;
+  /** Indendørs bane. En hal kan spilles i hele vinteren. */
+  indoor?: boolean;
   startsAt: Date;
   endsAt: Date;
   priceKr: number;

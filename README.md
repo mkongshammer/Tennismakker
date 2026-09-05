@@ -993,6 +993,22 @@ Højst et år ad gangen. En fast bane, der løber til 2035, ville oprette hundre
 
 Datoregningen ligger i `fixed-slots-core.ts` uden importer, så den kan afprøves — seks tests dækker sæsonlængde, inklusive slutdato, og at søndag er dag 0.
 
+## Priser: bane, tidspunkt, medlemskab
+
+Indtil nu var der én pris for hele klubben. Men en hal koster mere end en grusbane, og fredag klokken 18 koster mere end tirsdag klokken 10 — det er reglen i enhver klub med en hal, og den kunne ikke skrives.
+
+**Tre niveauer, mest specifik vinder:** en prisregel der dækker banen, ugedagen og timen; ellers banens egen pris; ellers klubbens. Rækkefølgen betyder, at en klub kan sætte hallens pris én gang på banen og kun skrive de regler, der afviger — frem for at gentage hallens pris i hver eneste regel.
+
+**Rammer flere regler samme time, vinder den øverste.** Så kan en specifik regel lægges over en bred: "alle baner hverdage 17-21" med "hal 1 fredag 17-21" ovenover.
+
+**`toHour` er eksklusiv.** 17 til 21 dækker 17, 18, 19 og 20. Det er sådan en klub siger det, og samme konvention som åbningstiderne.
+
+**En regel uden medlemspris fjerner ikke medlemsrabatten.** Medlemmet falder ned ad trappen til banens eller klubbens medlemspris frem for op til gæsteprisen. Uden det ville en regel om prime time ved et uheld fjerne rabatten.
+
+Regningen ligger i `pricing.ts` uden database: den kaldes for hver celle i kalenderen, og et opslag pr. celle ville være hundredvis pr. sidevisning. Ti tests dækker den.
+
+**Baner er nu indendørs eller udendørs.** Det vises i bookingen, fordi det afgør, om man kan spille i regnvejr.
+
 ## Medlemmer booker på klubbens vilkår
 
 Det, der gør RacketBuddy til en erstatning frem for et tillæg. En klub kan ikke forlade Halbooking, hvis deres medlemmer skal begynde at betale for at booke deres egne baner.

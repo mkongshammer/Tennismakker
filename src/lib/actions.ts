@@ -1134,6 +1134,61 @@ export async function declineCoachBooking(formData: FormData) {
   redirect("/profil/traener?svar=afvist");
 }
 
+// ---------------- Priser efter tidspunkt ----------------
+
+export async function addPriceRule(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+
+  const fromHour = Number(formData.get("fromHour") ?? 0);
+  const toHour = Number(formData.get("toHour") ?? 0);
+  const priceKr = Number(formData.get("priceKr") ?? -1);
+
+  if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
+    return { error: "Sluttidspunktet skal ligge efter starttidspunktet." };
+  }
+  if (!(priceKr >= 0)) return { error: "Angiv en gæstepris." };
+
+  // Kun klubbens egne baner. Id'erne kommer fra en formular.
+  const chosen = formData.getAll("courtIds").map(String);
+  const owned = await db.court.findMany({
+    where: { clubId, id: { in: chosen } },
+    select: { id: true },
+  });
+
+  const memberRaw = String(formData.get("memberPriceHour") ?? "").trim();
+
+  const count = await db.priceRule.count({ where: { clubId } });
+
+  await db.priceRule.create({
+    data: {
+      clubId,
+      label: String(formData.get("label") ?? "").trim() || null,
+      courtIds: owned.map((c: any) => c.id).join(","),
+      daysOfWeek: formData
+        .getAll("daysOfWeek")
+        .map(String)
+        .filter((d) => /^[0-6]$/.test(d))
+        .join(","),
+      fromHour,
+      toHour,
+      priceKr,
+      memberPriceHour: memberRaw === "" ? null : Math.max(0, Number(memberRaw)),
+      sortOrder: count,
+    },
+  });
+
+  revalidatePath("/admin");
+  return { ok: "Prisreglen er tilføjet." };
+}
+
+export async function removePriceRule(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  await db.priceRule.deleteMany({
+    where: { id: String(formData.get("ruleId") ?? ""), clubId },
+  });
+  revalidatePath("/admin");
+}
+
 // ---------------- Baner ----------------
 
 export async function addCourt(_prev: unknown, formData: FormData) {
@@ -1146,7 +1201,12 @@ export async function addCourt(_prev: unknown, formData: FormData) {
   if (exists) return { error: `Der findes allerede en bane, der hedder ${name}.` };
 
   await db.court.create({
-    data: { clubId, name, surface: String(formData.get("surface") ?? "GRUS") },
+    data: {
+      clubId,
+      name,
+      surface: String(formData.get("surface") ?? "GRUS"),
+      indoor: formData.get("indoor") === "on",
+    },
   });
 
   revalidatePath("/admin");
@@ -1159,9 +1219,21 @@ export async function renameCourt(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   if (name.length < 1) return;
 
+  // Tomt prisfelt betyder klubbens almindelige pris, ikke nul kroner.
+  const num = (key: string) => {
+    const raw = String(formData.get(key) ?? "").trim();
+    return raw === "" ? null : Math.max(0, Number(raw));
+  };
+
   await db.court.updateMany({
     where: { id, clubId },
-    data: { name, surface: String(formData.get("surface") ?? "GRUS") },
+    data: {
+      name,
+      surface: String(formData.get("surface") ?? "GRUS"),
+      indoor: formData.get("indoor") === "on",
+      priceHour: num("priceHour"),
+      memberPriceHour: num("memberPriceHour"),
+    },
   });
   revalidatePath("/admin");
 }

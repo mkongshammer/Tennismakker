@@ -31,7 +31,7 @@ const SIGNATURES: {
     patterns: [/halbooking/i, /globusdata/i],
     canSync: false,
     advice:
-      "Halbooking har ingen offentlig grænseflade, vi kan hente ledighed fra. I opsætter i stedet en regel hos os — fx “bane 3 og 4, hverdage 9-15” — og tager de tider ud af Halbooking. Det tager to minutter og skal kun gøres én gang.",
+      "I kan bruge os på to måder. Enten som et supplement: I sætter en regel op — fx “bane 3 og 4, hverdage 9-15” — spærrer de tider i Halbooking, og så sælger vi dem til gæster. Det tager to minutter og skal kun gøres én gang. Eller I flytter det hele til os: booking, faste baner, sæsonhold, kontingent med automatisk fornyelse, klippekort og en ny hjemmeside, I selv redigerer. Vi hjælper med flytningen.",
   },
   {
     key: "matchi",
@@ -39,7 +39,7 @@ const SIGNATURES: {
     patterns: [/matchi\.se/i, /matchi\.com/i],
     canSync: false,
     advice:
-      "Matchi udstiller ikke ledighed til tredjeparter. Sæt en regel op hos os for de tider, gæster må booke.",
+      "I kan bruge os som et supplement — sæt en regel op for de tider, gæster må booke — eller flytte det hele til os: booking, kontingent, hold og en hjemmeside, I selv redigerer.",
   },
   {
     key: "conventus",
