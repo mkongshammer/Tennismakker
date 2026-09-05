@@ -15,6 +15,7 @@ import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
 import { PlayAgain } from "../../components/PlayAgain";
 import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
+import { checkDeletion } from "../../lib/deletion-guards";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 
 export const dynamic = "force-dynamic";
@@ -61,7 +62,7 @@ export default async function ProfilPage({
   }
   if (!user) redirect("/login");
 
-  const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons] = await Promise.all([
+  const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
     db.booking.findMany({
       where: {
       userId: user.id,
@@ -90,6 +91,7 @@ export default async function ProfilPage({
       : Promise.resolve([]),
     pendingReviews(user.id),
     getRepeatableLessons(user!.id),
+    checkDeletion(user!.id),
   ]);
 
   const repeatable = (await getRepeatableBookings(user.id)).map((r) => ({
@@ -324,7 +326,7 @@ export default async function ProfilPage({
         <span className="text-slate"> — alt du har betalt, til dit eget regnskab.</span>
       </p>
 
-      <DeleteAccount />
+      <DeleteAccount blockers={deletion.blockers} canDelete={deletion.canDelete} />
 
     </div>
   );

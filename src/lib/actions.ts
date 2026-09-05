@@ -12,6 +12,7 @@ import { COUNTRIES, LOCALES, LOCALE_LIVE, SPORTS, type Locale } from "./sports";
 import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
+import { checkDeletion } from "./deletion-guards";
 import { subscriptionIsActive } from "./billing";
 import { mayBook } from "./club-rules";
 import { createFixedSlot, removeFixedSlot } from "./fixed-slots";
@@ -266,9 +267,67 @@ export async function deleteMyAccount(_prev: unknown, formData: FormData) {
     return { error: "Skriv SLET i feltet for at bekræfte." };
   }
 
+  // Adgangskoden, ikke bare et ord. Et ord i et felt beskytter mod et
+  // fejlklik; adgangskoden beskytter også mod en, der sætter sig ved en
+  // åben skærm — og en klubadministrators konto er nøglen til foreningens
+  // bookinger, medlemmer og indtægter.
+  const password = String(formData.get("password") ?? "");
+  const fresh = await db.user.findUnique({ where: { id: user!.id } });
+  if (!fresh || !(await bcrypt.compare(password, fresh.passwordHash))) {
+    return { error: "Forkert adgangskode." };
+  }
+
+  const check = await checkDeletion(user!.id);
+  if (!check.canDelete) {
+    const hard = check.blockers.filter((b) => b.level === "HARD");
+    return { error: hard.map((b) => b.message).join(" ") };
+  }
+
   await eraseAccount(user!.id);
   destroySession();
   redirect("/?slettet=1");
+}
+
+/**
+ * Udpeger et medlem som klubadministrator.
+ *
+ * Findes, fordi den eneste administrator ikke kan slette sin konto — og
+ * "find en anden administrator først" er et råd, man skal kunne følge.
+ * Uden denne handling ville de skulle skrive til os.
+ */
+export async function makeClubAdmin(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const memberId = String(formData.get("memberId") ?? "");
+
+  // Kun et medlem af netop denne klub. Id'et kommer fra en formular.
+  const member = await db.user.findFirst({
+    where: { id: memberId, clubId, role: "PLAYER" },
+  });
+  if (!member) return;
+
+  await db.user.update({ where: { id: member.id }, data: { role: "CLUB_ADMIN" } });
+  revalidatePath("/admin");
+}
+
+/**
+ * Fjerner administratorrettigheder igen.
+ *
+ * Den sidste administrator kan ikke fjerne sig selv. Ellers ville klubben
+ * kunne låse sig selv ude med to klik — samme problem som ved sletning,
+ * bare ad en anden vej.
+ */
+export async function removeClubAdmin(formData: FormData) {
+  const { clubId, user } = await requireClubAdmin();
+  const memberId = String(formData.get("memberId") ?? "");
+
+  const admins = await db.user.count({ where: { clubId, role: "CLUB_ADMIN" } });
+  if (admins <= 1) return;
+
+  await db.user.updateMany({
+    where: { id: memberId, clubId, role: "CLUB_ADMIN" },
+    data: { role: "PLAYER" },
+  });
+  revalidatePath("/admin");
 }
 
 export async function logout() {

@@ -15,6 +15,7 @@ import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
 import { FixedSlotForm } from "./FixedSlotForm";
 import { CourtForm } from "./CourtForm";
+import { AdminsForm } from "./AdminsForm";
 import { PriceRuleForm } from "./PriceRuleForm";
 import { SystemLoginForm } from "./SystemLoginForm";
 import { blockSummary } from "../../lib/system-blocks";
@@ -360,6 +361,24 @@ export default async function AdminPage({
           Laver I en ny kode, holder den gamle op med at virke. Medlemmer der
           allerede er meldt ind, bliver ved med at være det.
         </p>
+      </section>
+
+      <section className="card">
+        <h2 className="display mb-1 text-2xl">Hvem kan administrere klubben</h2>
+        <p className="mb-4 text-sm text-slate">
+          Én person med nøglen er én person for lidt. Stopper vedkommende i
+          bestyrelsen, mister klubben adgangen til sine egne bookinger og
+          indtægter.
+        </p>
+        <AdminsForm
+          meId={user.id}
+          members={club.members.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            email: m.email,
+            isAdmin: m.role === "CLUB_ADMIN",
+          }))}
+        />
       </section>
 
       <section className="card">

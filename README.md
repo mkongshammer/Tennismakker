@@ -993,6 +993,23 @@ Højst et år ad gangen. En fast bane, der løber til 2035, ville oprette hundre
 
 Datoregningen ligger i `fixed-slots-core.ts` uden importer, så den kan afprøves — seks tests dækker sæsonlængde, inklusive slutdato, og at søndag er dag 0.
 
+## Sletning af konto
+
+Sletning var før ét ord i et felt. Det er for lidt, når kontoen kan være den eneste vej ind i en klub, der har taget imod penge.
+
+**Både ordet og adgangskoden.** Ordet beskytter mod et fejlklik; adgangskoden beskytter også mod en, der sætter sig ved en åben skærm.
+
+**Spærringerne vises på forhånd**, ikke efter man har skrevet sin adgangskode. `checkDeletion()` skelner mellem to slags:
+
+- **HARD** — kan ikke slettes. Klubben ville stå uden administrator, eller en elev har betalt for timer, der ikke er givet.
+- **SOFT** — kan slettes, men personen skal vide hvad de mister.
+
+**Den tungeste er den eneste klubadministrator.** Klubben ville ikke være slettet — den ville være låst ude af sig selv: ingen kan frigive tider, godkende medlemmer, se omsætningen eller opsige abonnementet.
+
+**Derfor kan klubben nu udpege flere administratorer.** "Udpeg en anden først" er et råd, man skal kunne følge uden at skrive til os. Den sidste administrator kan heller ikke fjerne sig selv — ellers kunne klubben låse sig ude ad en anden vej.
+
+**En træner med kommende timer eller ubrugte klip kan ikke slette sig.** En elev, der har betalt for en time i næste uge, skal ikke møde op til en træner, der ikke findes.
+
 ## Priser: bane, tidspunkt, medlemskab
 
 Indtil nu var der én pris for hele klubben. Men en hal koster mere end en grusbane, og fredag klokken 18 koster mere end tirsdag klokken 10 — det er reglen i enhver klub med en hal, og den kunne ikke skrives.
