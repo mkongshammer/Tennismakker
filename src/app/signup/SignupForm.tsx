@@ -8,7 +8,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useFormState } from "react-dom";
-import { signup } from "../../lib/actions";
+import { signup } from "./actions";
 import { LEVELS } from "../../lib/levels";
 import { SPORTS, sportLabel } from "../../lib/sports";
 import type { Locale } from "../../lib/sports";
@@ -46,6 +46,10 @@ export function SignupForm({
   // Trænerfelterne vises kun for trænere. En spiller skal ikke scrolle
   // forbi en timepris for at oprette sig.
   const [role, setRole] = useState("PLAYER");
+
+  const engagementLabel = locale === "da"
+    ? "Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning."
+    : "Yes, send me occasional inspiration for matches, courts, racket sports and coaching.";
 
   return (
     <form action={action} className="card space-y-4">
@@ -142,6 +146,15 @@ export function SignupForm({
       )}
 
       {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
+
+      <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate">
+        <input
+          type="checkbox"
+          name="engagementEmails"
+          className="mt-1"
+        />
+        <span>{engagementLabel}</span>
+      </label>
 
       <p className="text-sm text-slate">
         {terms.before}
