@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
@@ -67,7 +68,7 @@ export async function saveGenericIntegration(formData: FormData) {
   const integrations = await getClubIntegrations(user.clubId);
   const existing = integrations.find((i) => i.provider.toLowerCase() === provider.toLowerCase() && i.type === type);
   const next = {
-    id: existing?.id ?? crypto.randomUUID(),
+    id: existing?.id ?? randomUUID(),
     type,
     provider,
     endpoint: endpoint || undefined,
