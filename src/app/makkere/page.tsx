@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { da } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { acceptMatchRequest } from "../../lib/actions";
+import { respondToMatchPost } from "./actions";
 import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
 import { SportPicker } from "../../components/SportPicker";
@@ -23,20 +23,39 @@ export default async function MakkerePage({
   const area = searchParams.omraade?.trim();
   const level = searchParams.niveau ? Number(searchParams.niveau) : undefined;
 
-  const requests = await db.matchRequest.findMany({
-    where: {
-      status: "OPEN",
-      // Kun opslag i den sportsgren, man selv har valgt. En badmintonspiller
-      // skal ikke skulle læse sig igennem padel-opslag for at finde ét.
-      sport: prefs.sport,
-      ...(area ? { area: { contains: area } } : {}),
-      // Matching-princip: vis opslag inden for ±1 niveau
-      ...(level ? { level: { gte: level - 1, lte: level + 1 } } : {}),
-    },
-    include: { requester: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
+  const [openRequests, myResponses] = await Promise.all([
+    db.matchRequest.findMany({
+      where: {
+        status: "OPEN",
+        source: "POST",
+        sport: prefs.sport,
+        ...(area ? { area: { contains: area } } : {}),
+        ...(level ? { level: { gte: level - 1, lte: level + 1 } } : {}),
+      },
+      include: { requester: true },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+    user
+      ? db.matchRequest.findMany({
+          where: {
+            acceptedById: user.id,
+            source: { startsWith: "POST_RESPONSE:" },
+          },
+          select: { source: true },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const respondedPostIds = new Set(
+    myResponses
+      .map((r) => r.source.replace("POST_RESPONSE:", ""))
+      .filter(Boolean)
+  );
+
+  const requests = openRequests.filter(
+    (r) => r.requesterId === user?.id || !respondedPostIds.has(r.id)
+  );
 
   return (
     <div>
@@ -87,7 +106,7 @@ export default async function MakkerePage({
               </p>
             </div>
             {user && user.id !== r.requesterId ? (
-              <form action={acceptMatchRequest}>
+              <form action={respondToMatchPost}>
                 <input type="hidden" name="id" value={r.id} />
                 <button className="btn-court">{t("partners.respond")}</button>
               </form>
