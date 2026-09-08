@@ -72,6 +72,15 @@ export const api = {
   createMatch: (payload) => request("/matches", { method: "POST", body: payload }),
   acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
 
+  players: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.area) q.set("omraade", params.area);
+    if (params.sport) q.set("sport", params.sport);
+    const qs = q.toString();
+    return request(`/players${qs ? `?${qs}` : ""}`);
+  },
+  contactPlayer: (id) => request(`/players/${id}/contact`, { method: "POST" }),
+
   swipeQueue: () => request("/swipe"),
   swipe: (toUserId, liked) =>
     request("/swipe", { method: "POST", body: { toUserId, liked } }),
