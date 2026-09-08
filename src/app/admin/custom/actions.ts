@@ -23,17 +23,18 @@ async function requireClubAdmin() {
 
 export async function requestClubModule(formData: FormData) {
   const user = await requireClubAdmin();
+  const clubId = user.clubId as string;
   const key = String(formData.get("module") ?? "") as ClubModuleKey;
   const wish = String(formData.get("wish") ?? "").trim().slice(0, 4000);
   if (!CLUB_MODULES.some((m) => m.key === key)) return;
 
-  const config = await getClubCustomConfig(user.clubId);
+  const config = await getClubCustomConfig(clubId);
   config.modules[key] = "REQUESTED";
   config.notes = [config.notes, wish ? `${key}: ${wish}` : ""].filter(Boolean).join("\n");
-  await saveClubCustomConfig(user.clubId, config);
+  await saveClubCustomConfig(clubId, config);
 
   const [club, settings] = await Promise.all([
-    db.club.findUnique({ where: { id: user.clubId }, select: { name: true } }),
+    db.club.findUnique({ where: { id: clubId }, select: { name: true } }),
     getSettings(),
   ]);
   const module = CLUB_MODULES.find((m) => m.key === key)!;
@@ -43,7 +44,7 @@ export async function requestClubModule(formData: FormData) {
       to: settings.ordersEmail,
       subject: `Custom ønske: ${club?.name ?? "Klub"} — ${module.label}`,
       body: [
-        `Klub: ${club?.name ?? user.clubId}`,
+        `Klub: ${club?.name ?? clubId}`,
         `Kontakt: ${user.name} (${user.email})`,
         `Modul: ${module.label}`,
         wish ? `Ønske: ${wish}` : "",
@@ -58,6 +59,7 @@ export async function requestClubModule(formData: FormData) {
 
 export async function saveGenericIntegration(formData: FormData) {
   const user = await requireClubAdmin();
+  const clubId = user.clubId as string;
   const provider = String(formData.get("provider") ?? "").trim().slice(0, 120);
   const type = String(formData.get("type") ?? "CUSTOM_API").trim().slice(0, 80);
   const endpoint = String(formData.get("endpoint") ?? "").trim().slice(0, 500);
@@ -65,7 +67,7 @@ export async function saveGenericIntegration(formData: FormData) {
   const apiKey = String(formData.get("apiKey") ?? "").trim().slice(0, 2000);
   if (!provider) return;
 
-  const integrations = await getClubIntegrations(user.clubId);
+  const integrations = await getClubIntegrations(clubId);
   const existing = integrations.find((i) => i.provider.toLowerCase() === provider.toLowerCase() && i.type === type);
   const next = {
     id: existing?.id ?? randomUUID(),
@@ -79,15 +81,15 @@ export async function saveGenericIntegration(formData: FormData) {
   };
 
   const updated = existing ? integrations.map((i) => i.id === existing.id ? next : i) : [...integrations, next];
-  await saveClubIntegrations(user.clubId, updated);
+  await saveClubIntegrations(clubId, updated);
 
-  const config = await getClubCustomConfig(user.clubId);
+  const config = await getClubCustomConfig(clubId);
   config.modules.CUSTOM_API = "REQUESTED";
   if (type === "ACCOUNTING") config.modules.ACCOUNTING = "REQUESTED";
-  await saveClubCustomConfig(user.clubId, config);
+  await saveClubCustomConfig(clubId, config);
 
   const [club, settings] = await Promise.all([
-    db.club.findUnique({ where: { id: user.clubId }, select: { name: true } }),
+    db.club.findUnique({ where: { id: clubId }, select: { name: true } }),
     getSettings(),
   ]);
   if (settings.ordersEmail) {
@@ -95,7 +97,7 @@ export async function saveGenericIntegration(formData: FormData) {
       to: settings.ordersEmail,
       subject: `Ny integration: ${club?.name ?? "Klub"} — ${provider}`,
       body: [
-        `Klub: ${club?.name ?? user.clubId}`,
+        `Klub: ${club?.name ?? clubId}`,
         `Type: ${type}`,
         `System: ${provider}`,
         endpoint ? `Endpoint: ${endpoint}` : "",
