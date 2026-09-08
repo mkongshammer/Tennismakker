@@ -1,4 +1,5 @@
 import { runRenewals } from "../../../../lib/renewals";
+import { runEngagementEmails } from "../../../../lib/engagement-emails";
 import { ensureBlocks, processBlocks } from "../../../../lib/system-blocks";
 // Baggrundsjob: synkroniserer alle klubber med kalenderfeed og rydder
 // udløbne reservationer.
@@ -15,11 +16,10 @@ import { releaseExpiredHolds } from "../../../../lib/payments";
 export const dynamic = "force-dynamic";
 
 /**
- * Fornyelser køres her sammen med kalendersynkroniseringen.
+ * Fornyelser og engagement-mails køres her sammen med kalendersynkroniseringen.
  *
  * Egen cron ville være renere, men Render tager penge pr. cron-job, og de
- * to ting har samme rytme: noget der skal ske hver dag, uden at nogen
- * sidder og venter.
+ * eksisterende kørsler er hyppige nok til begge opgaver.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -48,12 +48,6 @@ export async function GET(req: Request) {
     results.push({ klub: club.name, ...result });
   }
 
-  // Fornyelser af kontingent kører sammen med synkroniseringen. Egen cron
-  // ville være renere, men Render tager penge pr. job, og de to har samme
-  // rytme: noget der skal ske dagligt, uden at nogen sidder og venter.
-  //
-  // Fejler den, må den ikke tage synkroniseringen med sig — en fejlet
-  // opkrævning er ærgerlig, en klub uden opdateret kalender er værre.
   // Spærringer i klubbernes egne systemer. Hver er en browsersession, så
   // der tages ti ad gangen — resten venter til næste kørsel.
   const withLogin = await db.clubSystemLogin.findMany({ select: { clubId: true } });
@@ -72,11 +66,19 @@ export async function GET(req: Request) {
     return { notified: 0, charged: 0, failed: 0 };
   });
 
+  // Inspirationsmails tjekkes ved hver cron-kørsel, men funktionen sender
+  // kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
+  const engagement = await runEngagementEmails().catch((err) => {
+    console.error("Engagement-mails fejlede:", err);
+    return { sent: 0, skipped: 0, reason: "error" };
+  });
+
   return Response.json({
     kørt: new Date().toISOString(),
     klubber: results.length,
     resultater: results,
     fornyelser: renewals,
+    engagement,
     spaerringer: blocks,
   });
 }
