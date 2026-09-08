@@ -30,7 +30,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
   const messages = await readMessages(params.id, user.id);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div id="top" className="mx-auto max-w-2xl scroll-mt-4">
       <Link href="/beskeder" className="text-sm text-slate/60 hover:underline">
         ← {t("msg.title")}
       </Link>
