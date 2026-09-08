@@ -24,6 +24,7 @@ export function SiteHeader({ user, locale }: Props) {
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },
     { href: "/beskeder", label: t("nav.messages") },
+    { href: "/custom", label: "Til klubber" },
   ];
 
   const active = (href: string) =>
