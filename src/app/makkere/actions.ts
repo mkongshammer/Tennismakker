@@ -34,7 +34,7 @@ export async function respondToMatchPost(formData: FormData) {
     orderBy: { createdAt: "desc" },
   });
 
-  if (existing) redirect(`/beskeder/${existing.id}`);
+  if (existing) redirect(`/beskeder/${existing.id}#top`);
 
   const thread = await db.matchRequest.create({
     data: {
@@ -62,5 +62,5 @@ export async function respondToMatchPost(formData: FormData) {
 
   revalidatePath("/makkere");
   revalidatePath("/beskeder");
-  redirect(`/beskeder/${thread.id}`);
+  redirect(`/beskeder/${thread.id}#top`);
 }
