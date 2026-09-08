@@ -1,126 +1,119 @@
 import React, { useCallback, useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "../lib/api";
-import { Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 
 export default function SwipeScreen({ navigation }) {
-  const [state, setState] = useState({ loading: true, error: null, players: [], likes: 0 });
-  const [index, setIndex] = useState(0);
-  const [busy, setBusy] = useState(false);
+  const [state, setState] = useState({ loading: true, error: null, players: [] });
+  const [refreshing, setRefreshing] = useState(false);
+  const [busyId, setBusyId] = useState(null);
 
   const load = useCallback(async () => {
     try {
-      const { players, pendingLikes } = await api.swipeQueue();
-      setState({ loading: false, error: null, players, likes: pendingLikes });
-      setIndex(0);
+      const { players } = await api.players();
+      setState({ loading: false, error: null, players });
     } catch (e) {
-      setState({ loading: false, error: e.message, players: [], likes: 0 });
+      setState({ loading: false, error: e.message, players: [] });
     }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
-
-  const player = state.players[index];
-
-  const decide = async (liked) => {
-    if (!player) return;
-    setBusy(true);
+  const contact = async (player) => {
+    setBusyId(player.id);
     try {
-      const result = await api.swipe(player.id, liked);
-      if (result.matched && result.threadId) {
-        navigation.navigate("BeskederTab", {
-          screen: "Samtale",
-          params: { id: result.threadId, name: result.otherName },
-        });
-      }
-      setIndex((i) => i + 1);
+      const { threadId, otherName } = await api.contactPlayer(player.id);
+      navigation.navigate("BeskederTab", {
+        screen: "Samtale",
+        params: { id: threadId, name: otherName },
+      });
     } catch (e) {
-      Alert.alert("Der gik noget galt", e.message);
+      Alert.alert("Kunne ikke åbne beskeder", e.message);
     } finally {
-      setBusy(false);
+      setBusyId(null);
     }
   };
 
-  if (!player) {
-    return (
-      <View style={{ flex: 1, backgroundColor: colors.mist, justifyContent: "center" }}>
-        <Empty>
-          Ikke flere spillere lige nu. Kig forbi igen om et par dage.
-        </Empty>
-        <View style={{ paddingHorizontal: 32 }}>
-          <Button title="Hent igen" variant="ink" onPress={load} />
-        </View>
-      </View>
-    );
-  }
-
-  const initials = player.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
+  if (state.loading) return <Loading />;
+  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
 
   return (
-    <View style={styles.wrap}>
-      {state.likes > 0 && (
-        <Text style={styles.likes}>{state.likes} har vist interesse i dig</Text>
-      )}
-
-      <Card style={styles.card}>
-        <View style={styles.avatar}>
-          <Text style={styles.initials}>{initials}</Text>
+    <FlatList
+      style={{ backgroundColor: colors.mist }}
+      contentContainerStyle={{ padding: 16 }}
+      data={state.players}
+      keyExtractor={(p) => p.id}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
+        />
+      }
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Text style={styles.title}>Find en medspiller</Text>
+          <Text style={styles.subtitle}>
+            Se spillere på RacketBuddy og skriv direkte til dem. Ingen likes eller matches først.
+          </Text>
+          <Button title="Se opslag" variant="ink" onPress={() => navigation.navigate("Makkere")} />
         </View>
-        <Text style={styles.name}>{player.name}</Text>
-        <Text style={styles.level}>
-          Niveau {player.level} · {LEVELS[player.level]}
-        </Text>
-        {player.area ? <Text style={styles.area}>{player.area}</Text> : null}
-        {player.bio ? <Text style={styles.bio}>{player.bio}</Text> : null}
-        {player.isCoach && <Text style={styles.coach}>Er også træner</Text>}
-      </Card>
-
-      <View style={styles.actions}>
-        <View style={{ flex: 1 }}>
-          <Button title="Spring over" variant="ink" onPress={() => decide(false)} disabled={busy} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Button title="Vil spille" onPress={() => decide(true)} disabled={busy} />
-        </View>
-      </View>
-
-      <Text style={styles.hint}>
-        Siger I begge ja, åbner der en samtale. Springer du over, får den anden
-        ikke besked.
-      </Text>
-    </View>
+      }
+      ListEmptyComponent={<Empty>Der er ingen andre spillere at vise endnu.</Empty>}
+      renderItem={({ item }) => {
+        const initials = item.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
+        return (
+          <Card>
+            <View style={styles.playerRow}>
+              <View style={styles.avatar}>
+                <Text style={styles.initials}>{initials}</Text>
+              </View>
+              <View style={styles.info}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  {item.isCoach ? <Badge>Træner</Badge> : null}
+                </View>
+                <Text style={styles.meta}>
+                  Niveau {item.level} · {LEVELS[item.level] ?? ""}
+                </Text>
+                {item.area ? <Text style={styles.meta}>{item.area}</Text> : null}
+                {item.sports?.length ? <Text style={styles.sports}>{item.sports.join(" · ")}</Text> : null}
+              </View>
+            </View>
+            {item.bio ? <Text style={styles.bio}>{item.bio}</Text> : null}
+            <View style={{ marginTop: 12 }}>
+              <Button
+                title="Send besked"
+                onPress={() => contact(item)}
+                disabled={busyId === item.id}
+              />
+            </View>
+          </Card>
+        );
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flex: 1, backgroundColor: colors.mist, padding: 16, justifyContent: "center" },
-  likes: {
-    textAlign: "center",
-    color: colors.court,
-    fontWeight: "800",
-    marginBottom: 12,
-  },
-  card: { alignItems: "center", paddingVertical: 32 },
+  header: { marginBottom: 14, gap: 8 },
+  title: { fontSize: 22, fontWeight: "900", color: colors.ink },
+  subtitle: { color: colors.slate, lineHeight: 20, marginBottom: 4 },
+  playerRow: { flexDirection: "row", gap: 12, alignItems: "center" },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: colors.ink,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 16,
   },
-  initials: { color: colors.chalk, fontSize: 32, fontWeight: "900" },
-  name: { fontSize: 24, fontWeight: "900" },
-  level: { color: colors.slate, marginTop: 6 },
-  area: { color: colors.slate, marginTop: 2 },
-  bio: { marginTop: 14, textAlign: "center", lineHeight: 20 },
-  coach: { marginTop: 12, color: colors.court, fontWeight: "700" },
-  actions: { flexDirection: "row", gap: 12, marginTop: 20 },
-  hint: { textAlign: "center", color: colors.slate, fontSize: 12, marginTop: 16, lineHeight: 17 },
+  initials: { color: colors.chalk, fontWeight: "900", fontSize: 17 },
+  info: { flex: 1 },
+  nameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  name: { fontWeight: "900", fontSize: 17 },
+  meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
+  sports: { color: colors.court, fontWeight: "700", marginTop: 4, fontSize: 12 },
+  bio: { marginTop: 12, lineHeight: 20 },
 });
