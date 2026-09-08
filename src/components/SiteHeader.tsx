@@ -24,7 +24,12 @@ export function SiteHeader({ user, locale }: Props) {
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },
     { href: "/beskeder", label: t("nav.messages") },
-    { href: "/custom", label: "Til klubber" },
+    ...(user?.role === "CLUB_ADMIN"
+      ? [
+          { href: "/admin", label: "Klubadmin" },
+          { href: "/admin/custom", label: "Custom" },
+        ]
+      : [{ href: "/custom", label: "Til klubber" }]),
   ];
 
   const active = (href: string) =>
@@ -55,7 +60,6 @@ export function SiteHeader({ user, locale }: Props) {
         <div className="ml-auto flex items-center gap-2 text-sm">
           {user ? (
             <>
-              {/* Profilen: initialer i hjørnet, som man kender det fra en app */}
               <Link
                 href="/profil"
                 aria-label={t("nav.profile")}
