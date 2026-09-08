@@ -4,7 +4,7 @@ import { getCurrentUser } from "../../../lib/session";
 import { getPreferences } from "../../../lib/preferences";
 import { translator } from "../../../lib/i18n";
 import { loadThread, readMessages, MAX_MESSAGE_LENGTH } from "../../../lib/messages";
-import { sendMessage } from "../../../lib/actions";
+import { MessageForm } from "./MessageForm";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +37,6 @@ export default async function SamtalePage({ params }: { params: { id: string } }
       <h1 className="display mt-2 text-2xl">{access.otherUser.name}</h1>
       <p className="text-sm text-slate/60">{t("msg.about", { subject: access.thread.message })}</p>
 
-      {/* Sløjfen lukkes her: en aftale uden en bane bliver sjældent til noget.
-          Knappen står øverst i samtalen, ikke gemt i en menu. */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-court/25 bg-court/5 p-4">
         <div>
           <p className="font-bold">{t("msg.agreedTitle")}</p>
@@ -74,18 +72,12 @@ export default async function SamtalePage({ params }: { params: { id: string } }
         })}
       </div>
 
-      <form action={sendMessage} className="sticky bottom-0 flex gap-2 bg-chalk pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
-        <input type="hidden" name="matchRequestId" value={params.id} />
-        <input
-          className="input flex-1"
-          name="body"
-          placeholder={t("msg.placeholder")}
-          maxLength={MAX_MESSAGE_LENGTH}
-          required
-          autoComplete="off"
-        />
-        <button className="btn-court">{t("msg.send")}</button>
-      </form>
+      <MessageForm
+        threadId={params.id}
+        placeholder={t("msg.placeholder")}
+        sendLabel={t("msg.send")}
+        maxLength={MAX_MESSAGE_LENGTH}
+      />
     </div>
   );
 }
