@@ -7,8 +7,24 @@ function intentKey(email: string) {
   return `buddy-sports-intent:${hash}`;
 }
 
+function chosenKey(userId: string) {
+  return `buddy-sports-chosen:${userId}`;
+}
+
 export function normaliseBuddySports(values: string[]) {
   return Array.from(new Set(values.filter((s) => (SPORTS as readonly string[]).includes(s))));
+}
+
+export async function hasChosenBuddySports(userId: string) {
+  return Boolean(await db.platformSetting.findUnique({ where: { key: chosenKey(userId) } }));
+}
+
+export async function markBuddySportsChosen(userId: string) {
+  await db.platformSetting.upsert({
+    where: { key: chosenKey(userId) },
+    update: { value: new Date().toISOString() },
+    create: { key: chosenKey(userId), value: new Date().toISOString() },
+  });
 }
 
 export async function saveSignupSportsIntent(email: string, sports: string[]) {
@@ -36,10 +52,15 @@ export async function consumeSignupSportsIntent(user: { id: string; email: strin
 
   const sports = values.join(",");
   await db.$transaction([
-    db.user.update({ where: { id: user.id }, data: { sports, sportsChosen: true } }),
+    db.user.update({ where: { id: user.id }, data: { sports } }),
     ...(user.role === "COACH"
       ? [db.coachProfile.updateMany({ where: { userId: user.id }, data: { sports } })]
       : []),
+    db.platformSetting.upsert({
+      where: { key: chosenKey(user.id) },
+      update: { value: new Date().toISOString() },
+      create: { key: chosenKey(user.id), value: new Date().toISOString() },
+    }),
     db.platformSetting.delete({ where: { key } }),
   ]);
   return true;
