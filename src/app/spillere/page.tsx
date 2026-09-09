@@ -28,28 +28,37 @@ export default async function SpillerePage({ searchParams }: Props) {
   const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
   const selectedSport = (resolvedSearchParams.sport ?? "").trim();
 
-  const allPlayers = await db.user.findMany({
-    where: {
-      id: { not: user.id },
-      role: { in: ["PLAYER", "COACH"] },
-      country: user.country,
-    },
-    select: {
-      id: true,
-      name: true,
-      level: true,
-      area: true,
-      bio: true,
-      sports: true,
-      role: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 500,
-  });
+  const [currentUserProfile, allPlayers] = await Promise.all([
+    db.user.findUnique({
+      where: { id: user.id },
+      select: { sports: true },
+    }),
+    db.user.findMany({
+      where: {
+        id: { not: user.id },
+        role: { in: ["PLAYER", "COACH"] },
+        country: user.country,
+      },
+      select: {
+        id: true,
+        name: true,
+        level: true,
+        area: true,
+        bio: true,
+        sports: true,
+        role: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    }),
+  ]);
 
   const sportOptions = Array.from(
-    new Set(allPlayers.flatMap((player) => splitSports(player.sports))),
+    new Set([
+      ...splitSports(currentUserProfile?.sports ?? ""),
+      ...allPlayers.flatMap((player) => splitSports(player.sports)),
+    ]),
   ).sort((a, b) => a.localeCompare(b, "da"));
 
   const players = selectedSport
