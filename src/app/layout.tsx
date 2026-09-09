@@ -15,7 +15,7 @@ import { recordView } from "../lib/analytics";
 import { translator } from "../lib/i18n";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
-import { consumeSignupSportsIntent } from "../lib/buddy-sports";
+import { consumeSignupSportsIntent, hasChosenBuddySports } from "../lib/buddy-sports";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [settings, prefs] = await Promise.all([getSettings(), getPreferences()]);
@@ -46,21 +46,20 @@ export default async function RootLayout({
   const suggestedCountry = prefs.countryChosen ? null : detectCountry();
 
   let needsSportsOnboarding = false;
-  if (
-    user &&
-    ["PLAYER", "COACH"].includes(user.role) &&
-    !user.sportsChosen
-  ) {
-    // Nye brugere har allerede valgt sportsgrene i oprettelsen. Valget
-    // gemmes som et kortlivet intent, fordi den fælles signup-handler
-    // opretter sessionen og redirecter. Vi forbruger det på første side.
-    // Eksisterende brugere har intet intent og får derfor prompten én gang.
-    const consumed = await consumeSignupSportsIntent({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
-    needsSportsOnboarding = !consumed;
+  if (user && ["PLAYER", "COACH"].includes(user.role)) {
+    const alreadyChosen = await hasChosenBuddySports(user.id);
+    if (!alreadyChosen) {
+      // Nye brugere har allerede valgt sportsgrene i oprettelsen. Valget
+      // gemmes kortvarigt på mailadressen, indtil deres konto/session findes.
+      // Eksisterende brugere har intet signup-intent og får derfor prompten
+      // præcis én gang næste gang de besøger websitet.
+      const consumed = await consumeSignupSportsIntent({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      });
+      needsSportsOnboarding = !consumed;
+    }
   }
 
   void recordView(headers().get("user-agent"));
@@ -128,7 +127,6 @@ export default async function RootLayout({
         )}
 
         {user && <TabBar locale={prefs.locale} unread={unread} />}
-
         {needsSportsOnboarding && <BuddySportsOnboarding locale={prefs.locale} />}
       </body>
     </html>
