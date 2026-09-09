@@ -9,13 +9,26 @@ import { contactPlayer } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SpillerePage() {
+type Props = {
+  searchParams?: Promise<{ sport?: string }> | { sport?: string };
+};
+
+function splitSports(value: string) {
+  return value
+    .split(",")
+    .map((sport) => sport.trim())
+    .filter(Boolean);
+}
+
+export default async function SpillerePage({ searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const t = translator((await getPreferences()).locale);
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const selectedSport = (resolvedSearchParams.sport ?? "").trim();
 
-  const players = await db.user.findMany({
+  const allPlayers = await db.user.findMany({
     where: {
       id: { not: user.id },
       role: { in: ["PLAYER", "COACH"] },
@@ -32,8 +45,20 @@ export default async function SpillerePage() {
       createdAt: true,
     },
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: 500,
   });
+
+  const sportOptions = Array.from(
+    new Set(allPlayers.flatMap((player) => splitSports(player.sports))),
+  ).sort((a, b) => a.localeCompare(b, "da"));
+
+  const players = selectedSport
+    ? allPlayers.filter((player) =>
+        splitSports(player.sports).some(
+          (sport) => sport.toLocaleLowerCase("da") === selectedSport.toLocaleLowerCase("da"),
+        ),
+      )
+    : allPlayers;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -44,9 +69,39 @@ export default async function SpillerePage() {
         </Link>
       </div>
 
+      <form method="get" className="card mb-4 flex flex-wrap items-end gap-3">
+        <label className="min-w-0 flex-1 text-sm font-semibold">
+          Sportsgren
+          <select
+            name="sport"
+            defaultValue={selectedSport}
+            className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
+          >
+            <option value="">Alle sportsgrene</option>
+            {sportOptions.map((sport) => (
+              <option key={sport} value={sport}>
+                {sport}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="btn-court px-4 py-2.5">
+          Filtrér
+        </button>
+        {selectedSport ? (
+          <Link href="/spillere" className="btn-ghost px-4 py-2.5">
+            Nulstil
+          </Link>
+        ) : null}
+      </form>
+
       {players.length === 0 ? (
         <div className="card text-center">
-          <p className="font-bold">Ingen andre spillere er oprettet endnu.</p>
+          <p className="font-bold">
+            {selectedSport
+              ? `Ingen spillere er oprettet til ${selectedSport} endnu.`
+              : "Ingen andre spillere er oprettet endnu."}
+          </p>
           <p className="mt-2 text-sm text-slate/60">
             Du kan stadig oprette et opslag og skrive, hvem du søger.
           </p>
@@ -59,11 +114,7 @@ export default async function SpillerePage() {
       ) : (
         <div className="space-y-3">
           {players.map((player) => {
-            const sports = player.sports
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .join(" · ");
+            const sports = splitSports(player.sports).join(" · ");
             const initials = player.name
               .split(" ")
               .map((n) => n[0])
