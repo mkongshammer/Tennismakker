@@ -37,11 +37,6 @@ model User {
   stripeCustomerId String?
   locale       String   @default("da") // se LOCALES i src/lib/sports.ts
   sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
-  // Skelner mellem det gamle standardvalg TENNIS og et aktivt valg. Alle
-  // eksisterende brugere får false ved migreringen og bliver derfor spurgt
-  // én gang næste gang de bruger websitet. Nye brugere sættes til true,
-  // når deres valg fra oprettelsen er gemt.
-  sportsChosen Boolean @default(false)
   bio          String?
   createdAt    DateTime @default(now())
 
@@ -123,305 +118,117 @@ model Club {
   contactPhone String?
 
   // Klubbens hjemmeside hos os. Klubber på NATIVE bruger os som deres
-  // primære system; andre kan stadig købe hjemmesiden og have en ekstern
-  // bookingknap.
-  tagline        String?
-  about          String?
-  practicalInfo  String?
+  // eneste system og har ikke andet website — så siden her er klubbens
+  // ansigt udadtil, ikke bare en bookingkalender.
+  tagline        String? // én linje under navnet
+  about          String? // om klubben
+  practicalInfo  String? // adgang, parkering, omklædning, nøglebrik
+  // Kontingent og indmeldelse. Fritekst, fordi ingen to klubber har den
+  // samme struktur: nogle har tre satser, andre har familiemedlemskab og
+  // et indmeldelsesgebyr. Faste felter ville passe til halvdelen af dem.
   membershipInfo String?
   contactEmail   String?
   websiteUrl     String?
-  joinCode       String?
+  joinCode       String? @unique // medlemmer melder sig ind med denne kode
 
-  // Betalt hjemmesideprodukt.
-  websiteTheme  String  @default("KLASSISK") // KLASSISK | MARKANT | ENKEL
-  websiteLogoId String?
-  websiteHeroId String?
-  customDomain  String?
-  domainStatus  String  @default("NONE") // NONE | PENDING | ACTIVE | ERROR
+  // Hjemmesiden som betalt ydelse.
+  // theme: "KLASSISK" | "MARKANT" | "ENKEL"
+  theme        String  @default("KLASSISK")
+  logoId       String? // Image.id — vises i klubbens hoved
+  heroId       String? // Image.id — stort billede øverst på klubbens side
+  customDomain String? @unique // fx "soendermarktennis.dk"
+  // "NONE" | "REQUESTED" | "PENDING_DNS" | "LIVE"
+  domainStatus String  @default("NONE")
+  memberPriceHour Int? // medlemspris; er den sat, betaler medlemmer den
+  /// Hvor mange dage frem et medlem kan booke. Klubberne har vidt
+  /// forskellig praksis — nogle syv dage, andre en hel sæson.
+  memberWindowDays Int @default(14)
+  /// Hvor mange aktive bookinger et medlem må have ad gangen. Uden et loft
+  /// kan én person reservere hele ugen, og det er den klage, en
+  /// bestyrelse hører først.
+  memberMaxActive  Int @default(2)
+  /// Hvor mange dage frem en gæst udefra kan booke. Typisk kortere end
+  /// medlemmernes, så medlemmerne får første ret til de gode tider.
+  guestWindowDays  Int @default(7)
 
-  // Booking- og medlemsregler.
-  membersOnlyBooking Boolean @default(false)
-  allowGuestBooking  Boolean @default(true)
-  maxAdvanceDays     Int     @default(14)
-  cancellationHours  Int     @default(24)
+  address   String? // gadeadresse, bruges til kortet og til at finde vej
+  latitude  Float?
+  longitude Float?
 
-  // Integration mod eksisterende system.
-  integrationType String @default("NATIVE") // NATIVE | MANUAL | ICAL | API
-  icalUrl         String?
-  externalSystem  String?
-  syncStatus      String?
+  integrationType String    @default("NATIVE")
+  icalUrl         String? // feed-URL når integrationType = ICAL
+  externalSystem  String? // fri tekst, fx "Halbooking (Globus Data)" — vises til klubben
   lastSyncAt      DateTime?
+  lastSyncError   String?
 
-  courts          Court[]
-  admins          User[]
-  memberships     Membership[]
-  posts           ClubPost[]
-  people          ClubPerson[]
-  systemLogin     ClubSystemLogin?
+  // Frigiv automatisk en ledig tid, når der er under så mange timer til
+  // start. En bane der står tom om en time er tabt indtægt uanset hvad.
+  lastMinuteHours Int @default(0)
+
+  courts  Court[]
+  members User[]
+  reviews Review[]
+  rules   GuestRule[]
+  posts   ClubPost[]
+  people  ClubPerson[]
+  systemLogin ClubSystemLogin?
   membershipTypes MembershipType[]
   seasonTeams     SeasonTeam[]
   punchCards      ClubPunchCard[]
   priceRules      PriceRule[]
-  images          Image[]
-  bookings        Booking[]
-  fixedSlots      FixedSlot[]
+  images  Image[]
 }
 
-model Court {
-  id        String @id @default(cuid())
-  clubId    String
-  club      Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  sport     String @default("TENNIS")
-  surface   String?
-  indoor    Boolean @default(false)
-  active    Boolean @default(true)
-  createdAt DateTime @default(now())
-
-  bookings   Booking[]
-  fixedSlots FixedSlot[]
-}
-
-model Booking {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  courtId   String
-  court     Court    @relation(fields: [courtId], references: [id])
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id])
-  startsAt  DateTime
-  endsAt    DateTime
-  status    String   @default("PENDING")
-  priceKr   Int
-  createdAt DateTime @default(now())
-
-  stripePaymentIntentId String?
-  paymentStatus         String?
-  refundedAt            DateTime?
-  cancelledAt           DateTime?
-  accessSentAt          DateTime?
-  renewalOfId           String?
-
-  packagePurchaseId String?
-  packagePurchase   PackagePurchase? @relation(fields: [packagePurchaseId], references: [id])
-  punchPurchaseId   String?
-  punchPurchase     ClubPunchPurchase? @relation(fields: [punchPurchaseId], references: [id])
-  review            Review?
-}
-
-model MatchRequest {
-  id           String   @id @default(cuid())
-  requesterId  String
-  requester    User     @relation("requester", fields: [requesterId], references: [id])
-  acceptedById String?
-  acceptedBy   User?    @relation("acceptedBy", fields: [acceptedById], references: [id])
-  message      String
-  area         String
-  level        Int
-  sport        String
-  matchType    String
-  source       String?
-  status       String   @default("OPEN")
-  createdAt    DateTime @default(now())
-
-  messages Message[]
-}
-
-model Message {
-  id             String       @id @default(cuid())
-  matchRequestId String
-  matchRequest   MatchRequest @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
-  senderId       String
-  sender         User         @relation(fields: [senderId], references: [id])
-  body           String
-  createdAt      DateTime     @default(now())
-}
-
-model Swipe {
-  id         String   @id @default(cuid())
-  swiperId   String
-  swiper     User     @relation("swipesGiven", fields: [swiperId], references: [id])
-  swipedId   String
-  swiped     User     @relation("swipesReceived", fields: [swipedId], references: [id])
-  direction  String
-  createdAt  DateTime @default(now())
-
-  @@unique([swiperId, swipedId])
-}
-
-model CoachProfile {
-  id           String @id @default(cuid())
-  userId       String @unique
-  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline     String
-  sports       String
-  priceHour    Int
-  specialties  String
-  area         String
-  stripeAccountId String?
-  stripeOnboarded Boolean @default(false)
-  createdAt    DateTime @default(now())
-
-  images       Image[]
-  weeklySlots  WeeklyCoachSlot[]
-  lessons      CoachLesson[]
-  packages     CoachPackage[]
-}
-
-model WeeklyCoachSlot {
-  id             String       @id @default(cuid())
-  coachProfileId String
-  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
-  weekday        Int
-  startMinutes   Int
-  endMinutes     Int
-  active         Boolean      @default(true)
-
-  @@index([coachProfileId, weekday])
-}
-
-model CoachLesson {
-  id             String       @id @default(cuid())
-  coachProfileId String
-  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id])
-  studentId      String
-  student        User         @relation(fields: [studentId], references: [id])
-  startsAt       DateTime
-  endsAt         DateTime
-  priceKr        Int
-  status         String       @default("PENDING")
-  createdAt      DateTime     @default(now())
-
-  stripePaymentIntentId String?
-  paymentStatus         String?
-  refundedAt            DateTime?
-  cancelledAt           DateTime?
-  packagePurchaseId     String?
-  packagePurchase       PackagePurchase? @relation(fields: [packagePurchaseId], references: [id])
-  review                Review?
-}
-
-model CoachPackage {
-  id             String       @id @default(cuid())
-  coachProfileId String
-  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
-  name           String
-  lessons        Int
-  minutes        Int
-  priceKr        Int
-  active         Boolean      @default(true)
-  createdAt      DateTime     @default(now())
-
-  purchases PackagePurchase[]
-}
-
-model PackagePurchase {
-  id             String       @id @default(cuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id])
-  packageId      String
-  package        CoachPackage @relation(fields: [packageId], references: [id])
-  lessonsTotal   Int
-  lessonsUsed    Int          @default(0)
-  paidKr         Int
-  status         String       @default("PENDING")
-  createdAt      DateTime     @default(now())
-
-  stripePaymentIntentId String?
-  paymentStatus         String?
-
-  lessons CoachLesson[]
-  bookings Booking[]
-}
-
-model Review {
-  id          String   @id @default(cuid())
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  rating      Int
-  body        String?
-  bookingId   String?  @unique
-  booking     Booking? @relation(fields: [bookingId], references: [id])
-  lessonId    String?  @unique
-  lesson      CoachLesson? @relation(fields: [lessonId], references: [id])
-  createdAt   DateTime @default(now())
-}
-
-model PlatformSetting {
-  key       String   @id
-  value     String
-  updatedAt DateTime @updatedAt
-}
-
+// ---------- Billeder ----------
+// Gemmes i databasen frem for hos en lagringsudbyder.
+//
+// Det er et bevidst valg for at komme i gang: ingen konto, ingen nøgler,
+// ingen udgift, og billederne følger med i en databasesikkerhedskopi.
+// Billeder skaleres og komprimeres før de gemmes, så en klub med logo,
+// forsidebillede og et galleri fylder omkring en megabyte.
+//
+// Vokser det, flyttes lagringen til S3 eller lignende: alt, der læser og
+// skriver billeder, går gennem src/lib/images.ts, så det er ét sted.
 model Image {
-  id             String   @id @default(cuid())
-  clubId         String?
-  club           Club?    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  id     String  @id @default(cuid())
+  clubId String?
+  club   Club?   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  // Et billede hører til EN af de to: en klub eller en træner.
   coachProfileId String?
   coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
-  kind           String
-  mime           String
-  bytes          Bytes?
-  storageKey     String?
-  publicUrl      String?
-  width          Int?
-  height         Int?
-  approved       Boolean  @default(false)
-  alt            String?
-  createdAt      DateTime @default(now())
-}
 
-model LoginChallenge {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  codeHash  String
-  attempts  Int      @default(0)
-  usedAt    DateTime?
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
+  // Et profilbillede vises først, når et menneske har set det.
+  //
+  // Der findes ingen automatisk moderering her, og det er et bevidst valg:
+  // en tjeneste, der skal godkende billeder, koster penge og en nøgle, og
+  // med under tyve trænere er det hurtigere og mere pålideligt at kigge
+  // selv. Superadmin godkender på /superadmin.
+  approved Boolean @default(false)
 
-model PasswordReset {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash String   @unique
-  usedAt    DateTime?
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-}
+  kind   String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO" | "COACH"
+  mime   String
 
-model MembershipType {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  priceKr   Int
-  active    Boolean  @default(true)
+  // Ét af to: enten ligger filen hos en lagringstjeneste (storageKey +
+  // publicUrl), eller også ligger den i databasen (bytes). Databasen er
+  // fallback, så platformen virker uden en lagringskonto.
+  storageKey String?
+  publicUrl  String?
+  bytes      Bytes?
+
+  width     Int
+  height    Int
+  alt       String?
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
 
-  memberships Membership[]
+  @@index([clubId, kind])
+  @@index([coachProfileId])
 }
 
-model Membership {
-  id               String         @id @default(cuid())
-  clubId           String
-  club             Club           @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  userId           String
-  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  membershipTypeId String?
-  membershipType   MembershipType? @relation(fields: [membershipTypeId], references: [id])
-  status           String         @default("ACTIVE")
-  startsAt         DateTime       @default(now())
-  endsAt           DateTime?
-  createdAt        DateTime       @default(now())
-
-  @@unique([clubId, userId])
-}
-
+// ---------- Klubbens nyheder ----------
+// Klubber uden eget website har brug for et sted at skrive "banerne er
+// lukket på lørdag" og "klubmesterskab 12. maj".
 model ClubPost {
   id        String   @id @default(cuid())
   clubId    String
@@ -430,125 +237,759 @@ model ClubPost {
   body      String
   pinned    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([clubId, createdAt])
 }
 
-model ClubPerson {
-  id        String   @id @default(cuid())
+// surface: "GRUS" | "HARD" | "INDE"
+model Court {
+  id      String @id @default(cuid())
+  name    String // fx "Bane 1"
+  sport   String @default("TENNIS")
+  surface String @default("GRUS")
+  clubId  String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  bookings     Booking[]
+  guestSlots   GuestSlot[]
+  externalBusy ExternalBusy[]
+  fixedSlots FixedSlot[]
+
+  /// Indendørs eller udendørs. En hal koster typisk mere og kan spilles i
+  /// hele vinteren; en grusbane kan hverken det ene eller det andet.
+  indoor Boolean @default(false)
+
+  /// Egen pris for netop denne bane. Null = klubbens almindelige pris.
+  /// En hal og en grusbane koster sjældent det samme.
+  priceHour       Int?
+  memberPriceHour Int?
+  systemBlocks SystemBlock[]
+}
+
+// ---------- Frigivelsesregler ----------
+// I stedet for at klubben skal frigive hver enkelt time, sætter de en regel
+// op én gang: "bane 3 og 4, hverdage 9-15, 120 kr". Reglen genererer
+// løbende ledige tider, indtil den slås fra.
+//
+// Det var den tungeste del af at være klub hos os: 20 timer om ugen
+// skulle klikkes ind i hånden hver uge.
+model GuestRule {
+  id        String  @id @default(cuid())
   clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  role      String
-  email     String?
-  phone     String?
-  sortOrder Int      @default(0)
-}
-
-model ClubSystemLogin {
-  id           String @id @default(cuid())
-  clubId       String @unique
-  club         Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  system       String
-  loginUrl     String?
-  usernameEnc  String
-  passwordEnc  String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model MembershipTypeRule {
-  id               String @id @default(cuid())
-  membershipTypeId String
-  membershipType   MembershipType @relation(fields: [membershipTypeId], references: [id], onDelete: Cascade)
-  key              String
-  value            String
-}
-
-model SeasonTeam {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  sport     String
-  capacity  Int?
-  startsAt  DateTime
-  endsAt    DateTime
-  priceKr   Int      @default(0)
-  active    Boolean  @default(true)
+  club      Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  courtIds  String // kommasepareret, tom = alle klubbens baner
+  daysOfWeek String // kommasepareret 0-6, 0 = søndag
+  fromHour  Int
+  toHour    Int
+  priceKr   Int
+  active    Boolean @default(true)
   createdAt DateTime @default(now())
 
-  signups TeamSignup[]
+  @@index([clubId, active])
+}
+
+// ---------- Integration: manuelt frigivne gæstetider (integrationType = MANUAL) ----------
+// Klubben bestemmer selv præcis hvilke tider udefrakommende spillere må se og booke.
+// Tider der ikke ligger her, findes ikke for gæster.
+model GuestSlot {
+  id        String   @id @default(cuid())
+  courtId   String
+  court     Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+  priceKr   Int
+  createdAt DateTime @default(now())
+
+  @@unique([courtId, startsAt])
+  @@index([startsAt])
+}
+
+// ---------- Integration: spejlet optaget-tid fra klubbens eget system (integrationType = ICAL) ----------
+// Cache af klubbens kalenderfeed. Vi ejer ikke disse bookinger — vi læser dem kun,
+// for at kunne vise hvad der ER ledigt. Ryddes og genopbygges ved hver synkronisering.
+model ExternalBusy {
+  id       String   @id @default(cuid())
+  courtId  String
+  court    Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  startsAt DateTime
+  endsAt   DateTime
+  label    String? // titel fra kalenderfeed, fx "Holdtræning U14"
+  syncedAt DateTime @default(now())
+
+  @@index([courtId, startsAt])
+}
+
+// ---------- Bookinger (baner + trænere) ----------
+// kind: "COURT" | "COACH"
+// status: "HOLD" | "CONFIRMED" | "CANCELLED"
+model Booking {
+  id            String    @id @default(cuid())
+  kind          String
+  status        String    @default("HOLD")
+  startsAt      DateTime
+  endsAt        DateTime
+  priceKr       Int
+  // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
+  // klippet gives tilbage, hvis bookingen aflyses.
+  packagePurchaseId String?
+  /// Hører timen til en fast bane? Så kan hele sæsonen fjernes på én gang.
+  fixedSlotId       String?
+  /// Blev timen betalt med et klip fra klubbens klippekort?
+  punchPurchaseId   String?
+  holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
+  createdAt     DateTime  @default(now())
+
+  // True når klubben bruger sit eget bookingsystem (MANUAL/ICAL/API): bookingen
+  // findes hos os, men skal også ind i klubbens system. Vises i klub-admin som
+  // "skal indtastes", indtil klubben markerer den som ført ind.
+  needsClubEntry Boolean   @default(false)
+  clubEnteredAt  DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  courtId String?
+  court   Court?  @relation(fields: [courtId], references: [id])
+
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
+
+  payment Payment?
+  review  Review?
+
+  @@index([courtId, startsAt])
+  @@index([coachProfileId, startsAt])
+}
+
+// ---------- Modul B: Trænere ----------
+model CoachProfile {
+  id          String @id @default(cuid())
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline    String // fx "DTF-uddannet træner, speciale i serv"
+  sports      String @default("TENNIS") // kommasepareret
+  priceHour   Int // kr pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
+  // Længden på én lektion. Juniorer og teknik-timer er ofte kortere end en
+  // hel time, og en træner, der kun kan sælge 60 minutter ad gangen, kan
+  // ikke sætte sin egen dag op.
+  lessonMinutes Int @default(60)
+  specialties String // kommasepareret, fx "Serv,Baghånd,Junior"
+  area        String
+  // Ledige tider som ugentligt mønster: JSON [{ "day": 1, "from": 16, "to": 20 }] (day: 0=søn ... 6=lør)
+  weeklySlots String @default("[]")
+
+  // Stripe Connect — samme princip som Club, se dér.
+  stripeAccountId      String?
+  stripeChargesEnabled Boolean @default(false)
+  stripePayoutsEnabled Boolean @default(false)
+
+  bookings Booking[]
+  reviews  Review[]
+  packages CoachPackage[]
+  packagePurchases PackagePurchase[]
+  images   Image[]
+  seasonTeams SeasonTeam[]
+}
+
+// ---------- Modul A: Makker-matching ----------
+// status: "OPEN" | "MATCHED" | "CLOSED"
+model MatchRequest {
+  id        String   @id @default(cuid())
+  status    String   @default("OPEN")
+  message   String // fx "Søger single-makker tirsdag aften"
+  area      String
+  level     Int
+  sport     String   @default("TENNIS")
+  matchType String   @default("SINGLE") // "SINGLE" | "DOUBLE" | "TRAENING"
+  source    String   @default("POST") // "POST" = opslag, "SWIPE" = gensidigt like
+  createdAt DateTime @default(now())
+
+  requesterId  String
+  requester    User    @relation("requester", fields: [requesterId], references: [id])
+  acceptedById String?
+  acceptedBy   User?   @relation("acceptedBy", fields: [acceptedById], references: [id])
+
+  messages Message[]
+}
+
+// ---------- Beskeder mellem matchede spillere ----------
+// En tråd hænger på et makker-opslag: kun opslagets ejer og den, der slog
+// til, kan læse og skrive i den.
+model Message {
+  id             String       @id @default(cuid())
+  matchRequestId String
+  matchRequest   MatchRequest @relation(fields: [matchRequestId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([matchRequestId, createdAt])
+}
+
+// ---------- Betalinger ----------
+// Abstraktion over betalingsudbyder (mock i udvikling, Stripe Connect i produktion).
+// status: "PENDING" | "PAID" | "REFUNDED" | "FAILED"
+model Payment {
+  id          String   @id @default(cuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  amountKr    Int
+  platformFee Int // RacketBuddys andel (kommission/transaktionsgebyr)
+  provider    String   @default("mock") // "mock" | "stripe"
+  providerRef String? // fx Stripe PaymentIntent-id
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+}
+
+
+// ---------- Swipe-matching ----------
+// Spillere gennemgår kort med andre spillere i deres område og på deres
+// niveau. To likes den samme vej åbner automatisk en samtale.
+model Swipe {
+  id         String   @id @default(cuid())
+  fromUserId String
+  fromUser   User     @relation("swipesGiven", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUserId   String
+  toUser     User     @relation("swipesReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+  liked      Boolean
+  createdAt  DateTime @default(now())
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, liked])
+}
+
+// ---------- Anmeldelser ----------
+// Kan kun skrives efter en gennemført booking, så vurderinger er knyttet til
+// et reelt møde og ikke bare en holdning.
+model Review {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bookingId String   @unique
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  rating    Int // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  clubId         String?
+  club           Club?         @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@index([coachProfileId])
+  @@index([clubId])
+}
+
+
+// ---------- Trænerpakker ----------
+// Ud over en enkelt time kan træneren sælge forløb: fx 10 timer til
+// rabat, eller et begynderkursus over seks uger.
+model CoachPackage {
+  id             String       @id @default(cuid())
+  coachProfileId String
+  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  name           String // fx "10-turskort"
+  description    String?
+  sessions       Int // antal timer i pakken
+  priceKr        Int // samlet pris
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  purchases      PackagePurchase[]
+
+  @@index([coachProfileId])
+}
+
+
+// ---------- Klubhenvendelser ----------
+// Klubber kan ikke længere oprette sig selv. De sender en henvendelse, og
+// platformens ejer opretter den fulde klubprofil manuelt derfra. Det er
+// bevidst: en klub der bare kunne oprette sig selv med falske oplysninger
+// var netop det, den manuelle godkendelse skulle beskytte imod — så nu
+// er oprettelsen slet ikke tilgængelig for nogen udefra.
+model ClubLead {
+  id        String   @id @default(cuid())
+  clubName  String
+  city      String
+  contactName String
+  email     String
+  phone     String?
+  message   String?
+  // "NEW" | "CONTACTED" | "CONVERTED" | "DECLINED"
+  status    String   @default("NEW")
+  clubId    String? // sat når henvendelsen er blevet til en rigtig klub
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+// ---------- Bestilling af hjemmeside ----------
+// Den betalte opsætningsydelse: klubben får en færdig side på deres eget
+// domæne, bygget af os. Bestillingen kommer typisk før klubben findes i
+// systemet, så den står for sig selv og kobles på bagefter.
+model WebsiteOrder {
+  id          String   @id @default(cuid())
+  clubName    String
+  contactName String
+  email       String
+  phone       String?
+  domain      String? // ønsket domæne, hvis de har et
+  notes       String?
+  // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
+  status      String   @default("NEW")
+  priceKr     Int      @default(5000)
+  internalNote String?
+  clubId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([status, createdAt])
+}
+
+// ---------- Platformens opsætning ----------
+// Nøgle/værdi for de indstillinger, der ellers ville ligge som
+// miljøvariabler: Stripe-nøgler, provision, afsenderadresse. De ligger her,
+// så de kan rettes fra /superadmin/opsaetning uden en tur forbi Render og en
+// genstart. Mangler en nøgle, bruges miljøvariablen — se src/lib/settings.ts.
+// Hemmeligheder gemmes krypteret i `value`, aldrig i klartekst.
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ---------- Login i to trin ----------
+// Adgangskoden alene er ikke nok for en superadmin: den kan lækkes, gættes
+// eller genbruges fra et andet site. Koden her sendes til den mail, kontoen
+// hører til, og skal indtastes bagefter. Rækken slettes i samme øjeblik den
+// er brugt — og en kode, der ligger i databasen efter brug, er en kode, der
+// kan bruges igen.
+model LoginChallenge {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Hashet, ikke i klartekst. Et databaseudtræk skal ikke give adgang.
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Sidevisninger ----------
+// En tæller pr. dag frem for en række pr. besøg. Et site med lidt trafik
+// ville ellers hurtigt have flere besøgsrækker end bookinger, og vi har
+// alligevel kun brug for tallet — ikke for hvem der kiggede hvornår.
+// Det er samtidig det mest nøjsomme, man kan gøre ved persondata: der er
+// ingen at gemme.
+model DailyView {
+  day   String @id // "2026-09-02"
+  views Int    @default(0)
+}
+
+// ---------- Nulstilling af adgangskode ----------
+// Tokenet gemmes som SHA-256 af den værdi, der står i linket. Vi skal kunne
+// slå rækken op ud fra linket, og det kan man ikke med bcrypt — men tokenet
+// er 32 tilfældige bytes, så der er intet at gætte, og en hash i databasen
+// kan ikke bruges til at bygge linket igen.
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Køb af pakkeforløb ----------
+// Et klippekort hos én træner. Købet betales på én gang, og hver booking
+// hos den træner trækker et klip i stedet for en betaling.
+//
+// sessionsUsed frem for at slette klip: en elev skal kunne se, hvad der er
+// brugt, og vi skal kunne svare på det, hvis der bliver spurgt.
+model PackagePurchase {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  coachProfileId String
+  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id])
+  packageId      String
+  package        CoachPackage @relation(fields: [packageId], references: [id])
+
+  name         String // navnet da det blev købt — pakken kan ændres senere
+  sessions     Int
+  sessionsUsed Int    @default(0)
+  priceKr      Int
+  platformFee  Int    @default(0)
+
+  status    String   @default("HOLD") // "HOLD" | "PAID" | "CANCELLED"
+  createdAt DateTime @default(now())
+
+  @@index([userId, coachProfileId, status])
+}
+
+
+// ---------- Bestyrelse og kontaktpersoner ----------
+//
+// Enhver dansk forening har en bestyrelse på hjemmesiden. Det er ikke
+// pynt: det er dét, medlemmerne leder efter, når de skal have fat i nogen,
+// og det er en del af at være en forening.
+//
+// Egen tabel frem for fritekst, fordi rækkefølgen og rollerne betyder
+// noget, og fordi en mailadresse skal kunne klikkes.
+model ClubPerson {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name  String
+  role  String // "Formand", "Kasserer", "Baneansvarlig" — klubben skriver selv
+  email String?
+  phone String?
+
+  // Lav rækkefølge først. Formanden står øverst, ikke den der blev tastet
+  // ind først.
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, sortOrder])
+}
+
+// ---------- Klubbens adgang til sit eget bookingsystem ----------
+//
+// Til klubber, der ikke kan eller vil forlade fx Halbooking: vi logger ind
+// som dem og fører bookingen ind, så deres eget system er opdateret uden at
+// klubben rører ved noget.
+//
+// Adgangskoden krypteres med samme mekanik som Stripe-nøglerne. Den er
+// klubbens, ikke vores — og den giver adgang til hele deres bookingsystem,
+// så den skal behandles som det, den er.
+//
+// Egen tabel frem for felter på Club: så kan rækken slettes, når en klub
+// stopper, uden at røre resten af klubben, og en klub uden automatisering
+// har ingen tom hemmelighed liggende.
+model ClubSystemLogin {
+  id     String @id @default(cuid())
+  clubId String @unique
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// Adressen på klubbens eget system, fx "jerklub.halbooking.dk".
+  baseUrl  String
+  username String
+  /// Krypteret. Se src/lib/crypto-box.ts.
+  password String
+
+  /// Sidste gang en automatisering lykkedes. Null = aldrig prøvet.
+  lastOkAt   DateTime?
+  lastError  String?
+  lastTriedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([clubId])
+}
+
+// ---------- Klubbens regler for medlemmers booking ----------
+//
+// Det, der gør RacketBuddy til en erstatning frem for et tillæg: medlemmer
+// booker på klubbens vilkår, ikke på vores. En klub kan ikke forlade
+// Halbooking, hvis deres medlemmer skulle begynde at betale for at booke
+// deres egne baner.
+//
+// Feltet står på Club frem for i en regeltabel, fordi alle klubber har de
+// samme tre knapper. Bliver der behov for regler pr. bane eller pr.
+// medlemsgruppe, er det en anden model.
+
+// ---------- Fast bane ----------
+//
+// Samme bane, samme ugedag, samme klokkeslæt, hele sæsonen. Det er den
+// funktion, en tennisklub spørger om først, og den vi manglede tydeligst
+// over for Halbooking.
+//
+// Klubben tildeler den, medlemmet booker den ikke selv. Det er sådan det
+// foregår i virkeligheden: faste baner fordeles af bestyrelsen efter
+// anciennitet eller lodtrækning, og der er flere ansøgere end tider. En
+// selvbetjent "book fast bane" ville give den til den, der sad ved
+// computeren klokken 8 den rigtige morgen.
+//
+// Rækken her er reglen. De enkelte timer oprettes som almindelige
+// Booking-rækker, så ledighed, aflysning, kvitteringer og dørkoder virker
+// uændret — én slags booking i resten af systemet.
+model FixedSlot {
+  id      String @id @default(cuid())
+  courtId String
+  court   Court  @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// 0 = søndag, som Date.getDay().
+  dayOfWeek Int
+  /// Hele timer, 0-23.
+  hour      Int
+
+  /// Første og sidste dag i perioden, begge inklusive.
+  fromDate DateTime
+  toDate   DateTime
+
+  /// Prisen pr. time. Typisk 0: en fast bane er ofte dækket af kontingentet.
+  priceKr Int @default(0)
+
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([courtId, dayOfWeek, hour])
+  @@index([userId])
+}
+
+// ---------- Kontingent ----------
+//
+// Klubbens indtægt. Det er den funktion, der afgør, om en klub kan forlade
+// Halbooking: booking kan man leve uden i en måned, men kontingentet er
+// hele foreningens økonomi.
+//
+// Sæsoner frem for løbende måneder, fordi det er sådan danske klubber gør
+// det: "Sommer 01.05 – 30.09" med en fast pris, ikke 1/12 om måneden. En
+// månedlig model ville tvinge klubberne til at lave deres vedtægter om.
+model MembershipType {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// Fx "Ungsenior", "Senior", "Junior", "Familie".
+  name        String
+  description String?
+
+  /// Sæsonens navn og periode, fx "Sommer 2026" 01.05–30.09.
+  seasonName String
+  fromDate   DateTime
+  toDate     DateTime
+
+  priceKr Int
+
+  /// Er den åben for tilmelding lige nu?
+  active Boolean @default(true)
+
+  /// Højst så mange medlemmer. 0 = intet loft.
+  capacity Int @default(0)
+
+  /// Fornyer denne sæson en tidligere? Så tilbydes medlemmerne fra den
+  /// automatisk fornyelse. Uden koblingen ville vi ikke vide, hvem der
+  /// skulle have tilbuddet.
+  ///
+  /// Almindeligt felt, ikke en Prisma-relation. En selvrelation kræver et
+  /// @unique, og et unikt indeks på en eksisterende tabel er noget Prisma
+  /// advarer om — med god grund, for det kan fejle på data, der allerede
+  /// er der. Vi slår kun id'et op direkte, så relationen ville ikke give
+  /// noget, den ikke koster.
+  renewsFromId String?
+
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  memberships Membership[]
+
+  @@index([clubId, active])
+}
+
+// Et medlems kontingent for én sæson.
+//
+// Egen række pr. sæson frem for et felt på User: så har klubben en historik,
+// og et medlem kan have både et sommer- og et vinterkontingent samtidig.
+// Et felt ville betyde, at fornyelsen overskrev sidste sæson, og så kan
+// ingen svare på, hvem der var medlem i 2025.
+model Membership {
+  id     String         @id @default(cuid())
+  typeId String
+  type   MembershipType @relation(fields: [typeId], references: [id])
+  userId String
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// "PENDING" | "PAID" | "CANCELLED". Kun PAID gør en til medlem.
+  status  String @default("PENDING")
+  priceKr Int
+
+  /// Stripes betaling, så en kvittering kan findes igen.
+  stripeSessionId String?
+  paidAt          DateTime?
+
+  /// Må vi opkræve næste sæson automatisk? Kræver et gemt kort, og
+  /// medlemmet får besked 14 dage før. Se src/lib/renewals.ts.
+  autoRenew Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([typeId, userId])
+  @@index([userId, status])
+}
+
+// ---------- Sæsonhold ----------
+//
+// Træningshold over en sæson: "Voksne begyndere, tirsdag 18-19, forår
+// 2026". Halbookings "Book sæsonhold".
+//
+// Egen model frem for at genbruge FixedSlot, fordi et hold har flere
+// deltagere, en træner og et loft — hvor en fast bane har én person.
+model SeasonTeam {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  sport       String @default("TENNIS")
+
+  /// Hvem underviser. Valgfri: nogle hold er selvorganiserede.
+  coachProfileId String?
+  coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
+
+  /// 0 = søndag. Holdet mødes samme tid hver uge.
+  dayOfWeek Int
+  hour      Int
+  minutes   Int @default(60)
+
+  fromDate DateTime
+  toDate   DateTime
+
+  priceKr  Int
+  capacity Int     @default(0)
+  active   Boolean @default(true)
+
+  /// Niveau, så folk kan finde det rigtige hold. 1-5 som spillerne.
+  levelFrom Int @default(1)
+  levelTo   Int @default(5)
+
+  createdAt DateTime     @default(now())
+  signups   TeamSignup[]
+
+  @@index([clubId, active])
 }
 
 model TeamSignup {
-  id        String     @id @default(cuid())
-  teamId    String
-  team      SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    String     @default("ACTIVE")
-  createdAt DateTime   @default(now())
+  id     String     @id @default(cuid())
+  teamId String
+  team   SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status  String @default("PENDING") // "PENDING" | "PAID" | "CANCELLED"
+  priceKr Int
+
+  stripeSessionId String?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
 
   @@unique([teamId, userId])
+  @@index([userId, status])
 }
 
+// ---------- Klubbens klippekort ----------
+//
+// Ti banetimer betalt på én gang. Findes hos trænerne i forvejen
+// (CoachPackage); dette er klubbens egen udgave til banetid.
+//
+// Klippet trækkes ved booking i stedet for en betaling, præcis som
+// trænernes — se src/lib/packages.ts for det mønster.
 model ClubPunchCard {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  credits   Int
-  priceKr   Int
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
+  name        String
+  description String?
+  sessions    Int
+  priceKr     Int
+  active      Boolean @default(true)
+
+  /// Klippene udløber efter så mange dage. 0 = de udløber aldrig.
+  validDays Int @default(0)
+
+  createdAt DateTime           @default(now())
   purchases ClubPunchPurchase[]
+
+  @@index([clubId, active])
 }
 
 model ClubPunchPurchase {
-  id        String        @id @default(cuid())
-  punchCardId String
-  punchCard ClubPunchCard @relation(fields: [punchCardId], references: [id])
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  creditsTotal Int
-  creditsUsed  Int        @default(0)
-  paidKr       Int
-  status       String     @default("PENDING")
-  createdAt    DateTime   @default(now())
+  id     String        @id @default(cuid())
+  cardId String
+  card   ClubPunchCard @relation(fields: [cardId], references: [id])
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId String
 
-  stripePaymentIntentId String?
-  paymentStatus         String?
-  bookings              Booking[]
+  name         String
+  sessions     Int
+  sessionsUsed Int    @default(0)
+  priceKr      Int
+
+  status    String    @default("HOLD") // "HOLD" | "PAID" | "CANCELLED"
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, clubId, status])
 }
 
+
+// ---------- Priser efter tidspunkt ----------
+//
+// Prime time koster mere. Enhver klub med en hal har den regel, og indtil
+// nu havde vi én pris for alle baner på alle tider.
+//
+// Reglen slår banens egen pris, som slår klubbens. Mest specifik vinder —
+// ellers ville en klub skulle gentage hallens pris i hver eneste regel.
 model PriceRule {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  name      String
-  weekday   Int?
-  startHour Int?
-  endHour   Int?
-  priceKr   Int
-  active    Boolean  @default(true)
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  /// Kommasepareret liste af bane-id'er. Tom = alle klubbens baner.
+  courtIds String @default("")
+  /// Kommasepareret 0-6, 0 = søndag. Tom = alle ugedage.
+  daysOfWeek String @default("")
+
+  fromHour Int
+  toHour   Int
+
+  priceKr         Int
+  memberPriceHour Int?
+
+  label     String?
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([clubId])
 }
 
-model FixedSlot {
-  id        String   @id @default(cuid())
-  clubId    String
-  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  courtId   String
-  court     Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekday   Int
-  startMinutes Int
-  endMinutes   Int
-  startsOn  DateTime
-  endsOn    DateTime?
-  active    Boolean  @default(true)
+// ---------- Spærringer i klubbens eget system ----------
+//
+// Når en klub frigiver tider hos os, skal de samme tider spærres i deres
+// eget system — ellers kan et medlem booke dem dér, og så er banen solgt to
+// gange. Indtil nu gjorde klubben det i hånden og satte et flueben på, at
+// det var sket.
+//
+// Med et login kan automatiseringen gøre det i stedet. Egen tabel, fordi
+// regeltider ikke findes som rækker: de regnes ud af GuestRule i farten, og
+// der er derfor ikke noget at sætte et flag på.
+//
+// Rækken her er kvitteringen: den siger, at netop denne bane på netop dette
+// tidspunkt er spærret hos klubben, og hvornår det skete.
+model SystemBlock {
+  id      String @id @default(cuid())
+  clubId  String
+  courtId String
+  court   Court  @relation(fields: [courtId], references: [id], onDelete: Cascade)
+
+  startsAt DateTime
+
+  /// "PENDING" | "BLOCKED" | "FAILED"
+  status   String    @default("PENDING")
+  error    String?
+  attempts Int       @default(0)
+  blockedAt DateTime?
+
   createdAt DateTime @default(now())
 
-  @@index([clubId, weekday])
+  @@unique([courtId, startsAt])
+  @@index([clubId, status])
 }
