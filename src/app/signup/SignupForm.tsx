@@ -1,10 +1,5 @@
 "use client";
 
-// Teksterne kommer færdigoversatte ind fra serveren, som på login-siden.
-//
-// Linjen om vilkår står lige over knappen og ikke som et afkrydsningsfelt.
-// Et felt, alle klikker uden at læse, dokumenterer ingenting; en sætning
-// præcis dér, hvor man siger ja, er både ærligere og lettere at forstå.
 import Link from "next/link";
 import { useState } from "react";
 import { useFormState } from "react-dom";
@@ -43,11 +38,10 @@ export function SignupForm({
   terms: { before: string; middle: string; after: string; termsText: string; privacyText: string };
 }) {
   const [state, action] = useFormState(signup, null);
-  // Trænerfelterne vises kun for trænere. En spiller skal ikke scrolle
-  // forbi en timepris for at oprette sig.
   const [role, setRole] = useState("PLAYER");
+  const da = locale === "da";
 
-  const engagementLabel = locale === "da"
+  const engagementLabel = da
     ? "Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning."
     : "Yes, send me occasional inspiration for matches, courts, racket sports and coaching.";
 
@@ -63,25 +57,11 @@ export function SignupForm({
       </div>
       <div>
         <label className="label" htmlFor="password">{labels.password}</label>
-        <input
-          className="input"
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={8}
-          required
-        />
+        <input className="input" id="password" name="password" type="password" autoComplete="new-password" minLength={8} required />
       </div>
       <div>
         <label className="label" htmlFor="role">{labels.iAm}</label>
-        <select
-          className="input"
-          id="role"
-          name="role"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
+        <select className="input" id="role" name="role" value={role} onChange={(e) => setRole(e.target.value)}>
           <option value="PLAYER">{labels.rolePlayer}</option>
           <option value="COACH">{labels.roleCoach}</option>
         </select>
@@ -101,46 +81,36 @@ export function SignupForm({
         </div>
       </div>
 
+      <div className="rounded-xl border border-court/25 bg-court/5 p-4">
+        <span className="label">
+          {da
+            ? "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"
+            : "Which sports do you play and want to find partners for?"}
+        </span>
+        <p className="mb-3 mt-1 text-xs text-slate">
+          {da ? "Du kan vælge flere." : "You can choose more than one."}
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {SPORTS.map((s) => (
+            <label key={s} className="flex items-center gap-2 text-sm">
+              <input type="checkbox" name="sports" value={s} />
+              {sportLabel(s, locale)}
+            </label>
+          ))}
+        </div>
+      </div>
+
       {role === "COACH" && (
         <div className="space-y-4 rounded-xl border border-court/25 bg-court/5 p-4">
           <p className="text-xs text-slate">{labels.coachAreaNote}</p>
-
           <div>
             <label className="label" htmlFor="headline">{labels.coachHeadline}</label>
-            <input
-              className="input"
-              id="headline"
-              name="headline"
-              placeholder={labels.coachHeadlinePlaceholder}
-              maxLength={120}
-            />
+            <input className="input" id="headline" name="headline" placeholder={labels.coachHeadlinePlaceholder} maxLength={120} />
           </div>
-
-          <div>
-            <span className="label">{labels.coachSports}</span>
-            <div className="mt-1 grid grid-cols-2 gap-2">
-              {SPORTS.map((s) => (
-                <label key={s} className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name="sports" value={s} defaultChecked={s === "TENNIS"} />
-                  {sportLabel(s, locale)}
-                </label>
-              ))}
-            </div>
-          </div>
-
           <div>
             <label className="label" htmlFor="priceHour">{labels.coachPrice}</label>
-            <input
-              className="input"
-              id="priceHour"
-              name="priceHour"
-              type="number"
-              min={50}
-              max={5000}
-              defaultValue={350}
-            />
+            <input className="input" id="priceHour" name="priceHour" type="number" min={50} max={5000} defaultValue={350} />
           </div>
-
           <p className="text-xs text-slate">{labels.coachRest}</p>
         </div>
       )}
@@ -148,29 +118,19 @@ export function SignupForm({
       {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
 
       <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate">
-        <input
-          type="checkbox"
-          name="engagementEmails"
-          className="mt-1"
-        />
+        <input type="checkbox" name="engagementEmails" className="mt-1" />
         <span>{engagementLabel}</span>
       </label>
 
       <p className="text-sm text-slate">
         {terms.before}
-        <Link href="/vilkaar" className="font-semibold text-court underline">
-          {terms.termsText}
-        </Link>
+        <Link href="/vilkaar" className="font-semibold text-court underline">{terms.termsText}</Link>
         {terms.middle}
-        <Link href="/privatliv" className="font-semibold text-court underline">
-          {terms.privacyText}
-        </Link>
+        <Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>
         {terms.after}
       </p>
 
-      <SubmitButton className="btn-court w-full" pendingText={labels.pending}>
-        {labels.submit}
-      </SubmitButton>
+      <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 
       <p className="text-center text-sm text-slate/60">
         {labels.haveAccount}{" "}
