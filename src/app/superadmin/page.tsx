@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
 import { Overblik } from "./Overblik";
+import { Aktivitet } from "./Aktivitet";
 import { CoachPhotos } from "./CoachPhotos";
 import { Oekonomi } from "./Oekonomi";
 import { getSettings } from "../../lib/settings";
@@ -84,6 +85,8 @@ export default async function SuperadminPage() {
       <CoachPhotos />
 
       <Overblik />
+
+      <Aktivitet />
 
       <Oekonomi />
 
