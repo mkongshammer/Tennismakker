@@ -4,6 +4,7 @@
 // (TabBar), så hovedet reduceres til logo og konto.
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { translator } from "../lib/i18n";
 import type { Locale } from "../lib/sports";
@@ -18,6 +19,24 @@ type Props = {
 export function SiteHeader({ user, locale }: Props) {
   const pathname = usePathname();
   const t = translator(locale);
+
+  useEffect(() => {
+    if (user?.role !== "COACH" || pathname === "/onboarding-sports") return;
+
+    let cancelled = false;
+    fetch("/api/v1/me/coach-sports-status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && data?.needsSelection) {
+          window.location.replace("/onboarding-sports");
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, user?.role]);
 
   const links = [
     { href: "/book", label: t("nav.book") },
