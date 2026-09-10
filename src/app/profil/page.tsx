@@ -28,9 +28,6 @@ export default async function ProfilPage({
   const user = await getCurrentUser();
   const t = translator((await getPreferences()).locale);
 
-  // Er brugeren træner, hentes de anmodninger, der venter på svar. Klippene
-  // slås op pr. anmodning, så træneren kan se, om timen betales med et
-  // klippekort frem for et beløb.
   const coachRequests = user!.coachProfile
     ? await db.booking.findMany({
         where: {
@@ -43,8 +40,6 @@ export default async function ProfilPage({
       })
     : [];
 
-  // Ét opslag for alle anmodninger, ikke ét pr. anmodning. Med tyve
-  // anmodninger var det før tyve forespørgsler for at åbne profilen.
   const requestCredits = new Map<string, number>();
   if (coachRequests.length > 0) {
     const playerIds = Array.from(new Set(coachRequests.map((r: any) => r.userId as string)));
@@ -65,10 +60,10 @@ export default async function ProfilPage({
   const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
     db.booking.findMany({
       where: {
-      userId: user.id,
-      status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
-      startsAt: { gte: new Date() },
-    },
+        userId: user.id,
+        status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
+        startsAt: { gte: new Date() },
+      },
       include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
       orderBy: { startsAt: "asc" },
     }),
@@ -101,8 +96,6 @@ export default async function ProfilPage({
     withName: null,
   }));
 
-  // Er der en bekræftet booking oprettet inden for den seneste time?
-  // Det er den, brugeren netop har betalt for.
   const hasConfirmedBooking = bookings.some(
     (b: any) =>
       b.status === "CONFIRMED" &&
@@ -110,11 +103,7 @@ export default async function ProfilPage({
   );
 
   return (
-    <div className="space-y-10">
-      {/* Vis kun en bekræftelse, hvis der FAKTISK findes en betalt booking.
-          Tidligere blev beskeden vist alene fordi ?betalt=1 stod i adressen
-          — så en ubetalt booking kunne se bekræftet ud, og adressen kunne
-          skrives i hånden for at få en falsk kvittering. */}
+    <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
       {searchParams.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
           <p className="display text-xl">{t("profile.paidTitle")}</p>
@@ -124,8 +113,6 @@ export default async function ProfilPage({
         </div>
       )}
 
-      {/* Kom brugeren tilbage fra betaling, uden at den er registreret endnu?
-          Så skal de vide det, i stedet for at tro at alt er i orden. */}
       {searchParams.betalt && !hasConfirmedBooking && (
         <div className="rounded-2xl border border-slate/25 bg-mist p-5">
           <p className="display text-xl">{t("profile.pendingTitle")}</p>
@@ -135,13 +122,13 @@ export default async function ProfilPage({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="display text-3xl">{user.name}</h1>
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          <h1 className="display max-w-full break-words text-3xl">{user.name}</h1>
           <LevelBadge level={user.level} />
-          {user.area && <span className="text-slate/60">{user.area}</span>}
+          {user.area && <span className="max-w-full break-words text-slate/60">{user.area}</span>}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex max-w-full flex-wrap items-center gap-3">
           <ChangePasswordForm />
           <form action={logout}>
             <button className="btn-ghost">Log ud</button>
@@ -152,12 +139,12 @@ export default async function ProfilPage({
       <PlayAgain items={repeatable} />
 
       {toReview.length > 0 && (
-        <section>
+        <section className="min-w-0">
           <h2 className="display mb-3 text-2xl">Hvordan gik det?</h2>
           <ul className="space-y-3">
             {toReview.map((r: any) => (
-              <li key={r.bookingId} className="card">
-                <p className="font-bold">{r.what}</p>
+              <li key={r.bookingId} className="card min-w-0 max-w-full">
+                <p className="break-words font-bold">{r.what}</p>
                 <p className="text-sm text-slate/60">
                   {format(r.startsAt, "d. MMMM", { locale: da })}
                 </p>
@@ -169,7 +156,7 @@ export default async function ProfilPage({
       )}
 
       {(user.role === "CLUB_ADMIN" || user.role === "SUPERADMIN") && (
-        <section className="flex flex-wrap gap-3">
+        <section className="flex max-w-full flex-wrap gap-3">
           {user.role === "CLUB_ADMIN" && (
             <Link href="/admin" className="btn-ghost">Klub-administration</Link>
           )}
@@ -181,10 +168,10 @@ export default async function ProfilPage({
 
       <CoachRequests requests={coachRequests as any} credits={requestCredits} />
 
-      <section>
+      <section className="min-w-0">
         <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
         {bookings.length === 0 && (
-          <p className="text-slate/60">
+          <p className="max-w-full break-words text-slate/60">
             {t("profile.noBookings")}{" "}
             <Link href="/book" className="font-semibold text-court underline">{t("nav.book")}</Link>{" "}
             {t("common.or")}{" "}
@@ -193,14 +180,14 @@ export default async function ProfilPage({
         )}
         <ul className="space-y-3">
           {bookings.map((b: any) => (
-            <li key={b.id} className="card flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="font-bold">
+            <li key={b.id} className="card flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 max-w-full">
+                <p className="break-words font-bold">
                   {b.kind === "COURT"
                     ? `${b.court?.club.name} — ${b.court?.name}`
                     : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
-                <p className="text-sm capitalize text-slate/60">
+                <p className="break-words text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
                   {t(
                     b.status === "REQUESTED"
@@ -211,7 +198,7 @@ export default async function ProfilPage({
                   )}
                 </p>
                 {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
-                  <div className="mt-2 rounded-lg bg-court/5 p-2.5 text-sm">
+                  <div className="mt-2 max-w-full break-words rounded-lg bg-court/5 p-2.5 text-sm">
                     <span className="font-semibold">Adgang: </span>
                     {b.court.club.accessCode && (
                       <span className="data">{b.court.club.accessCode}</span>
@@ -225,12 +212,7 @@ export default async function ProfilPage({
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
-                {/* Betalingsknappen er et almindeligt <a> og ikke <Link>:
-                    ruten sender videre til Stripes eget domæne, og det
-                    kræver en rigtig sidenavigation. Med <Link> henter Next
-                    kun svaret som data i baggrunden, og omdirigeringen når
-                    aldrig at blive fulgt. */}
+              <div className="flex max-w-full flex-wrap gap-2">
                 {b.status === "HOLD" && (
                   <a href={`/checkout/${b.id}/start`} className="btn-court text-sm">Betal nu</a>
                 )}
@@ -244,20 +226,20 @@ export default async function ProfilPage({
         </ul>
       </section>
 
-      <section>
+      <section className="min-w-0">
         <h2 className="display mb-3 text-2xl">Dine makker-opslag</h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
-          <p className="text-slate/60">
+          <p className="max-w-full break-words text-slate/60">
             {t("profile.noPosts")}{" "}
             <Link href="/makkere/ny" className="font-semibold text-court underline">{t("profile.createOne")}</Link>.
           </p>
         )}
         <ul className="space-y-3">
           {myRequests.map((r) => (
-            <li key={r.id} className="card flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p>{r.message}</p>
-                <p className="text-sm text-slate/60">
+            <li key={r.id} className="card flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 max-w-full">
+                <p className="break-words">{r.message}</p>
+                <p className="break-words text-sm text-slate/60">
                   {r.status === "MATCHED" && r.acceptedBy ? (
                     <>
                       {t("profile.matchedWith", { name: r.acceptedBy.name })} —{" "}
@@ -277,9 +259,9 @@ export default async function ProfilPage({
             </li>
           ))}
           {myMatches.map((r) => (
-            <li key={r.id} className="card">
-              <p>Du slog til på: “{r.message}”</p>
-              <p className="text-sm text-slate/60">
+            <li key={r.id} className="card min-w-0 max-w-full">
+              <p className="break-words">Du slog til på: “{r.message}”</p>
+              <p className="break-words text-sm text-slate/60">
                 <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
                   Skriv til {r.requester.name.split(" ")[0]}
                 </Link>{" "}
@@ -291,17 +273,17 @@ export default async function ProfilPage({
       </section>
 
       {user.coachProfile && (
-        <section>
-          <div className="mb-3 flex items-center justify-between">
+        <section className="min-w-0">
+          <div className="mb-3 flex max-w-full flex-wrap items-center justify-between gap-2">
             <h2 className="display text-2xl">Din trænerkalender</h2>
             <Link href="/profil/traener" className="btn-ghost text-sm">Redigér trænerprofil</Link>
           </div>
           {coachBookings.length === 0 && <p className="text-slate/60">Ingen bookede elever endnu.</p>}
           <ul className="space-y-3">
             {coachBookings.map((b) => (
-              <li key={b.id} className="card">
-                <p className="font-bold">{b.user.name}</p>
-                <p className="text-sm capitalize text-slate/60">
+              <li key={b.id} className="card min-w-0 max-w-full">
+                <p className="break-words font-bold">{b.user.name}</p>
+                <p className="break-words text-sm capitalize text-slate/60">
                   {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr (din andel udbetales automatisk)
                 </p>
               </li>
@@ -319,7 +301,7 @@ export default async function ProfilPage({
         }}
       />
 
-      <p className="text-sm">
+      <p className="max-w-full break-words text-sm">
         <a href="/profil/kvitteringer" className="font-semibold text-court underline">
           Se dine kvitteringer
         </a>
@@ -327,7 +309,6 @@ export default async function ProfilPage({
       </p>
 
       <DeleteAccount blockers={deletion.blockers} canDelete={deletion.canDelete} />
-
     </div>
   );
 }
