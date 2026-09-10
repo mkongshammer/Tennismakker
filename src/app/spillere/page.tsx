@@ -6,6 +6,7 @@ import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { contactPlayer } from "./actions";
+import { ShareRacketBuddy } from "./ShareRacketBuddy";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,8 @@ export default async function SpillerePage({ searchParams }: Props) {
           Se opslag
         </Link>
       </div>
+
+      <ShareRacketBuddy />
 
       <form method="get" className="card mb-4 flex flex-wrap items-end gap-3">
         <label className="min-w-0 flex-1 text-sm font-semibold">
