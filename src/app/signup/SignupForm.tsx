@@ -83,9 +83,13 @@ export function SignupForm({
 
       <div className="rounded-xl border border-court/25 bg-court/5 p-4">
         <span className="label">
-          {da
-            ? "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"
-            : "Which sports do you play and want to find partners for?"}
+          {role === "COACH"
+            ? (da
+                ? "Hvilke sportsgrene er du træner i og vil tilbyde træning i?"
+                : "Which sports do you coach and want to offer training in?")
+            : (da
+                ? "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"
+                : "Which sports do you play and want to find partners for?")}
         </span>
         <p className="mb-3 mt-1 text-xs text-slate">
           {da ? "Du kan vælge flere." : "You can choose more than one."}
