@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { markBuddySportsChosen, normaliseBuddySports } from "../../lib/buddy-sports";
 
-export async function saveBuddySports(_prev: unknown, formData: FormData) {
+async function persistSports(formData: FormData) {
   const user = await getCurrentUser();
   if (!user) return { error: "Du skal være logget ind." };
 
@@ -22,7 +23,16 @@ export async function saveBuddySports(_prev: unknown, formData: FormData) {
       : []),
   ]);
   await markBuddySportsChosen(user.id);
-
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+export async function saveBuddySports(_prev: unknown, formData: FormData) {
+  return persistSports(formData);
+}
+
+export async function saveSportsAndContinue(formData: FormData) {
+  const result = await persistSports(formData);
+  if (result.error) redirect(`/onboarding-sports?fejl=${encodeURIComponent(result.error)}`);
+  redirect("/profil");
 }
