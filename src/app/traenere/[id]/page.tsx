@@ -17,6 +17,7 @@ import { buyPackage } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
 import { Stars } from "../../../components/ReviewForm";
+import { contactPlayer } from "../../spillere/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,19 @@ export default async function TraenerPage({
         </div>
         <p className="mt-2">{coach.headline}</p>
         <p className="mt-1 text-sm text-slate/60">{coach.area}</p>
+
+        {user && user.id !== coach.user.id ? (
+          <form action={contactPlayer} className="mt-4">
+            <input type="hidden" name="playerId" value={coach.user.id} />
+            <button type="submit" className="btn-court px-5 py-3">
+              Skriv til træneren
+            </button>
+          </form>
+        ) : !user ? (
+          <Link href="/login" className="btn-court mt-4 inline-block px-5 py-3">
+            Log ind for at skrive
+          </Link>
+        ) : null}
       </div>
 
       {reviews.length > 0 && (
