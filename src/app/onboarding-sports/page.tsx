@@ -2,11 +2,15 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/session";
 import { SPORTS, sportLabel } from "../../lib/sports";
 import { getPreferences } from "../../lib/preferences";
-import { saveBuddySports } from "./actions";
+import { saveSportsAndContinue } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingSportsPage() {
+export default async function OnboardingSportsPage({
+  searchParams,
+}: {
+  searchParams: { fejl?: string };
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -32,7 +36,13 @@ export default async function OnboardingSportsPage() {
             : "Vælg de sportsgrene, du gerne vil finde medspillere til. Du kan vælge flere."}
         </p>
 
-        <form action={saveBuddySports} className="mt-6 space-y-5">
+        {searchParams.fejl && (
+          <p className="mt-4 rounded-xl border border-court/20 bg-court/5 p-3 text-sm font-semibold text-court-dark">
+            {searchParams.fejl}
+          </p>
+        )}
+
+        <form action={saveSportsAndContinue} className="mt-6 space-y-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {SPORTS.map((sport) => (
               <label key={sport} className="flex items-center gap-2 rounded-xl border border-slate/15 p-3 text-sm font-semibold">
