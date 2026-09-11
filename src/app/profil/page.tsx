@@ -136,6 +136,36 @@ export default async function ProfilPage({
         </div>
       </div>
 
+      <section className="min-w-0">
+        <h2 className="display mb-3 text-2xl">Dine profiler</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="card min-w-0">
+            <p className="font-bold">Spillerprofil</p>
+            <p className="mt-1 text-sm text-slate/60">Aktiv — find medspillere og book baner.</p>
+          </div>
+          <div className="card min-w-0">
+            <p className="font-bold">Trænerprofil</p>
+            {user.coachProfile ? (
+              <>
+                <p className="mt-1 text-sm text-slate/60">Aktiv — tilbyd træning og modtag bookinger.</p>
+                <Link href="/profil/traener" className="btn-ghost mt-4 inline-block text-sm">
+                  Administrér trænerprofil
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-slate/60">
+                  Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående.
+                </p>
+                <Link href="/profil/traener/opret" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm">
+                  Opret trænerprofil
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
       <PlayAgain items={repeatable} />
 
       {toReview.length > 0 && (
