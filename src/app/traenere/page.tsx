@@ -4,6 +4,7 @@ import { db } from "../../lib/db";
 import { coachRatings } from "../../lib/reviews";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
+import { DK_REGIONS, regionForArea } from "../../lib/regions";
 import { SportPicker } from "../../components/SportPicker";
 import { Stars } from "../../components/ReviewForm";
 
@@ -12,16 +13,15 @@ export const dynamic = "force-dynamic";
 export default async function TraenerePage({
   searchParams,
 }: {
-  searchParams: { omraade?: string };
+  searchParams: { region?: string };
 }) {
   const prefs = await getPreferences();
   const t = translator(prefs.locale);
-  const area = searchParams.omraade?.trim();
+  const selectedRegion = searchParams.region?.trim() ?? "";
 
-  const coaches = await db.coachProfile.findMany({
+  const allCoaches = await db.coachProfile.findMany({
     where: {
       sports: { contains: prefs.sport },
-      ...(area ? { area: { contains: area } } : {}),
     },
     include: {
       user: true,
@@ -31,6 +31,10 @@ export default async function TraenerePage({
     },
     orderBy: { priceHour: "asc" },
   });
+
+  const coaches = selectedRegion
+    ? allCoaches.filter((coach) => regionForArea(coach.area) === selectedRegion)
+    : allCoaches;
 
   const ratings = await coachRatings(coaches.map((c: any) => c.id));
 
@@ -45,10 +49,16 @@ export default async function TraenerePage({
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <label className="label" htmlFor="omraade">{t("common.area")}</label>
-          <input className="input" id="omraade" name="omraade" defaultValue={area} placeholder="fx Aarhus" />
+          <label className="label" htmlFor="region">Region</label>
+          <select className="input" id="region" name="region" defaultValue={selectedRegion}>
+            <option value="">Hele Danmark</option>
+            {DK_REGIONS.map((region) => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
         </div>
         <button className="btn-ink">{t("common.search")}</button>
+        {selectedRegion && <Link href="/traenere" className="btn-ghost">Nulstil</Link>}
       </form>
 
       {coaches.length === 0 && (
@@ -85,7 +95,7 @@ export default async function TraenerePage({
               />
             </div>
             <p className="mt-2 text-sm">{c.headline}</p>
-            <p className="mt-1 text-sm text-slate/60">{c.area}</p>
+            <p className="mt-1 text-sm text-slate/60">{regionForArea(c.area) ?? c.area}</p>
             {c.specialties && (
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {c.specialties.split(",").filter(Boolean).map((s) => (
