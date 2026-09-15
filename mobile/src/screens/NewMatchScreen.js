@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, TextInput, View, Pressable } from "react-
 import { api } from "../lib/api";
 import { Button } from "../lib/ui";
 import { colors, LEVELS, MATCH_TYPES } from "../lib/theme";
+import { DK_REGIONS } from "../lib/regions";
 
 export default function NewMatchScreen({ navigation }) {
   const [message, setMessage] = useState("");
@@ -14,6 +15,10 @@ export default function NewMatchScreen({ navigation }) {
 
   const submit = async () => {
     setError(null);
+    if (!area) {
+      setError("Vælg en region.");
+      return;
+    }
     setBusy(true);
     try {
       await api.createMatch({ message, area, matchType, level });
@@ -33,7 +38,7 @@ export default function NewMatchScreen({ navigation }) {
         multiline
         value={message}
         onChangeText={setMessage}
-        placeholder="fx: Søger single-modstander tirsdag aften i Valby"
+        placeholder="fx: Søger single-modstander tirsdag aften"
       />
 
       <Text style={styles.label}>Type</Text>
@@ -65,13 +70,18 @@ export default function NewMatchScreen({ navigation }) {
       </View>
       <Text style={styles.hint}>{LEVELS[level]}</Text>
 
-      <Text style={styles.label}>Område</Text>
-      <TextInput
-        style={styles.input}
-        value={area}
-        onChangeText={setArea}
-        placeholder="fx Valby"
-      />
+      <Text style={styles.label}>Region</Text>
+      <View style={styles.chips}>
+        {DK_REGIONS.map((region) => (
+          <Pressable
+            key={region}
+            onPress={() => setArea(region)}
+            style={[styles.chip, area === region && styles.chipActive]}
+          >
+            <Text style={[styles.chipText, area === region && styles.chipTextActive]}>{region}</Text>
+          </Pressable>
+        ))}
+      </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
       <View style={{ marginTop: 20 }}>
