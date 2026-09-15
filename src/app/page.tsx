@@ -44,8 +44,10 @@ export default async function Home() {
   );
   const freeToday = counts.reduce((a, b) => a + b, 0);
 
+  // Forsidens hvide kort viser platformens samlede antal trænere og spillere.
+  // Sportsvalget styrer stadig hvilke trænere/baner man ser, når man går ind.
   const [coaches, players] = await Promise.all([
-    db.coachProfile.count({ where: { sports: { contains: prefs.sport } } }),
+    db.coachProfile.count(),
     db.user.count({ where: { role: "PLAYER", country: prefs.country } }),
   ]);
 
