@@ -7,6 +7,7 @@ import { signup } from "./actions";
 import { LEVELS } from "../../lib/levels";
 import { SPORTS, sportLabel } from "../../lib/sports";
 import type { Locale } from "../../lib/sports";
+import { DK_REGIONS } from "../../lib/regions";
 import { SubmitButton } from "../../components/SubmitButton";
 
 export function SignupForm({
@@ -76,8 +77,13 @@ export function SignupForm({
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="area">{labels.area}</label>
-          <input className="input" id="area" name="area" placeholder="fx Odense C" />
+          <label className="label" htmlFor="area">Region</label>
+          <select className="input" id="area" name="area" defaultValue="" required>
+            <option value="" disabled>{da ? "Vælg region" : "Choose region"}</option>
+            {DK_REGIONS.map((region) => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
         </div>
       </div>
 
