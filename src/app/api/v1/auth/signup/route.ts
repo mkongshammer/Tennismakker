@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
 import { issueToken } from "../../../../../lib/session";
+import { isDanishRegion } from "../../../../../lib/regions";
 import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
   if (password.length < 8) {
     return apiError("Adgangskoden skal være mindst 8 tegn.");
   }
+  if (!isDanishRegion(area)) {
+    return apiError("Vælg en af de fem danske regioner.");
+  }
   if (await db.user.findUnique({ where: { email } })) {
     return apiError("Der findes allerede en konto med den e-mail.");
   }
@@ -30,7 +34,7 @@ export async function POST(req: Request) {
       name,
       role: "PLAYER",
       level: Math.min(7, Math.max(1, level)),
-      area: area || null,
+      area,
       passwordHash: await bcrypt.hash(password, 10),
     },
   });
