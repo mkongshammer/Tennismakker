@@ -6,6 +6,7 @@ import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions"
 import { SubmitButton } from "../../../components/SubmitButton";
 import { WeeklyCalendar } from "./WeeklyCalendar";
 import { LESSON_LENGTHS, describeLength, lessonPriceKr } from "../../../lib/slots";
+import { DK_REGIONS, regionForArea } from "../../../lib/regions";
 import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
@@ -83,8 +84,19 @@ export default function TraenerProfilPage() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="area">Område</label>
-            <input className="input" id="area" name="area" defaultValue={profile.area} required />
+            <label className="label" htmlFor="area">Region</label>
+            <select
+              className="input"
+              id="area"
+              name="area"
+              defaultValue={regionForArea(profile.area) ?? ""}
+              required
+            >
+              <option value="" disabled>Vælg region</option>
+              {DK_REGIONS.map((region) => (
+                <option key={region} value={region}>{region}</option>
+              ))}
+            </select>
           </div>
         </div>
         <div>
