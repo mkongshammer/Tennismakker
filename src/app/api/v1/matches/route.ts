@@ -1,14 +1,16 @@
 import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { userFromRequest } from "../../../../lib/session";
+import { isDanishRegion, regionForArea } from "../../../../lib/regions";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
-/** GET /api/v1/matches?omraade=&niveau= — åbne makker-opslag. */
+/** GET /api/v1/matches?region=&niveau= — åbne makker-opslag. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const area = url.searchParams.get("omraade")?.trim();
+  const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
+  const selectedRegion = isDanishRegion(rawRegion) ? rawRegion : regionForArea(rawRegion) ?? "";
   const levelParam = url.searchParams.get("niveau");
   const level = levelParam ? Number(levelParam) : null;
   const me = await userFromRequest(req);
@@ -16,19 +18,22 @@ export async function GET(req: Request) {
   const requests = await db.matchRequest.findMany({
     where: {
       status: "OPEN",
-      ...(area ? { area: { contains: area, mode: "insensitive" } } : {}),
-      ...(level ? { level: { gte: level - 1, lte: level + 1 } } : {}),
+      ...(level && level >= 1 && level <= 7 ? { level } : {}),
     },
     include: { requester: true },
     orderBy: { createdAt: "desc" },
-    take: 50,
+    take: 100,
   });
 
+  const filtered = selectedRegion
+    ? requests.filter((request) => regionForArea(request.area) === selectedRegion)
+    : requests;
+
   return json({
-    matches: requests.map((r: any) => ({
+    matches: filtered.map((r: any) => ({
       id: r.id,
       message: r.message,
-      area: r.area,
+      area: regionForArea(r.area) ?? r.area,
       level: r.level,
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
@@ -46,7 +51,8 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const message = String(body.message ?? "").trim();
   const area = String(body.area ?? "").trim();
-  if (!message || !area) return apiError("Skriv en besked og et område.");
+  if (!message) return apiError("Skriv en besked.");
+  if (!isDanishRegion(area)) return apiError("Vælg en af de fem danske regioner.");
 
   const created = await db.matchRequest.create({
     data: {
