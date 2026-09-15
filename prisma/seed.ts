@@ -94,6 +94,34 @@ async function ensureOwner() {
   }
 }
 
+/**
+ * Mads Stjerne Pedersen udbyder kun bordtennis som træner.
+ *
+ * Vi ændrer kun CoachProfile.sports. Hans almindelige spillerprofil må gerne
+ * have andre sportsgrene; det er to forskellige ting i produktet.
+ */
+async function ensureMadsCoachSport() {
+  const mads = await db.user.findFirst({
+    where: {
+      name: { equals: "Mads Stjerne Pedersen", mode: "insensitive" },
+    },
+    include: { coachProfile: true },
+  });
+
+  if (!mads?.coachProfile) {
+    console.log("Mads Stjerne Pedersen har ingen trænerprofil — ingen ændring lavet.");
+    return;
+  }
+
+  if (mads.coachProfile.sports !== "BORDTENNIS") {
+    await db.coachProfile.update({
+      where: { id: mads.coachProfile.id },
+      data: { sports: "BORDTENNIS" },
+    });
+    console.log("Mads Stjerne Pedersens trænerprofil er sat til kun BORDTENNIS.");
+  }
+}
+
 async function main() {
   if (process.env.RESET_TO_PRODUCTION === "1") {
     console.log("RESET_TO_PRODUCTION er sat — tømmer databasen for demo-data.");
@@ -102,6 +130,7 @@ async function main() {
   }
 
   await ensureOwner();
+  await ensureMadsCoachSport();
 }
 
 main()
