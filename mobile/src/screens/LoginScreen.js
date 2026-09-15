@@ -12,6 +12,7 @@ import {
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
 import { colors } from "../lib/theme";
+import { DK_REGIONS } from "../lib/regions";
 
 export default function LoginScreen() {
   const { login, signup } = useAuth();
@@ -25,6 +26,10 @@ export default function LoginScreen() {
 
   const submit = async () => {
     setError(null);
+    if (mode === "signup" && !area) {
+      setError("Vælg en region.");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
@@ -76,13 +81,20 @@ export default function LoginScreen() {
 
         {mode === "signup" && (
           <>
-            <Text style={styles.label}>Område</Text>
-            <TextInput
-              style={styles.input}
-              value={area}
-              onChangeText={setArea}
-              placeholder="fx Frederiksberg"
-            />
+            <Text style={styles.label}>Region</Text>
+            <View style={styles.chips}>
+              {DK_REGIONS.map((region) => (
+                <Pressable
+                  key={region}
+                  onPress={() => setArea(region)}
+                  style={[styles.chip, area === region && styles.chipActive]}
+                >
+                  <Text style={[styles.chipText, area === region && styles.chipTextActive]}>
+                    {region}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </>
         )}
 
@@ -119,6 +131,18 @@ const styles = StyleSheet.create({
     padding: 13,
     fontSize: 16,
   },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: "#fff",
+  },
+  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipText: { fontWeight: "600", color: colors.ink, fontSize: 13 },
+  chipTextActive: { color: colors.chalk },
   error: { color: colors.court, fontWeight: "600", marginTop: 14 },
   switch: { color: colors.court, textAlign: "center", marginTop: 20, fontWeight: "600" },
 });
