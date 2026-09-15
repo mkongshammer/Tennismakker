@@ -5,20 +5,13 @@ import { db } from "../../lib/db";
 import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
+import { DK_REGIONS, regionForArea } from "../../lib/regions";
 import { contactPlayer } from "./actions";
 import { ShareRacketBuddy } from "./ShareRacketBuddy";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 10;
-
-const REGIONS = [
-  "Region Hovedstaden",
-  "Region Sjælland",
-  "Region Syddanmark",
-  "Region Midtjylland",
-  "Region Nordjylland",
-] as const;
 
 type Props = {
   searchParams?:
@@ -31,62 +24,6 @@ function splitSports(value: string) {
     .split(",")
     .map((sport) => sport.trim())
     .filter(Boolean);
-}
-
-function normalise(value: string) {
-  return value
-    .toLocaleLowerCase("da")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-function regionForArea(area: string | null) {
-  if (!area) return null;
-  const a = normalise(area);
-
-  const match = (terms: string[]) => terms.some((term) => a.includes(normalise(term)));
-
-  if (
-    match([
-      "københavn", "frederiksberg", "gentofte", "lyngby", "gladsaxe", "herlev", "ballerup",
-      "rødovre", "hvidovre", "brøndby", "glostrup", "albertslund", "høje-taastrup", "taastrup",
-      "ishøj", "vallensbæk", "tårnby", "dragør", "rudersdal", "birkerød", "hørsholm", "allerød",
-      "fredensborg", "helsingør", "hillerød", "frederikssund", "bornholm", "rønne",
-    ])
-  ) return "Region Hovedstaden";
-
-  if (
-    match([
-      "roskilde", "køge", "greve", "solrød", "lejre", "ringsted", "sorø", "slagelse", "korsør",
-      "kalundborg", "holbæk", "odsherred", "næstved", "vordingborg", "faxe", "stevns", "haslev",
-      "nykøbing falster", "guldborgsund", "lolland", "nakskov", "maribo",
-    ])
-  ) return "Region Sjælland";
-
-  if (
-    match([
-      "odense", "svendborg", "nyborg", "kerteminde", "middelfart", "assens", "faaborg", "fyn",
-      "esbjerg", "varde", "vejen", "billund", "fredericia", "kolding", "vejle", "haderslev",
-      "aabenraa", "sønderborg", "tønder", "ribe",
-    ])
-  ) return "Region Syddanmark";
-
-  if (
-    match([
-      "aarhus", "århus", "skanderborg", "horsens", "silkeborg", "randers", "favrskov", "viborg",
-      "herning", "holstebro", "ringkøbing", "skjern", "struer", "lemvig", "samsø", "grenaa",
-      "djursland", "ebeltoft",
-    ])
-  ) return "Region Midtjylland";
-
-  if (
-    match([
-      "aalborg", "ålborg", "hjørring", "frederikshavn", "skagen", "brønderslev", "jammerbugt",
-      "thisted", "mors", "morsø", "vesthimmerland", "hadsund", "hobro", "mariager",
-    ])
-  ) return "Region Nordjylland";
-
-  return null;
 }
 
 function pageHref(page: number, sport: string, region: string) {
@@ -184,14 +121,14 @@ export default async function SpillerePage({ searchParams }: Props) {
         </label>
 
         <label className="min-w-0 text-sm font-semibold">
-          Område
+          Region
           <select
             name="region"
             defaultValue={selectedRegion}
             className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
           >
             <option value="">Hele Danmark</option>
-            {REGIONS.map((region) => (
+            {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
           </select>
@@ -213,7 +150,7 @@ export default async function SpillerePage({ searchParams }: Props) {
         <div className="card text-center">
           <p className="font-bold">Ingen spillere matcher dine filtre endnu.</p>
           <p className="mt-2 text-sm text-slate/60">
-            Prøv et andet område eller en anden sportsgren, eller opret et opslag.
+            Prøv en anden region eller en anden sportsgren, eller opret et opslag.
           </p>
           <div className="mt-4">
             <Link href="/makkere/ny" className="btn-court inline-block px-5 py-3">
@@ -231,6 +168,7 @@ export default async function SpillerePage({ searchParams }: Props) {
                 .map((n) => n[0])
                 .slice(0, 2)
                 .join("");
+              const region = regionForArea(player.area);
 
               return (
                 <div key={player.id} className="card">
@@ -255,8 +193,8 @@ export default async function SpillerePage({ searchParams }: Props) {
                       </div>
 
                       <div className="mt-2 text-sm text-slate/60">
-                        {player.area ? <span>{player.area}</span> : null}
-                        {player.area && sports ? <span> · </span> : null}
+                        {region ? <span>{region}</span> : null}
+                        {region && sports ? <span> · </span> : null}
                         {sports ? <span>{sports}</span> : null}
                       </div>
 
