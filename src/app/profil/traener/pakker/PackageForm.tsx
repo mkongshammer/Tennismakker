@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useFormState } from "react-dom";
 import { createPackage } from "./actions";
 import { SubmitButton } from "../../../../components/SubmitButton";
+import {
+  MAX_PACKAGE_SESSIONS,
+  MIN_PACKAGE_SESSIONS,
+} from "../../../../lib/package-limits";
 
 export function PackageForm({ priceHour }: { priceHour: number }) {
   const [state, action] = useFormState(createPackage, null);
@@ -34,12 +38,13 @@ export function PackageForm({ priceHour }: { priceHour: number }) {
             id="sessions"
             name="sessions"
             type="number"
-            min={2}
-            max={50}
+            min={MIN_PACKAGE_SESSIONS}
+            max={MAX_PACKAGE_SESSIONS}
             value={sessions}
             onChange={(e) => setSessions(Number(e.target.value))}
             required
           />
+          <p className="mt-1 text-xs text-slate">Maks. {MAX_PACKAGE_SESSIONS} timer pr. pakkeforløb.</p>
         </div>
         <div>
           <label className="label" htmlFor="priceKr">Samlet pris (kr)</label>

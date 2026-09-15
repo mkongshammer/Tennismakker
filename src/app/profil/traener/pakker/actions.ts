@@ -8,6 +8,11 @@
 import { revalidatePath } from "next/cache";
 import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
+import {
+  MAX_PACKAGE_SESSIONS,
+  MIN_PACKAGE_SESSIONS,
+  isValidPackageSessions,
+} from "../../../../lib/package-limits";
 
 async function ownCoachProfile() {
   const user = await getCurrentUser();
@@ -30,8 +35,10 @@ export async function createPackage(
   const description = String(formData.get("description") ?? "").trim();
 
   if (name.length < 2) return { error: "Giv pakken et navn." };
-  if (!Number.isInteger(sessions) || sessions < 2 || sessions > 50) {
-    return { error: "Antal timer skal være mellem 2 og 50." };
+  if (!isValidPackageSessions(sessions)) {
+    return {
+      error: `Antal timer skal være mellem ${MIN_PACKAGE_SESSIONS} og ${MAX_PACKAGE_SESSIONS}.`,
+    };
   }
   if (!Number.isInteger(priceKr) || priceKr < 50 || priceKr > 100000) {
     return { error: "Prisen skal være mellem 50 og 100.000 kr." };
