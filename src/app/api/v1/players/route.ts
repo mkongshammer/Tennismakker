@@ -1,5 +1,6 @@
 import { db } from "../../../../lib/db";
 import { json, preflight, requireUser } from "../../../../lib/api/helpers";
+import { isDanishRegion, regionForArea } from "../../../../lib/regions";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -10,7 +11,8 @@ export async function GET(req: Request) {
   if ("response" in auth) return auth.response;
 
   const url = new URL(req.url);
-  const area = url.searchParams.get("omraade")?.trim();
+  const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
+  const selectedRegion = isDanishRegion(rawRegion) ? rawRegion : regionForArea(rawRegion) ?? "";
   const sport = url.searchParams.get("sport")?.trim().toUpperCase();
 
   const users = await db.user.findMany({
@@ -18,7 +20,6 @@ export async function GET(req: Request) {
       id: { not: auth.user.id },
       role: { in: ["PLAYER", "COACH"] },
       country: auth.user.country,
-      ...(area ? { area: { contains: area, mode: "insensitive" } } : {}),
       ...(sport ? { sports: { contains: sport, mode: "insensitive" } } : {}),
     },
     select: {
@@ -32,15 +33,19 @@ export async function GET(req: Request) {
       createdAt: true,
     },
     orderBy: [{ createdAt: "desc" }],
-    take: 100,
+    take: 500,
   });
 
+  const filtered = selectedRegion
+    ? users.filter((user) => regionForArea(user.area) === selectedRegion)
+    : users;
+
   return json({
-    players: users.map((u) => ({
+    players: filtered.slice(0, 100).map((u) => ({
       id: u.id,
       name: u.name,
       level: u.level,
-      area: u.area,
+      area: regionForArea(u.area) ?? u.area,
       bio: u.bio,
       sports: u.sports.split(",").map((s) => s.trim()).filter(Boolean),
       isCoach: u.role === "COACH",
