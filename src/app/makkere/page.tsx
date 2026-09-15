@@ -17,6 +17,7 @@ const PAGE_SIZE = 10;
 
 function pageHref(page: number, region: string, level: string) {
   const params = new URLSearchParams();
+  if (region || level) params.set("filtrer", "1");
   if (region) params.set("region", region);
   if (level) params.set("niveau", level);
   if (page > 1) params.set("page", String(page));
@@ -27,13 +28,14 @@ function pageHref(page: number, region: string, level: string) {
 export default async function MakkerePage({
   searchParams,
 }: {
-  searchParams: { region?: string; niveau?: string; page?: string };
+  searchParams: { region?: string; niveau?: string; page?: string; filtrer?: string };
 }) {
   const user = await getCurrentUser();
   const prefs = await getPreferences();
   const t = translator(prefs.locale);
-  const selectedRegion = searchParams.region?.trim() ?? "";
-  const selectedLevel = searchParams.niveau?.trim() ?? "";
+  const hasUserFilters = searchParams.filtrer === "1";
+  const selectedRegion = hasUserFilters ? searchParams.region?.trim() ?? "" : "";
+  const selectedLevel = hasUserFilters ? searchParams.niveau?.trim() ?? "" : "";
   const level = selectedLevel ? Number(selectedLevel) : undefined;
   const requestedPage = Math.max(1, Number.parseInt(searchParams.page ?? "1", 10) || 1);
 
@@ -89,6 +91,7 @@ export default async function MakkerePage({
       </div>
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
+        <input type="hidden" name="filtrer" value="1" />
         <div>
           <label className="label" htmlFor="region">Region</label>
           <select className="input" id="region" name="region" defaultValue={selectedRegion}>
