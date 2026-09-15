@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
 import { normaliseBuddySports } from "../../../../lib/buddy-sports";
+import { isDanishRegion } from "../../../../lib/regions";
 
 export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const user = await getCurrentUser();
@@ -18,7 +19,7 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const sports = normaliseBuddySports(formData.getAll("sports").map(String));
 
   if (!headline) return { error: "Skriv en kort overskrift til din trænerprofil." };
-  if (!area) return { error: "Skriv hvilket område du tilbyder træning i." };
+  if (!isDanishRegion(area)) return { error: "Vælg en af de fem danske regioner." };
   if (!Number.isFinite(priceHour) || priceHour < 50 || priceHour > 5000) {
     return { error: "Sæt en timepris mellem 50 og 5.000 kr." };
   }
