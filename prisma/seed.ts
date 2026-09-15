@@ -101,25 +101,45 @@ async function ensureOwner() {
  * have andre sportsgrene; det er to forskellige ting i produktet.
  */
 async function ensureMadsCoachSport() {
-  const mads = await db.user.findFirst({
+  // Brug delvise, case-insensitive navnematches, så forskelle i store/små
+  // bogstaver ikke kan få rettelsen til at ramme ved siden af.
+  const candidates = await db.user.findMany({
     where: {
-      name: { equals: "Mads Stjerne Pedersen", mode: "insensitive" },
+      AND: [
+        { name: { contains: "Mads", mode: "insensitive" } },
+        { name: { contains: "Stjerne", mode: "insensitive" } },
+        { name: { contains: "Pedersen", mode: "insensitive" } },
+      ],
     },
     include: { coachProfile: true },
   });
 
+  const mads = candidates.find((candidate) => candidate.coachProfile);
   if (!mads?.coachProfile) {
-    console.log("Mads Stjerne Pedersen har ingen trænerprofil — ingen ændring lavet.");
+    console.log(`Mads Stjerne Pedersen: ingen trænerprofil fundet (${candidates.length} navnematch).`);
     return;
   }
 
-  if (mads.coachProfile.sports !== "BORDTENNIS") {
-    await db.coachProfile.update({
-      where: { id: mads.coachProfile.id },
-      data: { sports: "BORDTENNIS" },
-    });
-    console.log("Mads Stjerne Pedersens trænerprofil er sat til kun BORDTENNIS.");
-  }
+  await db.coachProfile.update({
+    where: { id: mads.coachProfile.id },
+    data: { sports: "BORDTENNIS" },
+  });
+
+  console.log(
+    `Mads Stjerne Pedersen: trænerprofil ${mads.coachProfile.id} er sat til BORDTENNIS (var ${mads.coachProfile.sports}).`,
+  );
+}
+
+async function logCoachSummary() {
+  const coaches = await db.coachProfile.findMany({
+    include: { user: { select: { name: true } } },
+    orderBy: { user: { name: "asc" } },
+  });
+  console.log(
+    `Trænerprofiler i produktion (${coaches.length}): ${coaches
+      .map((coach) => `${coach.user.name}=${coach.sports}`)
+      .join(" | ")}`,
+  );
 }
 
 async function main() {
@@ -131,6 +151,7 @@ async function main() {
 
   await ensureOwner();
   await ensureMadsCoachSport();
+  await logCoachSummary();
 }
 
 main()
