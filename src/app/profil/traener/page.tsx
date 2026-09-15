@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
-import { updateCoachProfile, startCoachPayoutSetup } from "../../../lib/actions";
+import { updateCoachProfile, startCoachPayoutSetup } from "./actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { WeeklyCalendar } from "./WeeklyCalendar";
 import { LESSON_LENGTHS, describeLength, lessonPriceKr } from "../../../lib/slots";
