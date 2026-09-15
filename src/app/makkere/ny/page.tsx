@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { createMatchRequest } from "../../../lib/actions";
+import { createMatchRequest } from "./actions";
 import { LEVELS, MATCH_TYPES } from "../../../lib/levels";
 import { DK_REGIONS } from "../../../lib/regions";
 import { SubmitButton } from "../../../components/SubmitButton";
