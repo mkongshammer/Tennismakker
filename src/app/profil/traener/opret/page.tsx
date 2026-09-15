@@ -1,18 +1,10 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { SPORTS } from "../../../../lib/sports";
+import { SPORTS, sportLabel } from "../../../../lib/sports";
+import { DK_REGIONS } from "../../../../lib/regions";
 import { createCoachProfile } from "./actions";
 import { SubmitButton } from "../../../../components/SubmitButton";
-
-const labels: Record<string, string> = {
-  TENNIS: "Tennis",
-  PADEL: "Padel",
-  BADMINTON: "Badminton",
-  SQUASH: "Squash",
-  PICKLEBALL: "Pickleball",
-  TABLE_TENNIS: "Bordtennis",
-};
 
 export default function OpretTraenerprofilPage() {
   const [state, action] = useFormState(createCoachProfile, null);
@@ -44,7 +36,7 @@ export default function OpretTraenerprofilPage() {
             {SPORTS.map((sport) => (
               <label key={sport} className="flex items-center gap-2 rounded-xl border border-slate/15 p-3 text-sm font-semibold">
                 <input type="checkbox" name="sports" value={sport} />
-                {labels[sport] ?? sport}
+                {sportLabel(sport, "da")}
               </label>
             ))}
           </div>
@@ -56,8 +48,13 @@ export default function OpretTraenerprofilPage() {
             <input className="input" id="priceHour" name="priceHour" type="number" min={50} max={5000} defaultValue={350} required />
           </div>
           <div>
-            <label className="label" htmlFor="area">Område</label>
-            <input className="input" id="area" name="area" placeholder="Fx København" required />
+            <label className="label" htmlFor="area">Region</label>
+            <select className="input" id="area" name="area" defaultValue="" required>
+              <option value="" disabled>Vælg region</option>
+              {DK_REGIONS.map((region) => (
+                <option key={region} value={region}>{region}</option>
+              ))}
+            </select>
           </div>
         </div>
 
