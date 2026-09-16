@@ -8,10 +8,14 @@ import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
 
+const PRIVACY_URL = "https://racketbuddy.app/privatliv";
+const TERMS_URL = "https://racketbuddy.app/vilkaar";
+
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, deleteAccount } = useAuth();
   const [state, setState] = useState({ loading: true, error: null, bookings: [] });
   const [repeatable, setRepeatable] = useState([]);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -28,8 +32,31 @@ export default function ProfileScreen() {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const confirmDelete = () => {
+    Alert.alert(
+      "Slet konto",
+      "Din profil og personlige oplysninger fjernes. Historiske oplysninger, som vi er forpligtet til at gemme, kan blive bevaret i anonymiseret form. Handlingen kan ikke fortrydes.",
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Slet min konto",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeleting(true);
+              await deleteAccount();
+            } catch (e) {
+              setDeleting(false);
+              Alert.alert("Kunne ikke slette kontoen", e.message ?? "Prøv igen senere.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}>
       <Card>
         <Text style={styles.name}>{user?.name}</Text>
         <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
@@ -70,7 +97,13 @@ export default function ProfileScreen() {
         ))
       )}
 
-      <View style={{ marginTop: 24 }}>
+      <Text style={styles.section}>Konto og vilkår</Text>
+      <Card>
+        <Text style={styles.link} onPress={() => Linking.openURL(PRIVACY_URL)}>Privatlivspolitik</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL(TERMS_URL)}>Vilkår</Text>
+      </Card>
+
+      <View style={{ gap: 10 }}>
         <Button
           title="Log ud"
           variant="ink"
@@ -81,6 +114,7 @@ export default function ProfileScreen() {
             ])
           }
         />
+        <Button title="Slet konto permanent" onPress={confirmDelete} loading={deleting} />
       </View>
     </ScrollView>
   );
@@ -92,4 +126,5 @@ const styles = StyleSheet.create({
   section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
   bookingTitle: { fontWeight: "800" },
   warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
+  link: { color: colors.court, fontWeight: "700", paddingVertical: 8 },
 });
