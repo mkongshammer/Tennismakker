@@ -31,7 +31,6 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    // Serveren på gratis-planen sover og kan tage op mod et minut at vågne
     throw new Error("Kan ikke få forbindelse. Tjek dit netværk og prøv igen.");
   }
 
@@ -46,6 +45,7 @@ export const api = {
   signup: (payload) =>
     request("/auth/signup", { method: "POST", body: payload, auth: false }),
   me: () => request("/me"),
+  deleteAccount: () => request("/me", { method: "DELETE" }),
 
   clubs: (sport = "TENNIS", country = "DK") =>
     request(`/clubs?sport=${sport}&land=${country}`, { auth: false }),
@@ -98,8 +98,5 @@ export const api = {
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
 };
 
-// I mock-tilstand returnerer serveren en relativ sti ("/checkout/abc123").
-// Med Stripe slået til returnerer den en hel ekstern adresse
-// ("https://checkout.stripe.com/..."). Begge dele skal kunne åbnes direkte.
 export const checkoutUrl = (path) =>
   path.startsWith("http") ? path : `${BASE_URL}${path}`;
