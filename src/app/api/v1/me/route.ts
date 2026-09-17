@@ -22,6 +22,23 @@ export async function DELETE(req: Request) {
 
   const deletedEmail = `deleted-${auth.user.id}@deleted.racketbuddy.invalid`;
 
+  // Moderationsmetadata indeholder bruger-id'er i blokeringer og rapporter.
+  // Fjern disse ved kontosletning, så de ikke fortsat kan knyttes til personen.
+  await db.platformSetting.deleteMany({
+    where: {
+      OR: [
+        { key: { startsWith: `moderation:block:${auth.user.id}:` } },
+        { key: { endsWith: `:${auth.user.id}`, startsWith: "moderation:block:" } },
+        {
+          AND: [
+            { key: { startsWith: "moderation:report:" } },
+            { value: { contains: auth.user.id } },
+          ],
+        },
+      ],
+    },
+  });
+
   await db.user.update({
     where: { id: auth.user.id },
     data: {
