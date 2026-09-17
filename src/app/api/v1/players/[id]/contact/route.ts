@@ -1,5 +1,6 @@
 import { db } from "../../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../../lib/api/helpers";
+import { usersAreBlocked } from "../../../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -11,6 +12,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const otherId = params.id;
   if (!otherId || otherId === auth.user.id) return apiError("Ugyldig spiller.");
+  if (await usersAreBlocked(auth.user.id, otherId)) {
+    return apiError("I kan ikke kontakte hinanden.", 403);
+  }
 
   const other = await db.user.findFirst({
     where: {
