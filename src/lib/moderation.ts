@@ -145,7 +145,9 @@ export async function createModerationReport(input: ReportInput) {
   };
 
   const key = `${REPORT_PREFIX}${Date.now()}:${randomUUID()}`;
-  await db.platformSetting.create({ key, value: JSON.stringify(payload) });
+  await db.platformSetting.create({
+    data: { key, value: JSON.stringify(payload) },
+  });
 
   await sendMail({
     to: MODERATION_EMAIL,
