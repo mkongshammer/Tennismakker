@@ -40,6 +40,7 @@ export async function GET(req: Request) {
       level: r.level,
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
+      requesterId: r.requesterId,
       requesterName: r.requester.name,
       isMine: me ? r.requesterId === me.id : false,
     })),
