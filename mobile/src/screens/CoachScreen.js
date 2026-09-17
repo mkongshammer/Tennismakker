@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { api, checkoutUrl } from "../lib/api";
 import { Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
@@ -42,6 +42,28 @@ export default function CoachScreen({ route }) {
     } finally {
       setBooking(null);
     }
+  };
+
+  const reportReview = (review) => {
+    Alert.alert(
+      "Rapportér anmeldelse",
+      "Rapportér anmeldelsen til RacketBuddy, hvis den indeholder upassende indhold.",
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Rapportér",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.report({ kind: "REVIEW", targetId: review.id, reason: "OTHER" });
+              Alert.alert("Tak", "Rapporten er sendt til RacketBuddy.");
+            } catch (e) {
+              Alert.alert("Kunne ikke rapportere", e.message);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -112,7 +134,12 @@ export default function CoachScreen({ route }) {
             <Card key={r.id}>
               <Text style={{ color: colors.court }}>{"★".repeat(r.rating)}</Text>
               {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
-              <Text style={styles.meta}>{r.authorName}</Text>
+              <View style={styles.reviewFooter}>
+                <Text style={styles.meta}>{r.authorName}</Text>
+                <Pressable onPress={() => reportReview(r)} hitSlop={8}>
+                  <Text style={styles.reportLink}>Rapportér</Text>
+                </Pressable>
+              </View>
             </Card>
           ))}
         </>
@@ -135,4 +162,6 @@ const styles = StyleSheet.create({
   dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.ink },
   slotTime: { fontSize: 20, fontWeight: "800", color: colors.ink },
   comment: { marginTop: 6, lineHeight: 19 },
+  reviewFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 },
+  reportLink: { color: colors.slate, fontSize: 12, fontWeight: "700", marginTop: 4 },
 });
