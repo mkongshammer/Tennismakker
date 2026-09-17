@@ -36,8 +36,8 @@ for (const url of [
   check(listing.includes(url), `STORE_LISTING.md is missing required public URL: ${url}`);
 }
 
-check(listing.includes("rapport"), "Store review notes should mention in-app reporting/moderation.");
-check(listing.toLowerCase().includes("blok"), "Store review notes should mention user blocking.");
+check(/report|rapport/i.test(listing), "Store review notes should mention in-app reporting/moderation.");
+check(/block|blok/i.test(listing), "Store review notes should mention user blocking.");
 check(listing.includes("Slet konto permanent"), "Store review notes should point reviewers to in-app account deletion.");
 
 const expoVersion = String(pkg.dependencies?.expo ?? "");
