@@ -1,6 +1,7 @@
 import { db } from "../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../lib/api/helpers";
 import { loadThread, readMessages, MAX_MESSAGE_LENGTH } from "../../../../../lib/messages";
+import { objectionableContentReason } from "../../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -18,6 +19,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   return json({
     subject: access.thread.message,
     otherName: access.otherUser.name,
+    otherUserId: access.otherUser.id,
     messages: messages.map((m: any) => ({
       id: m.id,
       body: m.body,
@@ -39,6 +41,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const body = String(payload.body ?? "").trim();
   if (!body) return apiError("Beskeden er tom.");
   if (body.length > MAX_MESSAGE_LENGTH) return apiError("Beskeden er for lang.");
+  const moderationError = objectionableContentReason(body);
+  if (moderationError) return apiError(moderationError);
 
   const created = await db.message.create({
     data: { matchRequestId: params.id, senderId: auth.user.id, body },
