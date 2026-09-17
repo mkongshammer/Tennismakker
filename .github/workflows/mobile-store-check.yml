@@ -31,5 +31,7 @@ jobs:
         run: npm install
       - name: Expo doctor
         run: npx expo-doctor
-      - name: Export web bundle
-        run: npx expo export --platform web --output-dir /tmp/racketbuddy-web
+      - name: Validate Expo config
+        run: npx expo config --type public > /tmp/racketbuddy-expo-config.json
+      - name: Export iOS, Android and web bundles
+        run: npx expo export --platform all --output-dir /tmp/racketbuddy-export
