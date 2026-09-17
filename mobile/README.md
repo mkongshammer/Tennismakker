@@ -49,9 +49,9 @@ Når du booker, oprettes en reservation gennem API'et, og appen åbner betalings
 
 ## Før appen kan udgives
 
-- **Ikoner og splash screen** mangler. `app.json` peger kun på baggrundsfarver. Uden rigtige ikoner afviser App Store indsendelsen.
+- **Ikoner og splash screen** er inkluderet i `assets/` og konfigureret i `app.json`.
 - **Apple Developer Program** koster 99 USD/år, **Google Play** 25 USD én gang.
-- **Build** laves med EAS: `npx eas build --platform all`. Kræver ikke en Mac.
+- **Build** laves med EAS: `npx eas build --platform all`. Kræver et tilknyttet Expo/EAS-projekt og signeringsoplysninger, men ikke en Mac. EAS-projekt-ID er endnu ikke tilføjet; eksport af JavaScript er ikke et signeret store-build.
 - **Push-beskeder** er ikke bygget. Det er nok den vigtigste manglende funktion — en besked når nogen slår til på dit opslag er hele pointen med matching.
 - **Privatlivspolitik** skal ligge på et offentligt link, før begge butikker godkender.
 

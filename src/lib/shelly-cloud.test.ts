@@ -5,7 +5,31 @@ import {
   normaliseShellyServerUrl,
   shellyChannelCount,
   shellySwitchOutput,
+  getShellyDeviceStates,
+  setShellySwitchGroup,
 } from "./shelly-cloud";
+
+test("Cloud-fejl afslører ikke nøglen og requests følger ikke redirects", async (t) => {
+  const authKey = "test-secret-not-real";
+  t.mock.method(globalThis, "fetch", async (_url: unknown, options: RequestInit) => {
+    assert.equal(options.redirect, "error");
+    return new Response(JSON.stringify({ error: `Invalid key ${authKey}` }), { status: 401 });
+  });
+  await assert.rejects(
+    getShellyDeviceStates({ serverUrl: "https://shelly-123-eu.shelly.cloud", authKey }, ["a1b2c3d4e5f6"]),
+    (error: Error) => !error.message.includes(authKey) && error.message.includes("401")
+  );
+});
+
+test("ugyldigt Cloud-svar kan ikke rapporteres som en vellykket relækommando", async (t) => {
+  t.mock.method(globalThis, "fetch", async () => new Response("not json"));
+  await assert.rejects(
+    setShellySwitchGroup(
+      { serverUrl: "https://shelly-123-eu.shelly.cloud", authKey: "test-secret-not-real" },
+      [{ deviceId: "a1b2c3d4e5f6", channel: 0 }], true, 3
+    ), /ugyldigt svar/
+  );
+});
 
 test("Shelly Server URI normaliseres til en godkendt HTTPS-host", () => {
   assert.equal(

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { seal } from "./crypto-box";
 import { getCurrentUser } from "./session";
@@ -258,13 +259,14 @@ export async function saveControlMappings(
     select: { id: true, name: true },
   });
   const courtById = new Map(courts.map((court: any) => [court.id, court.name]));
+  const operations: Prisma.PrismaPromise<unknown>[] = [];
 
   for (let channel = 0; channel < device.channelCount; channel++) {
     const assignment = String(formData.get(`assignment_${channel}`) ?? "UNUSED");
     const customLabel = String(formData.get(`label_${channel}`) ?? "").trim().slice(0, 80);
 
     if (assignment === "UNUSED") {
-      await db.clubControlChannel.deleteMany({ where: { deviceId, channel } });
+      operations.push(db.clubControlChannel.deleteMany({ where: { deviceId, channel } }));
       continue;
     }
 
@@ -287,7 +289,7 @@ export async function saveControlMappings(
       return { error: "Ukendt relæfunktion." };
     }
 
-    await db.clubControlChannel.upsert({
+    operations.push(db.clubControlChannel.upsert({
       where: { deviceId_channel: { deviceId, channel } },
       create: {
         deviceId,
@@ -303,13 +305,16 @@ export async function saveControlMappings(
         lastState: null,
         lastError: null,
       },
-    });
+    }));
   }
 
-  await db.clubControl.update({
+  operations.push(db.clubControl.update({
     where: { id: device.controlId },
     data: { enabled: false, lastError: null },
-  });
+  }));
+  // Validate every assignment before making changes; apply mappings and the
+  // safety disable atomically so an invalid form cannot leave a partial setup.
+  await db.$transaction(operations);
   revalidatePath("/admin");
   return {
     ok: "Kanalerne er gemt. Gennemgå dem, test relæerne, og aktivér derefter styringen.",

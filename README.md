@@ -203,6 +203,7 @@ Den fysiske 230V-/låseinstallation skal stadig dimensioneres og monteres korrek
 | `EMAIL_FROM` | nej | Afsenderadresse |
 | `APP_URL` | nej | Bruges i links i e-mails |
 | `CRON_SECRET` | nej | Beskytter `/api/cron/sync` og `/api/cron/club-control`. Uden den er baggrundsjobbene slået fra |
+| `CLUB_CONTROL_CRON_SECRET` | nej | Separat nøgle til lysjobbet; bruges i stedet for `CRON_SECRET`, når den er sat |
 
 ## Baggrundsjob
 
@@ -220,12 +221,13 @@ Lysstyringen har sit eget lette endpoint, så den kan køre hvert minut uden at
 starte kalender-, mail- og browserjobbet ovenfor:
 
 ```bash
-curl -sS -H "Authorization: Bearer $CRON_SECRET" https://racketbuddy.app/api/cron/club-control
+curl --fail-with-body --max-time 55 -sS -H "Authorization: Bearer $CLUB_CONTROL_CRON_SECRET" https://racketbuddy.app/api/cron/club-control
 ```
 
 Kør dette hvert minut (`* * * * *`). Endpointet læser den faktiske relæstatus
-før hver ændring, retter kun kanaler der står forkert, og kræver samme
-`CRON_SECRET` som det øvrige baggrundsjob.
+før hver ændring og retter kun kanaler der står forkert. Sæt den samme
+`CLUB_CONTROL_CRON_SECRET` på webservicen og minutjobbet. Hvis den ikke er
+sat på webservicen, bruges `CRON_SECRET` som fallback.
 
 ## Juridiske dokumenter
 

@@ -91,6 +91,7 @@ async function postJson<T>(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       cache: "no-store",
+      redirect: "error",
       signal: controller.signal,
     });
   } catch (error) {
@@ -111,7 +112,8 @@ async function postJson<T>(
     } catch {
       detail = raw.slice(0, 180);
     }
-    const suffix = detail ? `: ${detail}` : "";
+    const safeDetail = String(detail).replaceAll(credentials.authKey, "[redacted]").slice(0, 180);
+    const suffix = safeDetail ? `: ${safeDetail}` : "";
     throw new Error(`Shelly Cloud afviste kommandoen (${response.status})${suffix}`);
   }
 
@@ -120,7 +122,7 @@ async function postJson<T>(
   try {
     return JSON.parse(text) as T;
   } catch {
-    return {} as T;
+    throw new Error("Shelly Cloud returnerede et ugyldigt svar.");
   }
 }
 
