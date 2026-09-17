@@ -532,6 +532,18 @@ export async function testClubControlChannel(clubId: string, channelId: string) 
   if (!channel) throw new Error("Relækanalen findes ikke.");
 
   const control = channel.device.control;
+  if (control.enabled) return { error: "Sæt styringen på pause før en fysisk test." };
+  if (channel.kind === "UNUSED") return { error: "Vælg først hvad relæet styrer." };
+  const now = new Date();
+  const claimed = await db.$transaction(async tx => {
+    const lock = await tx.clubControl.updateMany({
+      where: { id: control.id, enabled: false, OR: [{ setupTestLockedUntil: null }, { setupTestLockedUntil: { lte: now } }] },
+      data: { setupTestLockedUntil: new Date(now.getTime() + 15_000) },
+    });
+    if (!lock.count) return null;
+    return tx.clubControlChannel.update({ where: { id: channel.id, updatedAt: channel.updatedAt }, data: { setupTestedAt: null, setupConfirmedAt: null } });
+  });
+  if (!claimed) return { error: "En test er i gang. Vent 15 sekunder, før du tester igen." };
   try {
     const result = await commandSwitches(
       control,
@@ -546,9 +558,9 @@ export async function testClubControlChannel(clubId: string, channelId: string) 
 
     await db.$transaction([
       db.clubControlChannel.update({
-        where: { id: channel.id },
+        where: { id: channel.id, updatedAt: claimed.updatedAt },
         // Null, fordi Shelly selv slukker igen efter tre sekunder.
-        data: { lastState: null, lastCommandAt: new Date(), lastError: null },
+        data: { lastState: null, lastCommandAt: new Date(), lastError: null, setupTestedAt: new Date(), setupConfirmedAt: null },
       }),
       db.clubControlEvent.create({
         data: {
@@ -565,7 +577,7 @@ export async function testClubControlChannel(clubId: string, channelId: string) 
     const message = error instanceof Error ? error.message : "Testen fejlede.";
     await db.clubControlChannel.update({
       where: { id: channel.id },
-      data: { lastCommandAt: new Date(), lastError: message },
+      data: { lastCommandAt: new Date(), lastError: message, setupTestedAt: null, setupConfirmedAt: null },
     });
     await db.clubControlEvent.create({
       data: {

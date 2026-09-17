@@ -753,6 +753,8 @@ export default async function AdminPage({
                 courtId: channel.courtId,
                 lastState: channel.lastState,
                 lastCommandAt: channel.lastCommandAt?.toISOString() ?? null,
+                setupTestedAt: channel.setupTestedAt?.toISOString() ?? null,
+                setupConfirmedAt: channel.setupConfirmedAt?.toISOString() ?? null,
                 lastError: channel.lastError,
               })),
             })),

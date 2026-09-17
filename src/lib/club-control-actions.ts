@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { db } from "./db";
 import { seal } from "./crypto-box";
+import { parseSetupDeviceIds, setupProgress } from "./club-control-setup";
 import { getCurrentUser } from "./session";
 import {
   inspectShellyDevices,
@@ -75,6 +76,10 @@ export async function saveControlConnection(
     return {
       error: "Tilføj controllerne og fordel mindst én relækanal, før styringen aktiveres.",
     };
+  }
+  if (enabled) {
+    const devices = await db.clubControlDevice.findMany({ where: { controlId: existing?.id ?? "" }, include: { channels: true } });
+    if (!setupProgress(devices).ready) return { error: "Gennemgå og bekræft alle relæer i guiden først." };
   }
 
   const authKeyCipher = rawAuthKey ? seal(rawAuthKey) : existing?.authKeyCipher;
@@ -304,6 +309,8 @@ export async function saveControlMappings(
         label: customLabel || fallbackLabel,
         lastState: null,
         lastError: null,
+        setupTestedAt: null,
+        setupConfirmedAt: null,
       },
     }));
   }
@@ -326,12 +333,127 @@ export async function testControlChannel(
   formData: FormData
 ): Promise<FormResult> {
   const { clubId } = await requireClubAdmin();
+  if (formData.get("safeToTest") !== "on") return { error: "Bekræft først, at det er sikkert at teste relæet." };
   const result = await testClubControlChannel(
     clubId,
     String(formData.get("channelId") ?? "")
   );
   revalidatePath("/admin");
   return result;
+}
+
+/** One connection form: validate all supplied devices before saving anything. */
+export async function connectControlSetup(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const { clubId } = await requireClubAdmin();
+  const existing = await db.clubControl.findUnique({ where: { clubId } });
+  if (existing?.enabled) return { error: "Sæt styringen på pause, før forbindelsen ændres." };
+  try {
+    const serverUrl = normaliseShellyServerUrl(String(formData.get("serverUrl") ?? ""));
+    const ids = parseSetupDeviceIds(String(formData.get("deviceIds") ?? ""));
+    const key = String(formData.get("authKey") ?? "").trim();
+    if (key && (key.length < 16 || key.length > 1000)) return { error: "Kopiér hele Authorization Cloud Key fra Shelly." };
+    const authKeyCipher = key ? seal(key) : existing?.authKeyCipher;
+    if (!authKeyCipher) return { error: "Indsæt nøglen fra Shelly." };
+    const states = await inspectShellyDevices({ id: existing?.id ?? clubId, serverUrl, authKeyCipher }, ids);
+    const devices = ids.map(id => {
+      const state = states.find(s => s.id.toLowerCase() === id);
+      if (!state || state.online !== 1) throw new Error(`Enhed ${id} er ikke online. Åbn Shelly og kontrollér Cloud-forbindelsen og ID’et.`);
+      const count = shellyChannelCount(state);
+      if (!count || count > 8) throw new Error(`Enhed ${id} har ingen understøttede relæer. Brug en online Shelly med switch-kanaler.`);
+      return { id, state, count };
+    });
+    await db.$transaction(async tx => {
+      const control = await tx.clubControl.upsert({ where: { clubId },
+        create: { clubId, serverUrl, authKeyCipher, enabled: false },
+        update: { serverUrl, authKeyCipher, enabled: false, lastError: null } });
+      if (key || existing?.serverUrl !== serverUrl) {
+        await tx.clubControlChannel.updateMany({ where: { device: { controlId: control.id } }, data: { setupTestedAt: null, setupConfirmedAt: null } });
+      }
+      for (const [index, device] of devices.entries()) {
+        const saved = await tx.clubControlDevice.upsert({
+          where: { controlId_externalId: { controlId: control.id, externalId: device.id } },
+          create: { controlId: control.id, externalId: device.id, name: `Controller ${index + 1}`, channelCount: device.count, model: device.state.code, online: true, lastSeenAt: new Date() },
+          update: { channelCount: device.count, model: device.state.code, online: true, lastSeenAt: new Date() },
+        });
+        await tx.clubControlChannel.deleteMany({ where: { deviceId: saved.id, channel: { gte: device.count } } });
+      }
+    });
+    revalidatePath("/admin");
+    return { ok: `${devices.length} controller(e) forbundet. Vælg nu hvad hvert relæ styrer.` };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Forbindelsen kunne ikke gemmes. Prøv igen." }; }
+}
+
+export async function saveSetupChannel(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const { clubId } = await requireClubAdmin();
+  const deviceId = String(formData.get("deviceId") ?? "");
+  const channel = Number(formData.get("channel"));
+  const device = await db.clubControlDevice.findFirst({ where: { id: deviceId, control: { clubId } }, include: { control: true } });
+  if (!device || !Number.isInteger(channel) || channel < 0 || channel >= device.channelCount) return { error: "Relæet findes ikke." };
+  if (device.control.enabled) return { error: "Sæt styringen på pause først." };
+  const choice = String(formData.get("assignment") ?? "");
+  let kind = choice, courtId: string | null = null, label = "";
+  if (choice.startsWith("COURT_LIGHT:")) {
+    courtId = choice.slice(12);
+    const court = await db.court.findFirst({ where: { id: courtId, clubId } });
+    if (!court) return { error: "Vælg en af klubbens baner." };
+    kind = "COURT_LIGHT"; label = `${court.name} lys`;
+  } else if (choice === "COMMON_LIGHT") label = "Gang / fælleslys";
+  else if (choice === "DOOR") label = "Dør";
+  else if (choice === "UNUSED") label = "Ikke tilsluttet";
+  else return { error: "Vælg hvad relæet styrer." };
+  const data = { kind, courtId, label, setupTestedAt: null, setupConfirmedAt: kind === "UNUSED" ? new Date() : null, lastError: null };
+  await db.$transaction([
+    db.clubControlChannel.upsert({ where: { deviceId_channel: { deviceId, channel } }, create: { deviceId, channel, ...data }, update: data }),
+    db.clubControl.update({ where: { id: device.controlId }, data: { enabled: false } }),
+  ]);
+  revalidatePath("/admin");
+  return { ok: kind === "UNUSED" ? "Relæet er markeret som ikke tilsluttet." : "Gemt. Test nu, om det er det rigtige lys eller den rigtige dør." };
+}
+
+export async function confirmSetupChannel(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const { clubId } = await requireClubAdmin();
+  if (formData.get("observed") !== "on") return { error: "Bekræft, at du selv har set den rigtige funktion reagere og vende tilbage efter testen." };
+  const testedAt = new Date(String(formData.get("testedAt") ?? ""));
+  if (!Number.isFinite(testedAt.getTime())) return { error: "Test relæet først." };
+  const result = await db.clubControlChannel.updateMany({ where: {
+    id: String(formData.get("channelId") ?? ""), setupTestedAt: testedAt, lastError: null,
+    device: { control: { clubId, enabled: false } },
+  }, data: { setupConfirmedAt: new Date() } });
+  revalidatePath("/admin");
+  return result.count ? { ok: "Bekræftet. Fortsæt til næste relæ." } : { error: "Opsætningen er ændret. Test relæet igen." };
+}
+
+export async function pauseControlSetup(_prev: FormResult, _formData: FormData): Promise<FormResult> {
+  const { clubId } = await requireClubAdmin();
+  await db.clubControl.updateMany({ where: { clubId }, data: { enabled: false } });
+  revalidatePath("/admin");
+  return { ok: "Automatik og appens dørknap er sat på pause. Lysenes aktuelle tilstand ændres ikke." };
+}
+
+export async function activateControlSetup(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const { clubId } = await requireClubAdmin();
+  const control = await db.clubControl.findUnique({ where: { clubId }, include: { devices: { include: { channels: true } } } });
+  if (!control || !setupProgress(control.devices).ready) return { error: "Vælg funktion, test og bekræft alle tilsluttede relæer først." };
+  if (formData.get("ready") !== "on") return { error: "Bekræft den samlede opsætning først." };
+  try {
+    for (let i = 0; i < control.devices.length; i += 10) {
+      const batch = control.devices.slice(i, i + 10);
+      const states = await inspectShellyDevices(control, batch.map(d => d.externalId));
+      if (batch.some(d => !states.some(s => s.id.toLowerCase() === d.externalId && s.online === 1 && shellyChannelCount(s) === d.channelCount)))
+        return { error: "En controller er offline eller ændret. Kontrollér forbindelsen i Shelly og prøv igen." };
+    }
+    const activated = await db.clubControl.updateMany({ where: { id: control.id, updatedAt: control.updatedAt }, data: {
+      enabled: true, lastError: null,
+      accessBeforeMinutes: integerField(formData, "accessBeforeMinutes", 15, 0, 120),
+      accessAfterMinutes: integerField(formData, "accessAfterMinutes", 15, 0, 120),
+      lightsBeforeMinutes: integerField(formData, "lightsBeforeMinutes", 10, 0, 120),
+      lightsAfterMinutes: integerField(formData, "lightsAfterMinutes", 5, 0, 120),
+      doorPulseSeconds: integerField(formData, "doorPulseSeconds", 5, 1, 30),
+    } });
+    if (!activated.count) return { error: "Opsætningen blev ændret under kontrollen. Gennemgå den og aktivér igen." };
+    revalidatePath("/admin");
+    return { ok: "Aktiveret. Lysene følger nu bookingerne ved næste minutkontrol." };
+  } catch (error) { return { error: error instanceof Error ? error.message : "Kunne ikke aktivere. Prøv igen." }; }
 }
 
 export async function runControlNow(
