@@ -9,6 +9,7 @@
 // samtalen og beskederne fungerer præcis som ved et almindeligt opslag.
 
 import { db } from "./db";
+import { blockedUserIds, usersAreBlocked } from "./moderation";
 
 export const LEVEL_SPREAD = 1; // vis spillere inden for ±1 niveau
 
@@ -20,11 +21,14 @@ export async function nextCandidates(userId: string, take = 10) {
   const me = await db.user.findUnique({ where: { id: userId } });
   if (!me) return [];
 
-  const seen = await db.swipe.findMany({
-    where: { fromUserId: userId },
-    select: { toUserId: true },
-  });
-  const skip = [userId, ...seen.map((s: any) => s.toUserId)];
+  const [seen, blocked] = await Promise.all([
+    db.swipe.findMany({
+      where: { fromUserId: userId },
+      select: { toUserId: true },
+    }),
+    blockedUserIds(userId),
+  ]);
+  const skip = [userId, ...seen.map((s: any) => s.toUserId), ...blocked];
 
   return db.user.findMany({
     where: {
@@ -54,6 +58,7 @@ export async function recordSwipe(
   liked: boolean
 ): Promise<SwipeResult> {
   if (fromUserId === toUserId) return { matched: false };
+  if (await usersAreBlocked(fromUserId, toUserId)) return { matched: false };
 
   await db.swipe.upsert({
     where: { fromUserId_toUserId: { fromUserId, toUserId } },
@@ -68,7 +73,6 @@ export async function recordSwipe(
   });
   if (!reciprocal?.liked) return { matched: false };
 
-  // Findes samtalen allerede? (fx hvis begge swiper hurtigt efter hinanden)
   const existing = await db.matchRequest.findFirst({
     where: {
       source: "SWIPE",
@@ -90,7 +94,7 @@ export async function recordSwipe(
 
   const thread = await db.matchRequest.create({
     data: {
-      requesterId: toUserId, // den der likede først står som opretter
+      requesterId: toUserId,
       acceptedById: fromUserId,
       status: "MATCHED",
       source: "SWIPE",
@@ -106,8 +110,13 @@ export async function recordSwipe(
 
 /** Antal likes brugeren har modtaget, som endnu ikke er besvaret. */
 export async function pendingLikes(userId: string): Promise<number> {
+  const blocked = await blockedUserIds(userId);
   const received = await db.swipe.findMany({
-    where: { toUserId: userId, liked: true },
+    where: {
+      toUserId: userId,
+      liked: true,
+      ...(blocked.length ? { fromUserId: { notIn: blocked } } : {}),
+    },
     select: { fromUserId: true },
   });
   if (received.length === 0) return 0;

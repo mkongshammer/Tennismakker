@@ -1,5 +1,6 @@
 import { json, preflight, requireUser, apiError } from "../../../../lib/api/helpers";
 import { createReview, pendingReviews } from "../../../../lib/reviews";
+import { objectionableContentReason } from "../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -26,11 +27,15 @@ export async function POST(req: Request) {
   if ("response" in auth) return auth.response;
 
   const body = await req.json().catch(() => ({}));
+  const comment = String(body.comment ?? "").trim();
+  const moderationError = objectionableContentReason(comment);
+  if (moderationError) return apiError(moderationError);
+
   const result = await createReview(
     auth.user.id,
     String(body.bookingId ?? ""),
     Number(body.rating ?? 0),
-    String(body.comment ?? "")
+    comment
   );
 
   if (!result.ok) return apiError(result.error);

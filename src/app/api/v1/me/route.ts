@@ -1,5 +1,6 @@
 import { json, preflight, publicUser, requireUser } from "../../../../lib/api/helpers";
 import { db } from "../../../../lib/db";
+import { eraseAccount } from "../../../../lib/erasure";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -11,34 +12,31 @@ export async function GET(req: Request) {
 }
 
 /**
- * Lukker brugerens konto og fjerner de personoplysninger, der ikke skal
- * bevares. Historiske booking-/betalingsrelationer bliver stående under en
- * anonymiseret bruger, så regnskab og allerede gennemførte bookinger ikke
- * mister deres referencer.
+ * Lukker brugerens konto. Brugerindhold og personlige profiloplysninger
+ * slettes; gennemførte booking-/betalingsrelationer bliver kun stående under
+ * en anonymiseret bruger, så lovpligtig dokumentation ikke mister referencer.
  */
 export async function DELETE(req: Request) {
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
-  const deletedEmail = `deleted-${auth.user.id}@deleted.racketbuddy.invalid`;
-
-  await db.user.update({
-    where: { id: auth.user.id },
-    data: {
-      email: deletedEmail,
-      name: "Slettet bruger",
-      phone: null,
-      area: null,
-      bio: null,
-      clubId: null,
-      stripeCustomerId: null,
-      country: "DK",
-      countryChosen: false,
-      locale: "da",
-      sports: "TENNIS",
-      role: "PLAYER",
+  // Moderationsmetadata indeholder bruger-id'er i blokeringer og rapporter.
+  // Fjern disse ved kontosletning, så de ikke fortsat kan knyttes til personen.
+  await db.platformSetting.deleteMany({
+    where: {
+      OR: [
+        { key: { startsWith: `moderation:block:${auth.user.id}:` } },
+        { key: { endsWith: `:${auth.user.id}`, startsWith: "moderation:block:" } },
+        {
+          AND: [
+            { key: { startsWith: "moderation:report:" } },
+            { value: { contains: auth.user.id } },
+          ],
+        },
+      ],
     },
   });
 
+  await eraseAccount(auth.user.id);
   return json({ ok: true });
 }

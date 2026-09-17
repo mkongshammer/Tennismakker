@@ -5,7 +5,7 @@ export const metadata = { title: "Handelsbetingelser — RacketBuddy" };
 
 export default function VilkaarPage() {
   return (
-    <LegalPage draft={false} title="Handelsbetingelser" updated="2. september 2026">
+    <LegalPage draft={false} title="Handelsbetingelser" updated="17. september 2026">
       <Section n="1" title="Hvem du handler med">
         <p>
           RacketBuddy drives af {COMPANY.name}, {COMPANY.registration}, med
@@ -98,11 +98,31 @@ export default function VilkaarPage() {
         </p>
       </Section>
 
-      <Section n="8" title="Makker-funktionen">
+      <Section n="8" title="Makker-funktionen og brugerindhold">
         <p>
-          Slår du til på et opslag, udveksles jeres kontaktoplysninger, så I selv
-          kan aftale nærmere. RacketBuddy er ikke part i den aftale og har
-          ikke kontrolleret de oplysninger, brugere angiver om sig selv.
+          RacketBuddy giver brugere mulighed for at oprette profiler og opslag,
+          skrive beskeder og anmelde gennemførte ydelser. Du er ansvarlig for det
+          indhold, du selv offentliggør eller sender.
+        </p>
+        <p>
+          Du må ikke bruge RacketBuddy til chikane, trusler, hadefuldt eller
+          seksuelt krænkende indhold, ulovligt indhold, spam, svindel,
+          identitetsmisbrug eller andet indhold, som kan skade eller vildlede
+          andre brugere. Vi kan filtrere, skjule eller fjerne indhold og kan
+          begrænse eller lukke konti, der overtræder reglerne.
+        </p>
+        <p>
+          I appen kan du rapportere profiler, opslag, samtaler og anmeldelser og
+          blokere andre brugere. En blokering forhindrer jer i at kontakte og se
+          hinanden i de relevante makkerfunktioner. Rapporter gennemgås af
+          RacketBuddy og kan føre til fjernelse af indhold eller begrænsning af
+          en konto.
+        </p>
+        <p>
+          Når to brugere får kontakt via makkerfunktionen, kan de skrive sammen
+          i RacketBuddy for selv at aftale nærmere. RacketBuddy er ikke part i
+          den aftale og har ikke kontrolleret alle oplysninger, brugere angiver
+          om sig selv.
         </p>
         <p>
           Du spiller på eget ansvar. Vi anbefaler, at I mødes på et offentligt
@@ -131,10 +151,6 @@ export default function VilkaarPage() {
           Viborg, via naevneneshus.dk. Det gælder, fordi vi retter vores
           tjeneste mod forbrugere i Danmark, selv om selskabet er registreret i
           USA — dine rettigheder som dansk forbruger følger dig.
-        </p>
-        <p>
-          Du kan også bruge EU-Kommissionens klageportal på{" "}
-          ec.europa.eu/odr.
         </p>
       </Section>
 

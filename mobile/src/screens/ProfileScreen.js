@@ -10,27 +10,45 @@ import { dateTimeLong } from "../lib/dates";
 
 const PRIVACY_URL = "https://racketbuddy.app/privatliv";
 const TERMS_URL = "https://racketbuddy.app/vilkaar";
+const DELETE_URL = "https://racketbuddy.app/slet-konto";
+const SUPPORT_EMAIL = "racketbuddy.app@gmail.com";
 
 export default function ProfileScreen() {
   const { user, logout, deleteAccount } = useAuth();
   const [state, setState] = useState({ loading: true, error: null, bookings: [] });
   const [repeatable, setRepeatable] = useState([]);
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [unblockingId, setUnblockingId] = useState(null);
 
   const load = useCallback(async () => {
     try {
-      const [{ bookings }, { items }] = await Promise.all([
+      const [{ bookings }, { items }, blocked] = await Promise.all([
         api.bookings(),
         api.repeatableBookings(),
+        api.blockedUsers(),
       ]);
       setState({ loading: false, error: null, bookings });
       setRepeatable(items);
+      setBlockedUsers(blocked.users ?? []);
     } catch (e) {
       setState({ loading: false, error: e.message, bookings: [] });
     }
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const unblock = async (blockedUser) => {
+    try {
+      setUnblockingId(blockedUser.id);
+      await api.unblockUser(blockedUser.id);
+      setBlockedUsers((users) => users.filter((u) => u.id !== blockedUser.id));
+    } catch (e) {
+      Alert.alert("Kunne ikke fjerne blokering", e.message);
+    } finally {
+      setUnblockingId(null);
+    }
+  };
 
   const confirmDelete = () => {
     Alert.alert(
@@ -97,10 +115,31 @@ export default function ProfileScreen() {
         ))
       )}
 
+      <Text style={styles.section}>Sikkerhed</Text>
+      {blockedUsers.length === 0 ? (
+        <Card><Text style={styles.meta}>Du har ikke blokeret nogen brugere.</Text></Card>
+      ) : (
+        blockedUsers.map((blockedUser) => (
+          <Card key={blockedUser.id}>
+            <View style={styles.blockedRow}>
+              <Text style={styles.blockedName}>{blockedUser.name}</Text>
+              <Button
+                title="Fjern blokering"
+                variant="ink"
+                onPress={() => unblock(blockedUser)}
+                loading={unblockingId === blockedUser.id}
+              />
+            </View>
+          </Card>
+        ))
+      )}
+
       <Text style={styles.section}>Konto og vilkår</Text>
       <Card>
         <Text style={styles.link} onPress={() => Linking.openURL(PRIVACY_URL)}>Privatlivspolitik</Text>
         <Text style={styles.link} onPress={() => Linking.openURL(TERMS_URL)}>Vilkår</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL(DELETE_URL)}>Sådan slettes en konto</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}`)}>Kontakt RacketBuddy support</Text>
       </Card>
 
       <View style={{ gap: 10 }}>
@@ -127,4 +166,6 @@ const styles = StyleSheet.create({
   bookingTitle: { fontWeight: "800" },
   warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
   link: { color: colors.court, fontWeight: "700", paddingVertical: 8 },
+  blockedRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  blockedName: { color: colors.ink, fontWeight: "800", flex: 1 },
 });

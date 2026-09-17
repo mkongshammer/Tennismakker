@@ -94,6 +94,17 @@ export const api = {
   sendMessage: (id, body) =>
     request(`/threads/${id}`, { method: "POST", body: { body } }),
 
+  report: ({ kind, targetId, targetUserId, reason = "OTHER" }) =>
+    request("/moderation/report", {
+      method: "POST",
+      body: { kind, targetId, targetUserId, reason },
+    }),
+  blockUser: (userId) =>
+    request("/moderation/block", { method: "POST", body: { userId } }),
+  blockedUsers: () => request("/moderation/block"),
+  unblockUser: (userId) =>
+    request("/moderation/block", { method: "DELETE", body: { userId } }),
+
   bookings: () => request("/bookings"),
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
 };

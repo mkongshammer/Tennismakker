@@ -4,7 +4,10 @@ on:
   pull_request:
     paths:
       - "mobile/**"
-      - "src/app/api/v1/me/**"
+      - "src/app/api/v1/**"
+      - "src/lib/messages.ts"
+      - "src/lib/moderation.ts"
+      - "src/lib/swipe.ts"
       - "src/app/(legal)/**"
       - ".github/workflows/mobile-store-check.yml"
   push:
@@ -12,7 +15,10 @@ on:
       - main
     paths:
       - "mobile/**"
-      - "src/app/api/v1/me/**"
+      - "src/app/api/v1/**"
+      - "src/lib/messages.ts"
+      - "src/lib/moderation.ts"
+      - "src/lib/swipe.ts"
       - "src/app/(legal)/**"
       - ".github/workflows/mobile-store-check.yml"
 
@@ -29,7 +35,24 @@ jobs:
           node-version: "20.19.4"
       - name: Install dependencies
         run: npm install
+      - name: Store configuration check
+        run: npm run store:check
       - name: Expo doctor
-        run: npx expo-doctor
+        run: npm run doctor
       - name: Export web bundle
         run: npx expo export --platform web --output-dir /tmp/racketbuddy-web
+
+  validate-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.4"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: TypeScript check
+        run: npx tsc --noEmit

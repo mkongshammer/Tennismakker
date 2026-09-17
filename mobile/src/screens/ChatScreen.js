@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -13,7 +15,7 @@ import { Button, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { time } from "../lib/dates";
 
-export default function ChatScreen({ route }) {
+export default function ChatScreen({ route, navigation }) {
   const { id } = route.params;
   const [state, setState] = useState({ loading: true, error: null, data: null });
   const [draft, setDraft] = useState("");
@@ -44,10 +46,55 @@ export default function ChatScreen({ route }) {
       }));
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
     } catch (e) {
-      setState((s) => ({ ...s, error: e.message }));
+      Alert.alert("Kunne ikke sende", e.message);
     } finally {
       setSending(false);
     }
+  };
+
+  const reportThread = () => {
+    Alert.alert(
+      "Rapportér samtale",
+      `Rapportér samtalen med ${state.data.otherName}? RacketBuddy gennemgår rapporten.`,
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Rapportér",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.report({ kind: "THREAD", targetId: id, reason: "OTHER" });
+              Alert.alert("Tak", "Rapporten er sendt til RacketBuddy.");
+            } catch (e) {
+              Alert.alert("Kunne ikke rapportere", e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const blockUser = () => {
+    Alert.alert(
+      `Bloker ${state.data.otherName}`,
+      "I bliver skjult for hinanden, og I kan ikke længere sende beskeder eller oprette kontakt.",
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Bloker",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.blockUser(state.data.otherUserId);
+              Alert.alert("Bruger blokeret", "Du kan administrere blokerede brugere fra din profil.");
+              navigation.goBack();
+            } catch (e) {
+              Alert.alert("Kunne ikke blokere", e.message);
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (state.loading) return <Loading />;
@@ -59,7 +106,20 @@ export default function ChatScreen({ route }) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={90}
     >
-      <Text style={styles.subject}>Om: {state.data.subject}</Text>
+      <View style={styles.threadHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.otherName}>{state.data.otherName}</Text>
+          <Text style={styles.subject}>Om: {state.data.subject}</Text>
+        </View>
+        <View style={styles.safetyActions}>
+          <Pressable onPress={reportThread} hitSlop={8}>
+            <Text style={styles.safetyLink}>Rapportér</Text>
+          </Pressable>
+          <Pressable onPress={blockUser} hitSlop={8}>
+            <Text style={styles.blockLink}>Bloker</Text>
+          </Pressable>
+        </View>
+      </View>
 
       <FlatList
         ref={listRef}
@@ -100,14 +160,21 @@ export default function ChatScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  subject: {
-    padding: 12,
-    color: colors.slate,
-    fontSize: 13,
+  threadHeader: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  otherName: { color: colors.ink, fontWeight: "800", fontSize: 14 },
+  subject: { color: colors.slate, fontSize: 12, marginTop: 2 },
+  safetyActions: { flexDirection: "row", gap: 12 },
+  safetyLink: { color: colors.slate, fontSize: 12, fontWeight: "700" },
+  blockLink: { color: colors.court, fontSize: 12, fontWeight: "800" },
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
   bubble: { maxWidth: "80%", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 },

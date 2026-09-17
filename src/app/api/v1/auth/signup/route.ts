@@ -3,6 +3,7 @@ import { db } from "../../../../../lib/db";
 import { issueToken } from "../../../../../lib/session";
 import { isDanishRegion } from "../../../../../lib/regions";
 import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
+import { objectionableContentReason } from "../../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -14,15 +15,25 @@ export async function POST(req: Request) {
   const name = String(body.name ?? "").trim();
   const level = Number(body.level ?? 3);
   const area = String(body.area ?? "").trim();
+  const termsAccepted = body.termsAccepted === true;
+  const ageConfirmed = body.ageConfirmed === true;
 
   if (!email.includes("@") || !name) {
     return apiError("Udfyld navn og en gyldig e-mail.");
   }
+  const nameModerationError = objectionableContentReason(name);
+  if (nameModerationError) return apiError(nameModerationError);
   if (password.length < 8) {
     return apiError("Adgangskoden skal være mindst 8 tegn.");
   }
   if (!isDanishRegion(area)) {
     return apiError("Vælg en af de fem danske regioner.");
+  }
+  if (!ageConfirmed) {
+    return apiError("Du skal være fyldt 18 år for at oprette en profil.");
+  }
+  if (!termsAccepted) {
+    return apiError("Du skal acceptere vilkår og privatlivspolitik for at oprette en profil.");
   }
   if (await db.user.findUnique({ where: { email } })) {
     return apiError("Der findes allerede en konto med den e-mail.");
@@ -36,6 +47,7 @@ export async function POST(req: Request) {
       level: Math.min(7, Math.max(1, level)),
       area,
       passwordHash: await bcrypt.hash(password, 10),
+      termsAcceptedAt: new Date(),
     },
   });
 
