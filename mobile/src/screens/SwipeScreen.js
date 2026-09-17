@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "../lib/api";
 import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
@@ -21,6 +21,10 @@ export default function SwipeScreen({ navigation }) {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
+  const removePlayer = (id) => {
+    setState((s) => ({ ...s, players: s.players.filter((p) => p.id !== id) }));
+  };
+
   const contact = async (player) => {
     setBusyId(player.id);
     try {
@@ -34,6 +38,50 @@ export default function SwipeScreen({ navigation }) {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const report = (player) => {
+    Alert.alert(
+      `Rapportér ${player.name}`,
+      "Rapportér profilen til RacketBuddy, hvis den indeholder spam, chikane eller andet upassende indhold.",
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Rapportér",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.report({ kind: "USER", targetUserId: player.id, reason: "OTHER" });
+              Alert.alert("Tak", "Rapporten er sendt til RacketBuddy.");
+            } catch (e) {
+              Alert.alert("Kunne ikke rapportere", e.message);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const block = (player) => {
+    Alert.alert(
+      `Bloker ${player.name}`,
+      "I bliver skjult for hinanden og kan ikke kontakte hinanden.",
+      [
+        { text: "Annullér", style: "cancel" },
+        {
+          text: "Bloker",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.blockUser(player.id);
+              removePlayer(player.id);
+            } catch (e) {
+              Alert.alert("Kunne ikke blokere", e.message);
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (state.loading) return <Loading />;
@@ -89,6 +137,14 @@ export default function SwipeScreen({ navigation }) {
                 disabled={busyId === item.id}
               />
             </View>
+            <View style={styles.safetyRow}>
+              <Pressable onPress={() => report(item)} hitSlop={8}>
+                <Text style={styles.safetyLink}>Rapportér</Text>
+              </Pressable>
+              <Pressable onPress={() => block(item)} hitSlop={8}>
+                <Text style={styles.blockLink}>Bloker bruger</Text>
+              </Pressable>
+            </View>
           </Card>
         );
       }}
@@ -116,4 +172,7 @@ const styles = StyleSheet.create({
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   sports: { color: colors.court, fontWeight: "700", marginTop: 4, fontSize: 12 },
   bio: { marginTop: 12, lineHeight: 20 },
+  safetyRow: { flexDirection: "row", justifyContent: "flex-end", gap: 16, marginTop: 14 },
+  safetyLink: { color: colors.slate, fontSize: 12, fontWeight: "700" },
+  blockLink: { color: colors.court, fontSize: 12, fontWeight: "800" },
 });
