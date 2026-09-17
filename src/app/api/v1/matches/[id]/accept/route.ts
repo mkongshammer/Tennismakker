@@ -1,5 +1,6 @@
 import { db } from "../../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../../lib/api/helpers";
+import { usersAreBlocked } from "../../../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -20,6 +21,9 @@ export async function POST(
   if (request.status !== "OPEN") return apiError("Opslaget er ikke længere åbent.");
   if (request.requesterId === auth.user.id) {
     return apiError("Du kan ikke slå til på dit eget opslag.");
+  }
+  if (await usersAreBlocked(auth.user.id, request.requesterId)) {
+    return apiError("I kan ikke kontakte hinanden.", 403);
   }
 
   await db.matchRequest.update({
