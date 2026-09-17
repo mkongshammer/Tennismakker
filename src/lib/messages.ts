@@ -5,6 +5,7 @@
 // samlet her, så både websitet og API'et bruger den samme regel.
 
 import { db } from "./db";
+import { blockedUserIds, usersAreBlocked } from "./moderation";
 
 export type ThreadAccess =
   | { ok: true; thread: any; otherUser: any }
@@ -15,7 +16,8 @@ export type ThreadAccess =
 /** Henter en tråd, hvis brugeren har adgang til den. */
 export async function loadThread(
   matchRequestId: string,
-  userId: string
+  userId: string,
+  options: { allowBlocked?: boolean } = {}
 ): Promise<ThreadAccess> {
   const request = await db.matchRequest.findUnique({
     where: { id: matchRequestId },
@@ -33,15 +35,23 @@ export async function loadThread(
     return { ok: false, reason: "msg.errNoAccess" };
   }
 
+  const otherUser = isOwner ? request.acceptedBy : request.requester;
+  if (!otherUser) return { ok: false, reason: "msg.errNoAccess" };
+
+  if (!options.allowBlocked && await usersAreBlocked(userId, otherUser.id)) {
+    return { ok: false, reason: "msg.errNoAccess" };
+  }
+
   return {
     ok: true,
     thread: request,
-    otherUser: isOwner ? request.acceptedBy : request.requester,
+    otherUser,
   };
 }
 
 /** Alle samtaler brugeren er med i, nyeste besked først. */
 export async function listThreads(userId: string) {
+  const blocked = new Set(await blockedUserIds(userId));
   const requests = await db.matchRequest.findMany({
     where: {
       acceptedById: { not: null },
@@ -54,18 +64,22 @@ export async function listThreads(userId: string) {
     },
   });
 
-  const threads = requests.map((r: any) => {
-    const other = r.requesterId === userId ? r.acceptedBy : r.requester;
-    const last = r.messages[0] ?? null;
-    return {
-      id: r.id,
-      subject: r.message,
-      otherName: other?.name ?? "Ukendt",
-      lastBody: last?.body ?? null,
-      lastAt: last?.createdAt ?? r.createdAt,
-      unread: Boolean(last && last.senderId !== userId && !last.readAt),
-    };
-  });
+  const threads = requests
+    .map((r: any) => {
+      const other = r.requesterId === userId ? r.acceptedBy : r.requester;
+      if (!other || blocked.has(other.id)) return null;
+      const last = r.messages[0] ?? null;
+      return {
+        id: r.id,
+        subject: r.message,
+        otherName: other.name,
+        otherUserId: other.id,
+        lastBody: last?.body ?? null,
+        lastAt: last?.createdAt ?? r.createdAt,
+        unread: Boolean(last && last.senderId !== userId && !last.readAt),
+      };
+    })
+    .filter(Boolean) as any[];
 
   threads.sort((a: any, b: any) => b.lastAt.getTime() - a.lastAt.getTime());
   return threads;
@@ -99,10 +113,11 @@ export async function readMessages(matchRequestId: string, userId: string) {
 
 /** Antal ulæste beskeder på tværs af alle brugerens samtaler. */
 export async function unreadCount(userId: string): Promise<number> {
+  const blocked = await blockedUserIds(userId);
   return db.message.count({
     where: {
       readAt: null,
-      senderId: { not: userId },
+      senderId: { not: userId, ...(blocked.length ? { notIn: blocked } : {}) },
       matchRequest: {
         OR: [{ requesterId: userId }, { acceptedById: userId }],
       },
