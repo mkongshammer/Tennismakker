@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "racketbuddy",
+    "newArchEnabled": false,
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -13,10 +15,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dk.racketbuddy.app"
+      "bundleIdentifier": "dk.racketbuddy.app",
+      "buildNumber": "1",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "dk.racketbuddy.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1E3D2F"
@@ -31,7 +38,6 @@
     },
     "experiments": {
       "baseUrl": "/app"
-    },
-    "icon": "./assets/icon.png"
+    }
   }
 }

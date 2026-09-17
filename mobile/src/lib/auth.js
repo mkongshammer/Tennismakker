@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Genskab session ved opstart, hvis der ligger et gyldigt token
   useEffect(() => {
     api
       .me()
@@ -34,8 +33,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  const deleteAccount = async () => {
+    await api.deleteAccount();
+    await setToken(null);
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );
