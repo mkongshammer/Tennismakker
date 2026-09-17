@@ -152,10 +152,6 @@ export default function VilkaarPage() {
           tjeneste mod forbrugere i Danmark, selv om selskabet er registreret i
           USA — dine rettigheder som dansk forbruger følger dig.
         </p>
-        <p>
-          Du kan også bruge EU-Kommissionens klageportal på{" "}
-          ec.europa.eu/odr.
-        </p>
       </Section>
 
       <Section n="11" title="Ændringer">
