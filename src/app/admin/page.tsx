@@ -18,6 +18,7 @@ import { CourtForm } from "./CourtForm";
 import { AdminsForm } from "./AdminsForm";
 import { PriceRuleForm } from "./PriceRuleForm";
 import { SystemLoginForm } from "./SystemLoginForm";
+import { ClubControlPanel } from "./ClubControlPanel";
 import { blockSummary } from "../../lib/system-blocks";
 import { MembershipForm } from "./MembershipForm";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
@@ -36,8 +37,9 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { stripe?: string; abonnement?: string };
+  searchParams: Promise<{ stripe?: string; abonnement?: string }>;
 }) {
+  const query = await searchParams;
   const user = await getCurrentUser();
   const stripeOn = await stripeEnabled();
   const pct = Math.round((await getSettings()).commissionPct * 100);
@@ -53,7 +55,7 @@ export default async function AdminPage({
     );
   }
 
-  if (searchParams.stripe === "return" || searchParams.stripe === "refresh") {
+  if (query.stripe === "return" || query.stripe === "refresh") {
     const admin = await getCurrentUser();
     if (admin?.clubId) await refreshAccountStatus("CLUB", admin.clubId).catch(() => null);
   }
@@ -108,6 +110,16 @@ export default async function AdminPage({
     orderBy: [{ dayOfWeek: "asc" }, { hour: "asc" }],
   });
 
+  const clubControl = await db.clubControl.findUnique({
+    where: { clubId: club.id },
+    include: {
+      devices: {
+        orderBy: { createdAt: "asc" },
+        include: { channels: { orderBy: { channel: "asc" } } },
+      },
+    },
+  });
+
   const courtIds = club.courts.map((c: any) => c.id);
   const today = startOfDay(new Date());
 
@@ -146,13 +158,13 @@ export default async function AdminPage({
         </p>
       </div>
 
-      {searchParams.abonnement && (
+      {query.abonnement && (
         <p className="card border border-court/25 text-sm">
-          {searchParams.abonnement === "ok"
+          {query.abonnement === "ok"
             ? "Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke."
-            : searchParams.abonnement === "afbrudt"
+            : query.abonnement === "afbrudt"
               ? "Betalingen blev afbrudt. Abonnementet er ikke startet."
-              : searchParams.abonnement === "portal"
+              : query.abonnement === "portal"
                 ? "Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det."
                 : "Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os."}
         </p>
@@ -701,6 +713,50 @@ export default async function AdminPage({
             memberPriceHour: c.memberPriceHour,
             bookings: c._count?.bookings ?? 0,
           }))}
+        />
+      </section>
+
+      <section>
+        <h2 className="display mb-1 text-2xl">Automatisk lys og adgang</h2>
+        <p className="mb-4 text-sm text-slate">
+          Knyt klubbens Shelly-controllere til banerne og døren. RacketBuddy
+          tænder lyset ud fra bookingerne, og spilleren kan kun åbne døren i
+          tidsvinduet omkring sin egen bekræftede booking.
+        </p>
+        <ClubControlPanel
+          courts={club.courts.map((court: any) => ({ id: court.id, name: court.name }))}
+          control={clubControl ? {
+            enabled: clubControl.enabled,
+            serverUrl: clubControl.serverUrl,
+            hasAuthKey: Boolean(clubControl.authKeyCipher),
+            accessBeforeMinutes: clubControl.accessBeforeMinutes,
+            accessAfterMinutes: clubControl.accessAfterMinutes,
+            doorPulseSeconds: clubControl.doorPulseSeconds,
+            lightsBeforeMinutes: clubControl.lightsBeforeMinutes,
+            lightsAfterMinutes: clubControl.lightsAfterMinutes,
+            lastCheckedAt: clubControl.lastCheckedAt?.toISOString() ?? null,
+            lastOkAt: clubControl.lastOkAt?.toISOString() ?? null,
+            lastError: clubControl.lastError,
+            devices: clubControl.devices.map((device: any) => ({
+              id: device.id,
+              name: device.name,
+              externalId: device.externalId,
+              model: device.model,
+              channelCount: device.channelCount,
+              online: device.online,
+              lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+              channels: device.channels.map((channel: any) => ({
+                id: channel.id,
+                channel: channel.channel,
+                kind: channel.kind,
+                label: channel.label,
+                courtId: channel.courtId,
+                lastState: channel.lastState,
+                lastCommandAt: channel.lastCommandAt?.toISOString() ?? null,
+                lastError: channel.lastError,
+              })),
+            })),
+          } : null}
         />
       </section>
 

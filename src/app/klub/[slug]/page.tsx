@@ -2,12 +2,13 @@ import { ClubPage } from "../../../components/ClubPage";
 
 export const dynamic = "force-dynamic";
 
-export default function KlubRoute({
+export default async function KlubRoute({
   params,
   searchParams,
 }: {
-  params: { slug: string };
-  searchParams: { dag?: string; optaget?: string; fejl?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ dag?: string; optaget?: string; fejl?: string }>;
 }) {
-  return <ClubPage slug={params.slug} searchParams={searchParams} />;
+  const [{ slug }, query] = await Promise.all([params, searchParams]);
+  return <ClubPage slug={slug} searchParams={query} />;
 }

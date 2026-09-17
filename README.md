@@ -167,10 +167,26 @@ Auth sker med et Bearer-token i stedet for cookien, men det er samme JWT og samm
 | `/api/v1/matches` | POST | ja |
 | `/api/v1/matches/[id]/accept` | POST | ja |
 | `/api/v1/bookings` | GET, POST | ja |
+| `/api/v1/bookings/[id]/door` | POST | ja — kun bookingens ejer i adgangsvinduet |
 
 Ledige tider hentes gennem samme adapter-lag som websitet, så appen automatisk viser det rigtige, uanset om klubben kører manuel frigivelse, kalenderfeed eller native.
 
 `POST /api/v1/bookings` opretter en reservation og returnerer en `checkoutUrl`. Appen åbner den i browseren, så den aldrig rører kortdata.
+
+## Automatisk lys og adgang (Shelly)
+
+Klubadministrationen har en samlet opsætning under **Automatisk lys og adgang**:
+
+1. Klubben gemmer Shelly Cloud `Server URI` og `Authorization Cloud Key`.
+2. Controllerne tilføjes med deres Device ID (to Shelly Pro 3 giver seks relækanaler).
+3. Hver kanal knyttes til en bane, fælles-/ganglys eller en dør.
+4. Relæerne testes i tre sekunder, hvorefter automatikken kan aktiveres.
+
+Cloud-nøglen krypteres med AES-256-GCM via `AUTH_SECRET`. Den sendes aldrig til mobilappen. Appen får kun et tidsvindue og en dørknap for brugerens egen bekræftede booking. Ved et tryk kontrollerer serveren igen bruger, booking, status og klokkeslæt, og Shelly får en `toggle_after`-kommando, så døren automatisk falder tilbage efter det valgte antal sekunder. Alle døråbninger og lysændringer gemmes i et revisionsspor uden at gemme nøglen.
+
+Lys beregnes ud fra bekræftede RacketBuddy-bookinger og optaget-tider fra klubbens iCal-feed. Banelys følger den konkrete bane, mens fælleslys er tændt, hvis mindst én bane er aktiv. Back-to-back-bookinger slukker derfor ikke lyset imellem spillerne.
+
+Den fysiske 230V-/låseinstallation skal stadig dimensioneres og monteres korrekt, og klubben skal bevare en manuel nød-/personaleadgang ved internet- eller cloududfald. Softwareopsætningen er ikke en elektrisk godkendelse.
 
 **Bemærk:** CORS står på `*`, hvilket er fint for en mobilapp, men skal strammes, hvis der senere kommer en webklient på et andet domæne.
 
@@ -186,7 +202,7 @@ Ledige tider hentes gennem samme adapter-lag som websitet, så appen automatisk 
 | `EMAIL_API_KEY` | nej | Resend-nøgle. Mangler den, logges e-mails i stedet for at blive sendt |
 | `EMAIL_FROM` | nej | Afsenderadresse |
 | `APP_URL` | nej | Bruges i links i e-mails |
-| `CRON_SECRET` | nej | Beskytter `/api/cron/sync`. Uden den er baggrundsjobbet slået fra |
+| `CRON_SECRET` | nej | Beskytter `/api/cron/sync` og `/api/cron/club-control`. Uden den er baggrundsjobbene slået fra |
 
 ## Baggrundsjob
 
@@ -199,6 +215,17 @@ curl -sS -H "Authorization: Bearer $CRON_SECRET" https://tennis-makker.onrender.
 ```
 
 Hvert 15. minut (`*/15 * * * *`) er et fornuftigt udgangspunkt.
+
+Lysstyringen har sit eget lette endpoint, så den kan køre hvert minut uden at
+starte kalender-, mail- og browserjobbet ovenfor:
+
+```bash
+curl -sS -H "Authorization: Bearer $CRON_SECRET" https://racketbuddy.app/api/cron/club-control
+```
+
+Kør dette hvert minut (`* * * * *`). Endpointet læser den faktiske relæstatus
+før hver ændring, retter kun kanaler der står forkert, og kræver samme
+`CRON_SECRET` som det øvrige baggrundsjob.
 
 ## Juridiske dokumenter
 

@@ -15,13 +15,14 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const booking = await db.booking.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { court: { include: { club: true } } },
   });
 

@@ -18,10 +18,11 @@ export default async function DomainPage({
   params,
   searchParams,
 }: {
-  params: { host: string };
-  searchParams: { dag?: string; optaget?: string; fejl?: string };
+  params: Promise<{ host: string }>;
+  searchParams: Promise<{ dag?: string; optaget?: string; fejl?: string }>;
 }) {
-  const host = decodeURIComponent(params.host).toLowerCase();
+  const [{ host: encodedHost }, query] = await Promise.all([params, searchParams]);
+  const host = decodeURIComponent(encodedHost).toLowerCase();
 
   const club = await db.club.findFirst({
     where: {
@@ -33,5 +34,5 @@ export default async function DomainPage({
 
   if (!club) notFound();
 
-  return <ClubPage slug={club.slug} searchParams={searchParams} ownDomain />;
+  return <ClubPage slug={club.slug} searchParams={query} ownDomain />;
 }

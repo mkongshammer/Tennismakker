@@ -5,11 +5,12 @@ export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
 /** POST /api/v1/players/:id/contact — åbn eller genbrug en direkte samtale. */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
-  const otherId = params.id;
+  const otherId = id;
   if (!otherId || otherId === auth.user.id) return apiError("Ugyldig spiller.");
 
   const other = await db.user.findFirst({

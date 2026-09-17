@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 export default async function TraenerePage({
   searchParams,
 }: {
-  searchParams: { region?: string };
+  searchParams: Promise<{ region?: string }>;
 }) {
+  const query = await searchParams;
   const prefs = await getPreferences();
   const t = translator(prefs.locale);
-  const selectedRegion = searchParams.region?.trim() ?? "";
+  const selectedRegion = query.region?.trim() ?? "";
 
   const allCoaches = await db.coachProfile.findMany({
     where: {

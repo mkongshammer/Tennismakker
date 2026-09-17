@@ -8,6 +8,7 @@ import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
 import { releaseExpiredHolds, startCheckout } from "../../../../lib/payments";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
+import { bookingDoorAccess } from "../../../../lib/club-control";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -19,14 +20,48 @@ export async function GET(req: Request) {
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
+  const now = new Date();
+
   const bookings = await db.booking.findMany({
     where: {
       userId: auth.user.id,
       status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
-      startsAt: { gte: new Date() },
+      OR: [
+        { startsAt: { gte: now } },
+        // Behold den aktuelle banebooking i appen, også efter start, så
+        // dørknappen ikke forsvinder netop når spilleren står ved døren.
+        {
+          kind: "COURT",
+          status: "CONFIRMED",
+          endsAt: { gte: new Date(now.getTime() - 120 * 60_000) },
+        },
+      ],
     },
     include: {
-      court: { include: { club: true } },
+      court: {
+        include: {
+          club: {
+            include: {
+              control: {
+                select: {
+                  enabled: true,
+                  accessBeforeMinutes: true,
+                  accessAfterMinutes: true,
+                  doorPulseSeconds: true,
+                  devices: {
+                    select: {
+                      channels: {
+                        where: { kind: "DOOR" },
+                        select: { kind: true, label: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       coachProfile: { include: { user: true } },
     },
     orderBy: { startsAt: "asc" },
@@ -44,6 +79,7 @@ export async function GET(req: Request) {
         b.kind === "COURT"
           ? `${b.court?.club.name} — ${b.court?.name}`
           : `Trænertime: ${b.coachProfile?.user.name}`,
+      access: bookingDoorAccess(b, now),
     })),
   });
 }

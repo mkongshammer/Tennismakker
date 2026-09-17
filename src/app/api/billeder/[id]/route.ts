@@ -7,9 +7,10 @@ import { load } from "../../../../lib/images";
 // aldrig vide, hvor filen er — og et skifte af udbyder ændrer ingen sider.
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const image = await load(params.id);
+  const { id } = await params;
+  const image = await load(id);
   if (!image) return new Response("Not found", { status: 404 });
 
   if (image.publicUrl) {

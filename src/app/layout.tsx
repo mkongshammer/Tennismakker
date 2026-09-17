@@ -43,7 +43,8 @@ export default async function RootLayout({
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   const t = translator(prefs.locale);
   const unread = user ? await unreadCount(user.id) : 0;
-  const suggestedCountry = prefs.countryChosen ? null : detectCountry();
+  const suggestedCountry = prefs.countryChosen ? null : await detectCountry();
+  const requestHeaders = await headers();
 
   let needsSportsOnboarding = false;
   if (user && ["PLAYER", "COACH"].includes(user.role)) {
@@ -62,9 +63,9 @@ export default async function RootLayout({
     }
   }
 
-  void recordView(headers().get("user-agent"));
+  void recordView(requestHeaders.get("user-agent"));
 
-  const onOwnDomain = !isOwnHost(headers().get("host") ?? "");
+  const onOwnDomain = !isOwnHost(requestHeaders.get("host") ?? "");
 
   return (
     <html lang={prefs.locale}>

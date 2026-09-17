@@ -7,13 +7,14 @@ export async function OPTIONS() { return preflight(); }
 /** POST /api/v1/matches/[id]/accept — slå til på et opslag og få kontaktinfo. */
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
   const request = await db.matchRequest.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { requester: true },
   });
   if (!request) return apiError("Opslaget findes ikke.", 404);
@@ -23,7 +24,7 @@ export async function POST(
   }
 
   await db.matchRequest.update({
-    where: { id: params.id },
+    where: { id },
     data: { status: "MATCHED", acceptedById: auth.user.id },
   });
 

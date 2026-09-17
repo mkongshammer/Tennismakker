@@ -34,7 +34,8 @@ export async function userFromToken(token: string | undefined | null) {
 
 export async function createSession(userId: string) {
   const token = await issueToken(userId);
-  cookies().set(COOKIE, token, {
+  const jar = await cookies();
+  jar.set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -43,14 +44,16 @@ export async function createSession(userId: string) {
   });
 }
 
-export function destroySession() {
-  cookies().delete(COOKIE);
+export async function destroySession() {
+  const jar = await cookies();
+  jar.delete(COOKIE);
 }
 
 // Cachet pr. request så flere komponenter kan kalde den billigt
-export const getCurrentUser = cache(async () =>
-  userFromToken(cookies().get(COOKIE)?.value)
-);
+export const getCurrentUser = cache(async () => {
+  const jar = await cookies();
+  return userFromToken(jar.get(COOKIE)?.value);
+});
 
 /** Læser Bearer-token fra en API-forespørgsel (mobil-appen). */
 export async function userFromRequest(req: Request) {

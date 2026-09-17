@@ -28,8 +28,8 @@ jobs:
         with:
           node-version: "20.19.4"
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Expo doctor
         run: npx expo-doctor
-      - name: Export web bundle
-        run: npx expo export --platform web --output-dir /tmp/racketbuddy-web
+      - name: Export iOS, Android and web bundles
+        run: npx expo export --platform all --output-dir /tmp/racketbuddy-bundles

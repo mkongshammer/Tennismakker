@@ -23,8 +23,9 @@ export const dynamic = "force-dynamic";
 export default async function ProfilPage({
   searchParams,
 }: {
-  searchParams: { betalt?: string };
+  searchParams: Promise<{ betalt?: string }>;
 }) {
+  const query = await searchParams;
   const user = await getCurrentUser();
   const t = translator((await getPreferences()).locale);
 
@@ -104,7 +105,7 @@ export default async function ProfilPage({
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
-      {searchParams.betalt && hasConfirmedBooking && (
+      {query.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
           <p className="display text-xl">{t("profile.paidTitle")}</p>
           <p className="mt-1 text-sm text-slate">
@@ -113,7 +114,7 @@ export default async function ProfilPage({
         </div>
       )}
 
-      {searchParams.betalt && !hasConfirmedBooking && (
+      {query.betalt && !hasConfirmedBooking && (
         <div className="rounded-2xl border border-slate/25 bg-mist p-5">
           <p className="display text-xl">{t("profile.pendingTitle")}</p>
           <p className="mt-1 text-sm text-slate">

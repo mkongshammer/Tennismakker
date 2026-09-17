@@ -15,12 +15,13 @@ import { getSettings } from "../../../lib/settings";
 
 export const dynamic = "force-dynamic";
 
-export default async function CheckoutPage({ params }: { params: { id: string } }) {
+export default async function CheckoutPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const booking = await db.booking.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
   });
   if (!booking || booking.userId !== user.id) notFound();
@@ -80,7 +81,7 @@ export default async function CheckoutPage({ params }: { params: { id: string } 
 
   async function pay() {
     "use server";
-    await confirmBookingPayment(params.id);
+    await confirmBookingPayment(id);
     redirect("/profil?betalt=1");
   }
 

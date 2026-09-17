@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { api, checkoutUrl } from "../lib/api";
@@ -16,6 +16,15 @@ export default function ProfileScreen() {
   const [state, setState] = useState({ loading: true, error: null, bookings: [] });
   const [repeatable, setRepeatable] = useState([]);
   const [deleting, setDeleting] = useState(false);
+  const [openingDoor, setOpeningDoor] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
+  // En skærm, der allerede står åben, skal selv aktivere dørknappen, når
+  // adgangsvinduet begynder. Serveren laver stadig den afgørende kontrol.
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 15_000);
+    return () => clearInterval(timer);
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -31,6 +40,21 @@ export default function ProfileScreen() {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const openDoor = async (booking) => {
+    try {
+      setOpeningDoor(booking.id);
+      const result = await api.openDoor(booking.id);
+      Alert.alert(
+        `${result.label ?? "Døren"} er åbnet`,
+        `Låsen er aktiveret i ${result.unlockSeconds ?? 5} sekunder.`
+      );
+    } catch (e) {
+      Alert.alert("Kunne ikke åbne døren", e.message ?? "Prøv igen eller kontakt klubben.");
+    } finally {
+      setOpeningDoor(null);
+    }
+  };
 
   const confirmDelete = () => {
     Alert.alert(
@@ -78,23 +102,51 @@ export default function ProfileScreen() {
       ) : state.bookings.length === 0 ? (
         <Empty>Ingen bookinger endnu.</Empty>
       ) : (
-        state.bookings.map((b) => (
-          <Card key={b.id}>
-            <Text style={styles.bookingTitle}>{b.title}</Text>
-            <Text style={styles.meta}>
-              {dateTimeLong(new Date(b.startsAt))} · {b.priceKr} kr
-            </Text>
-            {b.status === "HOLD" && (
-              <View style={{ marginTop: 12 }}>
-                <Text style={styles.warn}>Afventer betaling</Text>
-                <Button
-                  title="Betal nu"
-                  onPress={() => Linking.openURL(checkoutUrl(`/checkout/${b.id}/start`))}
-                />
-              </View>
-            )}
-          </Card>
-        ))
+        state.bookings.map((b) => {
+          const access = b.access;
+          const accessFrom = access ? new Date(access.availableFrom).getTime() : 0;
+          const accessUntil = access ? new Date(access.availableUntil).getTime() : 0;
+          const doorAvailable = Boolean(access && now >= accessFrom && now <= accessUntil);
+
+          return (
+            <Card key={b.id}>
+              <Text style={styles.bookingTitle}>{b.title}</Text>
+              <Text style={styles.meta}>
+                {dateTimeLong(new Date(b.startsAt))} · {b.priceKr} kr
+              </Text>
+              {b.status === "HOLD" && (
+                <View style={{ marginTop: 12 }}>
+                  <Text style={styles.warn}>Afventer betaling</Text>
+                  <Button
+                    title="Betal nu"
+                    onPress={() => Linking.openURL(checkoutUrl(`/checkout/${b.id}/start`))}
+                  />
+                </View>
+              )}
+              {access && b.status === "CONFIRMED" && (
+                <View style={styles.accessBox}>
+                  <Text style={styles.accessTitle}>Digital adgang</Text>
+                  {doorAvailable ? (
+                    <Button
+                      title={`Åbn ${access.label ?? "døren"}`}
+                      onPress={() => openDoor(b)}
+                      loading={openingDoor === b.id}
+                    />
+                  ) : now < accessFrom ? (
+                    <Text style={styles.meta}>
+                      Døren kan åbnes fra {dateTimeLong(new Date(access.availableFrom))}.
+                    </Text>
+                  ) : (
+                    <Text style={styles.meta}>Adgangsvinduet til denne booking er lukket.</Text>
+                  )}
+                  {access.instructions ? (
+                    <Text style={styles.accessInstructions}>{access.instructions}</Text>
+                  ) : null}
+                </View>
+              )}
+            </Card>
+          );
+        })
       )}
 
       <Text style={styles.section}>Konto og vilkår</Text>
@@ -126,5 +178,14 @@ const styles = StyleSheet.create({
   section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
   bookingTitle: { fontWeight: "800" },
   warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
+  accessBox: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 8,
+  },
+  accessTitle: { color: colors.ink, fontWeight: "800", fontSize: 14 },
+  accessInstructions: { color: colors.slate, fontSize: 13, lineHeight: 18 },
   link: { color: colors.court, fontWeight: "700", paddingVertical: 8 },
 });

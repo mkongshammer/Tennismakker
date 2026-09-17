@@ -7,15 +7,16 @@ export const dynamic = "force-dynamic";
 export default async function NulstilPage({
   searchParams,
 }: {
-  searchParams: { token?: string };
+  searchParams: Promise<{ token?: string }>;
 }) {
+  const query = await searchParams;
   const t = translator((await getPreferences()).locale);
 
   return (
     <div className="mx-auto max-w-sm">
       <h1 className="display mb-6 text-3xl">{t("auth.forgotTitle")}</h1>
       <ResetForm
-        token={searchParams.token ?? ""}
+        token={query.token ?? ""}
         labels={{
           password: t("auth.newPassword"),
           repeat: t("auth.repeatPassword"),

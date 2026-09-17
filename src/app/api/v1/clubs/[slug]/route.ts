@@ -9,10 +9,11 @@ export async function OPTIONS() { return preflight(); }
 /** GET /api/v1/clubs/[slug]?dage=7 — klubinfo plus ledige tider. */
 export async function GET(
   req: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
+  const { slug } = await params;
   const club = await db.club.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { courts: { orderBy: { name: "asc" } } },
   });
   // Samme regel som klublisten: en klub der venter på godkendelse eller

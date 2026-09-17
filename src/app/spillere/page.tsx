@@ -14,9 +14,7 @@ export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
 
 type Props = {
-  searchParams?:
-    | Promise<{ sport?: string; region?: string; page?: string }>
-    | { sport?: string; region?: string; page?: string };
+  searchParams: Promise<{ sport?: string; region?: string; page?: string }>;
 };
 
 function splitSports(value: string) {
@@ -40,7 +38,7 @@ export default async function SpillerePage({ searchParams }: Props) {
   if (!user) redirect("/login");
 
   const t = translator((await getPreferences()).locale);
-  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+  const resolvedSearchParams = await searchParams;
   const selectedSport = (resolvedSearchParams.sport ?? "").trim();
   const selectedRegion = (resolvedSearchParams.region ?? "").trim();
   const requestedPage = Math.max(1, Number.parseInt(resolvedSearchParams.page ?? "1", 10) || 1);

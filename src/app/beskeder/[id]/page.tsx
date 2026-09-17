@@ -12,12 +12,13 @@ function clock(d: Date) {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-export default async function SamtalePage({ params }: { params: { id: string } }) {
+export default async function SamtalePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const user = await getCurrentUser();
   const t = translator((await getPreferences()).locale);
   if (!user) redirect("/login");
 
-  const access = await loadThread(params.id, user.id);
+  const access = await loadThread(id, user.id);
   if (!access.ok) {
     return (
       <div className="card mx-auto max-w-md text-center">
@@ -27,7 +28,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
     );
   }
 
-  const messages = await readMessages(params.id, user.id);
+  const messages = await readMessages(id, user.id);
 
   return (
     <div id="top" className="mx-auto max-w-2xl scroll-mt-4">
@@ -73,7 +74,7 @@ export default async function SamtalePage({ params }: { params: { id: string } }
       </div>
 
       <MessageForm
-        threadId={params.id}
+        threadId={id}
         placeholder={t("msg.placeholder")}
         sendLabel={t("msg.send")}
         maxLength={MAX_MESSAGE_LENGTH}

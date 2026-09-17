@@ -28,16 +28,17 @@ function pageHref(page: number, region: string, level: string) {
 export default async function MakkerePage({
   searchParams,
 }: {
-  searchParams: { region?: string; niveau?: string; page?: string; filtrer?: string };
+  searchParams: Promise<{ region?: string; niveau?: string; page?: string; filtrer?: string }>;
 }) {
+  const query = await searchParams;
   const user = await getCurrentUser();
   const prefs = await getPreferences();
   const t = translator(prefs.locale);
-  const hasUserFilters = searchParams.filtrer === "1";
-  const selectedRegion = hasUserFilters ? searchParams.region?.trim() ?? "" : "";
-  const selectedLevel = hasUserFilters ? searchParams.niveau?.trim() ?? "" : "";
+  const hasUserFilters = query.filtrer === "1";
+  const selectedRegion = hasUserFilters ? query.region?.trim() ?? "" : "";
+  const selectedLevel = hasUserFilters ? query.niveau?.trim() ?? "" : "";
   const level = selectedLevel ? Number(selectedLevel) : undefined;
-  const requestedPage = Math.max(1, Number.parseInt(searchParams.page ?? "1", 10) || 1);
+  const requestedPage = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
 
   const [openRequests, myResponses] = await Promise.all([
     db.matchRequest.findMany({

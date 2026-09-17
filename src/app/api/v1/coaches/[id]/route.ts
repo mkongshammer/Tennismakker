@@ -10,10 +10,11 @@ export async function OPTIONS() { return preflight(); }
 /** GET /api/v1/coaches/[id] — trænerprofil, pakker, anmeldelser, ledige tider. */
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const coach = await db.coachProfile.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { user: true, packages: { where: { active: true } } },
   });
   if (!coach) return apiError("Træneren findes ikke.", 404);

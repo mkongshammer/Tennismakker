@@ -28,13 +28,14 @@ function sameToken(given: string, expected: string): boolean {
 export default async function BootstrapPage({
   searchParams,
 }: {
-  searchParams: { token?: string; email?: string };
+  searchParams: Promise<{ token?: string; email?: string }>;
 }) {
+  const query = await searchParams;
   const expected = process.env.BOOTSTRAP_TOKEN;
 
   // Uden variablen findes siden reelt ikke. Samme svar som ved forkert
   // token, så ingen kan aflæse, om der overhovedet er en dør her.
-  if (!expected || !searchParams.token || !sameToken(searchParams.token, expected)) {
+  if (!expected || !query.token || !sameToken(query.token, expected)) {
     return (
       <div className="card mx-auto max-w-md text-center">
         <p className="font-bold">Ikke fundet</p>
@@ -42,7 +43,7 @@ export default async function BootstrapPage({
     );
   }
 
-  const email = (searchParams.email ?? "").trim().toLowerCase();
+  const email = (query.email ?? "").trim().toLowerCase();
   if (!email.includes("@")) {
     return (
       <div className="card mx-auto max-w-md">

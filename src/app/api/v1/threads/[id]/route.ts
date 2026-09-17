@@ -6,14 +6,15 @@ export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
 /** GET /api/v1/threads/[id] — beskederne i en samtale. */
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
-  const access = await loadThread(params.id, auth.user.id);
+  const access = await loadThread(id, auth.user.id);
   if (!access.ok) return apiError(access.reason, 403);
 
-  const messages = await readMessages(params.id, auth.user.id);
+  const messages = await readMessages(id, auth.user.id);
 
   return json({
     subject: access.thread.message,
@@ -28,11 +29,12 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 /** POST /api/v1/threads/[id] — send en besked. */
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
-  const access = await loadThread(params.id, auth.user.id);
+  const access = await loadThread(id, auth.user.id);
   if (!access.ok) return apiError(access.reason, 403);
 
   const payload = await req.json().catch(() => ({}));
@@ -41,7 +43,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (body.length > MAX_MESSAGE_LENGTH) return apiError("Beskeden er for lang.");
 
   const created = await db.message.create({
-    data: { matchRequestId: params.id, senderId: auth.user.id, body },
+    data: { matchRequestId: id, senderId: auth.user.id, body },
   });
 
   return json(

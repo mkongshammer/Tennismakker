@@ -49,8 +49,8 @@ function countryFromLanguage(header: string | null): string | null {
  * en tysker endnu, og et tilbud om at skifte til Tyskland ville føre til en
  * tom side på tysk.
  */
-export function detectCountry(): string | null {
-  const h = headers();
+export async function detectCountry(): Promise<string | null> {
+  const h = await headers();
 
   for (const name of COUNTRY_HEADERS) {
     const value = h.get(name)?.trim().toUpperCase();

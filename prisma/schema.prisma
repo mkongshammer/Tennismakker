@@ -15,49 +15,50 @@ datasource db {
 // ---------- Brugere ----------
 // role: "PLAYER" | "COACH" | "CLUB_ADMIN"
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  phone        String?
-  role         String   @default("PLAYER")
-  level        Int      @default(3) // 1-7, se src/lib/levels.ts
-  area         String? // fx "København NV", "Aarhus C"
-  country      String   @default("DK") // ISO-landekode, styrer hvad man ser
+  id               String    @id @default(cuid())
+  email            String    @unique
+  passwordHash     String
+  name             String
+  phone            String?
+  role             String    @default("PLAYER")
+  level            Int       @default(3) // 1-7, se src/lib/levels.ts
+  area             String? // fx "København NV", "Aarhus C"
+  country          String    @default("DK") // ISO-landekode, styrer hvad man ser
   // Har man selv valgt land, eller er "DK" bare standarden? Uden dette kan
   // vi ikke se forskel på en dansker og en tysker, der endnu ikke er
   // blevet spurgt — og så ville vi enten spørge alle hver gang eller
   // aldrig spørge nogen.
-  countryChosen Boolean @default(false)
+  countryChosen    Boolean   @default(false)
   // Hvornår handelsbetingelserne blev accepteret. Uden et tidsstempel kan
   // vi ikke vise, at nogen sagde ja — og "de stod på siden" er ikke et
   // bevis, hvis det en dag bliver en tvist.
-  termsAcceptedAt DateTime?
+  termsAcceptedAt  DateTime?
   /// Stripe-kunde, hvis personen har gemt et kort til fornyelse.
   stripeCustomerId String?
-  locale       String   @default("da") // se LOCALES i src/lib/sports.ts
-  sports       String   @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
-  bio          String?
-  createdAt    DateTime @default(now())
+  locale           String    @default("da") // se LOCALES i src/lib/sports.ts
+  sports           String    @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
+  bio              String?
+  createdAt        DateTime  @default(now())
 
   clubId String? // klub-admins og medlemmer kan være tilknyttet en klub
   club   Club?   @relation(fields: [clubId], references: [id])
 
-  coachProfile    CoachProfile?
-  bookings        Booking[]
-  matchRequests   MatchRequest[] @relation("requester")
-  matchResponses  MatchRequest[] @relation("acceptedBy")
-  messages        Message[]
-  swipesGiven     Swipe[]        @relation("swipesGiven")
-  swipesReceived  Swipe[]        @relation("swipesReceived")
-  reviews         Review[]
-  loginChallenges LoginChallenge[]
-  passwordResets  PasswordReset[]
-  fixedSlots      FixedSlot[]
-  memberships     Membership[]
-  teamSignups     TeamSignup[]
-  punchPurchases  ClubPunchPurchase[]
+  coachProfile     CoachProfile?
+  bookings         Booking[]
+  matchRequests    MatchRequest[]      @relation("requester")
+  matchResponses   MatchRequest[]      @relation("acceptedBy")
+  messages         Message[]
+  swipesGiven      Swipe[]             @relation("swipesGiven")
+  swipesReceived   Swipe[]             @relation("swipesReceived")
+  reviews          Review[]
+  loginChallenges  LoginChallenge[]
+  passwordResets   PasswordReset[]
+  fixedSlots       FixedSlot[]
+  memberships      Membership[]
+  teamSignups      TeamSignup[]
+  punchPurchases   ClubPunchPurchase[]
   packagePurchases PackagePurchase[]
+  controlEvents    ClubControlEvent[]
 }
 
 // ---------- Modul C: Klubber ----------
@@ -133,23 +134,23 @@ model Club {
 
   // Hjemmesiden som betalt ydelse.
   // theme: "KLASSISK" | "MARKANT" | "ENKEL"
-  theme        String  @default("KLASSISK")
-  logoId       String? // Image.id — vises i klubbens hoved
-  heroId       String? // Image.id — stort billede øverst på klubbens side
-  customDomain String? @unique // fx "soendermarktennis.dk"
+  theme            String  @default("KLASSISK")
+  logoId           String? // Image.id — vises i klubbens hoved
+  heroId           String? // Image.id — stort billede øverst på klubbens side
+  customDomain     String? @unique // fx "soendermarktennis.dk"
   // "NONE" | "REQUESTED" | "PENDING_DNS" | "LIVE"
-  domainStatus String  @default("NONE")
-  memberPriceHour Int? // medlemspris; er den sat, betaler medlemmer den
+  domainStatus     String  @default("NONE")
+  memberPriceHour  Int? // medlemspris; er den sat, betaler medlemmer den
   /// Hvor mange dage frem et medlem kan booke. Klubberne har vidt
   /// forskellig praksis — nogle syv dage, andre en hel sæson.
-  memberWindowDays Int @default(14)
+  memberWindowDays Int     @default(14)
   /// Hvor mange aktive bookinger et medlem må have ad gangen. Uden et loft
   /// kan én person reservere hele ugen, og det er den klage, en
   /// bestyrelse hører først.
-  memberMaxActive  Int @default(2)
+  memberMaxActive  Int     @default(2)
   /// Hvor mange dage frem en gæst udefra kan booke. Typisk kortere end
   /// medlemmernes, så medlemmerne får første ret til de gode tider.
-  guestWindowDays  Int @default(7)
+  guestWindowDays  Int     @default(7)
 
   address   String? // gadeadresse, bruges til kortet og til at finde vej
   latitude  Float?
@@ -165,18 +166,20 @@ model Club {
   // start. En bane der står tom om en time er tabt indtægt uanset hvad.
   lastMinuteHours Int @default(0)
 
-  courts  Court[]
-  members User[]
-  reviews Review[]
-  rules   GuestRule[]
-  posts   ClubPost[]
-  people  ClubPerson[]
-  systemLogin ClubSystemLogin?
+  courts          Court[]
+  members         User[]
+  reviews         Review[]
+  rules           GuestRule[]
+  posts           ClubPost[]
+  people          ClubPerson[]
+  systemLogin     ClubSystemLogin?
   membershipTypes MembershipType[]
   seasonTeams     SeasonTeam[]
   punchCards      ClubPunchCard[]
   priceRules      PriceRule[]
-  images  Image[]
+  images          Image[]
+  control         ClubControl?
+  controlEvents   ClubControlEvent[]
 }
 
 // ---------- Billeder ----------
@@ -206,8 +209,8 @@ model Image {
   // selv. Superadmin godkender på /superadmin.
   approved Boolean @default(false)
 
-  kind   String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO" | "COACH"
-  mime   String
+  kind String @default("PHOTO") // "LOGO" | "HERO" | "PHOTO" | "COACH"
+  mime String
 
   // Ét af to: enten ligger filen hos en lagringstjeneste (storageKey +
   // publicUrl), eller også ligger den i databasen (bytes). Databasen er
@@ -253,7 +256,7 @@ model Court {
   bookings     Booking[]
   guestSlots   GuestSlot[]
   externalBusy ExternalBusy[]
-  fixedSlots FixedSlot[]
+  fixedSlots   FixedSlot[]
 
   /// Indendørs eller udendørs. En hal koster typisk mere og kan spilles i
   /// hele vinteren; en grusbane kan hverken det ene eller det andet.
@@ -263,7 +266,8 @@ model Court {
   /// En hal og en grusbane koster sjældent det samme.
   priceHour       Int?
   memberPriceHour Int?
-  systemBlocks SystemBlock[]
+  systemBlocks    SystemBlock[]
+  controlChannels ClubControlChannel[]
 }
 
 // ---------- Frigivelsesregler ----------
@@ -274,16 +278,16 @@ model Court {
 // Det var den tungeste del af at være klub hos os: 20 timer om ugen
 // skulle klikkes ind i hånden hver uge.
 model GuestRule {
-  id        String  @id @default(cuid())
-  clubId    String
-  club      Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  courtIds  String // kommasepareret, tom = alle klubbens baner
+  id         String   @id @default(cuid())
+  clubId     String
+  club       Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  courtIds   String // kommasepareret, tom = alle klubbens baner
   daysOfWeek String // kommasepareret 0-6, 0 = søndag
-  fromHour  Int
-  toHour    Int
-  priceKr   Int
-  active    Boolean @default(true)
-  createdAt DateTime @default(now())
+  fromHour   Int
+  toHour     Int
+  priceKr    Int
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
 
   @@index([clubId, active])
 }
@@ -323,12 +327,12 @@ model ExternalBusy {
 // kind: "COURT" | "COACH"
 // status: "HOLD" | "CONFIRMED" | "CANCELLED"
 model Booking {
-  id            String    @id @default(cuid())
-  kind          String
-  status        String    @default("HOLD")
-  startsAt      DateTime
-  endsAt        DateTime
-  priceKr       Int
+  id                String    @id @default(cuid())
+  kind              String
+  status            String    @default("HOLD")
+  startsAt          DateTime
+  endsAt            DateTime
+  priceKr           Int
   // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
   // klippet gives tilbage, hvis bookingen aflyses.
   packagePurchaseId String?
@@ -336,8 +340,8 @@ model Booking {
   fixedSlotId       String?
   /// Blev timen betalt med et klip fra klubbens klippekort?
   punchPurchaseId   String?
-  holdExpiresAt DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
-  createdAt     DateTime  @default(now())
+  holdExpiresAt     DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
+  createdAt         DateTime  @default(now())
 
   // True når klubben bruger sit eget bookingsystem (MANUAL/ICAL/API): bookingen
   // findes hos os, men skal også ind i klubbens system. Vises i klub-admin som
@@ -354,41 +358,140 @@ model Booking {
   coachProfileId String?
   coachProfile   CoachProfile? @relation(fields: [coachProfileId], references: [id])
 
-  payment Payment?
-  review  Review?
+  payment       Payment?
+  review        Review?
+  controlEvents ClubControlEvent[]
 
   @@index([courtId, startsAt])
   @@index([coachProfileId, startsAt])
 }
 
+// ---------- Lys og adgangskontrol ----------
+//
+// En klub forbinder sin egen Shelly Cloud-konto. Nøglen gemmes krypteret,
+// og hver fysisk relækanal kobles til en bane, fælleslys eller en dør.
+// Mobilappen ser aldrig Shelly-id'er eller nøglen; den beder kun backenden
+// om at åbne en dør for en konkret, bekræftet booking.
+model ClubControl {
+  id       String @id @default(cuid())
+  clubId   String @unique
+  club     Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  provider String @default("SHELLY")
+
+  enabled       Boolean @default(false)
+  serverUrl     String
+  authKeyCipher String
+
+  // Vinduerne kan tilpasses klubben uden en ny app-version.
+  accessBeforeMinutes Int @default(15)
+  accessAfterMinutes  Int @default(15)
+  doorPulseSeconds    Int @default(5)
+  lightsBeforeMinutes Int @default(10)
+  lightsAfterMinutes  Int @default(5)
+
+  lastCheckedAt DateTime?
+  lastOkAt      DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  devices ClubControlDevice[]
+}
+
+model ClubControlDevice {
+  id           String      @id @default(cuid())
+  controlId    String
+  control      ClubControl @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  name         String
+  externalId   String
+  model        String?
+  // Pro 3 har tre kanaler, men feltet gør integrationen genbrugelig for
+  // andre Shelly-relæer uden en skemaændring.
+  channelCount Int         @default(3)
+  online       Boolean?
+  lastSeenAt   DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  channels ClubControlChannel[]
+
+  @@unique([controlId, externalId])
+}
+
+model ClubControlChannel {
+  id       String            @id @default(cuid())
+  deviceId String
+  device   ClubControlDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  channel  Int
+  // "COURT_LIGHT" | "COMMON_LIGHT" | "DOOR"
+  kind     String
+  label    String?
+
+  courtId String?
+  court   Court?  @relation(fields: [courtId], references: [id], onDelete: SetNull)
+
+  lastState     Boolean?
+  lastCommandAt DateTime?
+  lastError     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([deviceId, channel])
+  @@index([courtId])
+}
+
+// Revisionsspor for fysisk adgang og automatiske lyskommandoer. Det gemmer
+// aldrig Shelly-nøglen, kun hvem/hvad der udløste kommandoen og resultatet.
+model ClubControlEvent {
+  id     String @id @default(cuid())
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  deviceExternalId String?
+  channel          Int?
+  action           String // "DOOR_OPEN" | "LIGHT_ON" | "LIGHT_OFF" | "ADMIN_TEST"
+  outcome          String // "OK" | "FAILED"
+  message          String?
+  createdAt        DateTime @default(now())
+
+  @@index([clubId, createdAt])
+  @@index([bookingId, createdAt])
+  @@index([userId, createdAt])
+}
+
 // ---------- Modul B: Trænere ----------
 model CoachProfile {
-  id          String @id @default(cuid())
-  userId      String @unique
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline    String // fx "DTF-uddannet træner, speciale i serv"
-  sports      String @default("TENNIS") // kommasepareret
-  priceHour   Int // kr pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
+  id            String @id @default(cuid())
+  userId        String @unique
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline      String // fx "DTF-uddannet træner, speciale i serv"
+  sports        String @default("TENNIS") // kommasepareret
+  priceHour     Int // kr pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
   // Længden på én lektion. Juniorer og teknik-timer er ofte kortere end en
   // hel time, og en træner, der kun kan sælge 60 minutter ad gangen, kan
   // ikke sætte sin egen dag op.
-  lessonMinutes Int @default(60)
-  specialties String // kommasepareret, fx "Serv,Baghånd,Junior"
-  area        String
+  lessonMinutes Int    @default(60)
+  specialties   String // kommasepareret, fx "Serv,Baghånd,Junior"
+  area          String
   // Ledige tider som ugentligt mønster: JSON [{ "day": 1, "from": 16, "to": 20 }] (day: 0=søn ... 6=lør)
-  weeklySlots String @default("[]")
+  weeklySlots   String @default("[]")
 
   // Stripe Connect — samme princip som Club, se dér.
   stripeAccountId      String?
   stripeChargesEnabled Boolean @default(false)
   stripePayoutsEnabled Boolean @default(false)
 
-  bookings Booking[]
-  reviews  Review[]
-  packages CoachPackage[]
+  bookings         Booking[]
+  reviews          Review[]
+  packages         CoachPackage[]
   packagePurchases PackagePurchase[]
-  images   Image[]
-  seasonTeams SeasonTeam[]
+  images           Image[]
+  seasonTeams      SeasonTeam[]
 }
 
 // ---------- Modul A: Makker-matching ----------
@@ -443,7 +546,6 @@ model Payment {
   createdAt   DateTime @default(now())
 }
 
-
 // ---------- Swipe-matching ----------
 // Spillere gennemgår kort med andre spillere i deres område og på deres
 // niveau. To likes den samme vej åbner automatisk en samtale.
@@ -482,25 +584,23 @@ model Review {
   @@index([clubId])
 }
 
-
 // ---------- Trænerpakker ----------
 // Ud over en enkelt time kan træneren sælge forløb: fx 10 timer til
 // rabat, eller et begynderkursus over seks uger.
 model CoachPackage {
-  id             String       @id @default(cuid())
+  id             String            @id @default(cuid())
   coachProfileId String
-  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  coachProfile   CoachProfile      @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
   name           String // fx "10-turskort"
   description    String?
   sessions       Int // antal timer i pakken
   priceKr        Int // samlet pris
-  active         Boolean      @default(true)
-  createdAt      DateTime     @default(now())
+  active         Boolean           @default(true)
+  createdAt      DateTime          @default(now())
   purchases      PackagePurchase[]
 
   @@index([coachProfileId])
 }
-
 
 // ---------- Klubhenvendelser ----------
 // Klubber kan ikke længere oprette sig selv. De sender en henvendelse, og
@@ -509,38 +609,39 @@ model CoachPackage {
 // var netop det, den manuelle godkendelse skulle beskytte imod — så nu
 // er oprettelsen slet ikke tilgængelig for nogen udefra.
 model ClubLead {
-  id        String   @id @default(cuid())
-  clubName  String
-  city      String
+  id          String   @id @default(cuid())
+  clubName    String
+  city        String
   contactName String
-  email     String
-  phone     String?
-  message   String?
+  email       String
+  phone       String?
+  message     String?
   // "NEW" | "CONTACTED" | "CONVERTED" | "DECLINED"
-  status    String   @default("NEW")
-  clubId    String? // sat når henvendelsen er blevet til en rigtig klub
-  createdAt DateTime @default(now())
+  status      String   @default("NEW")
+  clubId      String? // sat når henvendelsen er blevet til en rigtig klub
+  createdAt   DateTime @default(now())
 
   @@index([status, createdAt])
 }
+
 // ---------- Bestilling af hjemmeside ----------
 // Den betalte opsætningsydelse: klubben får en færdig side på deres eget
 // domæne, bygget af os. Bestillingen kommer typisk før klubben findes i
 // systemet, så den står for sig selv og kobles på bagefter.
 model WebsiteOrder {
-  id          String   @id @default(cuid())
-  clubName    String
-  contactName String
-  email       String
-  phone       String?
-  domain      String? // ønsket domæne, hvis de har et
-  notes       String?
+  id           String   @id @default(cuid())
+  clubName     String
+  contactName  String
+  email        String
+  phone        String?
+  domain       String? // ønsket domæne, hvis de har et
+  notes        String?
   // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
-  status      String   @default("NEW")
-  priceKr     Int      @default(5000)
+  status       String   @default("NEW")
+  priceKr      Int      @default(5000)
   internalNote String?
-  clubId      String?
-  createdAt   DateTime @default(now())
+  clubId       String?
+  createdAt    DateTime @default(now())
 
   @@index([status, createdAt])
 }
@@ -630,7 +731,6 @@ model PackagePurchase {
   @@index([userId, coachProfileId, status])
 }
 
-
 // ---------- Bestyrelse og kontaktpersoner ----------
 //
 // Enhver dansk forening har en bestyrelse på hjemmesiden. Det er ikke
@@ -682,8 +782,8 @@ model ClubSystemLogin {
   password String
 
   /// Sidste gang en automatisering lykkedes. Null = aldrig prøvet.
-  lastOkAt   DateTime?
-  lastError  String?
+  lastOkAt    DateTime?
+  lastError   String?
   lastTriedAt DateTime?
 
   createdAt DateTime @default(now())
@@ -785,8 +885,8 @@ model MembershipType {
   /// noget, den ikke koster.
   renewsFromId String?
 
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
   memberships Membership[]
 
   @@index([clubId, active])
@@ -837,7 +937,7 @@ model SeasonTeam {
 
   name        String
   description String?
-  sport       String @default("TENNIS")
+  sport       String  @default("TENNIS")
 
   /// Hvem underviser. Valgfri: nogle hold er selvorganiserede.
   coachProfileId String?
@@ -904,7 +1004,7 @@ model ClubPunchCard {
   /// Klippene udløber efter så mange dage. 0 = de udløber aldrig.
   validDays Int @default(0)
 
-  createdAt DateTime           @default(now())
+  createdAt DateTime            @default(now())
   purchases ClubPunchPurchase[]
 
   @@index([clubId, active])
@@ -930,7 +1030,6 @@ model ClubPunchPurchase {
   @@index([userId, clubId, status])
 }
 
-
 // ---------- Priser efter tidspunkt ----------
 //
 // Prime time koster mere. Enhver klub med en hal har den regel, og indtil
@@ -944,7 +1043,7 @@ model PriceRule {
   club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   /// Kommasepareret liste af bane-id'er. Tom = alle klubbens baner.
-  courtIds String @default("")
+  courtIds   String @default("")
   /// Kommasepareret 0-6, 0 = søndag. Tom = alle ugedage.
   daysOfWeek String @default("")
 
@@ -983,9 +1082,9 @@ model SystemBlock {
   startsAt DateTime
 
   /// "PENDING" | "BLOCKED" | "FAILED"
-  status   String    @default("PENDING")
-  error    String?
-  attempts Int       @default(0)
+  status    String    @default("PENDING")
+  error     String?
+  attempts  Int       @default(0)
   blockedAt DateTime?
 
   createdAt DateTime @default(now())

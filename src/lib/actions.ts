@@ -184,7 +184,8 @@ export async function login(_prev: unknown, formData: FormData) {
     const challengeId = await startEmailChallenge(user);
     // Id'et er ikke hemmeligt — koden er. Cookien er kortlivet, så en
     // halvfærdig login ikke ligger og venter i en browser i ugevis.
-    cookies().set("rb_login", challengeId, {
+    const jar = await cookies();
+    jar.set("rb_login", challengeId, {
       httpOnly: true,
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
@@ -200,13 +201,14 @@ export async function login(_prev: unknown, formData: FormData) {
 
 /** Andet trin: koden fra mailen. */
 export async function verifyLoginCode(_prev: unknown, formData: FormData) {
-  const challengeId = cookies().get("rb_login")?.value;
+  const jar = await cookies();
+  const challengeId = jar.get("rb_login")?.value;
   if (!challengeId) return { error: "auth.errExpired" };
 
   const result = await verifyEmailChallenge(challengeId, String(formData.get("code") ?? ""));
 
   if (!result.ok) {
-    if (result.reason !== "forkert") cookies().delete("rb_login");
+    if (result.reason !== "forkert") jar.delete("rb_login");
     return {
       error:
         result.reason === "forkert"
@@ -217,7 +219,7 @@ export async function verifyLoginCode(_prev: unknown, formData: FormData) {
     };
   }
 
-  cookies().delete("rb_login");
+  jar.delete("rb_login");
   await createSession(result.userId);
   redirect("/superadmin");
 }
@@ -284,7 +286,7 @@ export async function deleteMyAccount(_prev: unknown, formData: FormData) {
   }
 
   await eraseAccount(user!.id);
-  destroySession();
+  await destroySession();
   redirect("/?slettet=1");
 }
 
@@ -331,7 +333,7 @@ export async function removeClubAdmin(formData: FormData) {
 }
 
 export async function logout() {
-  destroySession();
+  await destroySession();
   redirect("/");
 }
 
@@ -1819,7 +1821,7 @@ export async function updatePreferences(formData: FormData) {
   const locale = String(formData.get("locale") ?? "da");
   const sport = String(formData.get("sport") ?? "TENNIS");
 
-  setPreferenceCookies({ country, locale: locale as any, sport: sport as any });
+  await setPreferenceCookies({ country, locale: locale as any, sport: sport as any });
 
   const user = await getCurrentUser();
   if (user) {
@@ -1847,10 +1849,11 @@ export async function setCountry(formData: FormData) {
   // sig selv til et marked, hvor der ikke findes en eneste bane.
   if (!country?.live) return;
 
-  const alreadyPickedLanguage = Boolean(cookies().get("rb_prefs_locale")?.value);
+  const jar = await cookies();
+  const alreadyPickedLanguage = Boolean(jar.get("rb_prefs_locale")?.value);
   const locale = alreadyPickedLanguage ? undefined : (country.defaultLocale as any);
 
-  setPreferenceCookies({ country: country.code, ...(locale ? { locale } : {}) });
+  await setPreferenceCookies({ country: country.code, ...(locale ? { locale } : {}) });
 
   const user = await getCurrentUser();
   if (user) {
@@ -1875,7 +1878,7 @@ export async function setCountry(formData: FormData) {
  * og landet kan skiftes i footeren når som helst.
  */
 export async function dismissCountryChoice() {
-  setPreferenceCookies({ country: "DK" });
+  await setPreferenceCookies({ country: "DK" });
 
   const user = await getCurrentUser();
   if (user) {
@@ -1899,7 +1902,7 @@ export async function setLocale(formData: FormData) {
   // Sprog for markeder, vi ikke er i, kan ses men ikke vælges.
   if (!LOCALE_LIVE[value as Locale]) return;
 
-  setPreferenceCookies({ locale: value as any });
+  await setPreferenceCookies({ locale: value as any });
 
   const user = await getCurrentUser();
   if (user) {
@@ -1911,7 +1914,7 @@ export async function setLocale(formData: FormData) {
 
 export async function setSport(formData: FormData) {
   const sport = String(formData.get("sport") ?? "TENNIS");
-  setPreferenceCookies({ sport: sport as any });
+  await setPreferenceCookies({ sport: sport as any });
   revalidatePath("/", "layout");
 }
 

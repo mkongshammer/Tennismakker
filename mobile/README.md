@@ -37,6 +37,7 @@ src/screens/             En fil pr. skærm
 - Se klubber og deres ledige tider, book en bane
 - Se trænere og deres ledige tider, book en time
 - Se egne kommende bookinger
+- Åbne klubbens digitale dør i adgangsvinduet for en bekræftet booking, når klubben har tilsluttet Shelly
 
 ## Betaling foregår på web
 

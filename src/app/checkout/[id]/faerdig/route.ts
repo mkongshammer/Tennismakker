@@ -21,12 +21,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const booking = await db.booking.findUnique({ where: { id: params.id } });
+  const booking = await db.booking.findUnique({ where: { id } });
   if (!booking || booking.userId !== user.id) redirect("/profil");
 
   // Allerede bekræftet af webhooken? Så er der intet at gøre.
@@ -45,7 +46,7 @@ export async function GET(
           typeof session.payment_intent === "string"
             ? session.payment_intent
             : session.payment_intent?.id;
-        await confirmBookingPayment(params.id, paymentIntentId);
+        await confirmBookingPayment(id, paymentIntentId);
       }
     } catch (err) {
       // Kan vi ikke nå Stripe, falder vi tilbage på webhooken. Brugeren

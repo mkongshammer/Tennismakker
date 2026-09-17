@@ -96,6 +96,8 @@ export const api = {
 
   bookings: () => request("/bookings"),
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
+  openDoor: (bookingId) =>
+    request(`/bookings/${bookingId}/door`, { method: "POST" }),
 };
 
 export const checkoutUrl = (path) =>

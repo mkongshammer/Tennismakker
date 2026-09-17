@@ -20,7 +20,7 @@ const COOKIE = "rb_prefs";
 
 export async function getPreferences(): Promise<Preferences> {
   const user = await getCurrentUser();
-  const jar = cookies();
+  const jar = await cookies();
 
   // Sportsgrenen kan skiftes pr. besøg uden at ændre profilen
   const cookieSport = jar.get(`${COOKIE}_sport`)?.value;
@@ -55,8 +55,8 @@ export async function getPreferences(): Promise<Preferences> {
 }
 
 /** Gemmer gæstens valg i cookies. Indloggede får det gemt på profilen. */
-export function setPreferenceCookies(prefs: Partial<Preferences>) {
-  const jar = cookies();
+export async function setPreferenceCookies(prefs: Partial<Preferences>) {
+  const jar = await cookies();
   const opts = { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" as const };
 
   if (prefs.country) jar.set(`${COOKIE}_country`, prefs.country, opts);

@@ -9,8 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function OnboardingSportsPage({
   searchParams,
 }: {
-  searchParams: { fejl?: string };
+  searchParams: Promise<{ fejl?: string }>;
 }) {
+  const query = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -36,9 +37,9 @@ export default async function OnboardingSportsPage({
             : "Vælg de sportsgrene, du gerne vil finde medspillere til. Du kan vælge flere."}
         </p>
 
-        {searchParams.fejl && (
+        {query.fejl && (
           <p className="mt-4 rounded-xl border border-court/20 bg-court/5 p-3 text-sm font-semibold text-court-dark">
-            {searchParams.fejl}
+            {query.fejl}
           </p>
         )}
 

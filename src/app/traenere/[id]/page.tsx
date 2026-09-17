@@ -25,11 +25,12 @@ export default async function TraenerPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: { fejl?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ fejl?: string }>;
 }) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   const coach = await db.coachProfile.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { user: true, packages: { where: { active: true } } },
   });
   if (!coach) notFound();
@@ -59,16 +60,16 @@ export default async function TraenerPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      {searchParams.fejl && (
+      {query.fejl && (
         <p className="mb-4 rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
           {t(
-            searchParams.fejl === "betaling"
+            query.fejl === "betaling"
               ? "coach.errNoPayout"
-              : searchParams.fejl === "egen"
+              : query.fejl === "egen"
                 ? "coach.errSelf"
-                : searchParams.fejl === "passeret"
+                : query.fejl === "passeret"
                   ? "coach.errPast"
-                  : searchParams.fejl === "ikke-ledig"
+                  : query.fejl === "ikke-ledig"
                     ? "coach.errNotOffered"
                     : "coach.errTaken"
           )}
