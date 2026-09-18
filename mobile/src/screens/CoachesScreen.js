@@ -1,25 +1,15 @@
-import React, { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback } from "react";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { api } from "../lib/api";
 import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
+import { useScreenData } from "../lib/useScreenData";
 
 export default function CoachesScreen({ navigation }) {
   const [sport, setSport] = useSport();
-  const [state, setState] = useState({ loading: true, error: null, coaches: [] });
-
-  const load = useCallback(async () => {
-    try {
-      const { coaches } = await api.coaches(sport);
-      setState({ loading: false, error: null, coaches });
-    } catch (e) {
-      setState({ loading: false, error: e.message, coaches: [] });
-    }
-  }, [sport]);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.coaches(sport), [sport]));
+  const state = { loading, error, coaches: data?.coaches ?? [] };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
@@ -29,16 +19,18 @@ export default function CoachesScreen({ navigation }) {
 
       {state.loading ? (
         <Loading />
-      ) : state.error ? (
-        <ErrorMessage message={state.error} onRetry={load} />
+      ) : state.error && !data ? (
+        <ErrorMessage message={state.error} onRetry={refresh} />
       ) : (
         <FlatList
           contentContainerStyle={{ padding: 16, paddingTop: 4 }}
           data={state.coaches}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
+          ListHeaderComponent={error ? <ErrorMessage message={error} onRetry={refresh} /> : null}
           keyExtractor={(c) => c.id}
           ListEmptyComponent={<Empty>Ingen trænere for den sportsgren endnu.</Empty>}
           renderItem={({ item }) => (
-            <Pressable onPress={() => navigation.navigate("Traener", { id: item.id, name: item.name })}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Se ${item.name}`} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} onPress={() => navigation.navigate("Traener", { id: item.id, name: item.name })}>
               <Card>
                 <View style={styles.row}>
                   <Text style={styles.name}>{item.name}</Text>

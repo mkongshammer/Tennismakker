@@ -133,8 +133,12 @@ export async function POST(req: Request) {
     // Bruger den samme betalingslogik som websitet — så appen får en
     // rigtig Stripe-session, når PAYMENT_PROVIDER er sat til stripe,
     // i stedet for en genvej der aldrig burde ligge i produktion.
-    const checkoutUrl = await startCheckout(booking.id);
-    return json({ id: booking.id, checkoutUrl }, 201);
+    try {
+      const checkoutUrl = await startCheckout(booking.id);
+      return json({ id: booking.id, checkoutUrl }, 201);
+    } catch {
+      return json({ id: booking.id, error: "Reservationen er oprettet, men betalingen kunne ikke åbnes. Fortsæt med Betal nu under Min profil." }, 502);
+    }
   }
 
   if (body.coachProfileId) {

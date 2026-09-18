@@ -16,17 +16,15 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
+      accessibilityLabel={title}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
         styles.button,
         { backgroundColor: bg, opacity: disabled || loading ? 0.5 : pressed ? 0.85 : 1 },
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={colors.chalk} />
-      ) : (
-        <Text style={styles.buttonText}>{title}</Text>
-      )}
+      {loading && <ActivityIndicator style={{ position: "absolute", left: 12 }} size="small" color={colors.chalk} />}
+      <Text style={[styles.buttonText, loading && { opacity: 0 }]}>{title}</Text>
     </Pressable>
   );
 }
@@ -61,7 +59,7 @@ export function Loading({ label = "Henter…" }) {
 export function ErrorMessage({ message, onRetry }) {
   return (
     <View style={styles.center}>
-      <Text style={styles.error}>{message}</Text>
+      <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{message}</Text>
       {onRetry && <Button title="Prøv igen" onPress={onRetry} variant="ink" />}
     </View>
   );

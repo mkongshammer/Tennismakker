@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,11 +8,13 @@ import {
   TextInput,
   View,
   Pressable,
+  Linking,
 } from "react-native";
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { DK_REGIONS } from "../lib/regions";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const { login, signup } = useAuth();
@@ -23,20 +25,30 @@ export default function LoginScreen() {
   const [area, setArea] = useState("");
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const passwordRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   const submit = async () => {
+    if (lock.current) return;
     setError(null);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError("Skriv en gyldig e-mail.");
+    if (!password) return setError("Skriv din adgangskode.");
+    if (mode === "signup" && !name.trim()) return setError("Skriv dit navn.");
+    if (mode === "signup" && password.length < 8) return setError("Adgangskoden skal være mindst 8 tegn.");
     if (mode === "signup" && !area) {
       setError("Vælg en region.");
       return;
     }
+    lock.current = true;
     setBusy(true);
     try {
-      if (mode === "login") await login(email, password);
-      else await signup({ email, password, name, area, level: 3 });
+      if (mode === "login") await login(email.trim().toLowerCase(), password);
+      else await signup({ email: email.trim().toLowerCase(), password, name: name.trim(), area, level: 3 });
     } catch (e) {
       setError(e.message);
     } finally {
+      lock.current = false;
       setBusy(false);
     }
   };
@@ -46,7 +58,7 @@ export default function LoginScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <ScrollView contentContainerStyle={styles.wrap} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={[styles.wrap, { paddingTop: Math.max(48, insets.top + 24), paddingBottom: Math.max(24, insets.bottom + 16) }]} keyboardShouldPersistTaps="handled">
         <Text style={styles.logo}>
           Racket<Text style={{ color: colors.court }}>Buddy</Text>
         </Text>
@@ -57,7 +69,7 @@ export default function LoginScreen() {
         {mode === "signup" && (
           <>
             <Text style={styles.label}>Navn</Text>
-            <TextInput style={styles.input} value={name} onChangeText={setName} autoCapitalize="words" />
+            <TextInput accessibilityLabel="Navn" editable={!busy} autoComplete="name" maxLength={120} style={styles.input} value={name} onChangeText={setName} autoCapitalize="words" />
           </>
         )}
 
@@ -69,6 +81,11 @@ export default function LoginScreen() {
           autoCapitalize="none"
           keyboardType="email-address"
           autoComplete="email"
+          accessibilityLabel="E-mail"
+          editable={!busy}
+          autoCorrect={false}
+          returnKeyType="next"
+          onSubmitEditing={() => passwordRef.current?.focus()}
         />
 
         <Text style={styles.label}>Adgangskode</Text>
@@ -77,7 +94,17 @@ export default function LoginScreen() {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          ref={passwordRef}
+          accessibilityLabel="Adgangskode"
+          editable={!busy}
+          autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          returnKeyType="go"
+          onSubmitEditing={submit}
         />
+        {mode === "signup" && <Text style={{ marginTop: 6, color: colors.slate }}>Mindst 8 tegn.</Text>}
+        {mode === "login" && <Pressable accessibilityRole="link" onPress={() => Linking.openURL("https://racketbuddy.app/login/glemt").catch(() => setError("Kunne ikke åbne siden. Prøv igen."))}>
+          <Text style={[styles.switch, { textAlign: "right", paddingVertical: 10, marginTop: 4 }]}>Glemt adgangskode?</Text>
+        </Pressable>}
 
         {mode === "signup" && (
           <>
@@ -86,6 +113,9 @@ export default function LoginScreen() {
               {DK_REGIONS.map((region) => (
                 <Pressable
                   key={region}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: area === region }}
+                  disabled={busy}
                   onPress={() => setArea(region)}
                   style={[styles.chip, area === region && styles.chipActive]}
                 >
@@ -98,7 +128,7 @@ export default function LoginScreen() {
           </>
         )}
 
-        {error && <Text style={styles.error}>{error}</Text>}
+        {error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>}
 
         <View style={{ marginTop: 16 }}>
           <Button
@@ -108,7 +138,7 @@ export default function LoginScreen() {
           />
         </View>
 
-        <Pressable onPress={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}>
+        <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}>
           <Text style={styles.switch}>
             {mode === "login" ? "Ny her? Opret profil" : "Har du en konto? Log ind"}
           </Text>
@@ -119,7 +149,7 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  wrap: { padding: 24, paddingTop: 72, backgroundColor: colors.mist, flexGrow: 1 },
+  wrap: { padding: 24, width: "100%", maxWidth: 520, alignSelf: "center", flexGrow: 1 },
   logo: { fontSize: 30, fontWeight: "900", color: colors.ink, letterSpacing: -0.5 },
   tagline: { color: colors.slate, marginTop: 8, marginBottom: 28, lineHeight: 20 },
   label: { fontWeight: "700", color: colors.slate, marginBottom: 5, marginTop: 12, fontSize: 13 },

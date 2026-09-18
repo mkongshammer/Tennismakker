@@ -1,28 +1,17 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useScreenData } from "../lib/useScreenData";
 import { api } from "../lib/api";
 import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { dayShort, time } from "../lib/dates";
 
 export default function ThreadsScreen({ navigation }) {
-  const [state, setState] = useState({ loading: true, error: null, threads: [] });
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(async () => {
-    try {
-      const { threads } = await api.threads();
-      setState({ loading: false, error: null, threads });
-    } catch (e) {
-      setState({ loading: false, error: e.message, threads: [] });
-    }
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const state = useScreenData(useCallback(() => api.threads(), []), { pollMs: 15000 });
+  const load = state.refresh;
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
+  if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   const when = (iso) => {
     const d = new Date(iso);
@@ -33,12 +22,13 @@ export default function ThreadsScreen({ navigation }) {
     <FlatList
       style={{ backgroundColor: colors.mist }}
       contentContainerStyle={{ padding: 16 }}
-      data={state.threads}
+      data={state.data.threads}
+      ListHeaderComponent={state.error ? <ErrorMessage message={state.error} onRetry={load} /> : null}
       keyExtractor={(t) => t.id}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
-          onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
+          refreshing={state.refreshing}
+          onRefresh={load}
         />
       }
       ListEmptyComponent={
@@ -48,6 +38,9 @@ export default function ThreadsScreen({ navigation }) {
       }
       renderItem={({ item }) => (
         <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Samtale med ${item.otherName}${item.unread ? ", ny besked" : ""}`}
+          style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
           onPress={() =>
             navigation.navigate("Samtale", { id: item.id, name: item.otherName })
           }

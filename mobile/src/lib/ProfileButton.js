@@ -22,8 +22,9 @@ export function ProfileButton() {
     <Pressable
       onPress={openProfile}
       accessibilityLabel="Min profil"
+      accessibilityRole="button"
       hitSlop={8}
-      style={{ marginRight: 12 }}
+      style={({ pressed }) => ({ marginRight: 12, opacity: pressed ? 0.6 : 1 })}
     >
       <View style={styles.circle}>
         <Text style={styles.initials}>{initials}</Text>

@@ -1,0 +1,98 @@
+// Isolated component regressions: no real accounts, messages, bookings or hardware.
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const React = require('react');
+const { create, act } = require('react-test-renderer');
+const { transformSync } = require('@babel/core');
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+function loadSource(relative, mocks) {
+  const filename = path.resolve(__dirname, relative);
+  const { code } = transformSync(fs.readFileSync(filename, 'utf8'), {
+    filename, babelrc: false, configFile: false,
+    plugins: [require.resolve('@babel/plugin-transform-react-jsx'), require.resolve('@babel/plugin-transform-modules-commonjs')],
+  });
+  const module = { exports: {} };
+  new Function('require', 'module', 'exports', code)(name => {
+    if (name in mocks) return mocks[name];
+    if (name === 'react') return React;
+    throw new Error(`Unexpected dependency ${name}`);
+  }, module, module.exports);
+  return module.exports;
+}
+function deferred() { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; }
+function hookHarness() {
+  const listeners = new Set();
+  const Focus = React.createContext(true);
+  const useFocusEffect = callback => {
+    const focused = React.useContext(Focus);
+    React.useEffect(() => focused ? callback() : undefined, [focused, callback]);
+  };
+  const { useScreenData } = loadSource('./useScreenData.js', {
+    'react-native': { AppState: { currentState: 'active', addEventListener(_event, listener) { listeners.add(listener); return { remove() { listeners.delete(listener); } }; } } },
+    '@react-navigation/native': { useFocusEffect },
+  });
+  let state;
+  function Probe({ fetcher }) { state = useScreenData(fetcher); return null; }
+  return { Probe, Focus, listeners, get state() { return state; } };
+}
+test('a failed refresh preserves existing bookings and provides retry', async () => {
+  const h = hookHarness(); let fail = false; let tree;
+  const fetcher = async () => { if (fail) throw new Error('Offline'); return { bookings: ['booking-1'] }; };
+  await act(async () => { tree = create(React.createElement(h.Probe, { fetcher })); });
+  assert.deepEqual(h.state.data.bookings, ['booking-1']);
+  fail = true;
+  await act(() => h.state.refresh());
+  assert.equal(h.state.error, 'Offline');
+  assert.deepEqual(h.state.data.bookings, ['booking-1']);
+  fail = false;
+  await act(() => h.state.refresh());
+  assert.equal(h.state.error, null);
+  await act(() => tree.unmount());
+  assert.equal(h.listeners.size, 0);
+});
+test('a slow previous sport cannot replace the selected sport', async () => {
+  const h = hookHarness(); const old = deferred(); let tree;
+  await act(async () => { tree = create(React.createElement(h.Probe, { fetcher: () => old.promise })); });
+  await act(async () => tree.update(React.createElement(h.Probe, { fetcher: async () => ({ sport: 'PADEL' }) })));
+  await act(async () => old.resolve({ sport: 'TENNIS' }));
+  assert.equal(h.state.data.sport, 'PADEL');
+  await act(() => tree.unmount());
+});
+test('returning to the app refreshes; blurred screens stop observing app state', async () => {
+  const h = hookHarness(); let calls = 0; let tree;
+  const fetcher = async () => ({ revision: ++calls });
+  const render = focused => React.createElement(h.Focus.Provider, { value: focused }, React.createElement(h.Probe, { fetcher }));
+  await act(async () => { tree = create(render(true)); });
+  await act(async () => { h.listeners.forEach(listener => listener('active')); });
+  assert.equal(h.state.data.revision, 2);
+  await act(async () => tree.update(render(false)));
+  assert.equal(h.listeners.size, 0);
+  await act(() => tree.unmount());
+});
+test('coach requests never open a missing checkout URL and double taps create only one request', async () => {
+  const pending = deferred(); const alerts = []; let requests = 0; let checkouts = 0; let tree;
+  const data = { coach: { id: 'coach-1', name: 'Testtræner', priceHour: 500 }, packages: [], reviews: [], slots: ['2026-10-01T12:00:00Z'] };
+  const { default: Coach } = loadSource('../screens/CoachScreen.js', {
+    'react-native': { Linking: { openURL: async () => { checkouts++; } }, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },
+    '../lib/api': { api: { book: () => { requests++; return pending.promise; } }, checkoutUrl: () => { throw new Error('No checkout expected'); } },
+    '../lib/feedback': { feedback: { alert: (...args) => alerts.push(args) } },
+    '../lib/useScreenData': { useScreenData: () => ({ data, loading: false, refreshing: false, error: null, refresh: async () => {} }) },
+    '../lib/ui': { Button: 'Button', Card: 'Card', Empty: 'Empty', ErrorMessage: 'ErrorMessage', Loading: 'Loading' },
+    '../lib/theme': { colors: {} },
+    '../lib/dates': { dayLong: () => 'torsdag', time: () => '14:00', groupByDay: items => [{ date: items[0], items }] },
+  });
+  await act(async () => { tree = create(React.createElement(Coach, { route: { params: { id: 'coach-1' } } })); });
+  const press = tree.root.findByType('Button').props.onPress;
+  let first;
+  await act(async () => { first = press(); press(); });
+  assert.equal(requests, 1);
+  assert.equal(tree.root.findByType('Button').props.disabled, true);
+  await act(async () => { pending.resolve({ id: 'booking-1', status: 'REQUESTED' }); await first; });
+  assert.equal(checkouts, 0);
+  assert.equal(alerts[0][0], 'Anmodning sendt');
+  assert.equal(tree.root.findByType('Button').props.disabled, false);
+  await act(() => tree.unmount());
+});

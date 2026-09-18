@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
-  Alert,
+  RefreshControl,
   Linking,
   Pressable,
   ScrollView,
@@ -9,6 +9,8 @@ import {
   View,
 } from "react-native";
 import { api, checkoutUrl } from "../lib/api";
+import { feedback as Alert } from "../lib/feedback";
+import { useScreenData } from "../lib/useScreenData";
 import { Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, SURFACES, sportColor } from "../lib/theme";
 import { dayLong, dayShort, groupByDay, time } from "../lib/dates";
@@ -17,12 +19,15 @@ import { dayLong, dayShort, groupByDay, time } from "../lib/dates";
 // bunden. Samme signatur som websitets .court-tile — bare tegnet med
 // StyleSheet i stedet for CSS. Linjen ligger i bunden, ikke midt i feltet,
 // så den aldrig skærer gennem prisen.
-function CourtTile({ slot, onPress, loading }) {
+function CourtTile({ slot, onPress, loading, disabled }) {
   const tint = sportColor(slot.sport);
   return (
     <Pressable
       onPress={onPress}
-      disabled={loading}
+      disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityLabel={`${slot.courtName}, ${time(slot.start)}, ${slot.priceKr} kroner. Reservér og betal`}
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
         styles.tile,
         { backgroundColor: tint, opacity: pressed || loading ? 0.85 : 1 },
@@ -42,31 +47,27 @@ function CourtTile({ slot, onPress, loading }) {
 
 export default function ClubScreen({ route }) {
   const { slug } = route.params;
-  const [state, setState] = useState({ loading: true, error: null, data: null });
+  const state = useScreenData(useCallback(() => api.club(slug, 7), [slug]));
+  const load = state.refresh;
   const [dayIndex, setDayIndex] = useState(0);
   const [booking, setBooking] = useState(null);
 
-  const load = useCallback(async () => {
-    try {
-      const data = await api.club(slug, 7);
-      setState({ loading: false, error: null, data });
-    } catch (e) {
-      setState({ loading: false, error: e.message, data: null });
-    }
-  }, [slug]);
-
-  useEffect(() => { load(); }, [load]);
+  const bookingLock = useRef(false);
+  const [notice, setNotice] = useState(null);
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
+  if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   const { club, slots } = state.data;
   const courtSport = (id) => club.courts.find((c) => c.id === id)?.sport ?? "TENNIS";
   const parsed = slots.map((s) => ({ ...s, start: new Date(s.startsAt), sport: courtSport(s.courtId) }));
   const days = groupByDay(parsed, (s) => s.start);
-  const current = days[dayIndex] ?? null;
+  const selectedDay = Math.min(dayIndex, Math.max(0, days.length - 1));
+  const current = days[selectedDay] ?? null;
 
   const book = async (slot) => {
+    if (bookingLock.current) return;
+    bookingLock.current = true;
     const key = slot.courtId + slot.startsAt;
     setBooking(key);
     try {
@@ -74,6 +75,7 @@ export default function ClubScreen({ route }) {
         courtId: slot.courtId,
         startsAt: slot.startsAt,
       });
+      setNotice("Tiden er reserveret midlertidigt. Fuldfør betalingen for at bekræfte den. Du kan også fortsætte under Min profil.");
       // Betaling foregår hos Stripe, så appen aldrig rører kortdata
       await Linking.openURL(checkoutUrl(path));
       await load();
@@ -81,12 +83,16 @@ export default function ClubScreen({ route }) {
       Alert.alert("Kunne ikke booke", e.message);
       await load();
     } finally {
+      bookingLock.current = false;
       setBooking(null);
     }
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
+      {state.error && <ErrorMessage message={state.error} onRetry={load} />}
+      {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.chalk, lineHeight: 21 }} accessibilityLiveRegion="polite">{notice}</Text>}
       <View style={[styles.hero, { backgroundColor: club.color }]}>
         <Text style={styles.heroTitle}>{club.name}</Text>
         <Text style={styles.heroCity}>
@@ -110,9 +116,11 @@ export default function ClubScreen({ route }) {
                 <Pressable
                   key={d.date.toISOString()}
                   onPress={() => setDayIndex(i)}
-                  style={[styles.dayChip, dayIndex === i && styles.dayChipActive]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedDay === i }}
+                  style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
                 >
-                  <Text style={[styles.dayChipText, dayIndex === i && styles.dayChipTextActive]}>
+                  <Text style={[styles.dayChipText, selectedDay === i && styles.dayChipTextActive]}>
                     {dayShort(d.date)}
                   </Text>
                 </Pressable>
@@ -132,6 +140,7 @@ export default function ClubScreen({ route }) {
                       slot={slot}
                       onPress={() => book(slot)}
                       loading={booking === key}
+                      disabled={booking !== null}
                     />
                   );
                 })}

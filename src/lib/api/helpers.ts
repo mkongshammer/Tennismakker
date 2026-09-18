@@ -24,7 +24,11 @@ export function apiError(message: string, status = 400) {
 
 /** Svar på preflight-forespørgsler fra appen. */
 export function preflight() {
-  return json({}, 204);
+  return new NextResponse(null, { status: 204, headers: {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+  } });
 }
 
 /**

@@ -1,11 +1,14 @@
 // Klient mod RacketBuddy-API'et (/api/v1 i web-repoet).
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
 
 const BASE_URL =
   Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
 
 const TOKEN_KEY = "tm_token";
+const sessionListeners = new Set();
+export function onSessionExpired(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener); }
 
 export async function getToken() {
   return AsyncStorage.getItem(TOKEN_KEY);
@@ -18,25 +21,25 @@ export async function setToken(token) {
 
 async function request(path, { method = "GET", body, auth = true } = {}) {
   const headers = { "Content-Type": "application/json" };
+  let token;
   if (auth) {
-    const token = await getToken();
+    token = await getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
-  let res;
   try {
-    res = await fetch(`${BASE_URL}/api/v1${path}`, {
+    return await fetchJson(`${BASE_URL}/api/v1${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-  } catch {
-    throw new Error("Kan ikke få forbindelse. Tjek dit netværk og prøv igen.");
+  } catch (error) {
+    if (auth && token && error.status === 401 && await getToken() === token) {
+      await setToken(null);
+      sessionListeners.forEach(listener => listener());
+    }
+    throw error;
   }
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Der gik noget galt.");
-  return data;
 }
 
 export const api = {
@@ -98,7 +101,7 @@ export const api = {
   book: (payload) => request("/bookings", { method: "POST", body: payload }),
   openDoor: (bookingId) =>
     request(`/bookings/${bookingId}/door`, { method: "POST" }),
+  resumePayment: (bookingId) => request(`/bookings/${bookingId}/checkout`, { method: "POST" }),
 };
 
-export const checkoutUrl = (path) =>
-  path.startsWith("http") ? path : `${BASE_URL}${path}`;
+export const checkoutUrl = (path) => resolveCheckoutUrl(path, BASE_URL);

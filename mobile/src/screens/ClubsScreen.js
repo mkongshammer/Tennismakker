@@ -1,11 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { api } from "../lib/api";
 import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
 import { CourtGraphic } from "../lib/CourtGraphic";
+import { useScreenData } from "../lib/useScreenData";
 
 function Stars({ average, count }) {
   if (!count) return <Text style={styles.newBadge}>Ny på RacketBuddy</Text>;
@@ -19,19 +19,8 @@ function Stars({ average, count }) {
 
 export default function ClubsScreen({ navigation }) {
   const [sport, setSport] = useSport();
-  const [state, setState] = useState({ loading: true, error: null, clubs: [] });
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(async () => {
-    try {
-      const { clubs } = await api.clubs(sport);
-      setState({ loading: false, error: null, clubs });
-    } catch (e) {
-      setState({ loading: false, error: e.message, clubs: [] });
-    }
-  }, [sport]);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport), [sport]));
+  const state = { loading, error, clubs: data?.clubs ?? [] };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
@@ -41,17 +30,18 @@ export default function ClubsScreen({ navigation }) {
 
       {state.loading ? (
         <Loading />
-      ) : state.error ? (
-        <ErrorMessage message={state.error} onRetry={load} />
+      ) : state.error && !data ? (
+        <ErrorMessage message={state.error} onRetry={refresh} />
       ) : (
         <FlatList
           contentContainerStyle={{ padding: 16, paddingTop: 4 }}
           data={state.clubs}
+          ListHeaderComponent={error ? <ErrorMessage message={error} onRetry={refresh} /> : null}
           keyExtractor={(c) => c.id}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
+              onRefresh={refresh}
             />
           }
           ListEmptyComponent={
@@ -59,6 +49,9 @@ export default function ClubsScreen({ navigation }) {
           }
           renderItem={({ item }) => (
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Se ledige tider hos ${item.name}`}
+              style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
               onPress={() => navigation.navigate("Klub", { slug: item.slug, name: item.name })}
             >
               <Card style={{ flexDirection: "row", gap: 14 }}>
@@ -87,7 +80,7 @@ export default function ClubsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   thumb: { width: 96, height: 64, borderRadius: 12, overflow: "hidden" },
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 6 },
+  row: { gap: 4 },
   name: { fontWeight: "800", fontSize: 16, flexShrink: 1, color: colors.ink },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   price: { fontWeight: "800", marginTop: 4, color: colors.ink },

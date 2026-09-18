@@ -4,8 +4,9 @@
 // bookes sjældent én gang — den bookes hver tirsdag kl. 18. At gøre
 // gentagelsen til ét tryk er langt stærkere end at presse nogen til den
 // første booking.
-import React, { useState } from "react";
-import { Alert, Linking, StyleSheet, Text, View } from "react-native";
+import React, { useRef, useState } from "react";
+import { Linking, StyleSheet, Text, View } from "react-native";
+import { feedback as Alert } from "./feedback";
 import { api, checkoutUrl } from "./api";
 import { Button, Card } from "./ui";
 import { colors } from "./theme";
@@ -13,10 +14,13 @@ import { DAYS } from "./dates";
 
 export function PlayAgain({ items, onBooked }) {
   const [busyId, setBusyId] = useState(null);
+  const lock = useRef(false);
 
   if (!items || items.length === 0) return null;
 
   const rebook = async (bookingId) => {
+    if (lock.current) return;
+    lock.current = true;
     setBusyId(bookingId);
     try {
       const result = await api.rebook(bookingId);
@@ -27,6 +31,7 @@ export function PlayAgain({ items, onBooked }) {
     } catch (e) {
       Alert.alert("Kunne ikke booke", e.message);
     } finally {
+      lock.current = false;
       setBusyId(null);
     }
   };
@@ -56,6 +61,7 @@ export function PlayAgain({ items, onBooked }) {
                 title={`Book næste ${day}`}
                 onPress={() => rebook(item.bookingId)}
                 loading={busyId === item.bookingId}
+                disabled={busyId !== null}
               />
             </View>
           </Card>
@@ -68,7 +74,7 @@ export function PlayAgain({ items, onBooked }) {
 const styles = StyleSheet.create({
   title: { fontSize: 20, fontWeight: "900", color: colors.ink },
   subtitle: { color: colors.slate, marginTop: 2, marginBottom: 10, fontSize: 13 },
-  row: { flexDirection: "row", alignItems: "center", gap: 12 },
+  row: { gap: 12 },
   what: { fontWeight: "800" },
   when: { color: colors.slate, marginTop: 2, fontSize: 13, fontVariant: ["tabular-nums"] },
 });

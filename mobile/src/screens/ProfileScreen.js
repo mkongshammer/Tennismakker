@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useScreenData } from "../lib/useScreenData";
+import { feedback as Alert } from "../lib/feedback";
 import { api, checkoutUrl } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { PlayAgain } from "../lib/PlayAgain";
@@ -13,10 +14,20 @@ const TERMS_URL = "https://racketbuddy.app/vilkaar";
 
 export default function ProfileScreen() {
   const { user, logout, deleteAccount } = useAuth();
-  const [state, setState] = useState({ loading: true, error: null, bookings: [] });
-  const [repeatable, setRepeatable] = useState([]);
+  const state = useScreenData(useCallback(async () => {
+    const [bookings, repeatable] = await Promise.all([
+      api.bookings(), api.repeatableBookings().catch(() => ({ items: [] })),
+    ]);
+    return { bookings: bookings.bookings, repeatable: repeatable.items };
+  }, []));
+  const load = state.refresh;
+  const repeatable = state.data?.repeatable ?? [];
   const [deleting, setDeleting] = useState(false);
   const [openingDoor, setOpeningDoor] = useState(null);
+  const doorLock = useRef(false);
+  const paymentLock = useRef(false);
+  const deleteLock = useRef(false);
+  const [paying, setPaying] = useState(null);
   const [now, setNow] = useState(Date.now());
 
   // En skærm, der allerede står åben, skal selv aktivere dørknappen, når
@@ -26,32 +37,37 @@ export default function ProfileScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  const load = useCallback(async () => {
+  const pay = async (id) => {
+    if (paymentLock.current) return;
+    paymentLock.current = true;
+    setPaying(id);
     try {
-      const [{ bookings }, { items }] = await Promise.all([
-        api.bookings(),
-        api.repeatableBookings(),
-      ]);
-      setState({ loading: false, error: null, bookings });
-      setRepeatable(items);
-    } catch (e) {
-      setState({ loading: false, error: e.message, bookings: [] });
-    }
-  }, []);
+      const result = await api.resumePayment(id);
+      if (result.status === "CONFIRMED") Alert.alert("Bookingen er bekræftet", "Du behøver ikke betale igen.");
+      else await Linking.openURL(checkoutUrl(result.checkoutUrl));
+    } catch (error) { Alert.alert("Kunne ikke åbne betaling", error.message); }
+    finally { paymentLock.current = false; setPaying(null); load(); }
+  };
 
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const openLink = async url => {
+    try { await Linking.openURL(url); }
+    catch { Alert.alert("Linket kunne ikke åbnes", "Prøv igen om lidt."); }
+  };
 
   const openDoor = async (booking) => {
+    if (doorLock.current) return;
+    doorLock.current = true;
     try {
       setOpeningDoor(booking.id);
       const result = await api.openDoor(booking.id);
       Alert.alert(
-        `${result.label ?? "Døren"} er åbnet`,
-        `Låsen er aktiveret i ${result.unlockSeconds ?? 5} sekunder.`
+        "Døråbning sendt",
+        `${result.label ?? "Døren"}: åbnekommandoen gælder i ${result.unlockSeconds ?? 5} sekunder. Kontrollér at døren åbner.`
       );
     } catch (e) {
       Alert.alert("Kunne ikke åbne døren", e.message ?? "Prøv igen eller kontakt klubben.");
     } finally {
+      doorLock.current = false;
       setOpeningDoor(null);
     }
   };
@@ -66,12 +82,16 @@ export default function ProfileScreen() {
           text: "Slet min konto",
           style: "destructive",
           onPress: async () => {
+            if (deleteLock.current) return;
+            deleteLock.current = true;
             try {
               setDeleting(true);
               await deleteAccount();
             } catch (e) {
               setDeleting(false);
               Alert.alert("Kunne ikke slette kontoen", e.message ?? "Prøv igen senere.");
+            } finally {
+              deleteLock.current = false;
             }
           },
         },
@@ -80,7 +100,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}
+      refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       <Card>
         <Text style={styles.name}>{user?.name}</Text>
         <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
@@ -95,14 +116,13 @@ export default function ProfileScreen() {
       </View>
 
       <Text style={styles.section}>Kommende bookinger</Text>
+      {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {state.loading ? (
         <Loading />
-      ) : state.error ? (
-        <ErrorMessage message={state.error} onRetry={load} />
-      ) : state.bookings.length === 0 ? (
+      ) : !state.data ? null : state.data.bookings.length === 0 ? (
         <Empty>Ingen bookinger endnu.</Empty>
       ) : (
-        state.bookings.map((b) => {
+        state.data.bookings.map((b) => {
           const access = b.access;
           const accessFrom = access ? new Date(access.availableFrom).getTime() : 0;
           const accessUntil = access ? new Date(access.availableUntil).getTime() : 0;
@@ -114,12 +134,16 @@ export default function ProfileScreen() {
               <Text style={styles.meta}>
                 {dateTimeLong(new Date(b.startsAt))} · {b.priceKr} kr
               </Text>
+              {b.status === "REQUESTED" && <Text style={styles.warn}>Afventer trænerens svar</Text>}
+              {b.status === "CONFIRMED" && <Text style={styles.meta}>Bekræftet</Text>}
               {b.status === "HOLD" && (
                 <View style={{ marginTop: 12 }}>
                   <Text style={styles.warn}>Afventer betaling</Text>
                   <Button
                     title="Betal nu"
-                    onPress={() => Linking.openURL(checkoutUrl(`/checkout/${b.id}/start`))}
+                    onPress={() => pay(b.id)}
+                    loading={paying === b.id}
+                    disabled={paying !== null}
                   />
                 </View>
               )}
@@ -131,6 +155,7 @@ export default function ProfileScreen() {
                       title={`Åbn ${access.label ?? "døren"}`}
                       onPress={() => openDoor(b)}
                       loading={openingDoor === b.id}
+                      disabled={openingDoor !== null}
                     />
                   ) : now < accessFrom ? (
                     <Text style={styles.meta}>
@@ -151,8 +176,8 @@ export default function ProfileScreen() {
 
       <Text style={styles.section}>Konto og vilkår</Text>
       <Card>
-        <Text style={styles.link} onPress={() => Linking.openURL(PRIVACY_URL)}>Privatlivspolitik</Text>
-        <Text style={styles.link} onPress={() => Linking.openURL(TERMS_URL)}>Vilkår</Text>
+        <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(PRIVACY_URL)}>Privatlivspolitik</Text>
+        <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(TERMS_URL)}>Vilkår</Text>
       </Card>
 
       <View style={{ gap: 10 }}>
@@ -162,7 +187,7 @@ export default function ProfileScreen() {
           onPress={() =>
             Alert.alert("Log ud", "Er du sikker?", [
               { text: "Annullér", style: "cancel" },
-              { text: "Log ud", style: "destructive", onPress: logout },
+              { text: "Log ud", style: "destructive", onPress: () => logout().catch(e => Alert.alert("Kunne ikke logge ud", e.message)) },
             ])
           }
         />

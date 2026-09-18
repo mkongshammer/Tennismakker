@@ -1,21 +1,23 @@
 // Sportsvælger — samme idé som websitets SportPicker.tsx, men gemt lokalt
 // på telefonen i stedet for i en cookie. Farveprikken er den samme farve,
 // banefliserne bruger, så valget og resultatet hænger visuelt sammen.
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScrollView, Pressable, Text, View, StyleSheet } from "react-native";
 import { colors, SPORTS, SPORT_LABELS, sportColor } from "./theme";
+import { useFocusEffect } from "@react-navigation/native";
 
 const KEY = "rb_sport";
 
 export async function getSavedSport() {
-  return (await AsyncStorage.getItem(KEY)) ?? "TENNIS";
+  const saved = await AsyncStorage.getItem(KEY).catch(() => null);
+  return SPORTS.includes(saved) ? saved : "TENNIS";
 }
 
 export function SportPicker({ value, onChange }) {
-  const select = async (sport) => {
-    await AsyncStorage.setItem(KEY, sport);
+  const select = (sport) => {
     onChange(sport);
+    AsyncStorage.setItem(KEY, sport).catch(() => {});
   };
 
   return (
@@ -30,6 +32,8 @@ export function SportPicker({ value, onChange }) {
         return (
           <Pressable
             key={s}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
             onPress={() => select(s)}
             style={[styles.chip, active && styles.chipActive]}
           >
@@ -44,13 +48,16 @@ export function SportPicker({ value, onChange }) {
   );
 }
 
-/** Hook der indlæser det gemte valg én gang og holder det i state. */
+/** Synkroniser det gemte sportsvalg, når fanen bliver aktiv. */
 export function useSport() {
   const [sport, setSport] = useState("TENNIS");
-  useEffect(() => {
-    getSavedSport().then(setSport);
-  }, []);
-  return [sport, setSport];
+  const version = useRef(0);
+  useFocusEffect(useCallback(() => {
+    const current = ++version.current;
+    getSavedSport().then(value => { if (current === version.current) setSport(value); });
+    return () => { version.current++; };
+  }, []));
+  return [sport, value => { version.current++; setSport(value); }];
 }
 
 const styles = StyleSheet.create({

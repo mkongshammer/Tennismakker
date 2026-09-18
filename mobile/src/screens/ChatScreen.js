@@ -12,40 +12,41 @@ import { api } from "../lib/api";
 import { Button, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { time } from "../lib/dates";
+import { useScreenData } from "../lib/useScreenData";
+import { mergeMessages } from "../lib/messages.mjs";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ChatScreen({ route }) {
   const { id } = route.params;
-  const [state, setState] = useState({ loading: true, error: null, data: null });
+  const state = useScreenData(useCallback(() => api.thread(id), [id]), { pollMs: 8000 });
+  const load = state.refresh;
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(null);
+  const [sent, setSent] = useState([]);
   const listRef = useRef(null);
-
-  const load = useCallback(async () => {
-    try {
-      const data = await api.thread(id);
-      setState({ loading: false, error: null, data });
-    } catch (e) {
-      setState({ loading: false, error: e.message, data: null });
-    }
-  }, [id]);
-
-  useEffect(() => { load(); }, [load]);
+  const sendingLock = useRef(false);
+  const nearBottom = useRef(true);
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
+  useEffect(() => { setSent([]); setDraft(""); setSendError(null); nearBottom.current = true; }, [id]);
 
   const send = async () => {
     const body = draft.trim();
-    if (!body) return;
+    if (!body || sendingLock.current) return;
+    sendingLock.current = true;
+    setSendError(null);
     setSending(true);
     try {
       const msg = await api.sendMessage(id, body);
       setDraft("");
-      setState((s) => ({
-        ...s,
-        data: { ...s.data, messages: [...s.data.messages, msg] },
-      }));
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 50);
+      nearBottom.current = true;
+      setSent(messages => mergeMessages(messages, [msg]));
     } catch (e) {
-      setState((s) => ({ ...s, error: e.message }));
+      setSendError(e.message);
     } finally {
+      sendingLock.current = false;
       setSending(false);
     }
   };
@@ -57,16 +58,24 @@ export default function ChatScreen({ route }) {
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.mist }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={90}
+      keyboardVerticalOffset={headerHeight}
     >
       <Text style={styles.subject}>Om: {state.data.subject}</Text>
+      {state.error && <ErrorMessage message={state.error} onRetry={load} />}
+      {sendError && <Text accessibilityRole="alert" style={{ padding: 12, color: colors.court }}>{sendError}</Text>}
 
       <FlatList
         ref={listRef}
-        data={state.data.messages}
+        data={mergeMessages(state.data.messages, sent)}
         keyExtractor={(m) => m.id}
         contentContainerStyle={{ padding: 16, gap: 8 }}
-        onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        onScroll={({ nativeEvent: { contentOffset, contentSize, layoutMeasurement } }) => {
+          nearBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 100;
+        }}
+        scrollEventThrottle={100}
+        onContentSizeChange={() => { if (nearBottom.current) listRef.current?.scrollToEnd({ animated: false }); }}
         ListEmptyComponent={
           <Text style={styles.empty}>
             Ingen beskeder endnu — skriv den første og aftal en tid.
@@ -84,12 +93,14 @@ export default function ChatScreen({ route }) {
         )}
       />
 
-      <View style={styles.composer}>
+      <View style={[styles.composer, { paddingBottom: Math.max(12, insets.bottom) }]}>
         <TextInput
           style={styles.input}
           value={draft}
           onChangeText={setDraft}
           placeholder="Skriv en besked…"
+          accessibilityLabel="Besked"
+          editable={!sending}
           multiline
           maxLength={2000}
         />

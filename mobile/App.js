@@ -1,12 +1,13 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { View, Pressable, Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "./src/lib/auth";
-import { Loading } from "./src/lib/ui";
+import { Loading, ErrorMessage } from "./src/lib/ui";
 import { colors } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
@@ -99,6 +100,8 @@ function MainTabs() {
         tabBarActiveTintColor: colors.court,
         tabBarInactiveTintColor: colors.slate,
         tabBarStyle: { borderTopColor: colors.border },
+        tabBarHideOnKeyboard: true,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
       }}
     >
       <Tabs.Screen
@@ -138,9 +141,10 @@ function MainTabs() {
 }
 
 function Root() {
-  const { user, loading } = useAuth();
+  const { user, loading, sessionError, restore } = useAuth();
 
   if (loading) return <Loading label="Starter RacketBuddy…" />;
+  if (sessionError) return <View style={{ flex: 1, justifyContent: "center", backgroundColor: colors.mist }}><ErrorMessage message={sessionError} onRetry={restore} /></View>;
   if (!user) return <LoginScreen />;
 
   return (
@@ -155,6 +159,7 @@ function Root() {
           headerStyle: { backgroundColor: colors.ink },
           headerTintColor: colors.chalk,
           headerTitleStyle: { fontWeight: "800" },
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" hitSlop={12} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.chalk, fontWeight: "700" }}>Luk</Text></Pressable>,
         }}
       />
     </RootStack.Navigator>
@@ -165,11 +170,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer ref={navigationRef}>
-          <StatusBar style="light" />
+        <NavigationContainer ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
+          <SessionStatusBar />
           <Root />
         </NavigationContainer>
       </AuthProvider>
     </SafeAreaProvider>
   );
 }
+
+function SessionStatusBar() { const { user } = useAuth(); return <StatusBar style={user ? "light" : "dark"} />; }

@@ -15,7 +15,7 @@ export const dayLong = (d) => `${DAYS[d.getDay()]} d. ${d.getDate()}. ${MONTHS[d
 
 export const dateTimeLong = (d) => `${dayLong(d)} kl. ${time(d)}`;
 
-export const isoDay = (d) => d.toISOString().slice(0, 10);
+export const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 /** Grupperer tider (ISO-strenge eller objekter med startsAt) pr. kalenderdag. */
 export function groupByDay(items, getDate) {

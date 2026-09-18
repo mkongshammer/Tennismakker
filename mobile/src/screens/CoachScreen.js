@@ -1,5 +1,7 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useRef, useState } from "react";
+import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { feedback as Alert } from "../lib/feedback";
+import { useScreenData } from "../lib/useScreenData";
 import { api, checkoutUrl } from "../lib/api";
 import { Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
@@ -7,45 +9,48 @@ import { dayLong, groupByDay, time } from "../lib/dates";
 
 export default function CoachScreen({ route }) {
   const { id } = route.params;
-  const [state, setState] = useState({ loading: true, error: null, data: null });
+  const state = useScreenData(useCallback(() => api.coach(id), [id]));
+  const load = state.refresh;
   const [booking, setBooking] = useState(null);
-
-  const load = useCallback(async () => {
-    try {
-      const data = await api.coach(id);
-      setState({ loading: false, error: null, data });
-    } catch (e) {
-      setState({ loading: false, error: e.message, data: null });
-    }
-  }, [id]);
-
-  useEffect(() => { load(); }, [load]);
+  const bookingLock = useRef(false);
+  const [notice, setNotice] = useState(null);
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
+  if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   const { coach, packages, reviews, slots } = state.data;
   const days = groupByDay(slots.map((s) => new Date(s)), (d) => d);
 
   const book = async (date) => {
+    if (bookingLock.current) return;
+    bookingLock.current = true;
     setBooking(date.toISOString());
     try {
-      const { checkoutUrl: path } = await api.book({
+      const result = await api.book({
         coachProfileId: coach.id,
         startsAt: date.toISOString(),
       });
-      await Linking.openURL(checkoutUrl(path));
+      if (result.status === "REQUESTED") {
+        setNotice("Din anmodning er sendt. Du betaler først, når træneren har godkendt tiden. Følg den under Min profil.");
+        Alert.alert("Anmodning sendt", "Træneren skal godkende tiden. Du kan følge din booking under Min profil.");
+      } else {
+        await Linking.openURL(checkoutUrl(result.checkoutUrl));
+      }
       await load();
     } catch (e) {
       Alert.alert("Kunne ikke booke", e.message);
       await load();
     } finally {
+      bookingLock.current = false;
       setBooking(null);
     }
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}
+      refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
+      {state.error && <ErrorMessage message={state.error} onRetry={load} />}
+      {notice && <Card><Text accessibilityLiveRegion="polite">{notice}</Text></Card>}
       <Card>
         <View style={styles.row}>
           <Text style={styles.name}>{coach.name}</Text>
@@ -59,6 +64,7 @@ export default function CoachScreen({ route }) {
         )}
         <Text style={styles.headline}>{coach.headline}</Text>
         <Text style={styles.meta}>{coach.area}</Text>
+        <Text style={styles.meta}>{coach.lessonMinutes ?? 60} minutter · {coach.lessonPriceKr ?? coach.priceHour} kr pr. lektion</Text>
       </Card>
 
       {packages.length > 0 && (
@@ -83,6 +89,7 @@ export default function CoachScreen({ route }) {
       )}
 
       <Text style={styles.section}>Ledige tider</Text>
+      <Text style={styles.sectionHint}>Send en anmodning. Betaling sker efter trænerens godkendelse.</Text>
       {days.length === 0 ? (
         <Empty>Ingen ledige tider de næste 7 dage.</Empty>
       ) : (
@@ -92,9 +99,12 @@ export default function CoachScreen({ route }) {
             {d.items.map((date) => (
               <Card key={date.toISOString()}>
                 <View style={styles.row}>
-                  <Text style={styles.slotTime}>{time(date)}</Text>
+                  <View style={{ flexShrink: 1 }}><Text style={styles.slotTime}>{time(date)}</Text>
+                    <Text style={styles.meta}>{coach.lessonMinutes ?? 60} min · {coach.lessonPriceKr ?? coach.priceHour} kr</Text>
+                  </View>
                   <Button
-                    title="Book"
+                    title="Anmod om tid"
+                    disabled={booking !== null}
                     onPress={() => book(date)}
                     loading={booking === date.toISOString()}
                   />

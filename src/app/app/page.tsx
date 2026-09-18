@@ -14,6 +14,7 @@ export default function AppPage() {
           Indtil da virker hele RacketBuddy direkte i din mobilbrowser.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <a href="/app/index.html" className="btn-court px-5 py-3">Prøv app-demoen</a>
           <Link href="/spillere" className="btn-court px-5 py-3">Find medspillere</Link>
           <Link href="/" className="btn-ghost px-5 py-3">Til forsiden</Link>
         </div>

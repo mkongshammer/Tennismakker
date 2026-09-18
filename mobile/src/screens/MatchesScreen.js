@@ -1,26 +1,21 @@
-import React, { useCallback, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useRef, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { useScreenData } from "../lib/useScreenData";
+import { feedback as Alert } from "../lib/feedback";
 import { api } from "../lib/api";
 import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS, MATCH_TYPES } from "../lib/theme";
 
 export default function MatchesScreen({ navigation }) {
-  const [state, setState] = useState({ loading: true, error: null, matches: [] });
-  const [refreshing, setRefreshing] = useState(false);
-
-  const load = useCallback(async () => {
-    try {
-      const { matches } = await api.matches();
-      setState({ loading: false, error: null, matches });
-    } catch (e) {
-      setState({ loading: false, error: e.message, matches: [] });
-    }
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const state = useScreenData(useCallback(() => api.matches(), []));
+  const load = state.refresh;
+  const [busyId, setBusyId] = useState(null);
+  const lock = useRef(false);
 
   const accept = async (id) => {
+    if (lock.current) return;
+    lock.current = true;
+    setBusyId(id);
     try {
       const { threadId, otherName } = await api.acceptMatch(id);
       load();
@@ -31,26 +26,30 @@ export default function MatchesScreen({ navigation }) {
       });
     } catch (e) {
       Alert.alert("Kunne ikke svare", e.message);
+    } finally {
+      lock.current = false;
+      setBusyId(null);
     }
   };
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
+  if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   return (
     <FlatList
       style={{ backgroundColor: colors.mist }}
       contentContainerStyle={{ padding: 16 }}
-      data={state.matches}
+      data={state.data.matches}
       keyExtractor={(m) => m.id}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
-          onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
+          refreshing={state.refreshing}
+          onRefresh={load}
         />
       }
       ListHeaderComponent={
         <View style={{ marginBottom: 12 }}>
+          {state.error && <ErrorMessage message={state.error} onRetry={load} />}
           <Button
             title="Opret opslag"
             onPress={() => navigation.navigate("NytOpslag")}
@@ -71,7 +70,7 @@ export default function MatchesScreen({ navigation }) {
             <Text style={styles.mine}>Dit opslag</Text>
           ) : (
             <View style={{ marginTop: 12 }}>
-              <Button title="Slå til" onPress={() => accept(item.id)} />
+              <Button title="Slå til" onPress={() => accept(item.id)} loading={busyId === item.id} disabled={busyId !== null} />
             </View>
           )}
         </Card>

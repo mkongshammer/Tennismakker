@@ -1,27 +1,20 @@
-import React, { useCallback, useState } from "react";
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useRef, useState } from "react";
+import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { useScreenData } from "../lib/useScreenData";
+import { feedback as Alert } from "../lib/feedback";
 import { api } from "../lib/api";
 import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 
 export default function SwipeScreen({ navigation }) {
-  const [state, setState] = useState({ loading: true, error: null, players: [] });
-  const [refreshing, setRefreshing] = useState(false);
+  const state = useScreenData(useCallback(() => api.players(), []));
+  const load = state.refresh;
   const [busyId, setBusyId] = useState(null);
-
-  const load = useCallback(async () => {
-    try {
-      const { players } = await api.players();
-      setState({ loading: false, error: null, players });
-    } catch (e) {
-      setState({ loading: false, error: e.message, players: [] });
-    }
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const lock = useRef(false);
 
   const contact = async (player) => {
+    if (lock.current) return;
+    lock.current = true;
     setBusyId(player.id);
     try {
       const { threadId, otherName } = await api.contactPlayer(player.id);
@@ -32,27 +25,29 @@ export default function SwipeScreen({ navigation }) {
     } catch (e) {
       Alert.alert("Kunne ikke åbne beskeder", e.message);
     } finally {
+      lock.current = false;
       setBusyId(null);
     }
   };
 
   if (state.loading) return <Loading />;
-  if (state.error) return <ErrorMessage message={state.error} onRetry={load} />;
+  if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   return (
     <FlatList
       style={{ backgroundColor: colors.mist }}
       contentContainerStyle={{ padding: 16 }}
-      data={state.players}
+      data={state.data.players}
       keyExtractor={(p) => p.id}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
-          onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
+          refreshing={state.refreshing}
+          onRefresh={load}
         />
       }
       ListHeaderComponent={
         <View style={styles.header}>
+          {state.error && <ErrorMessage message={state.error} onRetry={load} />}
           <Text style={styles.title}>Find en medspiller</Text>
           <Text style={styles.subtitle}>
             Se spillere på RacketBuddy og skriv direkte til dem. Ingen likes eller matches først.
@@ -86,7 +81,8 @@ export default function SwipeScreen({ navigation }) {
               <Button
                 title="Send besked"
                 onPress={() => contact(item)}
-                disabled={busyId === item.id}
+                disabled={busyId !== null}
+                loading={busyId === item.id}
               />
             </View>
           </Card>
