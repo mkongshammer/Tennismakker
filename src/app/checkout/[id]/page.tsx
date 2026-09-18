@@ -12,6 +12,7 @@ import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
 import { confirmBookingPayment, platformFeeForBooking, startCheckout } from "../../../lib/payments";
 import { getSettings } from "../../../lib/settings";
+import { bookingCanBePaid } from "../../../lib/payment-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -25,15 +26,15 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
     include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
   });
   if (!booking || booking.userId !== user.id) notFound();
-  if (booking.status === "CANCELLED") {
+  if (booking.status === "CANCELLED" || (booking.status === "HOLD" && !bookingCanBePaid(booking))) {
     return (
       <div className="mx-auto max-w-sm card text-center">
         <p className="font-bold">Reservationen er udløbet</p>
-        <p className="mt-1 text-sm text-slate/60">De 10 minutter gik — vælg tidspunktet igen.</p>
+        <p className="mt-1 text-sm text-slate/60">Betalingsfristen er passeret — vælg en ny ledig tid. Har du allerede betalt, så kontakt os, før du betaler igen.</p>
       </div>
     );
   }
-  if (booking.status === "CONFIRMED") redirect("/profil?betalt=1");
+  if (booking.status === "CONFIRMED") redirect(`/profil?betalt=${encodeURIComponent(id)}`);
   // Samme vagt som i start-ruten: en time, træneren ikke har godkendt, kan
   // ikke betales.
   if (booking.status === "REQUESTED") redirect("/profil?afventer=1");
@@ -81,8 +82,12 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
 
   async function pay() {
     "use server";
-    await confirmBookingPayment(id);
-    redirect("/profil?betalt=1");
+    // Server actions can outlive the page render. Re-check the current session,
+    // owner, payment mode and deadline at execution time, not just on page load.
+    const currentUser = await getCurrentUser();
+    if (!currentUser) redirect("/login");
+    await confirmBookingPayment(id, { provider: "mock", userId: currentUser.id });
+    redirect(`/profil?betalt=${encodeURIComponent(id)}`);
   }
 
   return (

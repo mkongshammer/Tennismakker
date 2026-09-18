@@ -25,35 +25,33 @@ export async function GET(
 ) {
   const { id } = await params;
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  // A native app Bearer session is not a browser cookie. The signed webhook
+  // still confirms payment; show a neutral return page instead of forcing login.
+  if (!user) redirect("/checkout/retur");
 
   const booking = await db.booking.findUnique({ where: { id } });
   if (!booking || booking.userId !== user.id) redirect("/profil");
 
   // Allerede bekræftet af webhooken? Så er der intet at gøre.
-  if (booking.status === "CONFIRMED") redirect("/profil?betalt=1");
+  if (booking.status === "CONFIRMED") redirect(`/profil?betalt=${encodeURIComponent(id)}`);
 
   const sessionId = new URL(req.url).searchParams.get("session");
 
   // redirect() kaster en intern undtagelse, som en catch-alt ville sluge.
   // Derfor holdes den helt uden for try/catch — samme faldgrube som
   // beskrevet i README under bookingflowet.
+  let confirmed = false;
   if ((await stripeEnabled()) && sessionId) {
     try {
       const session = await (await stripe()).checkout.sessions.retrieve(sessionId);
-      if (session.payment_status === "paid") {
-        const paymentIntentId =
-          typeof session.payment_intent === "string"
-            ? session.payment_intent
-            : session.payment_intent?.id;
-        await confirmBookingPayment(id, paymentIntentId);
-      }
+      await confirmBookingPayment(id, { provider: "stripe", session });
+      confirmed = true;
     } catch (err) {
       // Kan vi ikke nå Stripe, falder vi tilbage på webhooken. Brugeren
       // får beskeden om, at betalingen ikke er registreret endnu.
-      console.error("Kunne ikke bekræfte betaling mod Stripe:", err);
+      console.error("Kunne ikke bekræfte betaling mod Stripe for booking:", id);
     }
   }
 
-  redirect("/profil?betalt=1");
+  redirect(confirmed ? `/profil?betalt=${encodeURIComponent(id)}` : "/profil?betaling=afventer");
 }

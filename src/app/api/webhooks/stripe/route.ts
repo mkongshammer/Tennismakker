@@ -7,7 +7,7 @@
 //
 // Sæt denne adresse op i Stripe Dashboard → Developers → Webhooks:
 //   https://racketbuddy.app/api/webhooks/stripe
-// og lyt på: checkout.session.completed, account.updated,
+// og lyt på: checkout.session.completed, checkout.session.async_payment_succeeded, account.updated,
 //   customer.subscription.created, customer.subscription.updated,
 //   customer.subscription.deleted
 //
@@ -27,13 +27,16 @@ import { confirmMembership } from "../../../../lib/memberships";
 import { confirmTeamSignup } from "../../../../lib/teams";
 import { confirmPunchPurchase } from "../../../../lib/punch-cards";
 import { syncSubscription } from "../../../../lib/subscription";
+import { checkoutIsSettled } from "../../../../lib/payment-validation";
+import { InvalidStripeSignature, verifiedStripeEvent } from "../../../../lib/stripe-event";
 
 export const dynamic = "force-dynamic";
 
 /** Behandler et event, uanset hvordan det kom ind. */
 async function handleEvent(type: string, object: any) {
   switch (type) {
-    case "checkout.session.completed": {
+    case "checkout.session.completed":
+    case "checkout.session.async_payment_succeeded": {
       const session = object as Stripe.Checkout.Session;
 
       // Samme event dækker to ting: en gæst der har betalt for en booking,
@@ -49,6 +52,10 @@ async function handleEvent(type: string, object: any) {
         }
         return;
       }
+
+      // Checkout completion is not necessarily payment completion (bank-based
+      // methods can settle later). Never fulfil an unpaid checkout.
+      if (!checkoutIsSettled(session)) return;
 
       // Et pakkekøb er også en betaling, bare uden en booking bagved.
       // Kontingent: klubbens indtægt, ikke en booking.
@@ -81,11 +88,7 @@ async function handleEvent(type: string, object: any) {
         console.error("checkout.session.completed uden bookingId i metadata", session.id);
         return;
       }
-      const paymentIntentId =
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : session.payment_intent?.id;
-      await confirmBookingPayment(bookingId, paymentIntentId);
+      await confirmBookingPayment(bookingId, { provider: "stripe", session });
       return;
     }
 
@@ -137,37 +140,13 @@ export async function POST(req: Request) {
   let object: any;
 
   try {
-    // Klassisk format: hele objektet ligger i beskeden.
-    const event = (await stripe()).webhooks.constructEvent(rawBody, signature, secret);
-    type = event.type;
-    object = (event as any).data?.object;
+    const verified = await verifiedStripeEvent(await stripe(), rawBody, signature, secret);
+    type = verified.type;
+    object = verified.object;
   } catch (err) {
-    // Kunne det være det nye "thin"-format? Der er kun et id i beskeden,
-    // og selve objektet skal hentes bagefter.
-    const parsed = safeParse(rawBody);
-    if (!parsed?.id || !parsed?.type) {
-      console.error("Stripe-webhook: ugyldig signatur", err);
-      return new Response("Ugyldig signatur", { status: 400 });
-    }
-
-    try {
-      // Hent hele eventet ud fra id'et. Det er samtidig verifikationen:
-      // et opdigtet id findes ikke hos Stripe.
-      // Et evt_test_-id på en live-nøgle er en efterladt test-event fra en
-      // sandkasse. Den kan ikke hentes, og det er ikke en fejl — så den
-      // skal ikke fylde en stak i logfilen.
-      if (parsed.id?.startsWith("evt_test_")) {
-        console.log("Stripe-webhook: ignorerer test-event i live:", parsed.id);
-        return new Response("ok", { status: 200 });
-      }
-
-      const full = await (await stripe()).events.retrieve(parsed.id);
-      type = full.type;
-      object = (full as any).data?.object;
-    } catch (retrieveErr) {
-      console.error("Stripe-webhook: kunne ikke hente event", parsed.id, retrieveErr);
-      return new Response("Kunne ikke hente event", { status: 400 });
-    }
+    if (err instanceof InvalidStripeSignature) return new Response("Ugyldig signatur", { status: 400 });
+    console.error("Stripe-webhook: verificeret event kunne ikke hentes.");
+    return new Response("Kunne ikke hente event", { status: 500 });
   }
 
   if (!object) {
@@ -187,12 +166,4 @@ export async function POST(req: Request) {
   return new Response(JSON.stringify({ received: true }), {
     headers: { "Content-Type": "application/json" },
   });
-}
-
-function safeParse(raw: string): any | null {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
 }

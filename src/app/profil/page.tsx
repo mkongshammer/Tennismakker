@@ -23,10 +23,11 @@ export const dynamic = "force-dynamic";
 export default async function ProfilPage({
   searchParams,
 }: {
-  searchParams: Promise<{ betalt?: string }>;
+  searchParams: Promise<{ betalt?: string; betaling?: string }>;
 }) {
   const query = await searchParams;
   const user = await getCurrentUser();
+  if (!user) redirect("/login");
   const t = translator((await getPreferences()).locale);
 
   const coachRequests = user!.coachProfile
@@ -56,7 +57,6 @@ export default async function ProfilPage({
       requestCredits.set(r.id, leftByPlayer.get(r.userId) ?? 0);
     }
   }
-  if (!user) redirect("/login");
 
   const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
     db.booking.findMany({
@@ -97,11 +97,12 @@ export default async function ProfilPage({
     withName: null,
   }));
 
-  const hasConfirmedBooking = bookings.some(
-    (b: any) =>
-      b.status === "CONFIRMED" &&
-      Date.now() - new Date(b.createdAt).getTime() < 60 * 60 * 1000
-  );
+  // Check the exact booking, not whether *some* recent booking is confirmed.
+  // Legacy ?betalt=1 links show pending rather than an unsupported success claim.
+  const confirmedPayment = query.betalt && query.betalt !== "1"
+    ? await db.booking.findFirst({ where: { id: query.betalt, userId: user.id, status: "CONFIRMED" }, select: { id: true } })
+    : null;
+  const hasConfirmedBooking = Boolean(confirmedPayment);
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
@@ -114,12 +115,13 @@ export default async function ProfilPage({
         </div>
       )}
 
-      {query.betalt && !hasConfirmedBooking && (
+      {(query.betalt || query.betaling === "afventer") && !hasConfirmedBooking && (
         <div className="rounded-2xl border border-slate/25 bg-mist p-5">
           <p className="display text-xl">{t("profile.pendingTitle")}</p>
           <p className="mt-1 text-sm text-slate">
             {t("profile.pendingBody")}
           </p>
+          <p className="mt-2 text-sm text-slate">Er beløbet allerede trukket, så kontakt os, før du betaler igen.</p>
         </div>
       )}
 

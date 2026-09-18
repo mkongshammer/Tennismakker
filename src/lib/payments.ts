@@ -15,7 +15,7 @@
 // 2. Ved checkout: opret PaymentIntent med `application_fee_amount` = platformFee
 //    og `transfer_data.destination` = klubbens/trænerens Connect-konto.
 //    MobilePay slås til som payment method i Stripe Dashboard.
-// 3. Webhook (payment_intent.succeeded) kalder confirmBookingPayment() nedenfor.
+// 3. Betalte checkout-events kalder confirmBookingPayment() nedenfor.
 
 import { db } from "./db";
 import { platformAccountCountry, stripe } from "./stripe";
@@ -24,6 +24,7 @@ import { describeLength } from "./slots";
 import { subscriptionIsActive } from "./billing";
 import { refundCredit } from "./packages";
 import { refundPunch } from "./punch-cards";
+import { bookingCanBePaid, validateCheckoutPayment, type BookingPaymentProof } from "./payment-validation";
 import type { RecipientKind } from "./connect";
 import {
   bookingReceipt,
@@ -90,7 +91,6 @@ export async function platformFeeForBooking(booking: {
  */
 export async function startCheckout(bookingId: string): Promise<string> {
   const settings = await getSettings();
-  if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
@@ -100,6 +100,8 @@ export async function startCheckout(bookingId: string): Promise<string> {
     },
   });
   if (!booking) throw new Error("Booking findes ikke");
+  if (!bookingCanBePaid(booking)) throw new Error("Reservationen er udløbet eller kan ikke betales.");
+  if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
   const recipientId =
@@ -193,50 +195,72 @@ export async function startCheckout(bookingId: string): Promise<string> {
  * Bekræfter betaling og låser bookingen.
  * Kaldes af mock-checkout i udvikling og af Stripe-webhook i produktion.
  */
-export async function confirmBookingPayment(bookingId: string, providerRef?: string) {
+export async function confirmBookingPayment(bookingId: string, proof: BookingPaymentProof) {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     include: {
       user: true,
       court: { include: { club: { include: { members: true } } } },
       coachProfile: { include: { user: true } },
+      payment: true,
     },
   });
   if (!booking) throw new Error("Booking findes ikke");
-  if (booking.status === "CONFIRMED") return booking; // idempotent
-  // Sidste bælte: en anmodning uden trænerens ja må ikke kunne bekræftes,
-  // heller ikke af en webhook der kommer fra en anden vej.
-  if (booking.status === "REQUESTED") {
-    throw new Error("Timen er ikke godkendt af træneren endnu.");
-  }
-
-  // Varm opsætningen inden kvitteringerne bygges — skabelonerne læser
-  // adressen synkront, mens de sammensættes.
   await ensureSettings();
   const settings = await getSettings();
+  let providerRef: string;
+  if (proof.provider === "stripe") {
+    providerRef = validateCheckoutPayment(booking, proof.session);
+  } else {
+    if (settings.paymentProvider !== "mock" || proof.userId !== booking.userId) {
+      throw new Error("Demo-betaling er ikke tilladt.");
+    }
+    providerRef = `mock_${booking.id}`;
+  }
+  const samePayment = (current: typeof booking) => current?.status === "CONFIRMED" &&
+    current.payment?.status === "PAID" && current.payment.provider === proof.provider &&
+    current.payment.providerRef === providerRef;
+  if (samePayment(booking)) return booking;
+  if (!bookingCanBePaid(booking)) {
+    throw new Error("Reservationen er ikke længere aktiv. En eventuel betaling skal afstemmes, før tiden kan bekræftes.");
+  }
   const fee = await platformFeeForBooking(booking);
-
-  const [updated] = await db.$transaction([
-    db.booking.update({
-      where: { id: bookingId },
+  const result = await db.$transaction(async (tx) => {
+    // Compare-and-set in the same transaction as Payment: only one simultaneous
+    // webhook/return request can win and send the booking notification.
+    const changed = await tx.booking.updateMany({
+      where: { id: bookingId, status: "HOLD", OR: [
+        { holdExpiresAt: null }, { holdExpiresAt: { gt: new Date() } },
+      ] },
       data: { status: "CONFIRMED", holdExpiresAt: null },
-    }),
-    db.payment.upsert({
+    });
+    if (changed.count === 0) {
+      const current = await tx.booking.findUnique({ where: { id: bookingId }, include: { payment: true } });
+      if (current?.status === "CONFIRMED" && current.payment?.status === "PAID" &&
+          current.payment.provider === proof.provider && current.payment.providerRef === providerRef) {
+        return { booking: current, changed: false };
+      }
+      throw new Error("Bookingen er ændret eller udløbet. Betalingen skal afstemmes.");
+    }
+    await tx.payment.upsert({
       where: { bookingId },
       create: {
         bookingId,
         amountKr: booking.priceKr,
         platformFee: fee,
-        provider: settings.paymentProvider,
-        providerRef: providerRef ?? `mock_${Date.now()}`,
+        provider: proof.provider,
+        providerRef,
         status: "PAID",
       },
-      update: { status: "PAID", providerRef: providerRef ?? undefined },
-    }),
-  ]);
-
-  await notifyBookingConfirmed(booking);
-  return updated;
+      update: { status: "PAID", provider: proof.provider, providerRef, amountKr: booking.priceKr, platformFee: fee },
+    });
+    return { booking: await tx.booking.findUniqueOrThrow({ where: { id: bookingId } }), changed: true };
+  });
+  if (result.changed) {
+    try { await notifyBookingConfirmed(booking); }
+    catch { console.error("Booking bekræftet, men kvittering kunne ikke sendes:", bookingId); }
+  }
+  return result.booking;
 }
 
 /**
