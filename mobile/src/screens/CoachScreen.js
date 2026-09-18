@@ -6,12 +6,15 @@ import { api, checkoutUrl } from "../lib/api";
 import { Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors } from "../lib/theme";
 import { dayLong, groupByDay, time } from "../lib/dates";
+import { BookingReview } from "../lib/BookingReview";
 
 export default function CoachScreen({ route }) {
   const { id } = route.params;
   const state = useScreenData(useCallback(() => api.coach(id), [id]));
   const load = state.refresh;
   const [booking, setBooking] = useState(null);
+  const [selection, setSelection] = useState(null);
+  const [bookingError, setBookingError] = useState(null);
   const bookingLock = useRef(false);
   const [notice, setNotice] = useState(null);
 
@@ -25,19 +28,23 @@ export default function CoachScreen({ route }) {
     if (bookingLock.current) return;
     bookingLock.current = true;
     setBooking(date.toISOString());
+    setBookingError(null);
     try {
       const result = await api.book({
         coachProfileId: coach.id,
         startsAt: date.toISOString(),
       });
       if (result.status === "REQUESTED") {
+        setSelection(null);
         setNotice("Din anmodning er sendt. Du betaler først, når træneren har godkendt tiden. Følg den under Min profil.");
         Alert.alert("Anmodning sendt", "Træneren skal godkende tiden. Du kan følge din booking under Min profil.");
       } else {
+        setSelection(null);
         await Linking.openURL(checkoutUrl(result.checkoutUrl));
       }
       await load();
     } catch (e) {
+      setBookingError(e.message);
       Alert.alert("Kunne ikke booke", e.message);
       await load();
     } finally {
@@ -47,6 +54,7 @@ export default function CoachScreen({ route }) {
   };
 
   return (
+    <>
     <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
@@ -103,9 +111,9 @@ export default function CoachScreen({ route }) {
                     <Text style={styles.meta}>{coach.lessonMinutes ?? 60} min · {coach.lessonPriceKr ?? coach.priceHour} kr</Text>
                   </View>
                   <Button
-                    title="Anmod om tid"
+                    title="Vælg tid"
                     disabled={booking !== null}
-                    onPress={() => book(date)}
+                    onPress={() => { setBookingError(null); setSelection(date); }}
                     loading={booking === date.toISOString()}
                   />
                 </View>
@@ -128,11 +136,24 @@ export default function CoachScreen({ route }) {
         </>
       )}
     </ScrollView>
+    {selection && <BookingReview
+      visible
+      title={coach.name}
+      details={[dayLong(selection), `${time(selection)} · ${coach.lessonMinutes ?? 60} minutter`]}
+      priceKr={coach.lessonPriceKr ?? coach.priceHour}
+      hint="Du sender en anmodning til træneren. Du betaler først, når træneren har godkendt tiden."
+      action="Send anmodning"
+      busy={booking !== null}
+      error={bookingError}
+      onConfirm={() => book(selection)}
+      onClose={() => setSelection(null)}
+    />}
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 12 },
+  row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 },
   name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.ink },
   price: { fontWeight: "800", color: colors.court, fontSize: 17 },
   rating: { marginTop: 6, fontSize: 13, fontWeight: "700", color: colors.ink },

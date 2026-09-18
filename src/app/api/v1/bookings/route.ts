@@ -72,6 +72,7 @@ export async function GET(req: Request) {
       id: b.id,
       kind: b.kind,
       status: b.status,
+      holdExpiresAt: b.holdExpiresAt?.toISOString() ?? null,
       startsAt: b.startsAt.toISOString(),
       endsAt: b.endsAt.toISOString(),
       priceKr: b.priceKr,

@@ -163,6 +163,9 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
+    minHeight: 48,
+    minWidth: 48,
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 999,

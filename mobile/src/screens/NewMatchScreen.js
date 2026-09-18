@@ -59,6 +59,9 @@ export default function NewMatchScreen({ navigation }) {
         {Object.entries(MATCH_TYPES).map(([key, label]) => (
           <Pressable
             key={key}
+            accessibilityRole="button"
+            accessibilityState={{ selected: matchType === key, disabled: busy }}
+            disabled={busy}
             onPress={() => setMatchType(key)}
             style={[styles.chip, matchType === key && styles.chipActive]}
           >
@@ -74,6 +77,10 @@ export default function NewMatchScreen({ navigation }) {
         {Object.keys(LEVELS).map((n) => (
           <Pressable
             key={n}
+            accessibilityRole="button"
+            accessibilityLabel={`${n}: ${LEVELS[n]}`}
+            accessibilityState={{ selected: level === Number(n), disabled: busy }}
+            disabled={busy}
             onPress={() => setLevel(Number(n))}
             style={[styles.chip, level === Number(n) && styles.chipActive]}
           >
@@ -88,6 +95,9 @@ export default function NewMatchScreen({ navigation }) {
         {DK_REGIONS.map((region) => (
           <Pressable
             key={region}
+            accessibilityRole="button"
+            accessibilityState={{ selected: area === region, disabled: busy }}
+            disabled={busy}
             onPress={() => setArea(region)}
             style={[styles.chip, area === region && styles.chipActive]}
           >
@@ -117,6 +127,10 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
+    minHeight: 48,
+    minWidth: 48,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 999,

@@ -26,6 +26,7 @@ import { refundCredit } from "./packages";
 import { refundPunch } from "./punch-cards";
 import { bookingCanBePaid, validateCheckoutPayment, type BookingPaymentProof } from "./payment-validation";
 import type { RecipientKind } from "./connect";
+import { prepareBookingCheckout, resumeBookingCheckout, closeBookingCheckout } from "./booking-checkout";
 import {
   bookingReceipt,
   cancellationNotice,
@@ -101,6 +102,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   });
   if (!booking) throw new Error("Booking findes ikke");
   if (!bookingCanBePaid(booking)) throw new Error("Reservationen er udløbet eller kan ikke betales.");
+  if (booking.checkoutParams) return resumeBookingCheckout(booking);
   if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
@@ -126,36 +128,16 @@ export async function startCheckout(bookingId: string): Promise<string> {
 
   const base = settings.appUrl;
 
-  // Hvem betaler Stripes eget gebyr, afhænger af klubbens model.
-  //
-  // Ved provision (fee > 0) er vi som standard ansvarlige for Stripes
-  // gebyr i en destination charge — det er fint, for gebyret trækkes fra
-  // vores egen andel, og det er netop derfor provisionen er 10% og ikke
-  // lavere (se COMMISSION_PCT).
-  //
-  // Ved abonnement er vores andel 0 kr. Uden videre ville VI stadig
-  // hæfte for Stripes gebyr på hver eneste booking, uden noget at dække
-  // det med — platformen ville tabe penge på hver transaktion. Derfor
-  // sættes `on_behalf_of` her, som flytter ansvaret for Stripes gebyr
-  // over på klubbens egen konto. Klubben betaler et fast beløb om
-  // måneden i stedet for provision, og betaler så Stripes gebyr som en
-  // hvilken som helst anden erhvervsdrivende, der tager kortbetaling.
-  // fee er kun 0 for en klub, hvis abonnementet betales — se
-  // platformFeeForBooking. Derfor er dette samtidig tjekket på, om klubben
-  // skal bære Stripes gebyr selv.
-  //
-  // MEN: står platformen og klubben i hvert sit land, er udbetalingen
-  // grænseoverskridende, og dér tillader Stripe ikke `on_behalf_of` på en
-  // destination charge. Kaldet ville blive afvist, og bookingen fejle for
-  // enhver abonnementsklub. Så bærer vi gebyret i stedet — det er, hvad
-  // abonnementet skal dække.
+  // Preserve the existing settlement-merchant configuration. on_behalf_of
+  // is not evidence that Stripe's processing fees are charged to the club.
+  // Platform commission is calculated separately and frozen with the attempt.
   const platformCountry = await platformAccountCountry();
   const sameCountry = Boolean(
     platformCountry && account.country && platformCountry === account.country
   );
   const isSubscriptionClub = fee === 0 && kind === "CLUB" && sameCountry;
 
-  const session = await (await stripe()).checkout.sessions.create({
+  return prepareBookingCheckout(bookingId, {
     mode: "payment",
     // Ingen payment_method_types: så bruger Stripe de metoder, der er slået
     // til i panelet. Var den låst til ["card"], ville MobilePay aldrig dukke
@@ -177,18 +159,17 @@ export async function startCheckout(bookingId: string): Promise<string> {
       ...(isSubscriptionClub ? { on_behalf_of: account.id } : {}),
       metadata: { bookingId },
     },
-    metadata: { bookingId },
+    metadata: { bookingId, checkoutRevision: "v1" },
     // Send brugeren via vores egen bekræftelsesrute i stedet for direkte
     // til profilen. Den spørger Stripe, om betalingen faktisk gik igennem,
     // og bekræfter bookingen med det samme — så oplevelsen ikke afhænger
     // af, at webhooken når frem først.
     success_url: `${base}/checkout/${bookingId}/faerdig?session={CHECKOUT_SESSION_ID}`,
     cancel_url: `${base}/profil`,
-    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // matcher HOLD-vinduet med god margen
+    // Stripe requires at least 30 minutes. Five extra minutes allow creation
+    // retries; this exact timestamp is also persisted as the local deadline.
+    expires_at: Math.floor(Date.now() / 1000) + 35 * 60,
   });
-
-  if (!session.url) throw new Error("Stripe returnerede ingen betalingsside.");
-  return session.url;
 }
 
 /**
@@ -221,18 +202,30 @@ export async function confirmBookingPayment(bookingId: string, proof: BookingPay
     current.payment?.status === "PAID" && current.payment.provider === proof.provider &&
     current.payment.providerRef === providerRef;
   if (samePayment(booking)) return booking;
-  if (!bookingCanBePaid(booking)) {
+  // Managed checkouts keep the slot held until Stripe proves expiry. A signed
+  // paid event may arrive after the deadline without reviving a cancelled slot.
+  const managedProof = proof.provider === "stripe" && Boolean(booking.checkoutParams) &&
+    (booking.checkoutSessionId === proof.session.id ||
+      (!booking.checkoutSessionId && proof.session.metadata?.checkoutRevision === "v1"));
+  if (booking.checkoutParams && !managedProof) {
+    throw new Error("Betalingsbeviset matcher ikke bookingens gemte Stripe-session.");
+  }
+  if (!bookingCanBePaid(booking) && !(managedProof && booking.status === "HOLD")) {
     throw new Error("Reservationen er ikke længere aktiv. En eventuel betaling skal afstemmes, før tiden kan bekræftes.");
   }
-  const fee = await platformFeeForBooking(booking);
+  const fee = managedProof
+    ? Number(JSON.parse(booking.checkoutParams!).payment_intent_data.application_fee_amount) / 100
+    : await platformFeeForBooking(booking);
+  if (!Number.isFinite(fee) || fee < 0) throw new Error("Betalingens platformgebyr er ugyldigt.");
   const result = await db.$transaction(async (tx) => {
     // Compare-and-set in the same transaction as Payment: only one simultaneous
     // webhook/return request can win and send the booking notification.
     const changed = await tx.booking.updateMany({
-      where: { id: bookingId, status: "HOLD", OR: [
+      where: { id: bookingId, status: "HOLD", ...(managedProof ? { checkoutParams: booking.checkoutParams } : { OR: [
         { holdExpiresAt: null }, { holdExpiresAt: { gt: new Date() } },
-      ] },
-      data: { status: "CONFIRMED", holdExpiresAt: null },
+      ] }) },
+      data: { status: "CONFIRMED", holdExpiresAt: null,
+        ...(managedProof && proof.provider === "stripe" ? { checkoutSessionId: proof.session.id } : {}) },
     });
     if (changed.count === 0) {
       const current = await tx.booking.findUnique({ where: { id: bookingId }, include: { payment: true } });
@@ -373,16 +366,19 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   if (!booking) throw new Error("Booking findes ikke");
 
   await ensureSettings();
+  if (booking.status === "CANCELLED") return null;
 
   const hoursUntil =
     (booking.startsAt.getTime() - Date.now()) / (1000 * 60 * 60);
   const eligible = hoursUntil >= REFUND_WINDOW_HOURS;
   const paid = booking.payment?.status === "PAID";
 
-  await db.booking.update({
-    where: { id: bookingId },
+  if (booking.status === "HOLD") await closeBookingCheckout(booking);
+  const cancelled = await db.booking.updateMany({
+    where: { id: bookingId, status: booking.status, checkoutParams: booking.checkoutParams },
     data: { status: "CANCELLED" },
   });
+  if (!cancelled.count) throw new Error("Bookingen er ændret. Opdatér siden før aflysning.");
 
   // Blev timen betalt med et klip fra et pakkeforløb, skal klippet tilbage.
   // Der er ingen betaling at refundere — eleven har betalt for pakken, og
@@ -439,7 +435,28 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
 /** Rydder udløbne midlertidige reservationer (kaldes lazily før slot-visning). */
 export async function releaseExpiredHolds() {
   await db.booking.updateMany({
-    where: { status: "HOLD", holdExpiresAt: { lt: new Date() } },
+    where: { status: "HOLD", checkoutParams: null, holdExpiresAt: { lt: new Date() } },
     data: { status: "CANCELLED" },
   });
+  const pending = await db.booking.findMany({
+    where: { status: "HOLD", checkoutParams: { not: null }, holdExpiresAt: { lt: new Date() } },
+  });
+  for (const booking of pending) {
+    try {
+      if (!booking.checkoutSessionId) throw new Error("Unknown checkout result");
+      const session = await (await stripe()).checkout.sessions.retrieve(booking.checkoutSessionId);
+      if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
+        await confirmBookingPayment(booking.id, { provider: "stripe", session });
+      } else if (session.status === "expired") {
+        await db.booking.updateMany({
+          where: { id: booking.id, status: "HOLD", checkoutSessionId: session.id },
+          data: { status: "CANCELLED" },
+        });
+      }
+      // Complete but unpaid means an asynchronous payment is still resolving.
+      // Keep the slot reserved; never cancel solely from the local clock.
+    } catch {
+      console.error("Checkout kræver afstemning; reservation beholdt:", booking.id);
+    }
+  }
 }

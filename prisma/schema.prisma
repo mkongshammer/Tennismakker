@@ -341,6 +341,10 @@ model Booking {
   /// Blev timen betalt med et klip fra klubbens klippekort?
   punchPurchaseId   String?
   holdExpiresAt     DateTime? // midlertidig reservation (10 min) mod dobbeltbooking
+  // Durable creation parameters: freeze expiry, fee and destination before
+  // calling Stripe so concurrent calls/retries use the same idempotency key.
+  checkoutParams    String?
+  checkoutSessionId String?
   createdAt         DateTime  @default(now())
 
   // True når klubben bruger sit eget bookingsystem (MANUAL/ICAL/API): bookingen

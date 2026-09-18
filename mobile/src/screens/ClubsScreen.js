@@ -60,7 +60,7 @@ export default function ClubsScreen({ navigation }) {
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.row}>
-                    <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.name}>{item.name}</Text>
                     <Stars average={item.rating?.average ?? 0} count={item.rating?.count ?? 0} />
                   </View>
                   <Text style={styles.meta}>{item.city}</Text>
@@ -85,5 +85,5 @@ const styles = StyleSheet.create({
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   price: { fontWeight: "800", marginTop: 4, color: colors.ink },
   rating: { fontSize: 12, color: colors.ink, fontWeight: "700" },
-  newBadge: { fontSize: 11, color: colors.slateLight },
+  newBadge: { fontSize: 13, color: colors.slate },
 });

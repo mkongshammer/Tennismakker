@@ -81,18 +81,59 @@ test('coach requests never open a missing checkout URL and double taps create on
     '../lib/feedback': { feedback: { alert: (...args) => alerts.push(args) } },
     '../lib/useScreenData': { useScreenData: () => ({ data, loading: false, refreshing: false, error: null, refresh: async () => {} }) },
     '../lib/ui': { Button: 'Button', Card: 'Card', Empty: 'Empty', ErrorMessage: 'ErrorMessage', Loading: 'Loading' },
+    '../lib/BookingReview': { BookingReview: 'BookingReview' },
     '../lib/theme': { colors: {} },
     '../lib/dates': { dayLong: () => 'torsdag', time: () => '14:00', groupByDay: items => [{ date: items[0], items }] },
   });
   await act(async () => { tree = create(React.createElement(Coach, { route: { params: { id: 'coach-1' } } })); });
-  const press = tree.root.findByType('Button').props.onPress;
+  await act(async () => tree.root.findByType('Button').props.onPress());
+  assert.equal(requests, 0, 'selecting a time must not create a booking');
+  await act(async () => tree.root.findByType('BookingReview').props.onClose());
+  assert.equal(requests, 0, 'going back must not create a booking');
+  await act(async () => tree.root.findByType('Button').props.onPress());
+  const press = tree.root.findByType('BookingReview').props.onConfirm;
   let first;
   await act(async () => { first = press(); press(); });
   assert.equal(requests, 1);
   assert.equal(tree.root.findByType('Button').props.disabled, true);
   await act(async () => { pending.resolve({ id: 'booking-1', status: 'REQUESTED' }); await first; });
   assert.equal(checkouts, 0);
+  assert.equal(tree.root.findAllByType('BookingReview').length, 0);
   assert.equal(alerts[0][0], 'Anmodning sendt');
   assert.equal(tree.root.findByType('Button').props.disabled, false);
+  await act(() => tree.unmount());
+});
+
+test('court selection shows exact details; back does not book and confirmation is single-flight', async () => {
+  let requests = 0; const pending = deferred(); const opened = []; let tree;
+  const slot = { courtId: 'court-1', courtName: 'Bane 1', startsAt: '2026-10-01T12:00:00Z', endsAt: '2026-10-01T13:00:00Z', priceKr: 240 };
+  const { default: Club } = loadSource('../screens/ClubScreen.js', {
+    'react-native': { Linking: { openURL: async url => opened.push(url) }, Pressable: 'Pressable', RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },
+    '../lib/api': { api: { book: input => { requests++; assert.equal(input.courtId, slot.courtId); return pending.promise; } }, checkoutUrl: value => value },
+    '../lib/feedback': { feedback: { alert() {} } },
+    '../lib/useScreenData': { useScreenData: () => ({ data: { club: { name: 'Testklub', color: '#ffffff', courts: [{ id: 'court-1' }] }, slots: [slot] }, refresh: async () => {} }) },
+    '../lib/ui': { Empty: 'Empty', ErrorMessage: 'ErrorMessage', Loading: 'Loading' },
+    '../lib/BookingReview': { BookingReview: 'BookingReview' },
+    '../lib/contrast.mjs': { readableSurface: () => ({ backgroundColor: '#ffffff', color: '#000000' }) },
+    '../lib/theme': { colors: {}, SURFACES: {}, sportColor: () => '#1B62C4' },
+    '../lib/dates': { dayLong: () => 'torsdag 1. oktober', dayShort: () => 'torsdag', time: d => d.toISOString().slice(11, 16), groupByDay: items => [{ date: items[0].start, items }] },
+  });
+  await act(async () => { tree = create(React.createElement(Club, { route: { params: { slug: 'test' } } })); });
+  const select = () => tree.root.findAllByType('Pressable').find(n => n.props.accessibilityLabel?.includes('Bane 1')).props.onPress();
+  await act(async () => select());
+  const review = () => tree.root.findByType('BookingReview');
+  assert.equal(requests, 0);
+  assert.equal(review().props.priceKr, 240);
+  assert.deepEqual(review().props.details, ['Bane 1', 'torsdag 1. oktober', '12:00 – 13:00']);
+  await act(async () => review().props.onClose());
+  assert.equal(requests, 0);
+  await act(async () => select());
+  let first;
+  await act(async () => { const confirm = review().props.onConfirm; first = confirm(); confirm(); });
+  assert.equal(requests, 1);
+  assert.equal(review().props.busy, true);
+  await act(async () => { pending.resolve({ checkoutUrl: 'https://checkout.stripe.com/test' }); await first; });
+  assert.deepEqual(opened, ['https://checkout.stripe.com/test']);
+  assert.equal(tree.root.findAllByType('BookingReview').length, 0);
   await act(() => tree.unmount());
 });

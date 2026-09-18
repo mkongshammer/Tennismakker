@@ -20,11 +20,11 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: bg, opacity: disabled || loading ? 0.5 : pressed ? 0.85 : 1 },
+        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
       ]}
     >
-      {loading && <ActivityIndicator style={{ position: "absolute", left: 12 }} size="small" color={colors.chalk} />}
-      <Text style={[styles.buttonText, loading && { opacity: 0 }]}>{title}</Text>
+      {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={colors.chalk} />}
+      <Text style={styles.buttonText}>{title}</Text>
     </Pressable>
   );
 }
@@ -77,12 +77,14 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 14,
     paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingHorizontal: 40,
     alignItems: "center",
     minHeight: 48,
+    minWidth: 48,
+    gap: 8,
     justifyContent: "center",
   },
-  buttonText: { color: colors.chalk, fontWeight: "700", fontSize: 15 },
+  buttonText: { color: colors.chalk, fontWeight: "700", fontSize: 16, textAlign: "center" },
   card: {
     backgroundColor: colors.chalk,
     borderRadius: 20,

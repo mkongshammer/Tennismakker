@@ -33,7 +33,7 @@ Dato: 18. september 2026.
 
 ## Test
 
-96 server-/domænetests og 13 mobile tests består (109 i alt).
+110 server-/domænetests og 15 mobile tests består (125 i alt).
 34 nye serverregressioner dækker validering, faktiske route handlers, faktiske
 betalingsfunktioner med isolerede afhængigheder og Stripes rigtige lokale
 signaturkontrol. Ingen rigtige konti, betalinger, mails eller relæer bruges.
@@ -42,14 +42,14 @@ produktionens PostgreSQL. Next-produktionsbuild og TypeScript-kontrol består.
 
 ## Stadig release-blokerende for fuldt afprøvede rigtige betalinger
 
-1. Den lokale banereservation varer 10 minutter; Stripe-sessionen kan være åben
-   i 30 minutter. Denne runde forhindrer usikker genbekræftelse, men synkroniserer
-   ikke fristerne. En betaling modtaget efter lokal udløb/aflysning må afstemmes
-   manuelt, herunder eventuel refundering. Der udføres ingen automatisk refundering
-   eller ny reservation. En permanent afstemningsfejl giver webhook-fejl og log.
-2. Genåbnet checkout kan fortsat oprette flere Stripe-sessioner. Der mangler
-   vedvarende sessionsgenbrug/Stripe-idempotens ved oprettelsen. Databasens
-   bekræftelseslås forhindrer ikke kunden i at betale to forskellige sessioner.
+1. Rigtig Stripe-testkonto og PostgreSQL-samtidighedstest mangler. De nye
+   regressioner bruger isolerede afhængigheder og en model af Stripes
+   idempotens, ikke en faktisk Stripe-transaktion.
+2. Ved ukendt udfald (Stripe oprettede muligvis sessionen, men session-id blev
+   aldrig gemt og alle genforsøg/webhooks udeblev) beholdes reservationen til
+   manuel afstemning. Afsluttede, ubetalte asynkrone betalinger beholdes også,
+   indtil succes eller manuel afstemning; async_payment_failed er ikke endnu
+   automatiseret. Ingen blind genoprettelse eller automatisk refundering.
 3. Fælles reservationstest mod samtidige brugere og faktiske eksterne
    klubbookingsystemer mangler. Bekræftelseslåsen gælder samme booking-id.
 4. Faktisk Apple Pay/kortbetaling, webhook-konfiguration, udbetaling og åbning
@@ -58,3 +58,30 @@ produktionens PostgreSQL. Next-produktionsbuild og TypeScript-kontrol består.
 Dette kvalitetspas ændrer ikke priser, provision, klubabonnementer eller
 Stripe Connects udbetalingsmodel. Det er ikke en påstand om, at hele den
 finansielle integration er end-to-end-testet eller klar til betalende kunder.
+
+## Opfølgning: vedvarende checkout og fælles frist
+
+- Nye checkout-forsøg gemmer hele oprettelsesanmodningen inden Stripe-kaldet.
+  En betinget databaseopdatering vælger ét sæt parametre; samtidige kald og
+  genforsøg bruger samme idempotensnøgle og gemte pris, gebyr, modtager og frist.
+- Reservation og Checkout får præcis samme frist: 35 minutter fra klargøring.
+  Stripe kræver mindst 30 minutter; fem minutter giver plads til oprettelse
+  og hurtige genforsøg. Genåbning forlænger ikke fristen.
+- Gemte sessioner hentes og genbruges. Afsluttede sessioner giver ikke nye
+  betalingslinks. Gamle usikre forsøg genoprettes ikke efter udløb, hvor Stripes
+  idempotensnøgle senere kan blive slettet.
+- Oprydning frigiver administrerede reservationer først når Stripe viser
+  udløbet session. Betalte sessioner afstemmes gennem samme bekræftelsesfunktion.
+  En sen, verificeret betaling fra den gemte session kan bekræfte en stadig
+  reserveret tid; en aflyst booking kan stadig ikke genoplives.
+- Aflysning af et HOLD lukker først den åbne Stripe-session. Hvis betalingen
+  vinder kapløbet, eller dens status er ukendt, afvises aflysningen. Database-
+  sammenligningen beskytter også mod et nyt checkout mellem opslag og aflysning.
+- Ændringen tilføjer to nullable felter; ingen data slettes. Tidligere oprettede
+  Stripe-links uden de nye felter er ikke automatisk migreret eller lukket.
+  Gennemgå eventuelle gamle åbne sessioner før betalt lancering.
+- Den eksisterende fordeling af beløb ændres ikke. on_behalf_of må ikke bruges
+  som dokumentation for, hvem der betaler Stripes egne behandlingsgebyrer.
+
+Referencer: [Stripe-idempotens](https://docs.stripe.com/api/idempotent_requests),
+[lukning af Checkout](https://docs.stripe.com/api/checkout/sessions/expire).

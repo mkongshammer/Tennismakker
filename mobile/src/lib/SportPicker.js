@@ -63,6 +63,8 @@ export function useSport() {
 const styles = StyleSheet.create({
   row: { marginBottom: 12, flexGrow: 0 },
   chip: {
+    minHeight: 48,
+    minWidth: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
@@ -75,6 +77,6 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   dot: { width: 9, height: 9, borderRadius: 5 },
-  label: { fontWeight: "700", color: colors.ink, fontSize: 13 },
+  label: { fontWeight: "700", color: colors.ink, fontSize: 14 },
   labelActive: { color: colors.chalk },
 });

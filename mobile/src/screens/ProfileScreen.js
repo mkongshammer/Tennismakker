@@ -127,6 +127,7 @@ export default function ProfileScreen() {
           const accessFrom = access ? new Date(access.availableFrom).getTime() : 0;
           const accessUntil = access ? new Date(access.availableUntil).getTime() : 0;
           const doorAvailable = Boolean(access && now >= accessFrom && now <= accessUntil);
+          const paymentExpired = b.holdExpiresAt && new Date(b.holdExpiresAt).getTime() <= now;
 
           return (
             <Card key={b.id}>
@@ -138,10 +139,15 @@ export default function ProfileScreen() {
               {b.status === "CONFIRMED" && <Text style={styles.meta}>Bekræftet</Text>}
               {b.status === "HOLD" && (
                 <View style={{ marginTop: 12 }}>
-                  <Text style={styles.warn}>Afventer betaling</Text>
+                  <Text style={styles.warn}>{paymentExpired ? "Betalingsfristen er udløbet" : "Afventer betaling"}</Text>
+                  <Text style={[styles.meta, { marginBottom: 12 }]}>
+                    {paymentExpired
+                      ? "Har du betalt, så opdatér status. Kontakt support, hvis din betaling stadig ikke er bekræftet."
+                      : b.holdExpiresAt ? `Betal senest ${dateTimeLong(new Date(b.holdExpiresAt))}.` : "Fuldfør betalingen for at bekræfte din tid."}
+                  </Text>
                   <Button
-                    title="Betal nu"
-                    onPress={() => pay(b.id)}
+                    title={paymentExpired ? "Opdatér status" : "Fortsæt til betaling"}
+                    onPress={paymentExpired ? load : () => pay(b.id)}
                     loading={paying === b.id}
                     disabled={paying !== null}
                   />

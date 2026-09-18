@@ -29,8 +29,8 @@ function setup(overrides: Record<string, any> = {}) {
           booking: {
             updateMany: async ({ where, data }: any) => {
               assert.equal(where.id, booking.id); assert.equal(where.status, "HOLD");
-              assert.equal(where.OR[0].holdExpiresAt, null);
-              if (booking.status !== where.status || (booking.holdExpiresAt && booking.holdExpiresAt <= where.OR[1].holdExpiresAt.gt)) return { count: 0 };
+              if (where.OR) assert.equal(where.OR[0].holdExpiresAt, null);
+              if (booking.status !== where.status || (where.OR && booking.holdExpiresAt && booking.holdExpiresAt <= where.OR[1].holdExpiresAt.gt)) return { count: 0 };
               booking = { ...booking, ...data }; writes++; return { count: 1 };
             },
             findUnique: async () => snapshot(), findUniqueOrThrow: async () => snapshot(),
@@ -50,6 +50,7 @@ function setup(overrides: Record<string, any> = {}) {
     "./settings": { getSettings, ensureSettings: async () => {} },
     "./slots": { describeLength: () => "60 min" }, "./billing": { commissionAt: (amount: number, pct: number) => Math.round(amount * pct) },
     "./packages": {}, "./punch-cards": {}, "./payment-validation": validation,
+    "./booking-checkout": {},
     "./email": {
       bookingReceipt: (args: any) => args,
       sendMail: async () => { notifications++; if (rejectReceipt) throw new Error("email unavailable"); },
@@ -83,6 +84,16 @@ for (const status of ["CANCELLED", "REQUESTED"]) {
 }
 test("udløbet reservation afvises før betaling registreres", async () => {
   const f = setup({ holdExpiresAt: new Date(0) }); await assert.rejects(f.pay());
+  assert.equal(f.state().payment, null);
+});
+test("forsinket bevis fra den gemte Stripe-session bekræfter stadig reserveret tid", async () => {
+  const f = setup({ holdExpiresAt: new Date(0), checkoutParams: '{"payment_intent_data":{"application_fee_amount":0}}', checkoutSessionId: 'cs_test_1' });
+  await f.pay();
+  assert.equal(f.state().booking.status, 'CONFIRMED');
+});
+test("anden session kan ikke bekræfte et udløbet administreret checkout", async () => {
+  const f = setup({ holdExpiresAt: new Date(0), checkoutParams: '{}', checkoutSessionId: 'cs_other' });
+  await assert.rejects(f.pay());
   assert.equal(f.state().payment, null);
 });
 test("aflysning mellem opslag og transaktion vinder over bekræftelse", async () => {
