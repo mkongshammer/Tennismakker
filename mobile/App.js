@@ -1,7 +1,7 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { View, Pressable, Text } from "react-native";
+import { View, Pressable, Text, Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -159,7 +159,7 @@ function Root() {
           headerStyle: { backgroundColor: colors.ink },
           headerTintColor: colors.chalk,
           headerTitleStyle: { fontWeight: "800" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" hitSlop={12} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.chalk, fontWeight: "700" }}>Luk</Text></Pressable>,
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.chalk, fontWeight: "700" }}>Luk</Text></Pressable>,
         }}
       />
     </RootStack.Navigator>
@@ -168,6 +168,8 @@ function Root() {
 
 export default function App() {
   return (
+    <View style={{ flex: 1, backgroundColor: "#E2E8F0" }}>
+    <View style={{ flex: 1, width: "100%", maxWidth: Platform.OS === "web" ? 640 : undefined, alignSelf: "center", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
       <AuthProvider>
         <NavigationContainer ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
@@ -176,6 +178,8 @@ export default function App() {
         </NavigationContainer>
       </AuthProvider>
     </SafeAreaProvider>
+    </View>
+    </View>
   );
 }
 

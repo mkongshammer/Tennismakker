@@ -5,6 +5,12 @@ en certificering som “bedst i test” eller en fuld WCAG-konformitetserklærin
 
 ## Implementeret
 
+- Efter feedback på desktop-skærmbillede: webdemoen er centreret med højst
+  640 px appbredde, profilindhold højst 600 px og uden tom afstand fra skjult
+  “Spil igen”. Mindre tung typografi og en bookinghandling i tomtilstanden.
+  Log ud og kontosletning bruger diskrete knapper; sletning er rød og beholder
+  sin eksisterende bekræftelsesdialog. Profilens lukknap har en 48 px trykflade.
+
 - Bane- og trænerbooking viser et separat overblik med tidspunkt, sted/person
   og samlet pris. At vælge en tid eller gå tilbage opretter ingen booking.
   Én tydelig bekræftelsesknap udfører handlingen; samtidige tryk låses.

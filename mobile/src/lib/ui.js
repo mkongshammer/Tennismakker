@@ -8,9 +8,11 @@ import {
 } from "react-native";
 import { colors } from "./theme";
 
-// variant: "court" (banens blå, standard) | "ink" (mørk, sekundær handling)
+// Quiet variants keep account actions subordinate to booking actions.
 export function Button({ title, onPress, variant = "court", disabled, loading }) {
-  const bg = variant === "ink" ? colors.ink : colors.court;
+  const quiet = variant === "quiet" || variant === "dangerQuiet";
+  const bg = quiet ? "transparent" : variant === "ink" ? colors.ink : colors.court;
+  const foreground = variant === "dangerQuiet" ? "#9B2525" : quiet ? colors.ink : colors.chalk;
   return (
     <Pressable
       onPress={onPress}
@@ -23,8 +25,8 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
         { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
       ]}
     >
-      {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={colors.chalk} />}
-      <Text style={styles.buttonText}>{title}</Text>
+      {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={foreground} />}
+      <Text style={[styles.buttonText, { color: foreground, fontWeight: quiet ? "600" : "700" }]}>{title}</Text>
     </Pressable>
   );
 }

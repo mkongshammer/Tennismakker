@@ -5,14 +5,14 @@ import { feedback as Alert } from "../lib/feedback";
 import { api, checkoutUrl } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { PlayAgain } from "../lib/PlayAgain";
-import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
 
 const PRIVACY_URL = "https://racketbuddy.app/privatliv";
 const TERMS_URL = "https://racketbuddy.app/vilkaar";
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { user, logout, deleteAccount } = useAuth();
   const state = useScreenData(useCallback(async () => {
     const [bookings, repeatable] = await Promise.all([
@@ -100,27 +100,30 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 20, paddingBottom: 36, width: "100%", maxWidth: 600, alignSelf: "center" }}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       <Card>
         <Text style={styles.name}>{user?.name}</Text>
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 8, alignItems: "center" }}>
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8, alignItems: "center" }}>
           <Badge>{`${user?.level} · ${LEVELS[user?.level] ?? ""}`}</Badge>
           {user?.area ? <Text style={styles.meta}>{user.area}</Text> : null}
         </View>
         <Text style={styles.meta}>{user?.email}</Text>
       </Card>
 
-      <View style={{ marginTop: 20 }}>
+      {repeatable.length > 0 && <View style={{ marginTop: 16 }}>
         <PlayAgain items={repeatable} onBooked={load} />
-      </View>
+      </View>}
 
       <Text style={styles.section}>Kommende bookinger</Text>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {state.loading ? (
         <Loading />
       ) : !state.data ? null : state.data.bookings.length === 0 ? (
-        <Empty>Ingen bookinger endnu.</Empty>
+        <Card style={{ padding: 20, gap: 16 }}>
+          <Text style={{ color: colors.slate, fontSize: 15, lineHeight: 23 }}>Ingen bookinger endnu. Find din næste banetid — dine reservationer vises her.</Text>
+          <Button title="Find en ledig bane" onPress={() => navigation.navigate("MainTabs", { screen: "KlubberTab" })} />
+        </Card>
       ) : (
         state.data.bookings.map((b) => {
           const access = b.access;
@@ -186,10 +189,10 @@ export default function ProfileScreen() {
         <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(TERMS_URL)}>Vilkår</Text>
       </Card>
 
-      <View style={{ gap: 10 }}>
+      <View style={{ gap: 4, marginTop: 8 }}>
         <Button
           title="Log ud"
-          variant="ink"
+          variant="quiet"
           onPress={() =>
             Alert.alert("Log ud", "Er du sikker?", [
               { text: "Annullér", style: "cancel" },
@@ -197,16 +200,18 @@ export default function ProfileScreen() {
             ])
           }
         />
-        <Button title="Slet konto permanent" onPress={confirmDelete} loading={deleting} />
+        <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8, marginTop: 8 }}>
+          <Button title="Slet konto" variant="dangerQuiet" onPress={confirmDelete} loading={deleting} />
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 22, fontWeight: "900", color: colors.ink },
+  name: { fontSize: 22, fontWeight: "700", color: colors.ink },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
-  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
+  section: { fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12, color: colors.ink },
   bookingTitle: { fontWeight: "800" },
   warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
   accessBox: {
