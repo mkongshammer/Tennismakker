@@ -1,9 +1,10 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
-import { View, Pressable, Text, Platform } from "react-native";
+import { View, Pressable, Text, Platform, useWindowDimensions } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createBottomTabNavigator, BottomTabBar } from "@react-navigation/bottom-tabs";
+import { DesktopNavigation } from "./src/lib/DesktopNavigation";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "./src/lib/auth";
@@ -93,8 +94,12 @@ function MessagesStack() {
 // Rækkefølgen matcher websitets bundlinje præcist: Book, Trænere,
 // Medspillere, Beskeder. Profilen er bevidst ikke en femte fane.
 function MainTabs() {
+  const { width } = useWindowDimensions();
+  const desktop = Platform.OS === "web" && width >= 900;
   return (
     <Tabs.Navigator
+      tabBar={props => desktop ? <DesktopNavigation {...props} /> : <BottomTabBar {...props} />}
+      sceneContainerStyle={desktop ? { marginLeft: 232 } : undefined}
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.court,
@@ -168,8 +173,8 @@ function Root() {
 
 export default function App() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#E2E8F0" }}>
-    <View style={{ flex: 1, width: "100%", maxWidth: Platform.OS === "web" ? 640 : undefined, alignSelf: "center", backgroundColor: colors.mist }}>
+    <View style={{ flex: 1, backgroundColor: colors.mist }}>
+    <View style={{ flex: 1, width: "100%", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
       <AuthProvider>
         <NavigationContainer ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>

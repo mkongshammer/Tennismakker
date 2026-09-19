@@ -1,13 +1,13 @@
-# Mobil kvalitetspas — 18. september 2026
+# Mobil kvalitetspas — 19. september 2026
 
 Målet er færre fejltryk, forståelig betaling og læselige skærme. Dette er ikke
 en certificering som “bedst i test” eller en fuld WCAG-konformitetserklæring.
 
 ## Implementeret
 
-- Efter feedback på desktop-skærmbillede: webdemoen er centreret med højst
-  640 px appbredde, profilindhold højst 600 px og uden tom afstand fra skjult
-  “Spil igen”. Mindre tung typografi og en bookinghandling i tomtilstanden.
+- Efter ny feedback bruger webdemoen sidemenu fra 900 px og bundnavigation
+  på mindre skærme. Sportsvalg ombrydes på desktop. Profilindhold er højst
+  600 px og uden tom afstand fra skjult “Spil igen”. Mindre tung typografi og en bookinghandling i tomtilstanden.
   Log ud og kontosletning bruger diskrete knapper; sletning er rød og beholder
   sin eksisterende bekræftelsesdialog. Profilens lukknap har en 48 px trykflade.
 
@@ -44,7 +44,7 @@ ikke tilgængeligt i tekstvisningen; der påstås ikke en gennemført HIG-audit.
 15 mobile test består, herunder de faktiske bookingkomponenter med isolerede
 afhængigheder: tilbage uden booking, korrekt pris/tid, én anmodning ved
 dobbelttryk, og ingen checkout før trænergodkendelse. Kontrastvalget er testet
-på lyse/mørke farver samt ugyldige input. 110 server-/domænetest består.
+på lyse/mørke farver samt ugyldige input. 114 server-/domænetest består.
 
 Expo-eksport til iOS, Android og web samt Next-produktionsbuild er kontrolleret.
 Eksport er ikke en signeret TestFlight-/Play-build. Apple Pay på fysisk enhed,

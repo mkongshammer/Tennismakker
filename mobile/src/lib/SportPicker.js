@@ -3,7 +3,7 @@
 // banefliserne bruger, så valget og resultatet hænger visuelt sammen.
 import React, { useCallback, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScrollView, Pressable, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Pressable, Text, View, StyleSheet, Platform, useWindowDimensions } from "react-native";
 import { colors, SPORTS, SPORT_LABELS, sportColor } from "./theme";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -15,6 +15,8 @@ export async function getSavedSport() {
 }
 
 export function SportPicker({ value, onChange }) {
+  const { width } = useWindowDimensions();
+  const desktop = Platform.OS === "web" && width >= 900;
   const select = (sport) => {
     onChange(sport);
     AsyncStorage.setItem(KEY, sport).catch(() => {});
@@ -22,10 +24,10 @@ export function SportPicker({ value, onChange }) {
 
   return (
     <ScrollView
-      horizontal
+      horizontal={!desktop}
       showsHorizontalScrollIndicator={false}
       style={styles.row}
-      contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+      contentContainerStyle={{ gap: 8, paddingHorizontal: desktop ? 28 : 16, ...(desktop ? { flexDirection: "row", flexWrap: "wrap" } : {}) }}
     >
       {SPORTS.map((s) => {
         const active = value === s;

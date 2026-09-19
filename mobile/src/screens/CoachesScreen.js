@@ -2,7 +2,7 @@ import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { api } from "../lib/api";
 import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors } from "../lib/theme";
+import { colors, SPORT_LABELS } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
 import { useScreenData } from "../lib/useScreenData";
 
@@ -23,12 +23,15 @@ export default function CoachesScreen({ navigation }) {
         <ErrorMessage message={state.error} onRetry={refresh} />
       ) : (
         <FlatList
-          contentContainerStyle={{ padding: 16, paddingTop: 4 }}
+          contentContainerStyle={{ padding: 24, paddingTop: 8, width: "100%", maxWidth: 1000, alignSelf: "center" }}
           data={state.coaches}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           ListHeaderComponent={error ? <ErrorMessage message={error} onRetry={refresh} /> : null}
           keyExtractor={(c) => c.id}
-          ListEmptyComponent={<Empty>Ingen trænere for den sportsgren endnu.</Empty>}
+          ListEmptyComponent={<Card style={{ marginTop: 12, padding: 28 }}>
+            <Text style={{ color: colors.ink, fontSize: 22, fontWeight: "700", marginBottom: 10 }}>Ingen trænere i {SPORT_LABELS[sport]?.toLowerCase()} endnu</Text>
+            <Text style={{ color: colors.slate, fontSize: 16, lineHeight: 25 }}>Der er ingen profiler at vise for dit valg. Vælg en anden sportsgren ovenfor for at se de trænere, der er tilmeldt.</Text>
+          </Card>}
           renderItem={({ item }) => (
             <Pressable accessibilityRole="button" accessibilityLabel={`Se ${item.name}`} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} onPress={() => navigation.navigate("Traener", { id: item.id, name: item.name })}>
               <Card>

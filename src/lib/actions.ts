@@ -1020,6 +1020,8 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
   const adminName = String(formData.get("adminName") ?? "").trim();
   const adminEmail = String(formData.get("adminEmail") ?? "").trim().toLowerCase();
   const leadId = String(formData.get("leadId") ?? "").trim();
+  const showLogin = formData.get("loginDelivery") === "screen";
+  const privateSetup = formData.get("privateSetup") === "on";
 
   if (!clubName || !city) return { error: "Udfyld klubbens navn og by." };
   if (!adminName || !adminEmail.includes("@")) {
@@ -1035,34 +1037,38 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
     slug = `${base}-${i}`;
   }
 
-  const club = await db.club.create({
-    data: {
-      slug,
-      name: clubName,
-      city,
-      // Ingen baner oprettes. Klubben tilføjer dem selv med rigtige navne
-      // — "Bane 1 til 4" passer sjældent på en klub, der kalder dem
-      // Centercourt og Grusbane Nord.
-      priceHour: 0,
-      integrationType: "MANUAL",
-      billingModel: "SUBSCRIPTION",
-      country: "DK",
-      status: "APPROVED",
-      approvedAt: new Date(),
-    },
-  });
+  const tempPassword = crypto.randomBytes(18).toString("base64url");
+  const passwordHash = await bcrypt.hash(tempPassword, 10);
+  const club = await db.$transaction(async (tx) => {
+    const created = await tx.club.create({
+      data: {
+        slug,
+        name: clubName,
+        city,
+        // Ingen baner oprettes. Klubben tilføjer dem selv med rigtige navne
+        // — "Bane 1 til 4" passer sjældent på en klub, der kalder dem
+        // Centercourt og Grusbane Nord.
+        priceHour: 0,
+        integrationType: "MANUAL",
+        billingModel: "SUBSCRIPTION",
+        country: "DK",
+        status: privateSetup ? "PENDING" : "APPROVED",
+        approvedAt: privateSetup ? null : new Date(),
+      },
+    });
 
-  // En midlertidig adgangskode — klubben skifter den selv efter første login
-  const tempPassword = crypto.randomBytes(6).toString("base64url");
-  const admin = await db.user.create({
-    data: {
-      email: adminEmail,
-      name: adminName,
-      passwordHash: await bcrypt.hash(tempPassword, 10),
-      role: "CLUB_ADMIN",
-      clubId: club.id,
-      area: city,
-    },
+    // En midlertidig adgangskode — klubben skifter den selv efter første login
+    await tx.user.create({
+      data: {
+        email: adminEmail,
+        name: adminName,
+        passwordHash,
+        role: "CLUB_ADMIN",
+        clubId: created.id,
+        area: city,
+      },
+    });
+    return created;
   });
 
   if (leadId) {
@@ -1072,7 +1078,7 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
     }).catch(() => null);
   }
 
-  await sendMail({
+  if (!showLogin) await sendMail({
     to: adminEmail,
     subject: `${clubName} er oprettet på RacketBuddy`,
     body: [
@@ -1091,7 +1097,9 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
   });
 
   revalidatePath("/superadmin");
-  return { ok: `${clubName} er oprettet. Login er sendt til ${adminEmail}.` };
+  return showLogin
+    ? { ok: `${clubName} er oprettet. Der er ikke sendt mail.`, login: { email: adminEmail, password: tempPassword } }
+    : { ok: `${clubName} er oprettet. Login er sendt til ${adminEmail}.` };
 }
 
 
