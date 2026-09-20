@@ -16,6 +16,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { provisionPrivateClub } from "../src/lib/deploy-club-provision";
 
 const db = new PrismaClient();
 
@@ -150,6 +151,12 @@ async function main() {
   }
 
   await ensureOwner();
+  try {
+    console.log("Private club provisioning:", await provisionPrivateClub(db, process.env.PRIVATE_CLUB_PROVISION));
+  } catch {
+    // Do not print config, Prisma query arguments or password hashes in logs.
+    console.error("Private club provisioning failed; existing accounts were not changed.");
+  }
   await ensureMadsCoachSport();
   await logCoachSummary();
 }
