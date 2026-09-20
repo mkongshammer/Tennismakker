@@ -15,6 +15,10 @@ export function levelLabel(level: number): string {
 }
 
 export const SURFACES: Record<string, string> = {
+  KUNSTGRAES: "Kunstgræs",
+  SPORTSGULV: "Sportsgulv / måtte",
+  TRAE: "Trægulv",
+  BORD: "Bordtennisbord",
   GRUS: "Grus",
   HARD: "Hard court",
   INDE: "Indendørs",

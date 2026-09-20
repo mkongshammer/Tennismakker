@@ -18,7 +18,7 @@ export function SiteForm({ club }: { club: any }) {
           id="tagline"
           name="tagline"
           defaultValue={club.tagline ?? ""}
-          placeholder="fx Fire grusbaner tæt på stationen. Alle er velkomne."
+          placeholder="fx Spil, fællesskab og træning tæt på stationen."
           maxLength={140}
         />
       </div>

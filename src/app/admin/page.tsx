@@ -1,3 +1,5 @@
+import { sportLabel } from "../../lib/sports";
+import { clubSports, facilityLabel } from "../../lib/club-sports";
 // Klub-administration: her styrer klubben, hvordan RacketBuddy henter
 // ledighed, og hvilke tider udefrakommende spillere må booke.
 import { redirect } from "next/navigation";
@@ -74,6 +76,7 @@ export default async function AdminPage({
     },
   });
   if (!club) redirect("/");
+  const selectedSports = clubSports(club.sports, club.courts);
 
   // Faste baner hører til banerne, ikke til klubben, så de hentes for sig.
   const [seasonTeams, punchCards] = await Promise.all([
@@ -153,6 +156,8 @@ export default async function AdminPage({
     <div className="space-y-10">
       <div>
         <h1 className="display text-3xl">{club.name}</h1>
+        <p className="mt-2 text-sm">{selectedSports.map(s => sportLabel(s, "da")).join(" · ") || "Vælg klubbens sportsgrene for at komme i gang."}</p>
+        <a className="inline-block mt-2 font-semibold text-court underline" href="#sportsgrene">Sportsgrene og {facilityLabel(selectedSports).toLowerCase()}</a>
         <p className="text-slate/70">
           Klubside: /klub/{club.slug} · {INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS]}
         </p>
@@ -229,7 +234,7 @@ export default async function AdminPage({
 
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="card">
-          <p className="text-sm text-slate/60">Baner</p>
+          <p className="text-sm text-slate/60">{facilityLabel(selectedSports)}</p>
           <p className="display text-3xl">{club.courts.length}</p>
         </div>
         <div className="card">
@@ -697,16 +702,17 @@ export default async function AdminPage({
         </ul>
       </section>
 
-      <section>
-        <h2 className="display mb-1 text-2xl">Baner</h2>
+      <section id="sportsgrene">
+        <h2 className="display mb-1 text-2xl">{facilityLabel(selectedSports)}</h2>
         <p className="mb-4 text-sm text-slate">
-          I opretter og navngiver dem selv. Bygger I en hal til, tilføjer I
-          banen her.
+          Vælg sportsgrene, og opret klubbens {facilityLabel(selectedSports).toLowerCase()} med egne navne, underlag og priser.
         </p>
         <CourtForm
+          sports={selectedSports}
           courts={club.courts.map((c: any) => ({
             id: c.id,
             name: c.name,
+            sport: c.sport,
             surface: c.surface,
             indoor: c.indoor,
             priceHour: c.priceHour,
@@ -719,7 +725,7 @@ export default async function AdminPage({
       <section>
         <h2 className="display mb-1 text-2xl">Automatisk lys og adgang</h2>
         <p className="mb-4 text-sm text-slate">
-          Knyt klubbens Shelly-controllere til banerne og døren. RacketBuddy
+          Knyt klubbens Shelly-controllere til de bookbare områder og døren. RacketBuddy
           tænder lyset ud fra bookingerne, og spilleren kan kun åbne døren i
           tidsvinduet omkring sin egen bekræftede booking.
         </p>

@@ -68,6 +68,7 @@ model User {
 //   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
+  sports      String @default("") // tom = vælg sportsgrene; eksisterende baner bevares
   id          String   @id @default(cuid())
   slug        String   @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
   name        String

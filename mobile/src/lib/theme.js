@@ -33,9 +33,12 @@ export const MATCH_TYPES = {
 };
 
 export const SURFACES = {
+  SPORTSGULV: "Sportsgulv / måtte",
+  TRAE: "Trægulv",
+  BORD: "Bordtennisbord",
+  KUNSTGRAES: "Kunstgræs",
   GRUS: "Grus",
   HARD: "Hard court",
-  KUNSTGRAES: "Kunstgræs",
   INDE: "Indendørs",
 };
 

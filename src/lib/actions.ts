@@ -1,4 +1,5 @@
 "use server";
+import { clubSports, validateCourtSport } from "./club-sports";
 
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
@@ -1320,51 +1321,56 @@ export async function removePriceRule(formData: FormData) {
 
 // ---------------- Baner ----------------
 
+export async function saveClubSports(_prev: unknown, formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const selected = [...new Set(formData.getAll("sports").map(String))];
+  if (!selected.length || selected.some(s => !(SPORTS as readonly string[]).includes(s))) return { error: "Vælg mindst én gyldig sportsgren." };
+  const courts = await db.court.findMany({ where: { clubId }, select: { sport: true } });
+  if (courts.some(c => !selected.includes(c.sport))) return { error: "Sportsgrenen bruges af en eksisterende bane eller et bord. Ret eller fjern dem først." };
+  await db.club.update({ where: { id: clubId }, data: { sports: selected.join(",") } });
+  revalidatePath("/admin");
+  return { ok: "Klubbens sportsgrene er gemt." };
+}
+
+async function courtInput(clubId: string, formData: FormData) {
+  const club = await db.club.findUniqueOrThrow({ where: { id: clubId }, include: { courts: { select: { sport: true } } } });
+  const sport = String(formData.get("sport") ?? "");
+  const surface = String(formData.get("surface") ?? "");
+  const error = validateCourtSport(sport, surface, clubSports(club.sports, club.courts));
+  return { sport, surface, error };
+}
+
 export async function addCourt(_prev: unknown, formData: FormData) {
   const { clubId } = await requireClubAdmin();
-
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 1) return { error: "Giv banen et navn." };
-
-  const exists = await db.court.findFirst({ where: { clubId, name } });
-  if (exists) return { error: `Der findes allerede en bane, der hedder ${name}.` };
-
-  await db.court.create({
-    data: {
-      clubId,
-      name,
-      surface: String(formData.get("surface") ?? "GRUS"),
-      indoor: formData.get("indoor") === "on",
-    },
-  });
-
+  if (!name) return { error: "Angiv et navn." };
+  const { sport, surface, error } = await courtInput(clubId, formData);
+  if (error) return { error };
+  if (await db.court.findFirst({ where: { clubId, name } })) return { error: "Navnet bruges allerede i klubben." };
+  await db.court.create({ data: { clubId, name, sport, surface, indoor: formData.get("indoor") === "on" } });
   revalidatePath("/admin");
+  revalidatePath("/book");
   return { ok: `${name} er oprettet.` };
 }
 
-export async function renameCourt(formData: FormData) {
+export async function renameCourt(_prev: unknown, formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("courtId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  if (name.length < 1) return;
-
-  // Tomt prisfelt betyder klubbens almindelige pris, ikke nul kroner.
-  const num = (key: string) => {
-    const raw = String(formData.get(key) ?? "").trim();
-    return raw === "" ? null : Math.max(0, Number(raw));
-  };
-
-  await db.court.updateMany({
-    where: { id, clubId },
-    data: {
-      name,
-      surface: String(formData.get("surface") ?? "GRUS"),
-      indoor: formData.get("indoor") === "on",
-      priceHour: num("priceHour"),
-      memberPriceHour: num("memberPriceHour"),
-    },
-  });
+  if (!name) return { error: "Angiv et navn." };
+  const existing = await db.court.findFirst({ where: { id, clubId }, include: { _count: { select: { bookings: true } } } });
+  if (!existing) return { error: "Banen eller bordet findes ikke i din klub." };
+  const { sport, surface, error } = await courtInput(clubId, formData);
+  if (error) return { error };
+  if (existing.sport !== sport && existing._count.bookings > 0) return { error: "Sportsgrenen kan ikke ændres efter første booking. Opret en ny bane eller et nyt bord." };
+  if (await db.court.findFirst({ where: { clubId, name, id: { not: id } } })) return { error: "Navnet bruges allerede i klubben." };
+  const price = (key: string) => { const raw = String(formData.get(key) ?? "").trim(); return raw === "" ? null : Number(raw); };
+  const priceHour = price("priceHour"), memberPriceHour = price("memberPriceHour");
+  if ([priceHour, memberPriceHour].some(p => p !== null && (!Number.isSafeInteger(p) || p < 0))) return { error: "Prisen skal være et helt antal kroner, mindst 0." };
+  await db.court.updateMany({ where: { id, clubId }, data: { name, sport, surface, indoor: formData.get("indoor") === "on", priceHour, memberPriceHour } });
   revalidatePath("/admin");
+  revalidatePath("/book");
+  return { ok: `${name} er gemt.` };
 }
 
 /**

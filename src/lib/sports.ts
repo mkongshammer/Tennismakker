@@ -22,14 +22,17 @@ export const SPORT_LABELS: Record<string, Record<BaseLocale, string>> = {
 /** Baneunderlag afhænger af sportsgren — court giver kun mening i tennis. */
 export const SURFACES_BY_SPORT: Record<string, string[]> = {
   TENNIS: ["GRUS", "HARD", "KUNSTGRAES", "INDE"],
-  PADEL: ["KUNSTGRAES", "INDE"],
-  BADMINTON: ["INDE"],
-  SQUASH: ["INDE"],
-  BORDTENNIS: ["INDE"],
-  PICKLEBALL: ["HARD", "INDE"],
+  PADEL: ["KUNSTGRAES", "HARD", "INDE"],
+  BADMINTON: ["SPORTSGULV", "TRAE", "INDE"],
+  SQUASH: ["TRAE", "SPORTSGULV", "INDE"],
+  BORDTENNIS: ["BORD"],
+  PICKLEBALL: ["HARD", "SPORTSGULV", "TRAE", "INDE"],
 };
 
 export const SURFACE_LABELS: Record<string, Record<BaseLocale, string>> = {
+  SPORTSGULV: { da: "Sportsgulv / måtte", en: "Sports flooring / mat", de: "Sportboden", sv: "Sportgolv", no: "Sportsgulv" },
+  TRAE: { da: "Trægulv", en: "Wood flooring", de: "Holzboden", sv: "Trägolv", no: "Tregulv" },
+  BORD: { da: "Bordtennisbord", en: "Table tennis table", de: "Tischtennistisch", sv: "Bordtennisbord", no: "Bordtennisbord" },
   GRUS: { da: "Grus", en: "Clay", de: "Sand", sv: "Grus", no: "Grus" },
   HARD: { da: "Hard court", en: "Hard court", de: "Hartplatz", sv: "Hardcourt", no: "Hardcourt" },
   KUNSTGRAES: { da: "Kunstgræs", en: "Artificial grass", de: "Kunstrasen", sv: "Konstgräs", no: "Kunstgress" },
