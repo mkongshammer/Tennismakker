@@ -309,7 +309,7 @@ export async function makeClubAdmin(formData: FormData) {
   if (!member) return;
 
   await db.user.update({ where: { id: member.id }, data: { role: "CLUB_ADMIN" } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /**
@@ -330,7 +330,7 @@ export async function removeClubAdmin(formData: FormData) {
     where: { id: memberId, clubId, role: "CLUB_ADMIN" },
     data: { role: "PLAYER" },
   });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function logout() {
@@ -770,14 +770,14 @@ export async function updateIntegration(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Integration gemt." };
 }
 
 export async function syncNow() {
   const { clubId } = await requireClubAdmin();
   await syncClubCalendar(clubId);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /**
@@ -886,7 +886,7 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   await ensureBlocks(clubId).catch((err) =>
     console.error("Kunne ikke sætte spærringer i kø:", err)
   );
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return created > 0
     ? { ok: `${created} tider frigivet til gæster.` }
     : { error: "Ingen nye tider blev frigivet — de var allerede frigivet eller ligger i fortiden." };
@@ -899,7 +899,7 @@ export async function withdrawGuestSlot(formData: FormData) {
     where: { id, court: { clubId } },
   });
   if (slot) await db.guestSlot.delete({ where: { id } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Markerer en booking som ført ind i klubbens eget bookingsystem. */
@@ -910,7 +910,7 @@ export async function markClubEntered(formData: FormData) {
     where: { id, court: { clubId } },
     data: { clubEnteredAt: new Date() },
   });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Klub-selvbetjening ----------------
@@ -1243,7 +1243,7 @@ export async function saveSystemLogin(_prev: unknown, formData: FormData) {
     console.error("Kunne ikke sætte spærringer i kø:", err)
   );
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return {
     ok: "Adgangen er gemt. Vi spærrer jeres frigivne tider inden for et kvarter.",
   };
@@ -1261,7 +1261,7 @@ export async function removeSystemLogin() {
   const { clubId } = await requireClubAdmin();
   await removeLogin(clubId);
   await db.systemBlock.deleteMany({ where: { clubId, status: "PENDING" } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Priser efter tidspunkt ----------------
@@ -1307,7 +1307,7 @@ export async function addPriceRule(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Prisreglen er tilføjet." };
 }
 
@@ -1316,7 +1316,7 @@ export async function removePriceRule(formData: FormData) {
   await db.priceRule.deleteMany({
     where: { id: String(formData.get("ruleId") ?? ""), clubId },
   });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Baner ----------------
@@ -1328,7 +1328,7 @@ export async function saveClubSports(_prev: unknown, formData: FormData) {
   const courts = await db.court.findMany({ where: { clubId }, select: { sport: true } });
   if (courts.some(c => !selected.includes(c.sport))) return { error: "Sportsgrenen bruges af en eksisterende bane eller et bord. Ret eller fjern dem først." };
   await db.club.update({ where: { id: clubId }, data: { sports: selected.join(",") } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Klubbens sportsgrene er gemt." };
 }
 
@@ -1348,7 +1348,7 @@ export async function addCourt(_prev: unknown, formData: FormData) {
   if (error) return { error };
   if (await db.court.findFirst({ where: { clubId, name } })) return { error: "Navnet bruges allerede i klubben." };
   await db.court.create({ data: { clubId, name, sport, surface, indoor: formData.get("indoor") === "on" } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   revalidatePath("/book");
   return { ok: `${name} er oprettet.` };
 }
@@ -1368,7 +1368,7 @@ export async function renameCourt(_prev: unknown, formData: FormData) {
   const priceHour = price("priceHour"), memberPriceHour = price("memberPriceHour");
   if ([priceHour, memberPriceHour].some(p => p !== null && (!Number.isSafeInteger(p) || p < 0))) return { error: "Prisen skal være et helt antal kroner, mindst 0." };
   await db.court.updateMany({ where: { id, clubId }, data: { name, sport, surface, indoor: formData.get("indoor") === "on", priceHour, memberPriceHour } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   revalidatePath("/book");
   return { ok: `${name} er gemt.` };
 }
@@ -1388,7 +1388,7 @@ export async function removeCourt(formData: FormData) {
   if (bookings > 0) return;
 
   await db.court.deleteMany({ where: { id, clubId } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Sæsonhold ----------------
@@ -1424,7 +1424,7 @@ export async function createSeasonTeam(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: `${name} er oprettet og åbent for tilmelding.` };
 }
 
@@ -1432,7 +1432,7 @@ export async function closeSeasonTeam(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("teamId") ?? "");
   await db.seasonTeam.updateMany({ where: { id, clubId }, data: { active: false } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function joinSeasonTeam(formData: FormData) {
@@ -1472,7 +1472,7 @@ export async function createPunchCard(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: `${name} er oprettet.` };
 }
 
@@ -1480,7 +1480,7 @@ export async function closePunchCard(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("cardId") ?? "");
   await db.clubPunchCard.updateMany({ where: { id, clubId }, data: { active: false } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function buyClubPunchCard(formData: FormData) {
@@ -1543,7 +1543,7 @@ export async function createMembershipType(_prev: unknown, formData: FormData) {
     data: { clubId, name, seasonName, description, fromDate, toDate, priceKr, capacity, sortOrder: count },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: `${name} — ${seasonName} er oprettet og åben for tilmelding.` };
 }
 
@@ -1558,14 +1558,14 @@ export async function closeMembershipType(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("typeId") ?? "");
   await db.membershipType.updateMany({ where: { id, clubId }, data: { active: false } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function openMembershipType(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("typeId") ?? "");
   await db.membershipType.updateMany({ where: { id, clubId }, data: { active: true } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Medlemmets tilmelding. Sender videre til betaling, hvis der er noget at betale. */
@@ -1631,7 +1631,7 @@ export async function assignFixedSlot(_prev: unknown, formData: FormData) {
     note,
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 
   if (result.clashes.length > 0) {
     return {
@@ -1657,7 +1657,7 @@ export async function dropFixedSlot(formData: FormData) {
   if (!slot) return;
 
   await removeFixedSlot(slot.id);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Bestyrelsen på klubsiden ----------------
@@ -1687,7 +1687,7 @@ export async function addClubPerson(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Tilføjet." };
 }
 
@@ -1698,7 +1698,7 @@ export async function removeClubPerson(formData: FormData) {
   // deleteMany med clubId i betingelsen: en klub kan ikke slette en anden
   // klubs bestyrelse ved at gætte et id.
   await db.clubPerson.deleteMany({ where: { id, clubId } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Anmeldelser ----------------
@@ -2038,7 +2038,7 @@ export async function createRule(_prev: unknown, formData: FormData) {
   await ensureBlocks(clubId).catch((err) =>
     console.error("Kunne ikke sætte spærringer i kø:", err)
   );
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Reglen er aktiv. Tiderne er nu synlige for gæster." };
 }
 
@@ -2048,14 +2048,14 @@ export async function toggleRule(formData: FormData) {
   const rule = await db.guestRule.findFirst({ where: { id, clubId } });
   if (!rule) return;
   await db.guestRule.update({ where: { id }, data: { active: !rule.active } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function deleteRule(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("id"));
   await db.guestRule.deleteMany({ where: { id, clubId } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Frigiv automatisk alt der stadig er ledigt tæt på spilletidspunktet. */
@@ -2063,7 +2063,7 @@ export async function setLastMinute(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   const hours = Math.max(0, Math.min(72, Number(formData.get("hours") ?? 0)));
   await db.club.update({ where: { id: clubId }, data: { lastMinuteHours: hours } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Klubbens hjemmeside ----------------
@@ -2136,7 +2136,7 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Siden er opdateret." };
 }
 
@@ -2151,7 +2151,7 @@ export async function createPost(_prev: unknown, formData: FormData) {
     data: { clubId, title, body, pinned: formData.get("pinned") === "on" },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Nyheden er slået op." };
 }
 
@@ -2160,7 +2160,7 @@ export async function deletePost(formData: FormData) {
   await db.clubPost.deleteMany({
     where: { id: String(formData.get("id")), clubId },
   });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Genererer en tilmeldingskode, klubben kan dele med sine medlemmer. */
@@ -2181,7 +2181,7 @@ export async function generateJoinCode() {
   if (!code) return;
 
   await db.club.update({ where: { id: clubId }, data: { joinCode: code } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 /** Melder den indloggede bruger ind i klubben med koden. */
@@ -2328,7 +2328,7 @@ export async function setCustomDomain(_prev: unknown, formData: FormData) {
   });
 
   revalidatePath("/superadmin");
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return {
     ok: domain
       ? `${domain} er gemt. Opret DNS-posten nedenfor, og skriv til os når den er oprettet.`
@@ -2351,7 +2351,7 @@ export async function setTheme(formData: FormData) {
   const theme = String(formData.get("theme"));
   if (!["KLASSISK", "MARKANT", "ENKEL"].includes(theme)) return;
   await db.club.update({ where: { id: clubId }, data: { theme } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 // ---------------- Billeder ----------------
@@ -2375,7 +2375,7 @@ export async function uploadImage(_prev: unknown, formData: FormData) {
   );
   if (!result.ok) return { error: result.error };
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (club) revalidatePath(`/klub/${club.slug}`);
 
@@ -2386,7 +2386,7 @@ export async function deleteImage(formData: FormData) {
   const { clubId } = await requireClubAdmin();
   await removeImage(clubId, String(formData.get("id")));
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (club) revalidatePath(`/klub/${club.slug}`);
 }

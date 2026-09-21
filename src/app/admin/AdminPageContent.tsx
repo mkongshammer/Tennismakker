@@ -1,0 +1,808 @@
+import React from "react";
+import { ADMIN_PAGES, adminHref, type AdminSection } from "../../lib/admin-navigation";
+import { AdminNavigation } from "./AdminNavigation";
+import { sportLabel } from "../../lib/sports";
+import { clubSports, facilityLabel } from "../../lib/club-sports";
+// Klub-administration: her styrer klubben, hvordan RacketBuddy henter
+// ledighed, og hvilke tider udefrakommende spillere må booke.
+import { redirect } from "next/navigation";
+import { addDays, format, startOfDay } from "date-fns";
+import { da } from "date-fns/locale";
+import { db } from "../../lib/db";
+import { getCurrentUser } from "../../lib/session";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme, startClubSubscription, openClubBillingPortal } from "../../lib/actions";
+import { INTEGRATION_LABELS } from "../../lib/integrations/types";
+import { SURFACES } from "../../lib/levels";
+import { IntegrationForm } from "./IntegrationForm";
+import { ReleaseForm } from "./ReleaseForm";
+import { RuleForm } from "./RuleForm";
+import { SiteForm, PostForm } from "./SiteForm";
+import { PeopleForm } from "./PeopleForm";
+import { FixedSlotForm } from "./FixedSlotForm";
+import { CourtForm } from "./CourtForm";
+import { AdminsForm } from "./AdminsForm";
+import { PriceRuleForm } from "./PriceRuleForm";
+import { SystemLoginForm } from "./SystemLoginForm";
+import { ClubControlPanel } from "./ClubControlPanel";
+import { blockSummary } from "../../lib/system-blocks";
+import { MembershipForm } from "./MembershipForm";
+import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
+import { DomainForm } from "./DomainForm";
+import { ImageForms } from "./ImageForms";
+import { startClubPayoutSetup } from "../../lib/actions";
+import { SubmitButton } from "../../components/SubmitButton";
+import { refreshAccountStatus } from "../../lib/connect";
+import { stripeEnabled } from "../../lib/stripe";
+import { getSettings } from "../../lib/settings";
+import { subscriptionIsActive } from "../../lib/billing";
+import Link from "next/link";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminPageContent({
+  searchParams,
+  section = "oversigt",
+}: {
+  searchParams: Promise<{ stripe?: string; abonnement?: string }>;
+  section?: AdminSection;
+}) {
+  const query = await searchParams;
+  if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([,v]) => v != null) as [string,string][]).toString()}`);
+  const currentPage = ADMIN_PAGES.find(p => p.id === section)!;
+  const user = await getCurrentUser();
+  const stripeOn = await stripeEnabled();
+  const pct = Math.round((await getSettings()).commissionPct * 100);
+  if (!user) redirect("/login");
+  if (user.role !== "CLUB_ADMIN" || !user.clubId) {
+    return (
+      <div className="card mx-auto max-w-md text-center">
+        <p className="font-bold">Kun for klub-administratorer</p>
+        <p className="mt-1 text-sm text-slate/60">
+          Din konto er ikke tilknyttet en klub. Kontakt RacketBuddy for at få jeres klub med.
+        </p>
+      </div>
+    );
+  }
+
+  if (query.stripe === "return" || query.stripe === "refresh") {
+    const admin = await getCurrentUser();
+    if (admin?.clubId) await refreshAccountStatus("CLUB", admin.clubId).catch(() => null);
+  }
+
+  const club = await db.club.findUnique({
+    where: { id: user.clubId },
+    include: {
+      courts: {
+        orderBy: { name: "asc" },
+        include: { _count: { select: { bookings: true } } },
+      },
+      members: true,
+      posts: { orderBy: { createdAt: "desc" }, take: 10 },
+      images: { orderBy: { sortOrder: "asc" } },
+      people: { orderBy: { sortOrder: "asc" } },
+    },
+  });
+  if (!club) redirect("/");
+  const selectedSports = clubSports(club.sports, club.courts);
+
+  // Faste baner hører til banerne, ikke til klubben, så de hentes for sig.
+  const [seasonTeams, punchCards] = await Promise.all([
+    (section === 'hold' ? db.seasonTeam.findMany({
+      where: { clubId: club.id },
+      orderBy: [{ active: "desc" }, { dayOfWeek: "asc" }],
+      include: { _count: { select: { signups: { where: { status: "PAID" } } } } },
+    }) : Promise.resolve([])),
+    (section === 'priser' ? db.clubPunchCard.findMany({
+      where: { clubId: club.id },
+      orderBy: [{ active: "desc" }, { createdAt: "desc" }],
+    }) : Promise.resolve([])),
+  ]);
+
+  const [systemLogin, blocks] = await Promise.all([
+    (section === 'integrationer' ? db.clubSystemLogin.findUnique({ where: { clubId: club.id } }) : Promise.resolve(null)),
+    (section === 'integrationer' ? blockSummary(club.id) : Promise.resolve(null)),
+  ]);
+
+  const priceRules = await (section === 'priser' ? db.priceRule.findMany({
+    where: { clubId: club.id },
+    orderBy: { sortOrder: "asc" },
+  }) : Promise.resolve([]));
+
+  const membershipTypes = await (section === 'medlemmer' ? db.membershipType.findMany({
+    where: { clubId: club.id },
+    orderBy: [{ active: "desc" }, { sortOrder: "asc" }],
+    include: { _count: { select: { memberships: { where: { status: "PAID" } } } } },
+  }) : Promise.resolve([]));
+
+  const fixedSlots = await (section === 'bookinger' ? db.fixedSlot.findMany({
+    where: { court: { clubId: club.id } },
+    include: { court: { select: { name: true } }, user: { select: { name: true } } },
+    orderBy: [{ dayOfWeek: "asc" }, { hour: "asc" }],
+  }) : Promise.resolve([]));
+
+  const clubControl = await (section === 'lys-adgang' ? db.clubControl.findUnique({
+    where: { clubId: club.id },
+    include: {
+      devices: {
+        orderBy: { createdAt: "asc" },
+        include: { channels: { orderBy: { channel: "asc" } } },
+      },
+    },
+  }) : Promise.resolve(null));
+
+  const courtIds = club.courts.map((c: any) => c.id);
+  const today = startOfDay(new Date());
+
+  const [upcoming, payments, rules, guestSlots] = await Promise.all([
+    (section === 'oversigt' || section === 'bookinger' ? db.booking.findMany({
+      where: {
+        courtId: { in: courtIds },
+        status: "CONFIRMED",
+        startsAt: { gte: today, lt: addDays(today, 8) },
+      },
+      include: { user: true, court: true },
+      orderBy: { startsAt: "asc" },
+    }) : Promise.resolve([])),
+    (section === 'oversigt' ? db.payment.findMany({
+      where: { status: "PAID", booking: { courtId: { in: courtIds } } },
+    }) : Promise.resolve([])),
+    (section === 'tider' ? db.guestRule.findMany({ where: { clubId: club.id }, orderBy: { createdAt: "desc" } }) : Promise.resolve([])),
+    (section === 'tider' ? db.guestSlot.findMany({
+      where: { courtId: { in: courtIds }, startsAt: { gte: new Date() } },
+      include: { court: true },
+      orderBy: { startsAt: "asc" },
+      take: 50,
+    }) : Promise.resolve([])),
+  ]);
+
+  const gross = payments.reduce((s: number, p: any) => s + p.amountKr, 0);
+  const fees = payments.reduce((s: number, p: any) => s + p.platformFee, 0);
+  const toEnter = upcoming.filter((b: any) => b.needsClubEntry && !b.clubEnteredAt);
+
+  return (
+    <div className="space-y-6">
+<div>
+        <h1 className="display text-3xl">{club.name}</h1>
+        <p className="mt-2 text-sm">{selectedSports.map(s => sportLabel(s, "da")).join(" · ") || "Vælg klubbens sportsgrene for at komme i gang."}</p>
+        <a className="inline-block mt-2 font-semibold text-court underline" href="/admin/baner">Sportsgrene og {facilityLabel(selectedSports).toLowerCase()}</a>
+        <p className="text-slate/70">
+          Klubside: /klub/{club.slug} · {INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS]}
+        </p>
+      </div>
+{query.abonnement && (
+        <p className="card border border-court/25 text-sm">
+          {query.abonnement === "ok"
+            ? "Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke."
+            : query.abonnement === "afbrudt"
+              ? "Betalingen blev afbrudt. Abonnementet er ikke startet."
+              : query.abonnement === "portal"
+                ? "Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det."
+                : "Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os."}
+        </p>
+      )}
+<div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+<AdminNavigation section={section} facility={facilityLabel(selectedSports)} />
+<div className="min-w-0 space-y-6">
+<header><h2 className="display text-2xl">{section === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : currentPage.label}</h2><p className="mt-1 text-sm text-slate">{currentPage.description}</p></header>
+{section === 'oversigt' && <>
+<section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="card">
+          <p className="text-sm text-slate/60">{facilityLabel(selectedSports)}</p>
+          <p className="display text-3xl">{club.courts.length}</p>
+        </div>
+        <div className="card">
+          <p className="text-sm text-slate/60">Gæstebookinger</p>
+          <p className="display text-3xl">{payments.length}</p>
+        </div>
+        <div className="card">
+          <p className="text-sm text-slate/60">Omsætning</p>
+          <p className="display text-3xl">{gross} kr</p>
+        </div>
+        <div className="card">
+          <p className="text-sm text-slate/60">Udbetalt til jer</p>
+          <p className="display text-3xl text-ink">{gross - fees} kr</p>
+        </div>
+      </section>
+</>}
+{section === 'bookinger' && <>
+{toEnter.length > 0 && (
+        <section className="rounded-lg border-2 border-court bg-court/5 p-5">
+          <p className="display text-xl text-court-dark">
+            {toEnter.length} booking{toEnter.length === 1 ? "" : "er"} skal ind i jeres eget system
+          </p>
+          <p className="mt-1 text-sm">
+            Gæsten har betalt hos os. Før tiden ind i {club.externalSystem || "klubbens bookingsystem"},
+            så banen ikke bliver dobbeltbooket.
+          </p>
+          <ul className="mt-4 space-y-2">
+            {toEnter.map((b: any) => (
+              <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-white p-3">
+                <span className="text-sm">
+                  <span className="font-bold capitalize">
+                    {format(b.startsAt, "EEE d/M 'kl.' HH:mm", { locale: da })}
+                  </span>{" "}
+                  · {b.court?.name} · {b.user.name}
+                </span>
+                <form action={markClubEntered}>
+                  <input type="hidden" name="id" value={b.id} />
+                  <button className="btn-ink text-sm">Ført ind</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+<section>
+        <h2 className="display mb-3 text-2xl">Kommende gæstebookinger</h2>
+        {upcoming.length === 0 && <p className="text-slate/60">Ingen bookinger i den kommende uge.</p>}
+        <ul className="space-y-2">
+          {upcoming.map((b: any) => (
+            <li key={b.id} className="card flex flex-wrap justify-between gap-2 py-3 text-sm">
+              <span className="font-semibold capitalize">
+                {format(b.startsAt, "EEE d/M HH:mm", { locale: da })}–{format(b.endsAt, "HH:mm")} ·{" "}
+                {b.court?.name}
+              </span>
+              <span>{b.user.name}</span>
+              <span className="text-slate/60">
+                {b.priceKr} kr
+                {b.needsClubEntry && !b.clubEnteredAt && (
+                  <span className="ml-2 font-bold text-court">skal føres ind</span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Faste baner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Samme bane, samme ugedag, hele sæsonen. Klubben tildeler dem —
+          medlemmet booker dem ikke selv. Tiderne oprettes som almindelige
+          bookinger, så de spærrer banen og kan aflyses enkeltvis.
+        </p>
+        <FixedSlotForm
+          courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+          members={club.members.map((m: any) => ({ id: m.id, name: m.name }))}
+          slots={fixedSlots as any}
+          defaultPrice={club.memberPriceHour ?? club.priceHour}
+        />
+      </section>
+</>}
+{section === 'tider' && <>
+{club.integrationType === "MANUAL" && (
+        <section>
+          <h2 className="display mb-1 text-2xl">Frigiv tider til gæster</h2>
+          <p className="mb-3 text-sm text-slate/60">
+            Kun tider, I frigiver her, kan ses og bookes af spillere udefra.
+          </p>
+
+          <div className="mb-4 rounded-lg border border-slate/15 bg-white p-4 text-sm">
+            <p className="font-bold">Sælger I også baner et andet sted?</p>
+            <p className="mt-1 text-slate/70">
+              Bruger I både os og en anden platform, kan vi ikke se hinandens
+              bookinger. Frigiv derfor forskellige tider til hver kanal — eller
+              afsæt en bane til hver. Så kan den samme time ikke sælges to gange.
+            </p>
+            <p className="mt-2 text-slate/70">
+              Tag altid tiden ud af jeres eget system, når I frigiver den her.
+            </p>
+          </div>
+          <RuleForm
+            courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+            defaultPrice={club.priceHour}
+            externalSystem={club.externalSystem ?? "jeres eget bookingsystem"}
+          />
+
+          {rules.length > 0 && (
+            <>
+              <h3 className="mb-2 mt-6 font-bold">Jeres regler</h3>
+              <ul className="space-y-2">
+                {rules.map((r: any) => {
+                  const dayNames = ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
+                  const days = r.daysOfWeek
+                    .split(",")
+                    .map((d: string) => dayNames[Number(d)])
+                    .join(", ");
+                  const courtNames = r.courtIds
+                    ? r.courtIds
+                        .split(",")
+                        .map((id: string) => club.courts.find((c: any) => c.id === id)?.name)
+                        .filter(Boolean)
+                        .join(", ")
+                    : "alle baner";
+                  return (
+                    <li key={r.id} className="card flex flex-wrap items-center justify-between gap-3 py-3">
+                      <div>
+                        <p className={`font-semibold ${r.active ? "" : "text-slate line-through"}`}>
+                          {days} · {r.fromHour}–{r.toHour} · {courtNames}
+                        </p>
+                        <p className="data text-sm text-slate">{r.priceKr} kr/time</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <form action={toggleRule}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button className="text-sm font-semibold text-court underline">
+                            {r.active ? "Sæt på pause" : "Aktivér"}
+                          </button>
+                        </form>
+                        <form action={deleteRule}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <button className="text-sm text-slate underline">Slet</button>
+                        </form>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
+
+          <div className="card mt-6">
+            <p className="font-bold">Sidste øjeblik</p>
+            <p className="mt-1 text-sm text-slate">
+              Frigiv automatisk alt, der stadig står tomt tæt på spilletidspunktet.
+              En bane der er ledig om en time er tabt indtægt uanset hvad.
+            </p>
+            <form action={setLastMinute} className="mt-3 flex flex-wrap items-end gap-3">
+              <div>
+                <label className="label" htmlFor="hours">Timer før start</label>
+                <input
+                  className="input w-32"
+                  id="hours"
+                  name="hours"
+                  type="number"
+                  min={0}
+                  max={72}
+                  defaultValue={club.lastMinuteHours}
+                />
+              </div>
+              <button className="btn-ghost">Gem</button>
+            </form>
+            <p className="mt-2 text-xs text-slate">0 slår det fra.</p>
+          </div>
+
+          <h3 className="mb-2 mt-6 font-bold">Enkelte tider</h3>
+          <p className="mb-3 text-sm text-slate">
+            Til undtagelser — en enkelt aften der alligevel blev fri.
+          </p>
+          <ReleaseForm
+            courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+            defaultPrice={club.priceHour}
+            externalSystem={club.externalSystem ?? "jeres eget bookingsystem"}
+          />
+
+          <h3 className="mb-2 mt-6 font-bold">Frigivne enkelttider</h3>
+          {guestSlots.length === 0 ? (
+            <p className="text-sm text-slate/60">Ingen tider er frigivet endnu.</p>
+          ) : (
+            <ul className="card divide-y divide-slate/10">
+              {guestSlots.map((s: any) => (
+                <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <span className="capitalize">
+                    {format(s.startsAt, "EEE d/M 'kl.' HH:mm", { locale: da })} · {s.court.name} ·{" "}
+                    {s.priceKr} kr
+                  </span>
+                  <form action={withdrawGuestSlot}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <button className="text-court underline">Fjern</button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+</>}
+{section === 'medlemmer' && <>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Kontingent</h2>
+        <p className="mb-4 text-sm text-slate">
+          Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene
+          går direkte til klubbens konto. Er kontingentet betalt og sæsonen i
+          gang, booker medlemmet til medlemspris.
+        </p>
+        <MembershipForm
+          types={membershipTypes.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            seasonName: t.seasonName,
+            description: t.description,
+            fromDate: t.fromDate,
+            toDate: t.toDate,
+            priceKr: t.priceKr,
+            capacity: t.capacity,
+            active: t.active,
+            paid: t._count.memberships,
+          }))}
+        />
+      </section>
+</>}
+{section === 'hold' && <>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Sæsonhold</h2>
+        <p className="mb-4 text-sm text-slate">
+          Træningshold over en sæson. Medlemmerne tilmelder sig fra jeres
+          side og betaler online. Pengene går til klubbens konto.
+        </p>
+        <TeamForm
+          teams={seasonTeams.map((t: any) => ({
+            id: t.id,
+            name: t.name,
+            dayOfWeek: t.dayOfWeek,
+            hour: t.hour,
+            fromDate: t.fromDate,
+            toDate: t.toDate,
+            priceKr: t.priceKr,
+            capacity: t.capacity,
+            active: t.active,
+            paid: t._count.signups,
+          }))}
+          locale="da"
+        />
+      </section>
+</>}
+{section === 'nyheder' && <>
+<section>
+        <h2 className="display mb-1 text-2xl">Nyheder</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vises øverst på jeres side. Til lukkedage, turneringer og andet, folk
+          skal vide.
+        </p>
+        <PostForm />
+
+        {club.posts.length > 0 && (
+          <ul className="mt-4 space-y-2">
+            {club.posts.map((post: any) => (
+              <li key={post.id} className="card flex flex-wrap items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-semibold">
+                    {post.pinned && <span className="text-court">★ </span>}
+                    {post.title}
+                  </p>
+                  <p className="text-xs text-slate">
+                    {format(post.createdAt, "d. MMMM yyyy", { locale: da })}
+                  </p>
+                </div>
+                <form action={deletePost}>
+                  <input type="hidden" name="id" value={post.id} />
+                  <button className="text-sm text-slate underline">Slet</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+</>}
+{section === 'baner' && <>
+<section id="sportsgrene">
+        <h2 className="display mb-1 text-2xl">{facilityLabel(selectedSports)}</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vælg sportsgrene, og opret klubbens {facilityLabel(selectedSports).toLowerCase()} med egne navne, underlag og priser.
+        </p>
+        <CourtForm
+          sports={selectedSports}
+          courts={club.courts.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            sport: c.sport,
+            surface: c.surface,
+            indoor: c.indoor,
+            priceHour: c.priceHour,
+            memberPriceHour: c.memberPriceHour,
+            bookings: c._count?.bookings ?? 0,
+          }))}
+        />
+      </section>
+</>}
+{section === 'lys-adgang' && <>
+<section>
+        <h2 className="display mb-1 text-2xl">Automatisk lys og adgang</h2>
+        <p className="mb-4 text-sm text-slate">
+          Knyt klubbens Shelly-controllere til de bookbare områder og døren. RacketBuddy
+          tænder lyset ud fra bookingerne, og spilleren kan kun åbne døren i
+          tidsvinduet omkring sin egen bekræftede booking.
+        </p>
+        <ClubControlPanel
+          courts={club.courts.map((court: any) => ({ id: court.id, name: court.name }))}
+          control={clubControl ? {
+            enabled: clubControl.enabled,
+            serverUrl: clubControl.serverUrl,
+            hasAuthKey: Boolean(clubControl.authKeyCipher),
+            accessBeforeMinutes: clubControl.accessBeforeMinutes,
+            accessAfterMinutes: clubControl.accessAfterMinutes,
+            doorPulseSeconds: clubControl.doorPulseSeconds,
+            lightsBeforeMinutes: clubControl.lightsBeforeMinutes,
+            lightsAfterMinutes: clubControl.lightsAfterMinutes,
+            lastCheckedAt: clubControl.lastCheckedAt?.toISOString() ?? null,
+            lastOkAt: clubControl.lastOkAt?.toISOString() ?? null,
+            lastError: clubControl.lastError,
+            devices: clubControl.devices.map((device: any) => ({
+              id: device.id,
+              name: device.name,
+              externalId: device.externalId,
+              model: device.model,
+              channelCount: device.channelCount,
+              online: device.online,
+              lastSeenAt: device.lastSeenAt?.toISOString() ?? null,
+              channels: device.channels.map((channel: any) => ({
+                id: channel.id,
+                channel: channel.channel,
+                kind: channel.kind,
+                label: channel.label,
+                courtId: channel.courtId,
+                lastState: channel.lastState,
+                lastCommandAt: channel.lastCommandAt?.toISOString() ?? null,
+                setupTestedAt: channel.setupTestedAt?.toISOString() ?? null,
+                setupConfirmedAt: channel.setupConfirmedAt?.toISOString() ?? null,
+                lastError: channel.lastError,
+              })),
+            })),
+          } : null}
+        />
+      </section>
+</>}
+{section === 'priser' && <>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Priser efter tidspunkt</h2>
+        <p className="mb-4 text-sm text-slate">
+          Prime time koster mere. Uden regler her gælder banens pris, og har
+          banen ingen, gælder klubbens.
+        </p>
+        <PriceRuleForm
+          courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
+          rules={priceRules as any}
+        />
+      </section>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Klippekort</h2>
+        <p className="mb-4 text-sm text-slate">
+          Flere banetimer betalt på én gang. Klippet trækkes automatisk, når
+          medlemmet booker — i stedet for en betaling.
+        </p>
+        <PunchCardForm cards={punchCards as any} />
+      </section>
+</>}
+{section === 'betaling' && <>
+{stripeOn && (
+        <section className="card">
+          <p className="display text-xl">Udbetalinger</p>
+          {club.stripeChargesEnabled ? (
+            <p className="mt-2 text-sm">
+              <span className="font-bold text-court">Aktivt.</span> Gæster kan betale,
+              og pengene sendes automatisk til jeres konto minus vores andel.
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 rounded-xl border border-court/30 bg-court/5 p-3 text-sm font-semibold">
+                Gæster kan ikke booke hos jer endnu. Jeres tider vises, men en
+                booking afvises, indtil dette er på plads.
+              </p>
+              <p className="mt-2 text-sm text-slate">
+                Klubben skal have en Stripe-konto, før gæster kan booke og betale.
+                Det tager typisk 5-10 minutter — I skal bruge NemID/MitID og
+                klubbens kontonummer.
+              </p>
+              <form action={startClubPayoutSetup} className="mt-3">
+                <SubmitButton pendingText="Åbner Stripe…">
+                  {club.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
+                </SubmitButton>
+              </form>
+            </>
+          )}
+        </section>
+      )}
+<section className="card">
+        <p className="display text-xl">Jeres aftale</p>
+        <>
+          <>
+            <p className="mt-2">
+              <span className="font-bold">{club.subscriptionKr} kr/md.</span>{" "}
+              I beholder hele beløbet for hver gæstebooking.
+            </p>
+            <p className="mt-1 text-sm text-slate">
+              Tider kan kun frigives, mens abonnementet er aktivt. Bookinger,
+              en gæst har betalt for, står ved magt uanset hvad.
+            </p>
+            <p className="mt-1 text-sm text-slate/60">
+              Fast pris uanset hvor mange bookinger der kommer ind. Vi tager
+              intet af den enkelte booking — hele beløbet går til jer.
+            </p>
+
+            {subscriptionIsActive(club) ? (
+              <>
+                <p className="mt-3 text-sm">
+                  <span className="font-bold text-court">Betaling aktiv.</span>{" "}
+                  {club.subscriptionRenewsAt
+                    ? `Fornyes ${format(club.subscriptionRenewsAt, "d. MMMM", { locale: da })}.`
+                    : "Fornyes automatisk hver måned."}
+                </p>
+                <form action={openClubBillingPortal} className="mt-3">
+                  <SubmitButton className="btn-ghost" pendingText="Åbner Stripe…">
+                    Kort, fakturaer og opsigelse
+                  </SubmitButton>
+                </form>
+              </>
+            ) : (
+              <>
+                <p className="mt-3 text-sm">
+                  <span className="font-bold text-court-dark">
+                    {club.subscriptionStatus === "past_due" || club.subscriptionStatus === "unpaid"
+                      ? "Betalingen fejlede."
+                      : club.subscriptionStatus === "canceled"
+                        ? "Abonnementet er opsagt."
+                        : "Abonnementet er ikke startet."}
+                  </span>{" "}
+                  Indtil det betales, trækkes {pct}% af hver gæstebooking i stedet.
+                </p>
+                <form action={startClubSubscription} className="mt-3">
+                  <SubmitButton pendingText="Åbner Stripe…">
+                    {club.stripeCustomerId ? "Forny betaling" : "Start abonnement"}
+                  </SubmitButton>
+                </form>
+              </>
+            )}
+          </>
+        </>
+        <p className="mt-3 text-sm text-slate/60">
+          Vil I skifte model, så skriv til os.
+        </p>
+      </section>
+</>}
+{section === 'integrationer' && <>
+<section>
+        <h2 className="display mb-1 text-2xl">Sådan finder vi jeres ledige tider</h2>
+        <p className="mb-4 text-sm text-slate/60">
+          I beholder jeres eget bookingsystem. Vælg hvordan vi skal vide, hvad der er ledigt.
+        </p>
+        <IntegrationForm
+          integrationType={club.integrationType}
+          icalUrl={club.icalUrl ?? ""}
+          externalSystem={club.externalSystem ?? ""}
+        />
+
+        {club.integrationType === "ICAL" && (
+          <div className="card mt-4">
+            <p className="font-bold">Synkronisering</p>
+            <p className="mt-1 text-sm text-slate/60">
+              {club.lastSyncAt
+                ? `Sidst hentet ${format(club.lastSyncAt, "d. MMMM 'kl.' HH:mm", { locale: da })}.`
+                : "Feed er ikke hentet endnu."}
+            </p>
+            {club.lastSyncError && (
+              <p className="mt-2 text-sm font-semibold text-court">{club.lastSyncError}</p>
+            )}
+            <form action={syncNow} className="mt-3">
+              <button className="btn-ink">Synkronisér nu</button>
+            </form>
+          </div>
+        )}
+      </section>
+{club.integrationType !== "NATIVE" && (
+        <section className="card">
+          <h2 className="display mb-1 text-2xl">
+            Lad os spærre tiderne i {club.externalSystem ?? "jeres system"}
+          </h2>
+          <p className="mb-4 text-sm text-slate">
+            Giver I os et login, spærrer vi selv de tider, I frigiver — så
+            skal I ikke gøre det i hånden hver gang.
+          </p>
+          <SystemLoginForm
+            system={club.externalSystem ?? "jeres system"}
+            saved={systemLogin ? { baseUrl: systemLogin.baseUrl, username: systemLogin.username } : null}
+            lastOkAt={systemLogin?.lastOkAt ?? null}
+            lastError={systemLogin?.lastError ?? null}
+            summary={systemLogin ? blocks : null}
+          />
+        </section>
+      )}
+</>}
+{section === 'hjemmeside' && <>
+<section>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="display text-2xl">Jeres side</h2>
+          <Link href={`/klub/${club.slug}`} className="text-sm font-semibold text-court underline">
+            Se den som gæsterne gør
+          </Link>
+        </div>
+        <p className="mb-4 text-sm text-slate">
+          Bruger I os som jeres eneste system, er det her jeres hjemmeside.
+        </p>
+        <ImageForms
+          logoId={club.logoId}
+          heroId={club.heroId}
+          photos={club.images
+            .filter((i: any) => i.kind === "PHOTO")
+            .map((i: any) => ({ id: i.id, alt: i.alt }))}
+        />
+
+        <div className="mt-4">
+          <SiteForm club={club} />
+        </div>
+
+        <div className="card mt-4">
+          <p className="font-bold">Udseende</p>
+          <p className="mt-1 text-sm text-slate">
+            Tre måder at vise klubben på. Skift frit — det ændrer kun
+            forsiden, ikke indholdet.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {[
+              ["KLASSISK", "Klassisk", "Farvet hoved med banemotiv"],
+              ["MARKANT", "Markant", "Mørkt hoved, stort klubnavn"],
+              ["ENKEL", "Enkel", "Lyst og roligt"],
+            ].map(([value, label, hint]) => (
+              <form action={setTheme} key={value}>
+                <input type="hidden" name="theme" value={value} />
+                <button
+                  className={`rounded-xl border px-4 py-3 text-left ${
+                    club.theme === value
+                      ? "border-court bg-court/5"
+                      : "border-slate/20"
+                  }`}
+                >
+                  <span className="block font-semibold">{label}</span>
+                  <span className="block text-xs text-slate">{hint}</span>
+                </button>
+              </form>
+            ))}
+          </div>
+        </div>
+
+        <div className="card mt-4">
+          <p className="font-bold">Eget domæne</p>
+          <p className="mt-1 text-sm text-slate">
+            Jeres side kan ligge på klubbens eget domæne i stedet for hos os.
+            Så står der jerklub.dk i adresselinjen, og vores navigation vises
+            ikke.
+          </p>
+          <div className="mt-4">
+            <DomainForm
+              clubId={club.id}
+              domain={club.customDomain}
+              status={club.domainStatus}
+            />
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-slate">
+          Laver I en ny kode, holder den gamle op med at virke. Medlemmer der
+          allerede er meldt ind, bliver ved med at være det.
+        </p>
+      </section>
+</>}
+{section === 'indstillinger' && <>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Hvem kan administrere klubben</h2>
+        <p className="mb-4 text-sm text-slate">
+          Én person med nøglen er én person for lidt. Stopper vedkommende i
+          bestyrelsen, mister klubben adgangen til sine egne bookinger og
+          indtægter.
+        </p>
+        <AdminsForm
+          meId={user.id}
+          members={club.members.map((m: any) => ({
+            id: m.id,
+            name: m.name,
+            email: m.email,
+            isAdmin: m.role === "CLUB_ADMIN",
+          }))}
+        />
+      </section>
+<section className="card">
+        <h2 className="display mb-1 text-2xl">Bestyrelse og kontaktpersoner</h2>
+        <p className="mb-4 text-sm text-slate">
+          Vises på jeres side under Kontakt. I vedligeholder den selv — der
+          skal ikke sendes en mail til os, når kassereren skifter.
+        </p>
+        <PeopleForm people={club.people as any} />
+      </section>
+</>}
+{section === 'oversigt' && <>
+  {toEnter.length > 0 && <Link href="/admin/bookinger" className="block rounded-xl border border-court/30 bg-court/5 p-4 font-semibold">{toEnter.length} bookinger skal føres ind i jeres system →</Link>}
+  {!selectedSports.length && <Link href="/admin/baner" className="block rounded-xl bg-court/5 p-4 font-semibold">Kom i gang: Vælg sportsgrene og opret baner eller borde →</Link>}
+  {stripeOn && !club.stripeChargesEnabled && <Link href="/admin/betaling" className="block rounded-xl bg-court/5 p-4 font-semibold">Opsæt udbetalinger, så gæster kan betale →</Link>}
+  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter(p => p.id !== 'oversigt').map(p => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : p.label} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{p.description}</p></Link>)}</div>
+</>}
+{section === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>Ledige tider styres gennem klubbens bookingsystem.</p><Link href="/admin/integrationer" className="font-semibold text-court underline">Åbn bookingsystemets indstillinger</Link></div>}
+</div></div></div>
+  );
+}

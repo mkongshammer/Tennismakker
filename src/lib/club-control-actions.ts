@@ -129,7 +129,7 @@ export async function saveControlConnection(
     },
   });
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return {
     ok: enabled
       ? "Lys og adgang er aktiveret."
@@ -182,7 +182,7 @@ export async function addControlDevice(
     return { error: "Controlleren er allerede tilføjet til klubben." };
   }
 
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return {
     ok: `${name} er tilføjet med ${channelCount} relækanal${channelCount === 1 ? "" : "er"}.`,
   };
@@ -225,7 +225,7 @@ export async function refreshControlDevice(formData: FormData) {
       },
     });
   }
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function removeControlDevice(formData: FormData) {
@@ -245,7 +245,7 @@ export async function removeControlDevice(formData: FormData) {
       data: { enabled: false, lastError: "En controller blev fjernet. Kontrollér opsætningen." },
     }),
   ]);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
 }
 
 export async function saveControlMappings(
@@ -322,7 +322,7 @@ export async function saveControlMappings(
   // Validate every assignment before making changes; apply mappings and the
   // safety disable atomically so an invalid form cannot leave a partial setup.
   await db.$transaction(operations);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return {
     ok: "Kanalerne er gemt. Gennemgå dem, test relæerne, og aktivér derefter styringen.",
   };
@@ -338,7 +338,7 @@ export async function testControlChannel(
     clubId,
     String(formData.get("channelId") ?? "")
   );
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return result;
 }
 
@@ -378,7 +378,7 @@ export async function connectControlSetup(_prev: FormResult, formData: FormData)
         await tx.clubControlChannel.deleteMany({ where: { deviceId: saved.id, channel: { gte: device.count } } });
       }
     });
-    revalidatePath("/admin");
+    revalidatePath("/admin", "layout");
     return { ok: `${devices.length} controller(e) forbundet. Vælg nu hvad hvert relæ styrer.` };
   } catch (error) { return { error: error instanceof Error ? error.message : "Forbindelsen kunne ikke gemmes. Prøv igen." }; }
 }
@@ -406,7 +406,7 @@ export async function saveSetupChannel(_prev: FormResult, formData: FormData): P
     db.clubControlChannel.upsert({ where: { deviceId_channel: { deviceId, channel } }, create: { deviceId, channel, ...data }, update: data }),
     db.clubControl.update({ where: { id: device.controlId }, data: { enabled: false } }),
   ]);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: kind === "UNUSED" ? "Relæet er markeret som ikke tilsluttet." : "Gemt. Test nu, om det er det rigtige lys eller den rigtige dør." };
 }
 
@@ -419,14 +419,14 @@ export async function confirmSetupChannel(_prev: FormResult, formData: FormData)
     id: String(formData.get("channelId") ?? ""), setupTestedAt: testedAt, lastError: null,
     device: { control: { clubId, enabled: false } },
   }, data: { setupConfirmedAt: new Date() } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return result.count ? { ok: "Bekræftet. Fortsæt til næste relæ." } : { error: "Opsætningen er ændret. Test relæet igen." };
 }
 
 export async function pauseControlSetup(_prev: FormResult, _formData: FormData): Promise<FormResult> {
   const { clubId } = await requireClubAdmin();
   await db.clubControl.updateMany({ where: { clubId }, data: { enabled: false } });
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   return { ok: "Automatik og appens dørknap er sat på pause. Lysenes aktuelle tilstand ændres ikke." };
 }
 
@@ -451,7 +451,7 @@ export async function activateControlSetup(_prev: FormResult, formData: FormData
       doorPulseSeconds: integerField(formData, "doorPulseSeconds", 5, 1, 30),
     } });
     if (!activated.count) return { error: "Opsætningen blev ændret under kontrollen. Gennemgå den og aktivér igen." };
-    revalidatePath("/admin");
+    revalidatePath("/admin", "layout");
     return { ok: "Aktiveret. Lysene følger nu bookingerne ved næste minutkontrol." };
   } catch (error) { return { error: error instanceof Error ? error.message : "Kunne ikke aktivere. Prøv igen." }; }
 }
@@ -462,7 +462,7 @@ export async function runControlNow(
 ): Promise<FormResult> {
   const { clubId } = await requireClubAdmin();
   const result = await reconcileClubControl(clubId);
-  revalidatePath("/admin");
+  revalidatePath("/admin", "layout");
   if (result.skipped) return { error: `Styringen blev ikke kørt: ${result.skipped}.` };
   if (result.failed > 0) {
     return {

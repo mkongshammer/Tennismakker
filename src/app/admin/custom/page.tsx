@@ -74,7 +74,7 @@ export default async function CustomAdminPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/admin" className="btn-court">Rediger hjemmeside</Link>
+            <Link href="/admin/hjemmeside" className="btn-court">Rediger hjemmeside</Link>
             <Link href={`/klub/${club.slug}`} className="btn-ghost">Se siden</Link>
           </div>
         </div>
