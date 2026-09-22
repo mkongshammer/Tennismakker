@@ -18,6 +18,10 @@ import crypto from "crypto";
 import { db } from "./db";
 
 export async function eraseAccount(userId: string): Promise<void> {
+  await db.pushDevice.deleteMany({where:{userId:userId}});
+  await db.pushPreference.deleteMany({where:{userId:userId}});
+  await db.pushBookingState.deleteMany({where:{userId:userId}});
+
   // Beskeder først: de peger på både afsender og samtale.
   await db.message.deleteMany({ where: { senderId: userId } });
   // Opslag brugeren selv har lavet. Dem, de har sagt ja til hos andre,

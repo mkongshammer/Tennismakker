@@ -9,6 +9,8 @@ import { Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
 
+import {NotificationSettings} from "../lib/NotificationSettings";
+
 const PRIVACY_URL = "https://racketbuddy.app/privatliv";
 const TERMS_URL = "https://racketbuddy.app/vilkaar";
 
@@ -183,6 +185,7 @@ export default function ProfileScreen({ navigation }) {
         })
       )}
 
+      <NotificationSettings />
       <Text style={styles.section}>Konto og vilkår</Text>
       <Card>
         <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(PRIVACY_URL)}>Privatlivspolitik</Text>

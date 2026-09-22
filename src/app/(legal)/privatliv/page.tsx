@@ -5,7 +5,7 @@ export const metadata = { title: "Privatlivspolitik — RacketBuddy" };
 
 export default function PrivatlivPage() {
   return (
-    <LegalPage draft={false} title="Privatlivspolitik" updated="2. september 2026">
+    <LegalPage draft={false} title="Privatlivspolitik" updated="22. september 2026">
       <Section n="1" title="Dataansvarlig">
         <p>
           {COMPANY.name}, {COMPANY.registration}, med adresse{" "}
@@ -165,6 +165,22 @@ export default function PrivatlivPage() {
           Sker der et brud på persondatasikkerheden, der indebærer en risiko for
           dig, underretter vi Datatilsynet inden for 72 timer og dig direkte,
           hvis risikoen er høj.
+        </p>
+      </Section>
+      <Section n="11" title="Pushnotifikationer i mobilappen">
+        <p>
+          Hvis du aktiverer push, gemmer vi telefonens push-token og dine valg
+          af notifikationer. Vi bruger Expo samt Apples eller Googles
+          pushtjeneste til at sende beskeder om bookinger, påmindelser,
+          trænerforespørgsler og ulæste beskeder. Pushbeskeder indeholder ikke
+          indholdet af din chat, betalingsoplysninger eller adgangskoder til klubben.
+        </p>
+        <p>
+          Du kan ændre dine valg eller deaktivere push under Min profil.
+          Enhedens tilmelding fjernes ved logout og kontosletning og udløber
+          senest med din login-session. Tekniske afsendelsesoplysninger ryddes
+          efter 30 dage. Telefonens egne indstillinger styrer også, om
+          notifikationer vises.
         </p>
       </Section>
     </LegalPage>

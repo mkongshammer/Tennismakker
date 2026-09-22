@@ -4,6 +4,8 @@
 
 import { reconcileAllClubControls } from "../../../../lib/club-control";
 
+import { runPushNotifications } from "../../../../lib/push";
+
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
@@ -22,7 +24,9 @@ export async function GET(req: Request) {
   }
 
   const results = await reconcileAllClubControls();
+  const push = await runPushNotifications().catch(() => ({ error: "Push job failed" }));
   return Response.json({
+    push,
     koert: new Date().toISOString(),
     klubber: results.length,
     kontrolleret: results.reduce((sum, result) => sum + result.checked, 0),

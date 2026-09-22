@@ -47,6 +47,10 @@ export const api = {
     request("/auth/login", { method: "POST", body: { email, password }, auth: false }),
   signup: (payload) =>
     request("/auth/signup", { method: "POST", body: payload, auth: false }),
+  pushPreferences: () => request("/push"),
+  savePushPreferences: preferences => request("/push", {method:"POST",body:{preferences}}),
+  registerPush: (token, platform) => request("/push", {method:"POST",body:{token,platform}}),
+  unregisterPush: token => request("/push", {method:"DELETE",body:{token}}),
   me: () => request("/me"),
   deleteAccount: () => request("/me", { method: "DELETE" }),
 

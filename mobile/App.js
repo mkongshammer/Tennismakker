@@ -1,3 +1,4 @@
+import {PushLifecycle,flushPushNavigation} from "./src/lib/PushLifecycle";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
@@ -177,8 +178,9 @@ export default function App() {
     <View style={{ flex: 1, width: "100%", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
+        <NavigationContainer onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
           <SessionStatusBar />
+          <PushLifecycle />
           <Root />
         </NavigationContainer>
       </AuthProvider>

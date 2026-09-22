@@ -20,6 +20,10 @@ export async function DELETE(req: Request) {
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
+  await db.pushDevice.deleteMany({where:{userId:auth.user.id}});
+  await db.pushPreference.deleteMany({where:{userId:auth.user.id}});
+  await db.pushBookingState.deleteMany({where:{userId:auth.user.id}});
+
   const deletedEmail = `deleted-${auth.user.id}@deleted.racketbuddy.invalid`;
 
   await db.user.update({

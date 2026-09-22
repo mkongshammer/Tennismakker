@@ -15,6 +15,9 @@ datasource db {
 // ---------- Brugere ----------
 // role: "PLAYER" | "COACH" | "CLUB_ADMIN"
 model User {
+  pushDevices PushDevice[]
+  pushPreference PushPreference?
+  pushBookingStates PushBookingState[]
   id               String    @id @default(cuid())
   email            String    @unique
   passwordHash     String
@@ -1099,4 +1102,62 @@ model SystemBlock {
 
   @@unique([courtId, startsAt])
   @@index([clubId, status])
+}
+
+
+model PushPreference {
+  userId String @id
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings Boolean @default(true)
+  reminders Boolean @default(true)
+  messages Boolean @default(true)
+  coaching Boolean @default(true)
+  enabledAt DateTime @default(now())
+  scannedAt DateTime @default(now())
+}
+model PushDevice {
+  id String @id @default(cuid())
+  token String @unique
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  deliveries PushDelivery[]
+  @@index([userId, expiresAt])
+}
+model PushBookingState {
+  id String @id @default(cuid())
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookingId String
+  status String
+  startsAt DateTime
+  updatedAt DateTime @updatedAt
+  @@unique([userId, bookingId])
+}
+model PushDelivery {
+  id String @id @default(cuid())
+  deviceId String
+  device PushDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  eventKey String
+  category String
+  title String
+  body String
+  data String
+  bookingId String?
+  expectedStatus String?
+  threadId String?
+  state String @default("PENDING")
+  attempts Int @default(0)
+  nextAttemptAt DateTime @default(now())
+  expiresAt DateTime
+  receiptId String?
+  receiptCheckedAt DateTime?
+  sentAt DateTime?
+  error String?
+  createdAt DateTime @default(now())
+  @@unique([deviceId, eventKey])
+  @@index([state, nextAttemptAt])
+  @@index([receiptCheckedAt, sentAt])
 }

@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { api, setToken, getToken, onSessionExpired } from "./api";
 
+import { disablePush } from "./push";
+
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -30,6 +32,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
+    await disablePush();
     await setToken(null);
     setUser(null);
     setSessionError(null);

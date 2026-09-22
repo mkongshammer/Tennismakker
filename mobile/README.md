@@ -73,3 +73,7 @@ npx expo export --platform web --output-dir ../public/app
 ```
 
 Forhåndsvisningen er ikke det samme som appen. React Native Web oversætter komponenterne til HTML, så layout og opførsel ligner, men er ikke identisk — og der er ingen push-beskeder, ingen app-ikon og ingen adgang til telefonens funktioner. Brug den til at se flowet og finde fejl i API-kaldene, ikke til at bedømme, hvordan den færdige app føles.
+
+## Pushnotifikationer
+
+Se [opsætning og testplan](../docs/mobile-push.md). Native push kræver en ny signeret build med EAS project ID, APNs og FCM; deployment af hjemmesiden er ikke tilstrækkeligt.
