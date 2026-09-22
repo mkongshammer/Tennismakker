@@ -996,7 +996,7 @@ export async function updateLeadStatus(formData: FormData) {
   const status = String(formData.get("status"));
   if (!["NEW", "CONTACTED", "CONVERTED", "DECLINED"].includes(status)) return;
   await db.clubLead.update({ where: { id }, data: { status } });
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
 }
 
 /**
@@ -1097,7 +1097,7 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
     ].join("\n"),
   });
 
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
   return showLogin
     ? { ok: `${clubName} er oprettet. Der er ikke sendt mail.`, login: { email: adminEmail, password: tempPassword } }
     : { ok: `${clubName} er oprettet. Login er sendt til ${adminEmail}.` };
@@ -1761,7 +1761,7 @@ export async function approveClub(formData: FormData) {
     });
   }
 
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
   revalidatePath("/book");
 }
 
@@ -1775,7 +1775,7 @@ export async function rejectClub(formData: FormData) {
     data: { status: "REJECTED", reviewNote: note || null },
   });
 
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
 }
 
 // ---------------- Trænerpakker ----------------
@@ -2278,7 +2278,7 @@ export async function updateOrderStatus(formData: FormData) {
   if (!["NEW", "CONTACTED", "BUILDING", "LIVE", "CANCELLED"].includes(status)) return;
 
   await db.websiteOrder.update({ where: { id }, data: { status } });
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
 }
 
 /**
@@ -2327,7 +2327,7 @@ export async function setCustomDomain(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
   revalidatePath("/admin", "layout");
   return {
     ok: domain
@@ -2342,7 +2342,7 @@ export async function markDomainLive(formData: FormData) {
     where: { id: String(formData.get("clubId")) },
     data: { domainStatus: "LIVE" },
   });
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
 }
 
 /** Skifter klubbens tema. */

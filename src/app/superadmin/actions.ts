@@ -49,6 +49,6 @@ export async function createSuperadmin(
     });
   }
 
-  revalidatePath("/superadmin");
+  revalidatePath("/superadmin", "layout");
   return { ok: true, email, password, promoted: Boolean(existing) };
 }
