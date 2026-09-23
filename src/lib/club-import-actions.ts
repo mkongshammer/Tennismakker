@@ -36,12 +36,13 @@ export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:s
    }
    for(const r of rows.filter(r=>r.type==='booking')){
     const importKey=crypto.createHash('sha256').update(JSON.stringify([club.id,source,r.external_id])).digest('hex');
-    if(await tx.booking.findUnique({where:{importKey}})){skipped++;continue;}
+    if(await tx.bookingImport.findUnique({where:{key:importKey}})){skipped++;continue;}
     const member=await tx.user.findFirst({where:{email:r.email.toLowerCase(),clubId:club.id}});if(!member)throw Error(`Tilføj først medlemmet ${r.email} i samme import eller i medlemsadministrationen.`);
     const court=courts.find(c=>c.name===r.court)!,startsAt=importDate(r.start),endsAt=importDate(r.end);
     const clash=await tx.booking.findFirst({where:{courtId:court.id,status:{in:['CONFIRMED','HOLD']},startsAt:{lt:endsAt},endsAt:{gt:startsAt}}});
     if(clash)throw Error(`Booking ${r.external_id} overlapper en eksisterende booking. Ingen rækker er importeret.`);
-    await tx.booking.create({data:{importKey,courtId:court.id,userId:member.id,startsAt,endsAt,kind:'COURT',status:'CONFIRMED',priceKr:0}});bookings++;
+    const booking=await tx.booking.create({data:{courtId:court.id,userId:member.id,startsAt,endsAt,kind:'COURT',status:'CONFIRMED',priceKr:0}});
+    await tx.bookingImport.create({data:{key:importKey,bookingId:booking.id}});bookings++;
    }
    return {members,bookings,skipped};
   },{timeout:60000,isolationLevel:'Serializable'});

@@ -334,7 +334,7 @@ model ExternalBusy {
 // kind: "COURT" | "COACH"
 // status: "HOLD" | "CONFIRMED" | "CANCELLED"
 model Booking {
-  importKey String? @unique
+  importRecord BookingImport?
   walletPaidOre Int @default(0)
   id                String    @id @default(cuid())
   kind              String
@@ -1205,4 +1205,10 @@ model AppHandoff {
   userId String
   destination String
   expiresAt DateTime
+}
+
+model BookingImport {
+  key String @id
+  bookingId String @unique
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
