@@ -10,7 +10,7 @@ function fixture(role: string | null = 'SUPERADMIN') {
     '../../lib/session':{getCurrentUser:async()=>role?{role}:null},
     '../../lib/settings':{getSettings:async()=>{queries.push('settings');return {commissionPct:0.1};}},
     '../../lib/db':{db:Object.fromEntries(['club','clubLead','websiteOrder'].map(model=>[model,{findMany:async()=>{queries.push(model);return [];}}]))},
-    '../../lib/superadmin-navigation':navigation,'../../lib/billing':{},'date-fns':{},'date-fns/locale':{},'../../lib/actions':{},'../../lib/sports':{},
+    '../../lib/superadmin-navigation':navigation,'../../lib/club-management-actions':{},'../../lib/billing':{},'date-fns':{},'date-fns/locale':{},'../../lib/actions':{},'../../lib/sports':{},
   };
   for(const name of ['SuperadminAccess','Overblik','Aktivitet','CoachPhotos','Oekonomi','CreateClubForm'])mocks[`./${name}`]={[name]:name};
   mocks['./OrderTools']={DomainForm:'DomainForm'};

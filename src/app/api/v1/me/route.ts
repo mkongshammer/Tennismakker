@@ -1,3 +1,4 @@
+import {walletBlocksDeletion} from "../../../../lib/wallet";
 import { json, preflight, publicUser, requireUser } from "../../../../lib/api/helpers";
 import { db } from "../../../../lib/db";
 
@@ -20,6 +21,7 @@ export async function DELETE(req: Request) {
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
+  if(await walletBlocksDeletion(auth.user.id)) return json({error:"Kontakt klubben for at afvikle din wallet før kontosletning."},409);
   await db.pushDevice.deleteMany({where:{userId:auth.user.id}});
   await db.pushPreference.deleteMany({where:{userId:auth.user.id}});
   await db.pushBookingState.deleteMany({where:{userId:auth.user.id}});

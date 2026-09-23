@@ -185,6 +185,7 @@ export default function ProfileScreen({ navigation }) {
         })
       )}
 
+      {user.clubId && <Button title="Min klubwallet" onPress={()=>navigation.navigate("WalletPortal",{destination:"/wallet"})}/>}
       <NotificationSettings />
       <Text style={styles.section}>Konto og vilkår</Text>
       <Card>

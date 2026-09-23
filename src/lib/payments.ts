@@ -17,6 +17,7 @@
 //    MobilePay slås til som payment method i Stripe Dashboard.
 // 3. Betalte checkout-events kalder confirmBookingPayment() nedenfor.
 
+import { useWalletIfCovered, cancelWalletBooking } from "./wallet";
 import { db } from "./db";
 import { platformAccountCountry, stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
@@ -103,6 +104,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   if (!booking) throw new Error("Booking findes ikke");
   if (!bookingCanBePaid(booking)) throw new Error("Reservationen er udløbet eller kan ikke betales.");
   if (booking.checkoutParams) return resumeBookingCheckout(booking);
+  if (await useWalletIfCovered(booking.userId,booking.id)) return "/profil?wallet=1";
   if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
@@ -365,6 +367,7 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   });
   if (!booking) throw new Error("Booking findes ikke");
 
+  if (booking.walletPaidOre > 0) return cancelWalletBooking(booking.userId,booking.id);
   await ensureSettings();
   if (booking.status === "CANCELLED") return null;
 

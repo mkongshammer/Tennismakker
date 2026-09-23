@@ -6,7 +6,7 @@ function setup(session: any, sessionId: string | null = 'cs_1') {
   const writes: any[] = [];
   const booking = { id: 'b1', status: 'HOLD', checkoutParams: '{}', checkoutSessionId: sessionId };
   const api = loadIsolatedModule('src/lib/payments.ts', {
-    './db': { db: { booking: {
+    './wallet':{}, './db': { db: { booking: {
       updateMany: async (args: any) => { writes.push(args); return { count: 1 }; },
       findMany: async () => [booking],
     } } },

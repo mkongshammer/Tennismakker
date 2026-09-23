@@ -1,5 +1,6 @@
 "use server";
 
+import { requireCustomClub } from "./club-management-actions";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
@@ -21,6 +22,7 @@ import {
 type FormResult = { ok?: string; error?: string } | null;
 
 async function requireClubAdmin() {
+  await requireCustomClub();
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
@@ -472,4 +474,17 @@ export async function runControlNow(
   return {
     ok: `Forbindelsen virker. ${result.checked} kanal(er) kontrolleret, ${result.changed} ændret.`,
   };
+}
+
+export async function setManualLight(_prev:FormResult, formData:FormData):Promise<FormResult> {
+  const {clubId,user}=await requireClubAdmin();
+  const minutes=Number(formData.get('minutes'));
+  if(![0,15,30,60,120].includes(minutes))return {error:'Vælg en gyldig varighed.'};
+  const channel=await db.clubControlChannel.findFirst({where:{id:String(formData.get('channelId')),kind:{in:['COURT_LIGHT','COMMON_LIGHT']},setupConfirmedAt:{not:null},device:{control:{clubId,enabled:true}}},include:{device:true}});
+  if(!channel)return {error:'Lysstyringen skal først tilknyttes, testes og aktiveres.'};
+  await db.clubControlChannel.update({where:{id:channel.id},data:{manualOnUntil:minutes?new Date(Date.now()+minutes*60000):null}});
+  await db.clubControlEvent.create({data:{clubId,userId:user.id,deviceExternalId:channel.device.externalId,channel:channel.channel,action:'ADMIN_LIGHT_OVERRIDE',outcome:'REQUESTED',message:minutes?`Manuelt tændt ønskes i ${minutes} minutter`:'Automatik genoptaget'}});
+  const result=await reconcileClubControl(clubId);
+  revalidatePath('/admin','layout');
+  return result.failed?{error:'Anmodningen er gemt, men controlleren kunne ikke bekræftes. Kontrollér forbindelsen.'}:{ok:minutes?'Manuel lystid er aktiveret. Automatikken overtager efter perioden.':'Automatikken styrer igen lyset efter bookingerne.'};
 }

@@ -77,13 +77,14 @@ export default function ClubScreen({ route }) {
     setBooking(key);
     setBookingError(null);
     try {
-      const { checkoutUrl: path } = await api.book({
+      const { checkoutUrl: path, status } = await api.book({
         courtId: slot.courtId,
         startsAt: slot.startsAt,
       });
       setNotice("Tiden er reserveret midlertidigt. Fuldfør betalingen for at bekræfte den. Du kan også fortsætte under Min profil.");
       setSelection(null);
       // Betaling foregår hos Stripe, så appen aldrig rører kortdata
+      if(status === "CONFIRMED") { setNotice("Din bane er booket og bekræftet."); Alert.alert("Booking bekræftet", "Din bane er booket."); setSelection(null); await load(); return; }
       await Linking.openURL(checkoutUrl(path));
       await load();
     } catch (e) {

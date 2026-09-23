@@ -79,6 +79,7 @@ export function FixedSlotForm({
         </p>
       ) : (
         <form action={action} className="space-y-4 rounded-xl bg-mist p-4">
+          <p className="text-sm">Vælg én eller flere baner og ugedage. Gentages hver uge frem til slutdatoen, højst et år frem. Optagede tider springes over og vises efter oprettelse. Betaling opkræves ikke automatisk her.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="fixedUser">Medlem</label>
@@ -90,7 +91,7 @@ export function FixedSlotForm({
             </div>
             <div>
               <label className="label" htmlFor="fixedCourt">Bane</label>
-              <select className="input" id="fixedCourt" name="courtId" required>
+              <select className="input" id="fixedCourt" name="courtId" multiple required size={Math.min(5,courts.length)}>
                 {courts.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -98,14 +99,14 @@ export function FixedSlotForm({
             </div>
             <div>
               <label className="label" htmlFor="fixedDay">Ugedag</label>
-              <select className="input" id="fixedDay" name="dayOfWeek" defaultValue="2">
+              <select className="input" id="fixedDay" name="dayOfWeek" multiple defaultValue={["2"]} size={7}>
                 {DAYS.map((d, i) => (
                   <option key={i} value={i}>{d}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label" htmlFor="fixedHour">Klokken</label>
+              <label className="label" htmlFor="fixedHour">Klokken · dansk tid, én time pr. booking</label>
               <select className="input" id="fixedHour" name="hour" defaultValue="17">
                 {Array.from({ length: 18 }, (_, i) => i + 6).map((h) => (
                   <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>
@@ -144,7 +145,7 @@ export function FixedSlotForm({
           {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
           {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
 
-          <SubmitButton pendingText="Opretter sæsonen…">Tildel fast bane</SubmitButton>
+          <SubmitButton pendingText="Opretter sæsonen…">Tildel valgte faste baner</SubmitButton>
         </form>
       )}
     </div>

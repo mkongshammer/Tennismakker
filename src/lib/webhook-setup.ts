@@ -17,6 +17,10 @@ import { getSettings, saveSettings } from "./settings";
 /** De events, appen skal have for at fungere. Se src/app/api/webhooks/stripe. */
 export const REQUIRED_EVENTS = [
   "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
+  "checkout.session.expired",
+  "charge.refunded",
+  "charge.dispute.created",
   "account.updated",
   "customer.subscription.created",
   "customer.subscription.updated",
@@ -131,7 +135,7 @@ export async function ensureWebhookEndpoint(): Promise<string> {
 
   if (existing) {
     await client.webhookEndpoints.update(existing.id, { enabled_events: REQUIRED_EVENTS as any });
-    return `Endpointet fandtes allerede i ${mode} og lytter nu på alle fem events. Signeringsnøglen er urørt — Stripe udleverer den kun ved oprettelsen, så passer den ikke, skal endpointet slettes hos Stripe og oprettes her igen.`;
+    return `Endpointet fandtes allerede i ${mode} og lytter nu på alle ${REQUIRED_EVENTS.length} nødvendige events. Signeringsnøglen er urørt — Stripe udleverer den kun ved oprettelsen, så passer den ikke, skal endpointet slettes hos Stripe og oprettes her igen.`;
   }
 
   const created = await client.webhookEndpoints.create({

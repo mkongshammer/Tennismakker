@@ -4,6 +4,7 @@
 // steder: websitets serverhandling (som omdirigerer) og mobilappens API
 // (som returnerer JSON). At have to udgaver af samme forretningslogik er
 // sådan, to steder langsomt ender med at opføre sig forskelligt.
+import {createCourtReservation} from "./court-reservation";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { db } from "./db";
 import { getClubAvailability, refreshBeforeBooking } from "./integrations";
@@ -103,7 +104,7 @@ export async function rebookSameSlot(
     };
   }
 
-  const booking = await db.booking.create({
+  const booking = await createCourtReservation({
     data: {
       kind: "COURT",
       status: "HOLD",

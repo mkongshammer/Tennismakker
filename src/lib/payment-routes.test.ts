@@ -13,6 +13,7 @@ function webhookFixture(t: any) {
   let bookings = 0; let packages = 0;
   t.mock.method(client.events, "retrieve", () => { throw new Error("Unexpected network call"); });
   const { POST } = loadIsolatedModule("src/app/api/webhooks/stripe/route.ts", {
+    "../../../../lib/wallet":{},
     "../../../../lib/stripe": { stripe: async () => client },
     "../../../../lib/settings": { getSettings: async () => ({ stripeWebhookSecret: secret }) },
     "../../../../lib/payments": { confirmBookingPayment: async (id: string, proof: validation.BookingPaymentProof) => {
@@ -52,7 +53,7 @@ function returnFixture(session = paid, signedIn = true) {
   let confirmations = 0; let retrieved = 0;
   const { GET } = loadIsolatedModule("src/app/checkout/[id]/faerdig/route.ts", {
     "next/navigation": { redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } },
-    "../../../../lib/db": { db: { booking: { findUnique: async () => ({ id: "booking-1", userId: "user-1", status: "HOLD", priceKr: 100 }) } } },
+    "../../../../lib/wallet":{}, "../../../../lib/db": { db: { booking: { findUnique: async () => ({ id: "booking-1", userId: "user-1", status: "HOLD", priceKr: 100 }) } } },
     "../../../../lib/session": { getCurrentUser: async () => signedIn ? { id: "user-1" } : null },
     "../../../../lib/stripe": { stripeEnabled: async () => true, stripe: async () => ({ checkout: { sessions: { retrieve: async () => { retrieved++; return session; } } } }) },
     "../../../../lib/payments": { confirmBookingPayment: async (id: string, proof: validation.BookingPaymentProof) => {

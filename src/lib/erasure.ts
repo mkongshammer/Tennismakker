@@ -1,3 +1,4 @@
+import {walletBlocksDeletion} from "./wallet";
 // Sletning af en konto.
 //
 // Rækken i User slettes ikke — den anonymiseres. Grunden er, at bookinger og
@@ -18,6 +19,7 @@ import crypto from "crypto";
 import { db } from "./db";
 
 export async function eraseAccount(userId: string): Promise<void> {
+  if(await walletBlocksDeletion(userId)) throw Error("Kontakt klubben for at afvikle din wallet før kontosletning.");
   await db.pushDevice.deleteMany({where:{userId:userId}});
   await db.pushPreference.deleteMany({where:{userId:userId}});
   await db.pushBookingState.deleteMany({where:{userId:userId}});

@@ -4,6 +4,7 @@ import React from 'react';
 import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import { loadIsolatedModule } from './testing/isolated-module';
+import * as features from './club-features';
 import * as navigation from './admin-navigation';
 import * as sports from './sports';
 import * as clubSports from './club-sports';
@@ -24,14 +25,14 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
       for (const item of clause.namedBindings.elements) mocks[key][item.name.text] = item.name.text;
     }
   }
-  const club = {id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
+  const club = {solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
   const db: any = { club: {findUnique: async ({where}: any) => { assert.equal(where.id, 'club-a'); return club; }} };
-  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot']) {
+  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel']) {
     db[model] = {findMany: async () => {queries.push(model);return [];}, findUnique: async () => {queries.push(model);return null;}};
   }
   Object.assign(mocks, {
     react: React, 'date-fns': dates, 'date-fns/locale': {},
-    '../../lib/admin-navigation': navigation, '../../lib/sports': sports, '../../lib/club-sports': clubSports,
+    '../../lib/admin-navigation': navigation, '../../lib/club-features':features, '../../lib/sports': sports, '../../lib/club-sports': clubSports,
     '../../lib/db': {db}, '../../lib/session': {getCurrentUser:async()=>role ? {role,clubId:'club-a'} : null},
     '../../lib/settings': {getSettings:async()=>({commissionPct:0.1})},
     '../../lib/stripe': {stripeEnabled:async()=>true}, '../../lib/billing': {subscriptionIsActive:()=>true},
@@ -54,7 +55,7 @@ for(const page of navigation.ADMIN_PAGES) test(`admin page ${page.id} renders on
   const f=fixture(); const tree=await f.run({section:page.id,searchParams:Promise.resolve({})});
   const names=componentNames(tree);
   for(const [section,expected] of Object.entries(forms)) for(const name of expected) assert.equal(names.includes(name),section===page.id,`${page.id}: ${name}`);
-  if(page.id==='lys-adgang') assert.deepEqual(f.queries,['clubControl']);
+  if(page.id==='lys-adgang') assert.deepEqual(f.queries,['clubControl','clubControlChannel']);
   if(page.id==='baner') assert.deepEqual(f.queries,[]);
 });
 test('unknown admin routes are not accepted',()=>{

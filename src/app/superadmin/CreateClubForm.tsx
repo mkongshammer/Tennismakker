@@ -33,6 +33,8 @@ export function CreateClubForm() {
         </div>
       </div>
 
+      <label className="label" htmlFor="solutionMode">Klubløsning</label>
+      <select className="input" id="solutionMode" name="solutionMode" defaultValue="STANDARD"><option value="STANDARD">Standard · gæstebooking</option><option value="CUSTOM">Custom · fuld klubadministration</option></select>
       <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" name="privateSetup" className="mt-1" defaultChecked />
         <span>Hold klubben skjult under opsætning. Den vises først for spillere, når du godkender den.</span>

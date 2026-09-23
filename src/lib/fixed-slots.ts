@@ -36,7 +36,9 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
   const court = await db.court.findUnique({ where: { id: input.courtId } });
   if (!court) throw new Error("Banen findes ikke.");
 
-  const slot = await db.fixedSlot.create({
+  return db.$transaction(async tx => {
+  await tx.$queryRaw`SELECT id FROM "Court" WHERE id=${input.courtId} FOR UPDATE`;
+  const slot = await tx.fixedSlot.create({
     data: {
       courtId: input.courtId,
       userId: input.userId,
@@ -50,7 +52,7 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
   });
 
   const now = new Date();
-  const times = occurrences(input.fromDate, input.toDate, input.dayOfWeek, input.hour).filter(
+  const times = occurrences(input.fromDate, input.toDate, input.dayOfWeek, input.hour, "Europe/Copenhagen").filter(
     (t) => t > now
   );
 
@@ -60,7 +62,7 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
   for (const startsAt of times) {
     const endsAt = new Date(startsAt.getTime() + 60 * 60 * 1000);
 
-    const taken = await db.booking.findFirst({
+    const taken = await tx.booking.findFirst({
       where: {
         courtId: input.courtId,
         status: { in: ["HOLD", "CONFIRMED"] },
@@ -70,12 +72,13 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
       select: { id: true },
     });
 
-    if (taken) {
+    const imported = await tx.externalBusy.findFirst({where:{courtId:input.courtId,startsAt:{lt:endsAt},endsAt:{gt:startsAt}}});
+    if (taken || imported) {
       clashes.push(startsAt);
       continue;
     }
 
-    await db.booking.create({
+    await tx.booking.create({
       data: {
         kind: "COURT",
         // Bekræftet med det samme. En fast bane er tildelt, ikke reserveret
@@ -93,6 +96,7 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
   }
 
   return { created, clashes };
+  }, {timeout:30000});
 }
 
 /**

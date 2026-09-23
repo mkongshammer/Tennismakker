@@ -1,4 +1,5 @@
 import {PushLifecycle,flushPushNavigation} from "./src/lib/PushLifecycle";
+import AppPortal from "./src/screens/AppPortal";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
@@ -95,6 +96,7 @@ function MessagesStack() {
 // Rækkefølgen matcher websitets bundlinje præcist: Book, Trænere,
 // Medspillere, Beskeder. Profilen er bevidst ikke en femte fane.
 function MainTabs() {
+  const {user}=useAuth();
   const { width } = useWindowDimensions();
   const desktop = Platform.OS === "web" && width >= 900;
   return (
@@ -142,6 +144,7 @@ function MainTabs() {
           tabBarIcon: ({ focused, color }) => <IconMessages active={focused} color={color} />,
         }}
       />
+      {user?.role === "CLUB_ADMIN" && <Tabs.Screen name="AdminTab" component={AppPortal} options={{title:"Min klub",tabBarIcon:({color})=><IconCourt color={color}/>}}/>}
     </Tabs.Navigator>
   );
 }
@@ -154,7 +157,8 @@ function Root() {
   if (!user) return <LoginScreen />;
 
   return (
-    <RootStack.Navigator>
+    <RootStack.Navigator initialRouteName="MainTabs">
+      <RootStack.Screen name="WalletPortal" component={AppPortal} initialParams={{destination:"/wallet"}} options={{title:"Min klubwallet"}}/>
       <RootStack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <RootStack.Screen
         name="Profil"

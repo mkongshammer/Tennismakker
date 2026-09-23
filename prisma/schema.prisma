@@ -71,6 +71,9 @@ model User {
 //   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
+  walletEnabled Boolean @default(false)
+  walletTiers String @default("[]")
+  solutionMode String @default("STANDARD")
   sports      String @default("") // tom = vælg sportsgrene; eksisterende baner bevares
   id          String   @id @default(cuid())
   slug        String   @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
@@ -331,6 +334,8 @@ model ExternalBusy {
 // kind: "COURT" | "COACH"
 // status: "HOLD" | "CONFIRMED" | "CANCELLED"
 model Booking {
+  importKey String? @unique
+  walletPaidOre Int @default(0)
   id                String    @id @default(cuid())
   kind              String
   status            String    @default("HOLD")
@@ -428,6 +433,7 @@ model ClubControlDevice {
 }
 
 model ClubControlChannel {
+  manualOnUntil DateTime?
   id       String            @id @default(cuid())
   deviceId String
   device   ClubControlDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
@@ -1160,4 +1166,43 @@ model PushDelivery {
   @@unique([deviceId, eventKey])
   @@index([state, nextAttemptAt])
   @@index([receiptCheckedAt, sentAt])
+}
+
+model ClubWallet {
+  id String @id @default(cuid())
+  userId String
+  clubId String
+  balanceOre Int @default(0)
+  frozen Boolean @default(false)
+  entries WalletEntry[]
+  @@unique([userId, clubId])
+}
+model WalletEntry {
+  id String @id @default(cuid())
+  walletId String
+  wallet ClubWallet @relation(fields:[walletId], references:[id])
+  eventKey String @unique
+  amountOre Int
+  label String
+  createdAt DateTime @default(now())
+  @@index([walletId, createdAt])
+}
+model WalletTopup {
+  id String @id @default(cuid())
+  userId String
+  clubId String
+  paidOre Int
+  creditOre Int
+  destination String
+  status String @default("PENDING")
+  sessionId String? @unique
+  paymentIntentId String? @unique
+  createdAt DateTime @default(now())
+}
+
+model AppHandoff {
+  hash String @id
+  userId String
+  destination String
+  expiresAt DateTime
 }

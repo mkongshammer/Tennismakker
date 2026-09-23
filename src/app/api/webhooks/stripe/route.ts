@@ -17,6 +17,7 @@
 // modtageren selv skal slå op. Vi understøtter begge, fordi en forkert
 // indstilling i Stripe-panelet ellers får alle webhooks til at fejle tavst
 // — hvilket er præcis, hvad der skete første gang.
+import { confirmWalletTopup, freezeWalletForPayment, expireWalletTopup } from "../../../../lib/wallet";
 import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
@@ -35,6 +36,17 @@ export const dynamic = "force-dynamic";
 /** Behandler et event, uanset hvordan det kom ind. */
 async function handleEvent(type: string, object: any) {
   switch (type) {
+    case "checkout.session.expired": {
+      const id=object.metadata?.walletTopupId;
+      if(id)await expireWalletTopup(id, object.id);
+      return;
+    }
+    case "charge.refunded":
+    case "charge.dispute.created": {
+      const pi = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
+      if (pi) await freezeWalletForPayment(pi);
+      return;
+    }
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded": {
       const session = object as Stripe.Checkout.Session;
@@ -56,6 +68,7 @@ async function handleEvent(type: string, object: any) {
       // Checkout completion is not necessarily payment completion (bank-based
       // methods can settle later). Never fulfil an unpaid checkout.
       if (!checkoutIsSettled(session)) return;
+      if (session.metadata?.walletTopupId) { await confirmWalletTopup(session); return; }
 
       // Et pakkekøb er også en betaling, bare uden en booking bagved.
       // Kontingent: klubbens indtægt, ikke en booking.

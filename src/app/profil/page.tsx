@@ -106,6 +106,7 @@ export default async function ProfilPage({
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
+      {user.clubId && <Link href="/wallet" className="btn-ghost">Min klubwallet</Link>}
       {query.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
           <p className="display text-xl">{t("profile.paidTitle")}</p>

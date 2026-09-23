@@ -1,3 +1,5 @@
+import {createCourtReservation, CourtReservationConflict} from "../../../../lib/court-reservation";
+import {mayBook} from "../../../../lib/club-rules";
 import { addHours, addMinutes } from "date-fns";
 import { isOffered, isTaken } from "../../../../lib/coaching";
 import { lessonEnd, lessonPriceKr } from "../../../../lib/slots";
@@ -105,6 +107,10 @@ export async function POST(req: Request) {
     const court = await db.court.findUnique({ where: { id: String(body.courtId) } });
     if (!court) return apiError("Banen findes ikke.", 404);
 
+    const rules=await db.club.findUnique({where:{id:court.clubId}});
+    if(!rules)return apiError("Klubben findes ikke.",404);
+    const allowed=await mayBook(rules,auth.user.id,auth.user.clubId??null,startsAt);
+    if(!allowed.ok)return apiError(allowed.reason,409);
     await refreshBeforeBooking(court.clubId);
 
     const { slots, needsClubEntry } = await getClubAvailability(
@@ -118,7 +124,8 @@ export async function POST(req: Request) {
     );
     if (!slot) return apiError("Tiden er ikke længere ledig.", 409);
 
-    const booking = await db.booking.create({
+    let booking;
+    try { booking = await createCourtReservation({
       data: {
         kind: "COURT",
         status: "HOLD",
@@ -130,12 +137,20 @@ export async function POST(req: Request) {
         courtId: court.id,
         needsClubEntry,
       },
-    });
+    }); } catch (error) {
+      if (error instanceof CourtReservationConflict) return apiError(error.message, 409);
+      throw error;
+    }
+    if(slot.priceKr<=0){
+      await db.booking.update({where:{id:booking.id},data:{status:'CONFIRMED',holdExpiresAt:null}});
+      return json({id:booking.id,status:'CONFIRMED'},201);
+    }
     // Bruger den samme betalingslogik som websitet — så appen får en
     // rigtig Stripe-session, når PAYMENT_PROVIDER er sat til stripe,
     // i stedet for en genvej der aldrig burde ligge i produktion.
     try {
       const checkoutUrl = await startCheckout(booking.id);
+      if(checkoutUrl === "/profil?wallet=1") return json({id:booking.id,status:"CONFIRMED"},201);
       return json({ id: booking.id, checkoutUrl }, 201);
     } catch {
       return json({ id: booking.id, error: "Reservationen er oprettet, men betalingen kunne ikke åbnes. Fortsæt med Betal nu under Min profil." }, 502);

@@ -22,6 +22,7 @@ type StoredControl = {
 };
 
 type ChannelWithDevice = {
+  manualOnUntil?: Date | null;
   id: string;
   channel: number;
   kind: string;
@@ -231,7 +232,7 @@ export async function reconcileClubControl(
 
   for (const channel of lightChannels) {
     const state = stateById.get(channel.device.externalId.toLowerCase());
-    const desired = desiredChannelState(channel, activeCourtIds);
+    const desired = channel.manualOnUntil && channel.manualOnUntil > now ? true : desiredChannelState(channel, activeCourtIds);
     const actual = shellySwitchOutput(state, channel.channel);
     let error: string | null = null;
 

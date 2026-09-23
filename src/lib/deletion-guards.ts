@@ -12,6 +12,7 @@
 // Reglen bag det hele: en enkelt persons klik må ikke efterlade en
 // forening uden adgang til sine egne bookinger, medlemmer og indtægter.
 
+import {walletBlocksDeletion} from "./wallet";
 import { db } from "./db";
 
 export type Blocker = {
@@ -32,6 +33,7 @@ export async function checkDeletion(userId: string): Promise<DeletionCheck> {
   if (!user) return { blockers: [], canDelete: false };
 
   const blockers: Blocker[] = [];
+  if(await walletBlocksDeletion(userId))blockers.push({level:"HARD",message:"Kontakt klubben for at afvikle din wallet før kontosletning."});
   const now = new Date();
 
   // ---- Klubadministrator ----

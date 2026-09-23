@@ -51,6 +51,7 @@ export const api = {
   savePushPreferences: preferences => request("/push", {method:"POST",body:{preferences}}),
   registerPush: (token, platform) => request("/push", {method:"POST",body:{token,platform}}),
   unregisterPush: token => request("/push", {method:"DELETE",body:{token}}),
+  appHandoff: destination => request("/app-handoff", {method:"POST",body:{destination}}),
   me: () => request("/me"),
   deleteAccount: () => request("/me", { method: "DELETE" }),
 

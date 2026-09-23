@@ -46,7 +46,7 @@ function setup(overrides: Record<string, any> = {}) {
   };
   const getSettings = async () => ({ paymentProvider: provider, commissionPct: 0.1 });
   const { confirmBookingPayment, startCheckout } = loadIsolatedModule("src/lib/payments.ts", {
-    "./db": { db }, "./stripe": { stripe: () => { throw new Error("Unexpected network access"); } },
+    "./wallet":{useWalletIfCovered:async()=>false}, "./db": { db }, "./stripe": { stripe: () => { throw new Error("Unexpected network access"); } },
     "./settings": { getSettings, ensureSettings: async () => {} },
     "./slots": { describeLength: () => "60 min" }, "./billing": { commissionAt: (amount: number, pct: number) => Math.round(amount * pct) },
     "./packages": {}, "./punch-cards": {}, "./payment-validation": validation,

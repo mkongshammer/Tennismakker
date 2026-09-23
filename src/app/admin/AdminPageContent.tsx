@@ -1,3 +1,9 @@
+import { clubHasSection } from "../../lib/club-features";
+import { MemberForm } from "./MemberForm";
+import { WalletForm } from "./WalletForm";
+import { ManualLights } from "./ManualLights";
+import { ImportForm } from "./ImportForm";
+import {WalletBalances} from "./WalletBalances";
 import React from "react";
 import { ADMIN_PAGES, adminHref, type AdminSection } from "../../lib/admin-navigation";
 import { AdminNavigation } from "./AdminNavigation";
@@ -83,6 +89,7 @@ export default async function AdminPageContent({
     },
   });
   if (!club) redirect("/");
+  if (!clubHasSection(club.solutionMode, section)) redirect("/admin");
   const selectedSports = clubSports(club.sports, club.courts);
 
   // Faste baner hører til banerne, ikke til klubben, så de hentes for sig.
@@ -181,7 +188,7 @@ export default async function AdminPageContent({
         </p>
       )}
 <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-<AdminNavigation section={section} facility={facilityLabel(selectedSports)} />
+<AdminNavigation mode={club.solutionMode} section={section} facility={facilityLabel(selectedSports)} />
 <div className="min-w-0 space-y-6">
 <header><h2 className="display text-2xl">{section === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : currentPage.label}</h2><p className="mt-1 text-sm text-slate">{currentPage.description}</p></header>
 {section === 'oversigt' && <>
@@ -253,7 +260,7 @@ export default async function AdminPageContent({
           ))}
         </ul>
       </section>
-<section className="card">
+{club.solutionMode === "CUSTOM" && <section className="card">
         <h2 className="display mb-1 text-2xl">Faste baner</h2>
         <p className="mb-4 text-sm text-slate">
           Samme bane, samme ugedag, hele sæsonen. Klubben tildeler dem —
@@ -266,7 +273,7 @@ export default async function AdminPageContent({
           slots={fixedSlots as any}
           defaultPrice={club.memberPriceHour ?? club.priceHour}
         />
-      </section>
+      </section>}
 </>}
 {section === 'tider' && <>
 {club.integrationType === "MANUAL" && (
@@ -394,6 +401,7 @@ export default async function AdminPageContent({
       )}
 </>}
 {section === 'medlemmer' && <>
+<MemberForm types={membershipTypes.map(t=>({id:t.id,name:t.name}))} />
 <section className="card">
         <h2 className="display mb-1 text-2xl">Kontingent</h2>
         <p className="mb-4 text-sm text-slate">
@@ -495,6 +503,7 @@ export default async function AdminPageContent({
       </section>
 </>}
 {section === 'lys-adgang' && <>
+<ManualLights channels={(await db.clubControlChannel.findMany({where:{device:{control:{clubId:club.id,enabled:true}},kind:{in:['COURT_LIGHT','COMMON_LIGHT']},setupConfirmedAt:{not:null}},select:{id:true,label:true}}))} />
 <section>
         <h2 className="display mb-1 text-2xl">Automatisk lys og adgang</h2>
         <p className="mb-4 text-sm text-slate">
@@ -542,6 +551,8 @@ export default async function AdminPageContent({
       </section>
 </>}
 {section === 'priser' && <>
+<WalletForm enabled={club.walletEnabled} tiers={JSON.parse(club.walletTiers||'[]')} />
+<WalletBalances clubId={club.id}/>
 <section className="card">
         <h2 className="display mb-1 text-2xl">Priser efter tidspunkt</h2>
         <p className="mb-4 text-sm text-slate">
@@ -649,6 +660,7 @@ export default async function AdminPageContent({
       </section>
 </>}
 {section === 'integrationer' && <>
+{club.solutionMode === 'CUSTOM' && <ImportForm/>}
 <section>
         <h2 className="display mb-1 text-2xl">Sådan finder vi jeres ledige tider</h2>
         <p className="mb-4 text-sm text-slate/60">
@@ -787,20 +799,20 @@ export default async function AdminPageContent({
           }))}
         />
       </section>
-<section className="card">
+{club.solutionMode === "CUSTOM" && <section className="card">
         <h2 className="display mb-1 text-2xl">Bestyrelse og kontaktpersoner</h2>
         <p className="mb-4 text-sm text-slate">
           Vises på jeres side under Kontakt. I vedligeholder den selv — der
           skal ikke sendes en mail til os, når kassereren skifter.
         </p>
         <PeopleForm people={club.people as any} />
-      </section>
+      </section>}
 </>}
 {section === 'oversigt' && <>
   {toEnter.length > 0 && <Link href="/admin/bookinger" className="block rounded-xl border border-court/30 bg-court/5 p-4 font-semibold">{toEnter.length} bookinger skal føres ind i jeres system →</Link>}
   {!selectedSports.length && <Link href="/admin/baner" className="block rounded-xl bg-court/5 p-4 font-semibold">Kom i gang: Vælg sportsgrene og opret baner eller borde →</Link>}
   {stripeOn && !club.stripeChargesEnabled && <Link href="/admin/betaling" className="block rounded-xl bg-court/5 p-4 font-semibold">Opsæt udbetalinger, så gæster kan betale →</Link>}
-  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter(p => p.id !== 'oversigt').map(p => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : p.label} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{p.description}</p></Link>)}</div>
+  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter(p => clubHasSection(club.solutionMode, p.id)).filter(p => p.id !== 'oversigt').map(p => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : p.label} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{p.description}</p></Link>)}</div>
 </>}
 {section === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>Ledige tider styres gennem klubbens bookingsystem.</p><Link href="/admin/integrationer" className="font-semibold text-court underline">Åbn bookingsystemets indstillinger</Link></div>}
 </div></div></div>
