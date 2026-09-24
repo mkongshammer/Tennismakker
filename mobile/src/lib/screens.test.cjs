@@ -137,3 +137,55 @@ test('court selection shows exact details; back does not book and confirmation i
   assert.equal(tree.root.findAllByType('BookingReview').length, 0);
   await act(() => tree.unmount());
 });
+
+function doorProfile(booking, openDoor, alerts) {
+  return loadSource('../screens/ProfileScreen.js', {
+    'react-native': { Linking: {}, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },
+    '../lib/useScreenData': { useScreenData: () => ({ data: { bookings: [booking], repeatable: [] }, refresh: async () => {} }) },
+    '../lib/feedback': { feedback: { alert: (...args) => alerts.push(args) } },
+    '../lib/api': { api: { openDoor }, checkoutUrl: value => value },
+    '../lib/auth': { useAuth: () => ({ user: { id: 'member', name: 'Test', level: 3 } }) },
+    '../lib/PlayAgain': { PlayAgain: 'PlayAgain' },
+    '../lib/ui': Object.fromEntries(['Badge','Button','Card','ErrorMessage','Loading'].map(x => [x,x])),
+    '../lib/theme': { colors: {}, LEVELS: {} },
+    '../lib/dates': { dateTimeLong: d => d.toISOString() },
+    '../lib/NotificationSettings': { NotificationSettings: 'NotificationSettings' },
+  }).default;
+}
+function doorBooking() {
+  return { id: 'booking', title: 'Bane 2', status: 'CONFIRMED', startsAt: new Date().toISOString(), priceKr: 100,
+    access: { label: 'Indgang', availableFrom: new Date(Date.now()-60000).toISOString(), availableUntil: new Date(Date.now()+60000).toISOString() } };
+}
+test('door button sends once on double tap, shows loading and distinguishes command from physical opening', async () => {
+  const pending=deferred(), alerts=[];let calls=0,tree;
+  const Profile=doorProfile(doorBooking(),id=>{assert.equal(id,'booking');calls++;return pending.promise;},alerts);
+  await act(async()=>{tree=create(React.createElement(Profile,{navigation:{}}));});
+  try {
+    const button=()=>tree.root.findAllByType('Button').find(n=>n.props.title==='Åbn Indgang');let first;
+    await act(async()=>{const press=button().props.onPress;first=press();press();});
+    assert.equal(calls,1);assert.equal(button().props.loading,true);assert.equal(button().props.disabled,true);
+    await act(async()=>{pending.resolve({label:'Indgang',unlockSeconds:5});await first;});
+    assert.equal(button().props.loading,false);assert.equal(button().props.disabled,false);
+    assert.equal(alerts[0][0],'Døråbning sendt');assert.match(alerts[0][1],/5 sekunder/);assert.match(alerts[0][1],/Kontrollér at døren åbner/);
+  } finally {await act(()=>tree.unmount());}
+});
+test('door button shows controller error and permits retry', async () => {
+  const alerts=[];let calls=0,tree;
+  const Profile=doorProfile(doorBooking(),async()=>{calls++;throw Error('Controller offline');},alerts);
+  await act(async()=>{tree=create(React.createElement(Profile,{navigation:{}}));});
+  try {
+    const button=()=>tree.root.findAllByType('Button').find(n=>n.props.title==='Åbn Indgang');
+    await act(()=>button().props.onPress());assert.deepEqual(alerts[0],['Kunne ikke åbne døren','Controller offline']);assert.equal(button().props.disabled,false);
+    await act(()=>button().props.onPress());assert.equal(calls,2);
+  } finally {await act(()=>tree.unmount());}
+});
+test('door button is absent before/after access window and for unconfirmed bookings', async () => {
+  for(const scenario of ['before','after','cancelled','hold']) {
+    const b=doorBooking();if(scenario==='before')b.access.availableFrom=new Date(Date.now()+60000).toISOString();
+    if(scenario==='after')b.access.availableUntil=new Date(Date.now()-60000).toISOString();
+    if(scenario==='cancelled')b.status='CANCELLED';if(scenario==='hold')b.status='HOLD';
+    const Profile=doorProfile(b,()=>{throw Error('Must not send');},[]);let tree;
+    await act(async()=>{tree=create(React.createElement(Profile,{navigation:{}}));});
+    try{assert.equal(tree.root.findAllByType('Button').filter(n=>n.props.title==='Åbn Indgang').length,0,scenario);}finally{await act(()=>tree.unmount());}
+  }
+});

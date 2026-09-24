@@ -13,12 +13,13 @@
     "setup": "npm run db:push && npm run db:seed",
     "images:migrate": "tsx prisma/migrate-images.ts",
     "test:database": "node --import tsx scripts/test-club-database.ts",
-    "test:app": "node --import tsx scripts/test-club-database.ts --http"
+    "test:app": "node --import tsx scripts/test-club-database.ts --http",
+    "test:control": "node --import tsx scripts/test-club-control.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
-  "//": "Byggeværktøjerne ligger bevidst i dependencies, ikke devDependencies: Render sætter NODE_ENV=production og springer devDependencies over ved install, og så fejler bygningen på manglende tailwind/typescript.",
+  "//": "Byggev\u00e6rkt\u00f8jerne ligger bevidst i dependencies, ikke devDependencies: Render s\u00e6tter NODE_ENV=production og springer devDependencies over ved install, og s\u00e5 fejler bygningen p\u00e5 manglende tailwind/typescript.",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1121.0",
     "@prisma/client": "^5.22.0",
