@@ -2,6 +2,7 @@ import { clubHasSection } from "../../lib/club-features";
 import { MemberForm } from "./MemberForm";
 import { WalletForm } from "./WalletForm";
 import { ManualLights } from "./ManualLights";
+import { ResasportsForm } from "./ResasportsForm";
 import { ImportForm } from "./ImportForm";
 import {WalletBalances} from "./WalletBalances";
 import React from "react";
@@ -660,7 +661,7 @@ export default async function AdminPageContent({
       </section>
 </>}
 {section === 'integrationer' && <>
-{club.solutionMode === 'CUSTOM' && <ImportForm/>}
+{club.solutionMode === 'CUSTOM' && <><ResasportsForm courts={club.courts.map(c=>({id:c.id,name:c.name}))}/><ImportForm/></>}
 <section>
         <h2 className="display mb-1 text-2xl">Sådan finder vi jeres ledige tider</h2>
         <p className="mb-4 text-sm text-slate/60">

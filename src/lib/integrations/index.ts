@@ -54,14 +54,16 @@ const BOOKING_FRESHNESS_MS = 60_000;
 export async function refreshBeforeBooking(clubId: string): Promise<void> {
   const club = await db.club.findUnique({
     where: { id: clubId },
-    select: { integrationType: true, icalUrl: true, lastSyncAt: true },
+    select: { integrationType: true, icalUrl: true, lastSyncAt: true, lastSyncError: true },
   });
-  if (!club || club.integrationType !== "ICAL" || !club.icalUrl) return;
+  if (!club || club.integrationType !== "ICAL") return;
+  if (!club.icalUrl) throw new Error("Klubbens kalenderforbindelse mangler. Kontakt klubben.");
 
   const age = club.lastSyncAt ? Date.now() - club.lastSyncAt.getTime() : Infinity;
-  if (age < BOOKING_FRESHNESS_MS) return;
+  if (age < BOOKING_FRESHNESS_MS && !club.lastSyncError) return;
 
-  await syncClubCalendar(clubId);
+  const result = await syncClubCalendar(clubId);
+  if (!result.ok) throw new Error("Klubbens ledige tider kunne ikke kontrolleres. Prøv igen senere.");
 }
 
 /**
@@ -90,6 +92,7 @@ export async function syncClubCalendar(clubId: string): Promise<{ ok: boolean; m
   try {
     const res = await fetch(club.icalUrl, {
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
       headers: { Accept: "text/calendar, text/plain" },
     });
     if (!res.ok) throw new Error(`Feed svarede ${res.status}`);
@@ -128,7 +131,7 @@ export async function syncClubCalendar(clubId: string): Promise<{ ok: boolean; m
     const message = err instanceof Error ? err.message : "Ukendt fejl";
     await db.club.update({
       where: { id: clubId },
-      data: { lastSyncAt: new Date(), lastSyncError: message },
+      data: { lastSyncError: message },
     });
     return { ok: false, message: `Synkronisering fejlede: ${message}` };
   }

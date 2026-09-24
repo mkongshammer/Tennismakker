@@ -11,7 +11,9 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "setup": "npm run db:push && npm run db:seed",
-    "images:migrate": "tsx prisma/migrate-images.ts"
+    "images:migrate": "tsx prisma/migrate-images.ts",
+    "test:database": "node --import tsx scripts/test-club-database.ts",
+    "test:app": "node --import tsx scripts/test-club-database.ts --http"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -44,5 +46,9 @@
   },
   "overrides": {
     "postcss": "$postcss"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-socket": "^0.2.11"
   }
 }

@@ -32,7 +32,7 @@ async function openingHourSlots(
   for (let day = new Date(from); day <= until; day = addDays(day, 1)) {
     for (let h = club.openHour; h < club.closeHour; h++) {
       const startsAt = hourDate(day, h);
-      if (startsAt < now || startsAt > until) continue;
+      if (startsAt < now || startsAt < from || startsAt > until) continue;
       for (const court of club.courts) {
         slots.push({
           courtId: court.id,
@@ -55,17 +55,18 @@ async function openingHourSlots(
   return { club, slots };
 }
 
-/** Vores egne aktive bookinger i perioden, som nøgler "courtId_timestamp". */
-async function ownBookingKeys(courtIds: string[], from: Date, until: Date) {
+/** Active reservations that overlap a displayed slot, including partial hours. */
+async function ownBookings(courtIds: string[], from: Date, until: Date) {
   const bookings = await db.booking.findMany({
     where: {
       courtId: { in: courtIds },
-      status: { in: ["HOLD", "CONFIRMED"] },
-      startsAt: { gte: from, lte: until },
+      OR: [{status: "CONFIRMED"}, {status: "HOLD", OR: [{checkoutParams: {not: null}}, {holdExpiresAt: null}, {holdExpiresAt: {gt: new Date()}}]}],
+      endsAt: { gt: from },
+      startsAt: { lt: addHours(until, 24) },
     },
-    select: { courtId: true, startsAt: true },
+    select: { courtId: true, startsAt: true, endsAt: true },
   });
-  return new Set(bookings.map((b: any) => `${b.courtId}_${b.startsAt.getTime()}`));
+  return (slot: AvailableSlot) => bookings.some(b => b.courtId === slot.courtId && b.startsAt < slot.endsAt && b.endsAt > slot.startsAt);
 }
 
 // ---------------------------------------------------------------------------
@@ -78,13 +79,13 @@ export const nativeAdapter: BookingSystemAdapter = {
     const base = await openingHourSlots(clubId, from, until, isMember);
     if (!base) return { slots: [], needsClubEntry: false };
 
-    const taken = await ownBookingKeys(
+    const taken = await ownBookings(
       base.club.courts.map((c: any) => c.id),
       from,
       until
     );
     return {
-      slots: base.slots.filter((s) => !taken.has(`${s.courtId}_${s.startsAt.getTime()}`)),
+      slots: base.slots.filter((s) => !taken(s)),
       needsClubEntry: false,
     };
   },
@@ -184,7 +185,7 @@ export const manualAdapter: BookingSystemAdapter = {
     }
 
     // Træk vores egne bookinger fra
-    const taken = await ownBookingKeys(
+    const taken = await ownBookings(
       club.courts.map((c: any) => c.id),
       from,
       until
@@ -192,7 +193,7 @@ export const manualAdapter: BookingSystemAdapter = {
 
     return {
       slots: slots
-        .filter((s) => !taken.has(`${s.courtId}_${s.startsAt.getTime()}`))
+        .filter((s) => !taken(s))
         .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime()),
       needsClubEntry: true,
       note: "Bookinger skal føres ind i klubbens eget system.",
@@ -209,13 +210,16 @@ export const icalAdapter: BookingSystemAdapter = {
   async getAvailability({ clubId, from, until }: AdapterInput): Promise<AvailabilityResult> {
     const base = await openingHourSlots(clubId, from, until);
     if (!base) return { slots: [], needsClubEntry: true };
+    if (!base.club.lastSyncAt || base.club.lastSyncError || Date.now() - base.club.lastSyncAt.getTime() > 20 * 60_000) {
+      return { slots: [], needsClubEntry: true, note: "Klubbens kalender skal synkroniseres, før ledige tider kan vises." };
+    }
 
     const courtIds = base.club.courts.map((c: any) => c.id);
     const [busy, taken] = await Promise.all([
       db.externalBusy.findMany({
-        where: { courtId: { in: courtIds }, endsAt: { gte: from }, startsAt: { lte: until } },
+        where: { courtId: { in: courtIds }, endsAt: { gte: from }, startsAt: { lt: addHours(until, 24) } },
       }),
-      ownBookingKeys(courtIds, from, until),
+      ownBookings(courtIds, from, until),
     ]);
 
     const isBusy = (courtId: string, start: Date, end: Date) =>
@@ -225,7 +229,7 @@ export const icalAdapter: BookingSystemAdapter = {
 
     const slots = base.slots.filter(
       (s) =>
-        !taken.has(`${s.courtId}_${s.startsAt.getTime()}`) &&
+        !taken(s) &&
         !isBusy(s.courtId, s.startsAt, s.endsAt)
     );
 
