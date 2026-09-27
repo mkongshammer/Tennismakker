@@ -8,12 +8,15 @@ button and use the existing authenticated administration portal.
 
 ## Owner setup
 
-In `/superadmin/opsaetning`, save the Standard and Custom monthly prices with
+In `/superadmin/opsaetning`, save the monthly subscription and Custom setup price with
 “Gem priser og klargør Stripe”. This also configures the required Stripe webhook
-events. Stripe credentials must already be configured. Custom self-service sales
-are disabled until the owner sets a Custom price; no unconfirmed price is charged.
-Standard defaults to the existing 199 DKK/month. Existing agreements retain their
-stored price. Selected Custom modules share the published Custom monthly price.
+events. Stripe credentials must already be configured. Owner-confirmed pricing:
+all new clubs pay 199 DKK/month; Custom additionally costs 14,995 DKK once,
+regardless of module count. First Custom checkout totals 15,194 DKK. Later invoices
+are 199 DKK/month. Existing agreements retain their stored price rather than being
+silently repriced. Previously paid setup is not charged again upon restarting.
+Pricing uses the V2 settings key to avoid interpreting legacy monthly Custom
+prices as setup fees. Approval also verifies initial setup payment.
 
 ## Payment and permissions
 

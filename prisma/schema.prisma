@@ -72,6 +72,8 @@ model User {
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
   signupManaged Boolean @default(false)
+  signupSetupKr Int @default(0)
+  signupSetupPaidAt DateTime?
   customFeatures String?
   signupPaidAt DateTime?
   signupCheckoutId String?
