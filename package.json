@@ -13,7 +13,9 @@
     "setup": "npm run db:push && npm run db:seed",
     "images:migrate": "tsx prisma/migrate-images.ts",
     "test:database": "node --import tsx scripts/test-club-database.ts",
-    "test:app": "node --import tsx scripts/test-club-database.ts --http"
+    "test:app": "node --import tsx scripts/test-club-database.ts --http",
+    "test:control": "node --import tsx scripts/test-club-control.ts",
+    "test:onboarding": "node --import tsx scripts/test-club-onboarding.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -6,7 +6,7 @@ import { loadIsolatedModule } from './testing/isolated-module';
 
 function fixture(role: string | null = 'SUPERADMIN', dbOverrides: any = {}) {
   const writes: any[] = []; let mails = 0;
-  const unused = ['date-fns', 'next/headers', './sports', './twofactor', './password-reset', './erasure', './deletion-guards', './billing', './club-rules', './fixed-slots', './system-blocks', './automation', './memberships', './punch-cards', './teams', './renewals', './packages', './slots', './coaching', './subscription', './payments', './integrations', './messages', './swipe', './reviews', './geocode', './preferences', './detect', './images', './connect', './rebook'];
+  const unused = ['./club-onboarding', 'date-fns', 'next/headers', './sports', './twofactor', './password-reset', './erasure', './deletion-guards', './billing', './club-rules', './fixed-slots', './system-blocks', './automation', './memberships', './punch-cards', './teams', './renewals', './packages', './slots', './coaching', './subscription', './payments', './integrations', './messages', './swipe', './reviews', './geocode', './preferences', './detect', './images', './connect', './rebook'];
   const actions = loadIsolatedModule('src/lib/actions.ts', {
     './court-reservation':{}, './club-management-actions':{requireCustomClub:async()=>({})},
     ...Object.fromEntries(unused.map(name => [name, {}])),

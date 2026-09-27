@@ -12,6 +12,7 @@ import {PGLiteSocketServer} from '@electric-sql/pglite-socket';
 import {PrismaClient} from '@prisma/client';
 import {loadIsolatedModule} from '../src/lib/testing/isolated-module';
 import * as importCore from '../src/lib/club-import-core';
+import * as features from '../src/lib/club-features';
 import * as walletPolicy from '../src/lib/wallet-policy';
 
 async function main(){
@@ -29,7 +30,7 @@ async function main(){
   const court=await db.court.create({data:{clubId:club.id,name:'Bane 1'}});
   const member=await db.user.create({data:{email:'member@example.invalid',name:'Test member',passwordHash:'unusable',clubId:club.id}});
   const admin=await db.user.create({data:{email:'admin@example.invalid',name:'Test admin',passwordHash:'unusable',clubId:club.id,role:'CLUB_ADMIN'}});
-  const management=loadIsolatedModule('src/lib/club-management-actions.ts',{'node:crypto':crypto,bcryptjs:bcrypt,'next/cache':{revalidatePath(){}},'./db':{db},'./session':{getCurrentUser:async()=>admin}});
+  const management=loadIsolatedModule('src/lib/club-management-actions.ts',{'./club-features':features,'node:crypto':crypto,bcryptjs:bcrypt,'next/cache':{revalidatePath(){}},'./db':{db},'./session':{getCurrentUser:async()=>admin}});
   const form=new FormData();form.set('email','new@example.invalid');form.set('name','New member');form.set('phone','12345678');
   const created=await management.addClubMember(null,form);assert.ok(created.password);const saved=await db.user.findUniqueOrThrow({where:{email:'new@example.invalid'}});assert.ok(await bcrypt.compare(created.password,saved.passwordHash));assert.equal(saved.clubId,club.id);check('Member creation stores working password, phone and own club');
   await db.user.create({data:{email:'other@example.invalid',name:'Other member',passwordHash:'unchanged',clubId:other.id}});form.set('email','other@example.invalid');assert.ok((await management.addClubMember(null,form)).error);assert.equal((await db.user.findUniqueOrThrow({where:{email:'other@example.invalid'}})).clubId,other.id);check('Member cannot be moved from another club');

@@ -18,6 +18,8 @@
 // indstilling i Stripe-panelet ellers får alle webhooks til at fejle tavst
 // — hvilket er præcis, hvad der skete første gang.
 import { confirmWalletTopup, freezeWalletForPayment, expireWalletTopup } from "../../../../lib/wallet";
+import {db} from "../../../../lib/db";
+import {refreshClubSignup} from "../../../../lib/club-onboarding";
 import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
@@ -36,6 +38,12 @@ export const dynamic = "force-dynamic";
 /** Behandler et event, uanset hvordan det kom ind. */
 async function handleEvent(type: string, object: any) {
   switch (type) {
+    case "invoice.paid":
+    case "invoice.payment_failed": {
+      const customerId=typeof object.customer==="string"?object.customer:object.customer?.id;
+      if(customerId){const club=await db.club.findFirst({where:{stripeCustomerId:customerId,signupManaged:true}});if(club)await refreshClubSignup(club.id);}
+      return;
+    }
     case "checkout.session.expired": {
       const id=object.metadata?.walletTopupId;
       if(id)await expireWalletTopup(id, object.id);

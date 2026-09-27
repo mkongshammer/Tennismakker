@@ -101,6 +101,7 @@ function MainTabs() {
   const desktop = Platform.OS === "web" && width >= 900;
   return (
     <Tabs.Navigator
+      initialRouteName={user?.role === "CLUB_ADMIN" ? "AdminTab" : "KlubberTab"}
       tabBar={props => desktop ? <DesktopNavigation {...props} /> : <BottomTabBar {...props} />}
       sceneContainerStyle={desktop ? { marginLeft: 232 } : undefined}
       screenOptions={{

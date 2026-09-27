@@ -10,6 +10,7 @@
 // produkter, der skal holdes i sync med `subscriptionKr`, ville være to
 // steder at rette det samme.
 
+import { refreshClubSignup, startOnboardingCheckout } from "./club-onboarding";
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { getSettings } from "./settings";
@@ -46,6 +47,7 @@ async function ensureCustomer(clubId: string): Promise<string> {
 export async function startSubscriptionCheckout(clubId: string): Promise<string> {
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) throw new Error("Klubben findes ikke.");
+  if (club.signupManaged) return startOnboardingCheckout(clubId);
   if (club.billingModel !== "SUBSCRIPTION") {
     throw new Error("Klubben er på provision, ikke abonnement.");
   }
@@ -130,6 +132,8 @@ export async function syncSubscription(subscription: {
     console.error("Abonnement uden klub:", subscription.id);
     return;
   }
+
+  if (club.signupManaged) { await refreshClubSignup(club.id); return; }
 
   await db.club.update({
     where: { id: club.id },

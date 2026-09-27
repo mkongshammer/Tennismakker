@@ -19,8 +19,9 @@ export function AuthProvider({ children }) {
   }, []);
   useEffect(() => { restore(); return onSessionExpired(() => { setUser(null); setSessionError(null); }); }, [restore]);
 
-  const login = async (email, password) => {
+  const login = async (email, password, clubOnly = false) => {
     const { token, user: u } = await api.login(email, password);
+    if (clubOnly && u.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
     await setToken(token);
     setUser(u);
   };

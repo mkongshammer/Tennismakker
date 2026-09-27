@@ -1,3 +1,4 @@
+import { CUSTOM_FEATURES } from "../../lib/club-features";
 import { setClubSolution } from "../../lib/club-management-actions";
 import React from "react";
 // Godkendelse af klubber.
@@ -172,6 +173,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                   </p>
                 </div>
 
+                {club.customFeatures && <p className="mt-3 text-sm">Valgte funktioner: {CUSTOM_FEATURES.filter(f=>JSON.parse(club.customFeatures!).includes(f.id)).map(f=>f.label).join(", ") || "Standard klubadministration"}</p>}
                 <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                   <div className="flex gap-2">
                     <dt className="text-slate/50">Adresse</dt>
@@ -225,10 +227,11 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                   hører til klubben — helst med et opkald.
                 </p>
 
+                {club.signupManaged && <p className="mt-3 text-xs text-slate">Godkend kræver bekræftet betaling. Afvis stopper abonnementet; allerede opkrævet beløb skal håndteres i Stripe ved eventuel tilbagebetaling.</p>}
                 <div className="mt-4 flex flex-wrap gap-2">
                   <form action={approveClub}>
                     <input type="hidden" name="id" value={club.id} />
-                    <button className="btn-ink">Godkend</button>
+                    <button disabled={club.signupManaged && !club.signupPaidAt} className="btn-ink disabled:opacity-40">{club.signupManaged && !club.signupPaidAt ? "Afventer betaling" : "Godkend og aktivér"}</button>
                   </form>
                   <form action={rejectClub} className="flex flex-1 gap-2">
                     <input type="hidden" name="id" value={club.id} />

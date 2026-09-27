@@ -16,6 +16,8 @@ import { getSettings, saveSettings } from "./settings";
 
 /** De events, appen skal have for at fungere. Se src/app/api/webhooks/stripe. */
 export const REQUIRED_EVENTS = [
+  "invoice.paid",
+  "invoice.payment_failed",
   "checkout.session.completed",
   "checkout.session.async_payment_succeeded",
   "checkout.session.expired",

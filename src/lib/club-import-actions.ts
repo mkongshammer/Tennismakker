@@ -6,7 +6,7 @@ import {requireCustomClub} from './club-management-actions';
 import {parseClubCsv,importDate} from './club-import-core';
 export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:string;error?:string;preview?:string;digest?:string}>{
  try {
-  const {club}=await requireCustomClub();
+  const {club}=await requireCustomClub('import');
   const text=String(form.get('csv')??''),source=String(form.get('source')??'').trim();
   if(!source||source.length>80)throw Error('Angiv kildesystemet, fx Resasports.');
   const rows=parseClubCsv(text);

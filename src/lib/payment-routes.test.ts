@@ -13,7 +13,7 @@ function webhookFixture(t: any) {
   let bookings = 0; let packages = 0;
   t.mock.method(client.events, "retrieve", () => { throw new Error("Unexpected network call"); });
   const { POST } = loadIsolatedModule("src/app/api/webhooks/stripe/route.ts", {
-    "../../../../lib/wallet":{},
+    "../../../../lib/wallet":{}, "../../../../lib/db":{}, "../../../../lib/club-onboarding":{},
     "../../../../lib/stripe": { stripe: async () => client },
     "../../../../lib/settings": { getSettings: async () => ({ stripeWebhookSecret: secret }) },
     "../../../../lib/payments": { confirmBookingPayment: async (id: string, proof: validation.BookingPaymentProof) => {

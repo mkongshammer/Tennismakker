@@ -29,7 +29,7 @@ test('fixed bookings preserve Danish time across summer/winter switch',()=>{
 });
 test('custom actions deny other roles and standard clubs before writes',async()=>{
  for(const role of ['PLAYER','CLUB_ADMIN']){
-  const api=loadIsolatedModule('src/lib/club-management-actions.ts',{'node:crypto':{},bcryptjs:{},'next/cache':{},'./session':{getCurrentUser:async()=>({role,clubId:'c'})},'./db':{db:{club:{findUnique:async()=>({solutionMode:'STANDARD'})}}}});
+  const api=loadIsolatedModule('src/lib/club-management-actions.ts',{'./club-features':{},'node:crypto':{},bcryptjs:{},'next/cache':{},'./session':{getCurrentUser:async()=>({role,clubId:'c'})},'./db':{db:{club:{findUnique:async()=>({solutionMode:'STANDARD'})}}}});
   await assert.rejects(api.requireCustomClub());
  }
 });

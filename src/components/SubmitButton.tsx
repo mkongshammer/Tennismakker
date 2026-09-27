@@ -40,10 +40,12 @@ function Spinner() {
 export function SubmitButton({
   children,
   pendingText,
+  disabled = false,
   className = "btn-court",
 }: {
   children: React.ReactNode;
   pendingText?: string;
+  disabled?: boolean;
   className?: string;
 }) {
   const { pending } = useFormStatus();
@@ -51,7 +53,7 @@ export function SubmitButton({
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={pending || disabled}
       aria-busy={pending}
       className={`${className} ${pending ? "cursor-wait opacity-80" : ""}`}
     >

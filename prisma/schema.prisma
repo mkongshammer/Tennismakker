@@ -71,6 +71,11 @@ model User {
 //   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
+  signupManaged Boolean @default(false)
+  customFeatures String?
+  signupPaidAt DateTime?
+  signupCheckoutId String?
+  signupCheckoutAttempt Int @default(0)
   walletEnabled Boolean @default(false)
   walletTiers String @default("[]")
   solutionMode String @default("STANDARD")

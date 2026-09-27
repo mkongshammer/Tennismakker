@@ -27,7 +27,7 @@ export async function getClubAvailability(
   opts: { isMember?: boolean } = {}
 ): Promise<AvailabilityResult> {
   const club = await db.club.findUnique({ where: { id: clubId } });
-  if (!club) return { slots: [], needsClubEntry: false };
+  if (!club || club.status !== "APPROVED") return { slots: [], needsClubEntry: false };
   return adapterFor(club.integrationType).getAvailability({
     clubId,
     from,

@@ -1,14 +1,16 @@
 'use server';
+import {clubHasFeature,type CustomFeature} from './club-features';
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { db } from './db';
 import { getCurrentUser } from './session';
-export async function requireCustomClub() {
+export async function requireCustomClub(feature?:CustomFeature) {
   const user=await getCurrentUser();
   if(user?.role!=='CLUB_ADMIN' || !user.clubId) throw Error('Kun klubbens administrator har adgang.');
   const club=await db.club.findUnique({where:{id:user.clubId}});
   if(club?.solutionMode!=='CUSTOM')throw Error('Denne funktion kræver en custom-klubløsning.');
+  if(feature&&!clubHasFeature(club.solutionMode,club.customFeatures,feature))throw Error('Denne funktion er ikke valgt i klubbens abonnement.');
   return {user,club};
 }
 export async function setClubSolution(form:FormData) {
@@ -20,7 +22,7 @@ export async function setClubSolution(form:FormData) {
 }
 export async function addClubMember(_prev:unknown,form:FormData):Promise<{ok?:string;error?:string;password?:string;email?:string}> {
   try {
-    const {club}=await requireCustomClub();
+    const {club}=await requireCustomClub('medlemmer');
     const email=String(form.get('email')??'').trim().toLowerCase(),name=String(form.get('name')??'').trim(),phone=String(form.get('phone')??'').trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||name.length<2||name.length>150||phone.length>40)throw Error('Udfyld et gyldigt navn, e-mail og telefonnummer.');
     const typeId=String(form.get('typeId')??'');

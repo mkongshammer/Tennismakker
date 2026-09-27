@@ -45,8 +45,8 @@ export default function CustomPage() {
           Booking, hjemmeside, lysstyring, adgang, betaling og integrationer — bygget som én samlet løsning omkring jeres klub i stedet for endnu et standardsystem, I skal tilpasse jer til.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <a href="#book-moede" className="rounded-xl bg-court px-5 py-3 font-semibold text-chalk hover:bg-court-dark">
-            Book et møde
+          <a href="/opret-klub" className="rounded-xl bg-court px-5 py-3 font-semibold text-chalk hover:bg-court-dark">
+            Vælg custom-løsning og opret klub
           </a>
           <a href="#loesninger" className="rounded-xl border border-chalk/25 px-5 py-3 font-semibold text-chalk hover:bg-chalk/10">
             Se mulighederne

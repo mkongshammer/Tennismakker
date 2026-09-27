@@ -1,4 +1,5 @@
 "use server";
+import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
 import {createCourtReservation} from "./court-reservation";
 import { requireCustomClub } from "./club-management-actions";
 import { clubSports, validateCourtSport } from "./club-sports";
@@ -199,7 +200,7 @@ export async function login(_prev: unknown, formData: FormData) {
   }
 
   await createSession(user.id);
-  redirect("/profil");
+  redirect(user.role === "CLUB_ADMIN" ? "/admin" : "/profil");
 }
 
 /** Andet trin: koden fra mailen. */
@@ -1270,7 +1271,7 @@ export async function removeSystemLogin() {
 // ---------------- Priser efter tidspunkt ----------------
 
 export async function addPriceRule(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('priser');
   const { clubId } = await requireClubAdmin();
 
   const fromHour = Number(formData.get("fromHour") ?? 0);
@@ -1316,7 +1317,7 @@ export async function addPriceRule(_prev: unknown, formData: FormData) {
 }
 
 export async function removePriceRule(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('priser');
   const { clubId } = await requireClubAdmin();
   await db.priceRule.deleteMany({
     where: { id: String(formData.get("ruleId") ?? ""), clubId },
@@ -1399,7 +1400,7 @@ export async function removeCourt(formData: FormData) {
 // ---------------- Sæsonhold ----------------
 
 export async function createSeasonTeam(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hold');
   const { clubId } = await requireClubAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -1435,7 +1436,7 @@ export async function createSeasonTeam(_prev: unknown, formData: FormData) {
 }
 
 export async function closeSeasonTeam(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hold');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("teamId") ?? "");
   await db.seasonTeam.updateMany({ where: { id, clubId }, data: { active: false } });
@@ -1457,7 +1458,7 @@ export async function joinSeasonTeam(formData: FormData) {
 // ---------------- Klubbens klippekort ----------------
 
 export async function createPunchCard(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('priser');
   const { clubId } = await requireClubAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -1485,7 +1486,7 @@ export async function createPunchCard(_prev: unknown, formData: FormData) {
 }
 
 export async function closePunchCard(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('priser');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("cardId") ?? "");
   await db.clubPunchCard.updateMany({ where: { id, clubId }, data: { active: false } });
@@ -1528,7 +1529,7 @@ export async function toggleAutoRenew(formData: FormData) {
 // ---------------- Kontingent ----------------
 
 export async function createMembershipType(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('medlemmer');
   const { clubId } = await requireClubAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
@@ -1565,7 +1566,7 @@ export async function createMembershipType(_prev: unknown, formData: FormData) {
  * betalt.
  */
 export async function closeMembershipType(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('medlemmer');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("typeId") ?? "");
   await db.membershipType.updateMany({ where: { id, clubId }, data: { active: false } });
@@ -1573,7 +1574,7 @@ export async function closeMembershipType(formData: FormData) {
 }
 
 export async function openMembershipType(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('medlemmer');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("typeId") ?? "");
   await db.membershipType.updateMany({ where: { id, clubId }, data: { active: true } });
@@ -1600,7 +1601,7 @@ export async function joinClubMembership(formData: FormData) {
 // ---------------- Faste baner ----------------
 
 export async function assignFixedSlot(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('faste-bookinger');
   const { clubId } = await requireClubAdmin();
 
   const courtIds = [...new Set(formData.getAll("courtId").map(String))];
@@ -1637,7 +1638,7 @@ export async function assignFixedSlot(_prev: unknown, formData: FormData) {
 }
 
 export async function dropFixedSlot(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('faste-bookinger');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("slotId") ?? "");
 
@@ -1655,7 +1656,7 @@ export async function dropFixedSlot(formData: FormData) {
 // ---------------- Bestyrelsen på klubsiden ----------------
 
 export async function addClubPerson(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   // clubId kommer fra sessionen, ikke fra formularen. Et skjult felt kan
   // ændres af den, der sender det.
   const { clubId } = await requireClubAdmin();
@@ -1685,7 +1686,7 @@ export async function addClubPerson(_prev: unknown, formData: FormData) {
 }
 
 export async function removeClubPerson(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   const { clubId } = await requireClubAdmin();
   const id = String(formData.get("personId") ?? "");
 
@@ -1731,29 +1732,10 @@ export async function approveClub(formData: FormData) {
   await requireSuperadmin();
   const id = String(formData.get("id"));
 
-  const club = await db.club.update({
-    where: { id },
-    data: { status: "APPROVED", approvedAt: new Date(), reviewNote: null },
-    include: { members: true },
-  });
-
-  // Fortæl klubben at de er på
-  for (const admin of club.members.filter((m: any) => m.role === "CLUB_ADMIN")) {
-    await sendMail({
-      to: admin.email,
-      subject: `${club.name} er nu på RacketBuddy`,
-      body: [
-        `Hej ${admin.name}`,
-        ``,
-        `${club.name} er godkendt og synlig for spillere.`,
-        ``,
-        `Næste schalk: frigiv de tider, gæster må booke.`,
-        `${(await getSettings()).appUrl}/admin`,
-        ``,
-        `RacketBuddy`,
-      ].join("\n"),
-    });
-  }
+  const candidate=await db.club.findUniqueOrThrow({where:{id}});
+  if(candidate.signupManaged){
+    await approvePaidSignup(id);
+  }else await db.club.update({where:{id},data:{status:'APPROVED',approvedAt:new Date(),reviewNote:null}});
 
   revalidatePath("/superadmin", "layout");
   revalidatePath("/book");
@@ -1764,10 +1746,9 @@ export async function rejectClub(formData: FormData) {
   const id = String(formData.get("id"));
   const note = String(formData.get("note") ?? "").trim();
 
-  await db.club.update({
-    where: { id },
-    data: { status: "REJECTED", reviewNote: note || null },
-  });
+  const candidate=await db.club.findUniqueOrThrow({where:{id}});
+  if(candidate.signupManaged)await rejectPaidSignup(id,note);
+  else await db.club.update({where:{id},data:{status:'REJECTED',reviewNote:note||null}});
 
   revalidatePath("/superadmin", "layout");
 }
@@ -2066,7 +2047,7 @@ export async function setLastMinute(formData: FormData) {
 // hjemmeside. Så det, de skriver her, ER klubbens ansigt udadtil.
 
 export async function updateClubSite(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   const { clubId } = await requireClubAdmin();
 
   const color = String(formData.get("color") ?? "").trim();
@@ -2136,7 +2117,7 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
 }
 
 export async function createPost(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('nyheder');
   const { clubId } = await requireClubAdmin();
 
   const title = String(formData.get("title") ?? "").trim();
@@ -2152,7 +2133,7 @@ export async function createPost(_prev: unknown, formData: FormData) {
 }
 
 export async function deletePost(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('nyheder');
   const { clubId } = await requireClubAdmin();
   await db.clubPost.deleteMany({
     where: { id: String(formData.get("id")), clubId },
@@ -2286,6 +2267,7 @@ export async function updateOrderStatus(formData: FormData) {
  * — det er blandt andet det, opsætningsgebyret dækker.
  */
 export async function setCustomDomain(_prev: unknown, formData: FormData) {
+  if ((await getCurrentUser())?.role === "CLUB_ADMIN") await requireCustomClub("hjemmeside");
   // Både superadmin og klubbens egen administrator. Klubben skal selv kunne
   // skrive sit domæne ind — DNS-posten skal de oprette alligevel, og at
   // skulle skrive til os for at få feltet udfyldt er et led for meget.
@@ -2344,7 +2326,7 @@ export async function markDomainLive(formData: FormData) {
 
 /** Skifter klubbens tema. */
 export async function setTheme(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   const { clubId } = await requireClubAdmin();
   const theme = String(formData.get("theme"));
   if (!["KLASSISK", "MARKANT", "ENKEL"].includes(theme)) return;
@@ -2355,7 +2337,7 @@ export async function setTheme(formData: FormData) {
 // ---------------- Billeder ----------------
 
 export async function uploadImage(_prev: unknown, formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   const { clubId } = await requireClubAdmin();
 
   const kind = String(formData.get("kind") ?? "PHOTO");
@@ -2382,7 +2364,7 @@ export async function uploadImage(_prev: unknown, formData: FormData) {
 }
 
 export async function deleteImage(formData: FormData) {
-  await requireCustomClub();
+  await requireCustomClub('hjemmeside');
   const { clubId } = await requireClubAdmin();
   await removeImage(clubId, String(formData.get("id")));
 

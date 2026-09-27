@@ -9,7 +9,7 @@ import {moneyOre,walletCredit} from './wallet-policy';
 import {startWalletTopup} from './wallet';
 export async function saveWallet(_prev:unknown,form:FormData):Promise<{ok?:string;error?:string}> {
  try {
-  const {club}=await requireCustomClub();
+  const {club}=await requireCustomClub('priser');
   if(form.get('enabled')==='on'&&(await inspectWebhook()).status!=='ok')throw Error('Opdatér først Stripe-webhooken under superadmin → Platformindstillinger, så refunderinger og indsigelser kan modtages.');
   const tiers=[];
   for(let i=0;i<3;i++)if(String(form.get(`paid${i}`)??'').trim())tiers.push({paidOre:moneyOre(form.get(`paid${i}`)),creditOre:moneyOre(form.get(`credit${i}`))});

@@ -43,7 +43,7 @@ export default function LoginScreen() {
     lock.current = true;
     setBusy(true);
     try {
-      if (mode === "login") await login(email.trim().toLowerCase(), password);
+      if (mode !== "signup") await login(email.trim().toLowerCase(), password, mode === "club");
       else await signup({ email: email.trim().toLowerCase(), password, name: name.trim(), area, level: 3 });
     } catch (e) {
       setError(e.message);
@@ -63,7 +63,7 @@ export default function LoginScreen() {
           Racket<Text style={{ color: colors.court }}>Buddy</Text>
         </Text>
         <Text style={styles.tagline}>
-          Find en makker på dit niveau, book en træner, eller find en ledig bane.
+          {mode === "club" ? "Klublogin — log ind med jeres klubadministratorkonto." : "Find en makker på dit niveau, book en træner, eller find en ledig bane."}
         </Text>
 
         {mode === "signup" && (
@@ -102,7 +102,7 @@ export default function LoginScreen() {
           onSubmitEditing={submit}
         />
         {mode === "signup" && <Text style={{ marginTop: 6, color: colors.slate }}>Mindst 8 tegn.</Text>}
-        {mode === "login" && <Pressable accessibilityRole="link" onPress={() => Linking.openURL("https://racketbuddy.app/login/glemt").catch(() => setError("Kunne ikke åbne siden. Prøv igen."))}>
+        {mode !== "signup" && <Pressable accessibilityRole="link" onPress={() => Linking.openURL("https://racketbuddy.app/login/glemt").catch(() => setError("Kunne ikke åbne siden. Prøv igen."))}>
           <Text style={[styles.switch, { textAlign: "right", paddingVertical: 10, marginTop: 4 }]}>Glemt adgangskode?</Text>
         </Pressable>}
 
@@ -132,12 +132,13 @@ export default function LoginScreen() {
 
         <View style={{ marginTop: 16 }}>
           <Button
-            title={mode === "login" ? "Log ind" : "Opret profil"}
+            title={mode === "club" ? "Log ind på klubben" : mode === "login" ? "Log ind" : "Opret profil"}
             onPress={submit}
             loading={busy}
           />
         </View>
 
+        <View style={{marginTop:12}}><Button variant="quiet" title={mode === "club" ? "Tilbage til spiller- og trænerlogin" : "Klublogin"} disabled={busy} onPress={()=>{setMode(mode === "club" ? "login" : "club");setError(null);}}/></View>
         <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}>
           <Text style={styles.switch}>
             {mode === "login" ? "Ny her? Opret profil" : "Har du en konto? Log ind"}

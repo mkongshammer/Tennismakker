@@ -22,7 +22,7 @@ import {
 type FormResult = { ok?: string; error?: string } | null;
 
 async function requireClubAdmin() {
-  await requireCustomClub();
+  await requireCustomClub('lys-adgang');
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
