@@ -93,15 +93,12 @@ async function main(){
     }check('New ecosystem landing renders in all six locales, with working discovery form, local hero asset and regional terms links');
     for(const locale of ['da','en','en-US','de','sv','no'] as Locale[]){
      const headers={Cookie:`rb_prefs_country=DK; rb_prefs_locale=${locale}`};
-     const custom=await fetch(origin+'/custom',{headers}),customHtml=await custom.text();assert.equal(custom.status,200);
-     for(const label of ['Få bygget præcis det system jeres klub har brug for','Hjemmeside','Adgangskontrol','Sådan arbejder vi','Hvad vil I gerne have bygget?','Hvornår passer et møde bedst?','Fortæl kort om jeres behov','Book et møde'])assert.ok(customHtml.includes(phrase(label,locale)),`${locale}: ${label}`);
-     if(locale!=='da')assert.ok(!customHtml.includes('>Få bygget præcis det system jeres klub har brug for<'));
-     assert.ok(customHtml.includes('href="/opret-klub?plan=CUSTOM"'));
+     const custom=await fetch(origin+'/custom',{headers,redirect:'manual'});assert.equal(custom.status,308);assert.equal(custom.headers.get('location'),'/opret-klub');
      const signup=await fetch(origin+'/opret-klub?plan=CUSTOM',{headers}),signupHtml=await signup.text();assert.equal(signup.status,200);
      for(const label of ['Kom i gang med jeres klub','1. Vælg jeres løsning','2. Klub og baner','3. Opret klublogin','Valuta for klubbookinger','Antal baner','Opret klub og fortsæt til betaling'])assert.ok(signupHtml.includes(phrase(label,locale)),`${locale}: signup ${label}`);
-    }check('Club marketing, meeting form and club signup render in all six languages');
+    }check('Retired club page redirects to pricing and club signup renders in all six languages');
     const cleanHome=await fetch(origin+'/',{headers:{Cookie:'rb_prefs_country=DK; rb_prefs_locale=en'}}),cleanHtml=await cleanHome.text();const headerNav=cleanHtml.match(/<nav\b[^>]*>([\s\S]*?)<\/nav>/)![1];
-    for(const path of ['/book','/traenere','/spillere','/beskeder'])assert.ok(!headerNav.includes(`href="${path}"`),`Duplicate home navigation ${path}`);assert.ok(headerNav.includes('href="/custom"'));
+    for(const path of ['/book','/traenere','/spillere','/beskeder','/custom'])assert.ok(!headerNav.includes(`href="${path}"`),`Duplicate or retired home navigation ${path}`);assert.ok(headerNav.includes('href="/opret-klub"'));
     const discovery=cleanHtml.split('id="find-dit-spil"')[1].split('</form>')[0];assert.ok(!discovery.includes('<select'));assert.ok(discovery.includes('aria-haspopup="dialog"'));assert.ok(discovery.includes('type="hidden" name="country"'));assert.ok(discovery.includes('type="hidden" name="sport"'));
     const sportsList=cleanHtml.match(/<ul\b[^>]*>([\s\S]*?)<\/ul>/)![1];assert.ok(sportsList.includes('Pickleball'));assert.ok(sportsList.includes('Table tennis'));assert.ok(!/<(?:button|a|form)\b/.test(sportsList));check('Landing navigation is concise; discovery uses panels and sports coverage is informational');
     const heroResponse=await fetch(origin+'/images/club-life-hero.webp');assert.equal(heroResponse.status,200);assert.match(heroResponse.headers.get('content-type')??'',/image\/webp/);const hero=Buffer.from(await heroResponse.arrayBuffer());assert.equal(hero.subarray(0,4).toString(),'RIFF');assert.equal(hero.subarray(8,12).toString(),'WEBP');assert.ok(hero.length>10000&&hero.length<500000);check('Hero image is served as a compressed WebP asset through the production server');
