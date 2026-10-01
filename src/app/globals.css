@@ -181,6 +181,16 @@ body {
   font-size: 10px !important;
 }
 
+.landing-search {
+  scroll-margin-top: 100px;
+  border: 1px solid rgba(84, 103, 126, .16);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 10px 40px -20px rgba(15, 33, 56, .22);
+}
+.landing-search select { cursor: pointer; }
+.landing-link { min-height: 275px; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

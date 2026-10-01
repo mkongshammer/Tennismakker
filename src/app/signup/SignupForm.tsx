@@ -2,6 +2,7 @@
 
 import { MARKETS,CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
 import Link from "next/link";
+import { termsHref } from "../../lib/legal-market";
 import { useState } from "react";
 import { useFormState } from "react-dom";
 import { signup } from "./actions";
@@ -140,7 +141,7 @@ export function SignupForm({
 
       <p className="text-sm text-slate">
         {terms.before}
-        <Link href="/vilkaar" className="font-semibold text-court underline">{terms.termsText}</Link>
+        <Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>
         {terms.middle}
         <Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>
         {terms.after}

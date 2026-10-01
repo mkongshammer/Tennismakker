@@ -109,12 +109,13 @@ export default async function RootLayout({
                 Racket<span className="text-court">Buddy</span>
               </p>
               <p className="mt-1 text-sm text-slate">{phrase('Ketsjersport samlet ét sted',prefs.locale)}</p>
-              <p className="mt-1 text-sm text-slate">{t("availability.soon")}</p>
+              <p className="mt-1 text-sm text-slate">{phrase("Book en bane. Find en træner. Saml klubben.",prefs.locale)}</p>
               <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
                 <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
                 <Link href="/hjemmeside" className="hover:text-ink">{phrase('Hjemmeside til klubben',prefs.locale)}</Link>
                 <Link href="/app" className="hover:text-ink">App</Link>
-                <Link href="/vilkaar" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)}</Link>
+                <Link href="/vilkaar/eu" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · EU / EEA</Link>
+                <Link href="/vilkaar/usa" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · USA</Link>
                 <Link href="/privatliv" className="hover:text-ink">{phrase('Privatliv',prefs.locale)}</Link>
                 <Link href="/databehandleraftale" className="hover:text-ink">{phrase('Databehandleraftale',prefs.locale)}</Link>
               </div>

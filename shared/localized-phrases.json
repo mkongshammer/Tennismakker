@@ -4457,5 +4457,11 @@
     "de": "So kann ein Mitglied dieselbe Zeit dort nicht buchen. Danach ist die Zeit nur hier verfügbar. Trage den Namen des Gastes in dein System ein, sobald er bucht.",
     "sv": "Då kan en medlem inte boka samma tid där. Därefter finns tiden bara här; när en gäst bokar skriver ni in namnet i ert system.",
     "no": "Da kan ikke et medlem booke samme tid der. Etterpå finnes tiden bare her; når en gjest booker, skriver dere inn navnet i deres system."
+  },
+  "Book en bane. Find en træner. Saml klubben.": {
+    "en": "Book a court. Find a coach. Bring your club together.",
+    "de": "Platz buchen. Trainer finden. Club vereinen.",
+    "sv": "Boka en bana. Hitta en tränare. Samla klubben.",
+    "no": "Book en bane. Finn en trener. Samle klubben."
   }
 }

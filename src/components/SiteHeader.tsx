@@ -105,7 +105,7 @@ export function SiteHeader({ user, locale }: Props) {
               </Link>
               <Link
                 href="/signup"
-                className="rounded-xl bg-court px-4 py-2.5 font-semibold text-chalk hover:bg-court-dark"
+                className="hidden rounded-xl bg-court px-4 py-2.5 font-semibold text-chalk hover:bg-court-dark sm:inline-flex"
               >
                 {t("nav.signup")}
               </Link>
