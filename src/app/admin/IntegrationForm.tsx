@@ -40,10 +40,10 @@ export function IntegrationForm({
 
             <span>
               <span className="block font-semibold">
-                {INTEGRATION_LABELS[t]}
+                {tr(INTEGRATION_LABELS[t])}
                 {t === "API" && <span className="ml-2 text-xs text-slate/50">{tr("(kommer senere)")}</span>}
               </span>
-              <span className="block text-sm text-slate/60">{INTEGRATION_HELP[t]}</span>
+              <span className="block text-sm text-slate/60">{tr(INTEGRATION_HELP[t])}</span>
             </span>
           </label>
         )}
@@ -81,8 +81,8 @@ export function IntegrationForm({
         </div>
       }
 
-      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-ink">{state.ok}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court">{tr(state.error)}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-ink">{tr(state.ok)}</p>}
       <button className="btn-court">{tr("Gem")}</button>
     </form>);
 

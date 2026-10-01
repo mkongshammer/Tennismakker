@@ -21,7 +21,7 @@ export async function setToken(token) {
 }
 
 async function request(path, { method = "GET", body, auth = true } = {}) {
-  const headers = { "Content-Type": "application/json" };
+  const headers = { "Content-Type": "application/json", "Accept-Language":getInternational().locale };
   let token;
   if (auth) {
     token = await getToken();
@@ -44,6 +44,8 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 }
 
 export const api = {
+  location:()=>request('/location',{auth:false}),
+  saveLocation:body=>request('/location',{method:'POST',body}),
   login: (email, password) =>
     request("/auth/login", { method: "POST", body: { email, password }, auth: false }),
   signup: (payload) =>

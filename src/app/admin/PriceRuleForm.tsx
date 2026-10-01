@@ -38,7 +38,7 @@ export function PriceRuleForm({ courts, rules }: {courts: Court[];rules: Rule[];
   const dayNames = (days: string) => {
     const list = days.split(",").map((s) => s.trim()).filter(Boolean);
     if (list.length === 0) return "alle dage";
-    return list.map((d) => DAYS[Number(d)] ?? "?").join(", ");
+    return list.map((d) => tr(DAYS[Number(d)] ?? "?")).join(", ");
   };
 
   return (
@@ -63,7 +63,7 @@ export function PriceRuleForm({ courts, rules }: {courts: Court[];rules: Rule[];
               </div>
               <form action={removePriceRule}>
                 <input type="hidden" name="ruleId" value={r.id} />
-                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Fjern")}
+                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Fjern")}
 
             </SubmitButton>
               </form>
@@ -109,7 +109,7 @@ export function PriceRuleForm({ courts, rules }: {courts: Court[];rules: Rule[];
             {DAYS.map((d, i) =>
             <label key={i} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="daysOfWeek" value={i} />
-                {d}
+                {tr(d)}
               </label>
             )}
           </div>
@@ -164,8 +164,8 @@ export function PriceRuleForm({ courts, rules }: {courts: Court[];rules: Rule[];
 
         </p>
 
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
         <SubmitButton pendingText={tr("Tilf\xF8jer\u2026")}>{tr("Tilf\xF8j prisregel")}</SubmitButton>
       </form>

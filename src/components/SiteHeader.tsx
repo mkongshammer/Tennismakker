@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { LanguagePicker } from "./LanguagePicker";
 import { translator } from "../lib/i18n";
+import {phrase} from '../lib/phrases';
 import type { Locale } from "../lib/sports";
 
 type Props = {
@@ -49,7 +50,7 @@ export function SiteHeader({ user, locale }: Props) {
           { href: "/admin", label: t("nav.admin") },
           { href: "/admin/custom", label: "Custom" },
         ]
-      : [{ href: "/custom", label: locale === "da" ? "Til klubber" : "For clubs" }]),
+      : [{ href: "/custom", label: phrase('Til klubber',locale) }]),
   ];
 
   const active = (href: string) =>

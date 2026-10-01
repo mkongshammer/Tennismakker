@@ -26,8 +26,8 @@ export type ControlView = {
 
 function Result({ state }: {state: {ok?: string;error?: string;} | null;}) {const { tr, money, currency, timeZone,locale } = useWebsiteInternational();
   return <div aria-live="polite">{state?.error ?
-    <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{state.error}</p> :
-    state?.ok ? <p className="rounded-lg bg-court/10 p-3 text-sm text-court-dark">{state.ok}</p> : null}</div>;
+    <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">{tr(state.error)}</p> :
+    state?.ok ? <p className="rounded-lg bg-court/10 p-3 text-sm text-court-dark">{tr(state.ok)}</p> : null}</div>;
 }
 
 function RelayStep({ device, number, saved, courts }: {device: Device;number: number;saved?: Channel;courts: Court[];}) {const { tr, money, currency, timeZone,locale } = useWebsiteInternational();
@@ -39,7 +39,7 @@ function RelayStep({ device, number, saved, courts }: {device: Device;number: nu
   const value = saved?.kind === "COURT_LIGHT" ? `COURT_LIGHT:${saved.courtId}` : saved?.kind ?? "";
   return <div className="space-y-4 rounded-2xl border border-slate/15 p-4 sm:p-6">
     <div><p className="text-xs text-slate">{device.name}{" " + tr("\xB7 ID") + " "}{device.externalId}</p>
-      <h4 className="mt-1 text-xl font-bold">{tr("Rel\xE6") + " "}{number + 1}: {saved?.label ?? "Hvad er tilsluttet?"}</h4>
+      <h4 className="mt-1 text-xl font-bold">{tr("Rel\xE6") + " "}{number + 1}: {saved?.label ?? tr("Hvad er tilsluttet?")}</h4>
       <p className="mt-1 text-sm text-slate">{tr("Rel\xE6") + " "}{number + 1}{" " + tr("svarer til kanal") + " "}{number}{" " + tr("i Shelly. Brug den kendte ledningsfordeling \u2014 g\xE6t ikke.")}</p></div>
     {editing || !saved ? <form action={mapAction} className="space-y-3">
       <input type="hidden" name="deviceId" value={device.id} /><input type="hidden" name="channel" value={number} />
@@ -58,12 +58,12 @@ function RelayStep({ device, number, saved, courts }: {device: Device;number: nu
       <p className="rounded-xl bg-court/10 p-3 font-semibold text-court-dark">{tr("\u2713 Testet og bekr\xE6ftet af klubben")}</p> : <>
         <form action={testAction} className="space-y-3">
           <input type="hidden" name="channelId" value={saved.id} />
-          <p className="text-sm">{tr("St\xE5 ved") + " "}{saved.label?.toLowerCase() ?? "installationen"}{tr(". Testen aktiverer rel\xE6et i 3 sekunder med automatisk sluk p\xE5 controlleren.")}</p>
+          <p className="text-sm">{tr("St\xE5 ved") + " "}{saved.label?.toLowerCase() ?? tr("installationen")}{tr(". Testen aktiverer rel\xE6et i 3 sekunder med automatisk sluk p\xE5 controlleren.")}</p>
           <label className="flex gap-3 rounded-lg bg-amber-50 p-3 text-sm">
             <input name="safeToTest" type="checkbox" required className="mt-1" />
             <span>{tr("Installationen er klar, og det er sikkert at teste nu. Jeg er p\xE5 stedet og kan se resultatet.")}</span>
           </label>
-          <SubmitButton pendingText={tr("Sender test\u2026")}>{saved.kind === "DOOR" ? "Test døren i 3 sekunder" : "Test lyset i 3 sekunder"}</SubmitButton><Result state={test} />
+          <SubmitButton pendingText={tr("Sender test\u2026")}>{saved.kind === "DOOR" ? tr("Test døren i 3 sekunder") : tr("Test lyset i 3 sekunder")}</SubmitButton><Result state={test} />
         </form>
         {saved.setupTestedAt && !saved.lastError && <form action={confirmAction} className="space-y-3 border-t border-slate/15 pt-4">
           <input type="hidden" name="channelId" value={saved.id} /><input type="hidden" name="testedAt" value={saved.setupTestedAt} />
@@ -98,26 +98,26 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
   const current = relays.find((r) => r.key === selected) ?? relays.find((r) => !r.saved?.setupConfirmedAt) ?? relays[0];
   return <div id="lys-og-adgang" className="space-y-5">
     <div className="rounded-2xl bg-mist p-5">
-      <p className="text-xl font-bold">{control?.enabled ? "Lys og adgang er aktiveret" : "Gør klubben klar — ét trin ad gangen"}</p>
-      <p className="mt-2 text-sm text-slate">{control?.enabled ? "Lys følger bookingerne. Spillere kan åbne døren i klubbens adgangsvindue." :
-        "Forbind controllerne, test hvad de styrer, og aktivér. Du kan lukke siden og fortsætte senere — gemte trin huskes."}</p>
+      <p className="text-xl font-bold">{control?.enabled ? tr("Lys og adgang er aktiveret") : tr("Gør klubben klar — ét trin ad gangen")}</p>
+      <p className="mt-2 text-sm text-slate">{control?.enabled ? tr("Lys følger bookingerne. Spillere kan åbne døren i klubbens adgangsvindue.") :
+        tr("Forbind controllerne, test hvad de styrer, og aktivér. Du kan lukke siden og fortsætte senere — gemte trin huskes.")}</p>
     </div>
     {control?.enabled ? <div className="space-y-4 rounded-2xl border border-court/25 p-5">
       <p className="font-semibold">✓ {devices.length}{" " + tr("controller(e) \xB7") + " "}{progress.active}{" " + tr("tilsluttede rel\xE6er")}</p>
       <p className="text-sm">{tr("Lys:") + " "}{control.lightsBeforeMinutes}{" " + tr("min. f\xF8r \u2192") + " "}{control.lightsAfterMinutes}{" " + tr("min. efter. D\xF8r:") + " "}{control.accessBeforeMinutes}{" " + tr("min. f\xF8r \u2192") + " "}{control.accessAfterMinutes}{" " + tr("min. efter.")}</p>
-      <p className="text-sm text-slate">{tr("Seneste kontrol:") + " "}{control.lastCheckedAt ? new Date(control.lastCheckedAt).toLocaleString(locale,{timeZone}) : "Afventer minutjobbet"}</p>
-      {control.lastError && <p role="alert" className="text-red-800">{control.lastError}</p>}
+      <p className="text-sm text-slate">{tr("Seneste kontrol:") + " "}{control.lastCheckedAt ? new Date(control.lastCheckedAt).toLocaleString(locale,{timeZone}) : tr("Afventer minutjobbet")}</p>
+      {control.lastError && <p role="alert" className="text-red-800">{tr(control.lastError)}</p>}
       <form action={runAction}><SubmitButton pendingText={tr("Kontrollerer\u2026")}>{tr("Kontroll\xE9r forbindelsen nu")}</SubmitButton><Result state={run} /></form>
       <form action={pauseAction} className="space-y-2 border-t border-slate/15 pt-4">
         <p className="text-sm text-slate">{tr("Pause stopper automatikken og appens d\xF8rknap, men slukker ikke lys, der allerede er t\xE6ndt.")}</p>
         <SubmitButton className="btn-ghost" pendingText={tr("S\xE6tter p\xE5 pause\u2026")}>{tr("Pause / ret ops\xE6tning")}</SubmitButton>
       </form><Result state={activation} />
     </div> : <>
-      <nav aria-label="Opsætningstrin" className="grid grid-cols-3 gap-2">
+      <nav aria-label={tr("Opsætningstrin")} className="grid grid-cols-3 gap-2">
         {["Forbind", "Test relæer", "Aktivér"].map((label, index) => <button type="button" key={label}
         aria-current={step === index + 1 ? "step" : undefined} disabled={index === 1 ? !connected : index === 2 ? !progress.ready : false}
         onClick={() => setStep(index + 1)} className={`rounded-xl p-3 text-sm font-bold disabled:opacity-40 ${step === index + 1 ? "bg-court text-white" : "bg-mist"}`}>
-          {index + 1}. {label}</button>)}
+          {index + 1}. {tr(label)}</button>)}
       </nav><Result state={pause} />
       {step === 1 && <form action={connectAction} className="space-y-5 rounded-2xl border border-slate/15 p-5">
         <div><h3 className="text-xl font-bold">{tr("1. Forbind til Shelly")}</h3>
@@ -129,18 +129,18 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
           <input id="setup-server" name="serverUrl" className="input" defaultValue={control?.serverUrl ?? ""} placeholder={tr("https://shelly-xx-eu.shelly.cloud")} autoCapitalize="none" autoCorrect="off" required /></div>
         <div><label className="label" htmlFor="setup-key">{tr("Adgangsn\xF8gle (Authorization Cloud Key)")}</label>
           <input id="setup-key" name="authKey" className="input" type="password" autoComplete="off" required={!control?.hasAuthKey}
-          placeholder={control?.hasAuthKey ? "Gemt sikkert — lad feltet stå tomt" : "Indsæt hele nøglen fra Shelly"} />
+          placeholder={control?.hasAuthKey ? tr("Gemt sikkert — lad feltet stå tomt") : tr("Indsæt hele nøglen fra Shelly")} />
           <p className="mt-1 text-xs text-slate">{tr("N\xF8glen kan styre enhederne p\xE5 din Shelly-konto. Den gemmes krypteret p\xE5 serveren, aldrig i spillerappen. Send den ikke i e-mail.")}</p></div>
         <div><label className="label" htmlFor="setup-ids">{tr("Hvilke controllere skal klubben bruge?")}</label>
           <p id="ids-help" className="mb-2 text-sm text-slate">{tr("\xC5bn hver controller i Shelly \u2192 Settings \u2192 Device Information \u2192 Device Id. Inds\xE6t \xE9t ID pr. linje. Vi henter selv rel\xE6erne.")}</p>
           <textarea id="setup-ids" name="deviceIds" aria-describedby="ids-help" className="input" rows={3} required autoCapitalize="none" autoCorrect="off"
-          defaultValue={devices.map((d) => d.externalId).join("\n")} placeholder={"ID for første controller\nID for anden controller"} /></div>
+          defaultValue={devices.map((d) => d.externalId).join("\n")} placeholder={tr("ID for første controller\nID for anden controller")} /></div>
         <Result state={connection} /><SubmitButton pendingText={tr("Kontakter Shelly og finder rel\xE6er\u2026")}>{tr("Forbind og hent rel\xE6er")}</SubmitButton>
         {connected && <button type="button" className="ml-3 text-sm underline" onClick={() => setStep(2)}>{tr("Forts\xE6t med gemt forbindelse")}</button>}
       </form>}
       {step === 2 && <div className="space-y-4">
         <div><h3 className="text-xl font-bold">{tr("2. Hvad styrer rel\xE6erne?")}</h3><p className="mt-1 text-sm text-slate">{progress.completed}{" " + tr("af") + " "}{progress.total}{" " + tr("gennemg\xE5et. Test kun, n\xE5r du er fysisk p\xE5 stedet.")}</p>
-          <progress aria-label="Gennemgåede relæer" className="mt-3 h-2 w-full accent-green-700" max={progress.total || 1} value={progress.completed} /></div>
+          <progress aria-label={tr("Gennemgåede relæer")} className="mt-3 h-2 w-full accent-green-700" max={progress.total || 1} value={progress.completed} /></div>
         <div className="flex flex-wrap gap-2">{relays.map((r) => <button key={r.key} type="button" onClick={() => setSelected(r.key)}
           aria-pressed={current?.key === r.key} className={`rounded-lg border px-3 py-2 text-sm ${current?.key === r.key ? "border-court bg-court/10" : "border-slate/15"}`}>
           {r.saved?.setupConfirmedAt ? "✓ " : ""}{r.device.name} · {r.number + 1}</button>)}</div>
@@ -151,7 +151,7 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
       </div>}
       {step === 3 && <form action={activateAction} className="space-y-5 rounded-2xl border border-slate/15 p-5">
         <div><h3 className="text-xl font-bold">{tr("3. Klar til at aktivere")}</h3><p className="mt-2 text-sm text-slate">{tr("Kontroll\xE9r oversigten \xE9n sidste gang. Alle tilsluttede rel\xE6er skal v\xE6re testet og bekr\xE6ftet af klubben.")}</p></div>
-        <ul className="space-y-2 text-sm">{relays.map((r) => <li key={r.key}>{r.saved?.setupConfirmedAt ? "✓" : "Afventer"} {r.device.name}{tr(", rel\xE6") + " "}{r.number + 1} → {r.saved?.label ?? "Vælg funktion"}</li>)}</ul>
+        <ul className="space-y-2 text-sm">{relays.map((r) => <li key={r.key}>{r.saved?.setupConfirmedAt ? "✓" : tr("Afventer")} {r.device.name}{tr(", rel\xE6") + " "}{r.number + 1} → {r.saved?.label ?? tr("Vælg funktion")}</li>)}</ul>
         <div className="rounded-xl bg-mist p-4 text-sm"><p className="font-bold">{tr("Udgangspunkt for tider")}</p>
           <p className="mt-1">{tr("Lys t\xE6nder") + " "}{control?.lightsBeforeMinutes ?? 10}{" " + tr("min. f\xF8r og slukker") + " "}{control?.lightsAfterMinutes ?? 5}{" " + tr("min. efter bookingen.")}</p>
           <p>{tr("D\xF8ren kan \xE5bnes") + " "}{control?.accessBeforeMinutes ?? 15}{" " + tr("min. f\xF8r og indtil") + " "}{control?.accessAfterMinutes ?? 15}{" " + tr("min. efter.")}</p>
@@ -161,7 +161,7 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
             ["lightsBeforeMinutes", "Lys før (min.)", 10, 0, 120], ["lightsAfterMinutes", "Lys efter (min.)", 5, 0, 120],
             ["accessBeforeMinutes", "Dør før (min.)", 15, 0, 120], ["accessAfterMinutes", "Dør efter (min.)", 15, 0, 120],
             ["doorPulseSeconds", "Dørpuls (sek.)", 5, 1, 30]] as
-            const).map(([name, label, fallback, min, max]) => <div key={name}><label className="label" htmlFor={name}>{label}</label>
+            const).map(([name, label, fallback, min, max]) => <div key={name}><label className="label" htmlFor={name}>{tr(label)}</label>
             <input id={name} name={name} className="input" type="number" min={min} max={max} required defaultValue={control?.[name] ?? fallback} /></div>)}</div>
         </details>
         <label className="flex gap-3 text-sm"><input type="checkbox" name="ready" required className="mt-1" />

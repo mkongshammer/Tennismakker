@@ -63,7 +63,7 @@ export function FixedSlotForm({
               </div>
               <form action={dropFixedSlot}>
                 <input type="hidden" name="slotId" value={s.id} />
-                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Oph\xE6v")}
+                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Oph\xE6v")}
 
             </SubmitButton>
               </form>
@@ -142,8 +142,8 @@ export function FixedSlotForm({
             </div>
           </div>
 
-          {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-          {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+          {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+          {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
           <SubmitButton pendingText={tr("Opretter s\xE6sonen\u2026")}>{tr("Tildel valgte faste baner")}</SubmitButton>
         </form>

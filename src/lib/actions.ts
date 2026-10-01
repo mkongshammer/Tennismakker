@@ -1,6 +1,6 @@
 "use server";
 import { profileLocation } from "./profile-location";
-import { marketFor, validCurrency, validTimeZone,wallTime } from "./international";
+import { marketFor, validCurrency, validTimeZone,wallTime,formatDate } from "./international";
 import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
 import {createCourtReservation} from "./court-reservation";
 import { requireCustomClub } from "./club-management-actions";
@@ -11,6 +11,7 @@ import bcrypt from "bcryptjs";
 import { addDays, addHours, addMinutes } from "date-fns";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { getPreferences } from './preferences';
 import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
@@ -1615,7 +1616,7 @@ export async function joinClubMembership(formData: FormData) {
 // ---------------- Faste baner ----------------
 
 export async function assignFixedSlot(_prev: unknown, formData: FormData) {
-  await requireCustomClub('faste-bookinger');
+  const {club}=await requireCustomClub('faste-bookinger');
   const { clubId } = await requireClubAdmin();
 
   const courtIds = [...new Set(formData.getAll("courtId").map(String))];
@@ -1640,11 +1641,12 @@ export async function assignFixedSlot(_prev: unknown, formData: FormData) {
   revalidatePath("/admin", "layout");
 
   if (result.clashes.length > 0) {
+    const {locale}=await getPreferences();
     return {
       ok: `${result.created} tider oprettet. ${result.clashes.length} blev sprunget over, fordi der allerede lå en booking: ${result.clashes
         .slice(0, 5)
-        .map((d) => d.toLocaleDateString("da-DK", { day: "numeric", month: "short" }))
-        .join(", ")}${result.clashes.length > 5 ? " m.fl." : ""}.`,
+        .map((d) => formatDate(d,locale,club.timeZone,{day:'numeric',month:'short'}))
+        .join(", ")}${result.clashes.length > 5 ? " …" : ""}.`,
     };
   }
 
@@ -1855,7 +1857,8 @@ export async function setCountry(formData: FormData) {
 
   const jar = await cookies();
   const alreadyPickedLanguage = Boolean(jar.get("rb_prefs_locale")?.value);
-  const locale = alreadyPickedLanguage ? undefined : (country.defaultLocale as any);
+  const requestedLocale=String(formData.get('locale')??'');
+  const locale = (LOCALES as readonly string[]).includes(requestedLocale) ? requestedLocale as Locale : alreadyPickedLanguage ? undefined : (country.defaultLocale as Locale);
 
   await setPreferenceCookies({ country: country.code, ...(locale ? { locale } : {}) });
 
@@ -1866,6 +1869,7 @@ export async function setCountry(formData: FormData) {
       data: {
         country: country.code,
         countryChosen: true,
+        ...(user.country !== country.code ? {area:null} : {}),
         ...(locale ? { locale } : {}),
       },
     });
@@ -1882,11 +1886,12 @@ export async function setCountry(formData: FormData) {
  * og landet kan skiftes i footeren når som helst.
  */
 export async function dismissCountryChoice() {
-  await setPreferenceCookies({ country: "DK" });
+  const prefs=await getPreferences();
+  await setPreferenceCookies({ country: prefs.country });
 
   const user = await getCurrentUser();
   if (user) {
-    await db.user.update({ where: { id: user.id }, data: { countryChosen: true } });
+    await db.user.update({ where: { id: user.id }, data: { country: prefs.country, countryChosen: true } });
   }
 
   revalidatePath("/", "layout");

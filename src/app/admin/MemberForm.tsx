@@ -8,5 +8,5 @@ export function MemberForm({ types }: {types: {id: string;name: string;}[];}) {c
  {['name', 'email', 'phone'].map((field, i) => <label key={field} className="label block">{['Navn', 'E-mail', 'Telefon'][i]}<input className="input" name={field} type={['text', 'email', 'tel'][i]} required={field !== 'phone'} /></label>)}
  <label className="label block">{tr("Kontingent")}<select name="typeId" className="input"><option value="">{tr("Intet kontingent valgt")}</option>{types.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
  <SubmitButton pendingText={tr("Tilf\xF8jer\u2026")}>{tr("Tilf\xF8j medlem")}</SubmitButton></form>
- {state?.error && <p role="alert">{state.error}</p>}{state?.ok && <p>{state.ok}</p>}{state?.password && <div className="rounded-xl bg-mist p-4"><p>{tr("Gem login nu og udlever det til medlemmet:")}</p><p>{state.email}</p><code className="select-all break-all">{state.password}</code></div>}</section>;
+ {state?.error && <p role="alert">{tr(state.error)}</p>}{state?.ok && <p>{tr(state.ok)}</p>}{state?.password && <div className="rounded-xl bg-mist p-4"><p>{tr("Gem login nu og udlever det til medlemmet:")}</p><p>{state.email}</p><code className="select-all break-all">{state.password}</code></div>}</section>;
 }

@@ -40,7 +40,7 @@ export function PeopleForm({ people }: {people: Person[];}) {const { tr, money, 
               </div>
               <form action={removeClubPerson}>
                 <input type="hidden" name="personId" value={p.id} />
-                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Fjern")}
+                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Fjern")}
 
             </SubmitButton>
               </form>
@@ -68,7 +68,7 @@ export function PeopleForm({ people }: {people: Person[];}) {const { tr, money, 
             <input className="input" id="personPhone" name="phone" />
           </div>
         </div>
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
         <SubmitButton pendingText={tr("Tilf\xF8jer\u2026")}>{tr("Tilf\xF8j til bestyrelsen")}</SubmitButton>
       </form>
     </div>);

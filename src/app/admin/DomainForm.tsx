@@ -44,8 +44,8 @@ export function DomainForm({
 
           </p>
         </div>
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
         <SubmitButton pendingText={tr("Gemmer\u2026")}>{tr("Gem dom\xE6net")}</SubmitButton>
       </form>
 
@@ -53,8 +53,8 @@ export function DomainForm({
       <div className="rounded-xl bg-mist p-4 text-sm">
           <p className="font-bold">
             {status === "LIVE" ?
-          `${domain} er aktivt` :
-          `Sådan får I ${domain} i luften`}
+          tr("{domain} er aktivt",{domain}) :
+          tr("Sådan får I {domain} i luften",{domain})}
           </p>
 
           {status === "LIVE" ?

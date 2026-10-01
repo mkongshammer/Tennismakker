@@ -1,4 +1,5 @@
 import { tr, useInternational } from "./src/lib/international";import { PushLifecycle, flushPushNavigation } from "./src/lib/PushLifecycle";
+import {CountryOnboarding} from './src/lib/CountryOnboarding';
 import AppPortal from "./src/screens/AppPortal";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
@@ -190,6 +191,7 @@ export default function App() {useInternational();
         <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
           <SessionStatusBar />
           <PushLifecycle />
+          <CountryOnboarding />
           <Root />
         </NavigationContainer>
       </AuthProvider>

@@ -44,17 +44,17 @@ export function SystemLoginForm({
           </p>
           <p className="mt-1 text-slate">
             {lastOkAt ?
-          `Virkede sidst ${lastOkAt.toLocaleString(locale, { timeZone,dateStyle: "long", timeStyle: "short" })}.` :
+          tr("Virkede sidst {date}.",{date:lastOkAt.toLocaleString(locale,{timeZone,dateStyle:"long",timeStyle:"short"})}) :
           lastError ?
-          `Seneste forsøg fejlede: ${lastError}` :
-          "Endnu ikke afprøvet."}
+          tr("Seneste forsøg fejlede: {error}",{error:tr(lastError!)}) :
+          tr("Endnu ikke afprøvet.")}
           </p>
 
           {summary &&
         <p className="mt-2 text-slate">
               {summary.blocked}{tr("tider sp\xE6rret")}
-          {summary.pending > 0 && `, ${summary.pending} i kø`}
-              {summary.failed > 0 && `, ${summary.failed} kunne ikke spærres`}.
+          {summary.pending > 0 && tr(", {count} i kø",{count:summary.pending})}
+              {summary.failed > 0 && tr(", {count} kunne ikke spærres",{count:summary.failed})}.
             </p>
         }
 
@@ -137,11 +137,11 @@ export function SystemLoginForm({
 
         </p>
 
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
         <SubmitButton pendingText={tr("Gemmer\u2026")}>
-          {saved ? "Opdatér adgangen" : "Gem adgangen"}
+          {saved ? tr("Opdatér adgangen") : tr("Gem adgangen")}
         </SubmitButton>
       </form>
     </div>);

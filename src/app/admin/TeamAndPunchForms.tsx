@@ -51,15 +51,15 @@ export function TeamForm({ teams, locale }: {teams: Team[];locale: Locale;}) {co
               }
                 </p>
                 <p className="text-sm text-slate">
-                  {DAYS[t.dayOfWeek]}{" " + tr("kl.") + " "}{String(t.hour).padStart(2, "0")} ·{" "}
-                  {t.priceKr > 0 ? `${money(t.priceKr)}` : "gratis"} · {t.paid}{tr("tilmeldt")}
+                  {tr(DAYS[t.dayOfWeek])}{" " + tr("kl.") + " "}{String(t.hour).padStart(2, "0")} ·{" "}
+                  {t.priceKr > 0 ? `${money(t.priceKr)}` : tr("gratis")} · {t.paid}{tr("tilmeldt")}
               {t.capacity > 0 && ` af ${t.capacity}`}
                 </p>
               </div>
               {t.active &&
           <form action={closeSeasonTeam}>
                   <input type="hidden" name="teamId" value={t.id} />
-                  <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Luk")}
+                  <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Luk")}
 
             </SubmitButton>
                 </form>
@@ -93,7 +93,7 @@ export function TeamForm({ teams, locale }: {teams: Team[];locale: Locale;}) {co
             <label className="label" htmlFor="teamDay">{tr("Ugedag")}</label>
             <select className="input" id="teamDay" name="dayOfWeek" defaultValue="2">
               {DAYS.map((d, i) =>
-              <option key={i} value={i}>{d}</option>
+              <option key={i} value={i}>{tr(d)}</option>
               )}
             </select>
           </div>
@@ -170,8 +170,8 @@ export function TeamForm({ teams, locale }: {teams: Team[];locale: Locale;}) {co
           <input className="input" id="teamDesc" name="description" maxLength={200} />
         </div>
 
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
         <SubmitButton pendingText={tr("Opretter\u2026")}>{tr("Opret hold")}</SubmitButton>
       </form>
@@ -221,7 +221,7 @@ export function PunchCardForm({ cards }: {cards: Card[];}) {const { tr, money, c
               {c.active &&
           <form action={closePunchCard}>
                   <input type="hidden" name="cardId" value={c.id} />
-                  <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Luk")}
+                  <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Luk")}
 
             </SubmitButton>
                 </form>
@@ -279,8 +279,8 @@ export function PunchCardForm({ cards }: {cards: Card[];}) {const { tr, money, c
           <input className="input" id="cardDesc" name="description" maxLength={200} />
         </div>
 
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
         <SubmitButton pendingText={tr("Opretter\u2026")}>{tr("Opret klippekort")}</SubmitButton>
       </form>

@@ -10,11 +10,11 @@ import { SiteHeader } from "../components/SiteHeader";
 import { isOwnHost } from "../lib/hosts";
 import { TabBar } from "../components/TabBar";
 import { LanguagePicker } from "../components/LanguagePicker";
-import { CountrySuggestion } from "../components/CountrySuggestion";
+import { CountryLocation } from "../components/CountryLocation";
 import { BuddySportsOnboarding } from "../components/BuddySportsOnboarding";
-import { detectCountry } from "../lib/geo";
 import { recordView } from "../lib/analytics";
 import { translator } from "../lib/i18n";
+import {phrase} from '../lib/phrases';
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
 import { consumeSignupSportsIntent, hasChosenBuddySports } from "../lib/buddy-sports";
@@ -45,7 +45,6 @@ export default async function RootLayout({
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
   const t = translator(prefs.locale);
   const unread = user ? await unreadCount(user.id) : 0;
-  const suggestedCountry = prefs.countryChosen ? null : await detectCountry();
   const requestHeaders = await headers();
 
   let needsSportsOnboarding = false;
@@ -90,9 +89,7 @@ export default async function RootLayout({
         <main
           className={`mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}
         >
-          {!prefs.countryChosen && suggestedCountry && suggestedCountry !== prefs.country && (
-            <CountrySuggestion code={suggestedCountry} />
-          )}
+          {!prefs.countryChosen && prefs.countryDetection && !onOwnDomain && <CountryLocation detection={prefs.countryDetection} country={prefs.country} locale={prefs.locale} />}
           {children}
         </main>
 
@@ -111,20 +108,21 @@ export default async function RootLayout({
               <p className="display text-lg">
                 Racket<span className="text-court">Buddy</span>
               </p>
-              <p className="mt-1 text-sm text-slate">{prefs.locale === "da" ? "Ketsjersport samlet ét sted" : "Racket sports, together"}</p>
+              <p className="mt-1 text-sm text-slate">{phrase('Ketsjersport samlet ét sted',prefs.locale)}</p>
               <p className="mt-1 text-sm text-slate">{t("availability.soon")}</p>
               <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
                 <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
-                <Link href="/hjemmeside" className="hover:text-ink">{prefs.locale==="da"?"Hjemmeside til klubben":"Club website"}</Link>
+                <Link href="/hjemmeside" className="hover:text-ink">{phrase('Hjemmeside til klubben',prefs.locale)}</Link>
                 <Link href="/app" className="hover:text-ink">App</Link>
-                <Link href="/vilkaar" className="hover:text-ink">{prefs.locale==="da"?"Handelsbetingelser":"Terms"}</Link>
-                <Link href="/privatliv" className="hover:text-ink">{prefs.locale==="da"?"Privatliv":"Privacy"}</Link>
-                <Link href="/databehandleraftale" className="hover:text-ink">{prefs.locale==="da"?"Databehandleraftale":"Data processing agreement"}</Link>
+                <Link href="/vilkaar" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)}</Link>
+                <Link href="/privatliv" className="hover:text-ink">{phrase('Privatliv',prefs.locale)}</Link>
+                <Link href="/databehandleraftale" className="hover:text-ink">{phrase('Databehandleraftale',prefs.locale)}</Link>
               </div>
               <div className="mt-6 border-t border-slate/10 pt-5 space-y-4">
                 <CountryPicker active={prefs.country} locale={prefs.locale} />
                 <p className="mb-2 text-xs font-bold text-slate">{t("common.language")}</p>
                 <LanguagePicker active={prefs.locale} />
+                <p className="text-xs text-slate-light"><a href="https://db-ip.com" target="_blank" rel="noreferrer">IP Geolocation by DB-IP</a></p>
               </div>
             </div>
           </footer>

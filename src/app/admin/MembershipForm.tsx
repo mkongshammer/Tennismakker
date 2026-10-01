@@ -46,15 +46,15 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
                 </p>
                 <p className="text-sm text-slate">
                   {dk(t.fromDate)} – {dk(t.toDate)} ·{" "}
-                  {t.priceKr > 0 ? `${money(t.priceKr)}` : "gratis"} · {t.paid}{tr("betalt")}
+                  {t.priceKr > 0 ? `${money(t.priceKr)}` : tr("gratis")} · {t.paid}{tr("betalt")}
               {t.capacity > 0 && ` af ${t.capacity} pladser`}
                 </p>
                 {t.description && <p className="text-sm text-slate-light">{t.description}</p>}
               </div>
               <form action={t.active ? closeMembershipType : openMembershipType}>
                 <input type="hidden" name="typeId" value={t.id} />
-                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">
-                  {t.active ? "Luk for tilmelding" : "Åbn igen"}
+                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>
+                  {t.active ? tr("Luk for tilmelding") : tr("Åbn igen")}
                 </SubmitButton>
               </form>
             </li>
@@ -94,7 +94,7 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
               name="priceKr"
               type="number"
               min={0}
-              placeholder="1200"
+              placeholder={tr("1200")}
               required />
 
           </div>
@@ -123,8 +123,8 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
 
         </div>
 
-        {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court-dark">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
         <SubmitButton pendingText={tr("Opretter\u2026")}>{tr("Opret kontingent")}</SubmitButton>
       </form>

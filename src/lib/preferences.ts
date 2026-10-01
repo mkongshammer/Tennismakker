@@ -1,11 +1,11 @@
 // Brugerens opsætning: land, sprog og valgt sportsgren.
 //
 // Indlogget bruger: gemt på profilen. Gæst: en cookie, så valget overlever
-// et sidskift. Ingen af delene? Dansk og tennis — platformen starter i
-// Danmark, og tennis er hovedsporet.
+// et sideskift. Første besøg bruger IP-land eller beder om et valg.
 
 import { headers } from "next/headers";
 import { marketFor } from "./international";
+import { detectCountry, type CountryDetection } from './geo';
 import { cookies } from "next/headers";
 import { getCurrentUser } from "./session";
 import { DEFAULT_SPORT, type Locale, type Sport, SPORTS, LOCALES } from "./sports";
@@ -16,6 +16,7 @@ export type Preferences = {
   sport: Sport;
   /** Har man selv valgt land? Er svaret nej, spørger vi én gang. */
   countryChosen: boolean;
+  countryDetection?: CountryDetection;
 };
 
 const COOKIE = "rb_prefs";
@@ -31,7 +32,7 @@ export async function getPreferences(): Promise<Preferences> {
       ? (cookieSport as Sport)
       : DEFAULT_SPORT;
 
-  if (user) {
+  if (user?.countryChosen && marketFor(user.country)) {
     return {
       country: user.country ?? "DK",
       locale: (LOCALES as readonly string[]).includes(user.locale)
@@ -45,16 +46,20 @@ export async function getPreferences(): Promise<Preferences> {
   const cookieCountry = jar.get(`${COOKIE}_country`)?.value;
   const cookieLocale = jar.get(`${COOKIE}_locale`)?.value;
 
-  const accepted=(await headers()).get("accept-language") ?? "da";
-  const preferred=accepted.split(",").map(v=>v.trim().split(";")[0]).map(v=>v==="en-US"?v:v.split("-")[0]).find(v=>(LOCALES as readonly string[]).includes(v));
+  const accepted=(await headers()).get("accept-language") ?? "en";
+  const preferred=accepted.split(",").map(v=>v.trim().split(";")[0]).map(v=>/^en-us$/i.test(v)?'en-US':v.split("-")[0].toLowerCase()).map(v=>['nb','nn'].includes(v)?'no':v).find(v=>(LOCALES as readonly string[]).includes(v));
+  const chosen=Boolean(marketFor(cookieCountry));
+  const countryDetection=chosen?undefined:await detectCountry();
+  const country=chosen?cookieCountry!:countryDetection?.country??(marketFor(user?.country)?user!.country:'DK');
   return {
-    country: marketFor(cookieCountry) ? cookieCountry! : "DK",
+    country,
     locale:
       cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
         ? (cookieLocale as Locale)
-        : (preferred ?? "en") as Locale,
+        : (countryDetection?.country ? marketFor(country)!.defaultLocale : preferred ?? "en") as Locale,
     sport,
-    countryChosen: Boolean(cookieCountry),
+    countryChosen: chosen,
+    countryDetection,
   };
 }
 

@@ -1,61 +1,24 @@
-// Et gæt på, hvor den besøgende er.
-//
-// Bruges kun til at stille et spørgsmål, aldrig til at bestemme noget. Et
-// gæt, der lander forkert og bare skifter sproget under fødderne på nogen,
-// er værre end slet ikke at gætte — så vi spørger, og vi spørger kun, når
-// gættet peger et andet sted hen end det, vi allerede viser.
-//
-// To kilder, i den rækkefølge:
-//
-// 1. Et landeheader fra en CDN foran appen. Cloudflare, Vercel og
-//    CloudFront sætter hver sit. Ligger der ingen CDN foran, findes de
-//    ikke, og så falder vi videre.
-// 2. Browserens eget sprogvalg. Det er noget, den besøgende selv har sat,
-//    det kræver ingen opslagstjeneste og ingen IP-adresse — og en browser
-//    sat til dansk er et bedre gæt på Danmark end de fleste IP-databaser.
-
-import { headers } from "next/headers";
-import { COUNTRIES } from "./sports";
-
-const COUNTRY_HEADERS = [
-  "cf-ipcountry", // Cloudflare
-  "x-vercel-ip-country",
-  "cloudfront-viewer-country",
-  "x-geo-country",
-];
-
-/** Sproget i browserens Accept-Language oversat til et land. */
-function countryFromLanguage(header: string | null): string | null {
-  if (!header) return null;
-
-  // "da-DK,da;q=0.9,en-US;q=0.8" → første tag vejer tungest.
-  const first = header.split(",")[0]?.trim().toLowerCase();
-  if (!first) return null;
-
-  // Har tagget en region ("da-DK"), er den det bedste svar, vi kan få.
-  const region = first.split("-")[1]?.toUpperCase();
-  if (region && COUNTRIES.some((c) => c.code === region && c.live)) return region;
-
-  // Ellers: sproget alene. "nb" og "nn" er begge norsk.
-  const language = first.split("-")[0];
-  const normalised = language === "nb" || language === "nn" ? "no" : language;
-  return COUNTRIES.find((c) => c.defaultLocale === normalised && c.live)?.code ?? null;
+import { headers } from 'next/headers';
+import { marketFor } from './international';
+import { lookupIpCountry, visitorIp } from './ip-country';
+export type CountryDetection = {country:string|null;suggestedCountry:string|null;needsChoice:boolean;source:'ip'|'edge'|'unknown'|'conflict'|'unsupported'};
+const COUNTRY_HEADERS = ['cf-ipcountry','x-vercel-ip-country','cloudfront-viewer-country','x-geo-country'];
+/** Browser language is a dialog suggestion, never proof of location. */
+export function countryFromLanguage(value:string|null):string|null {
+ const tag=value?.split(',')[0]?.split(';')[0]?.trim()??'';
+ const region=tag.split('-').slice(1).find(part=>/^[A-Z]{2}$/i.test(part));
+ if(marketFor(region))return region!.toUpperCase();
+ return ({da:'DK',de:'DE',sv:'SE',no:'NO',nb:'NO',nn:'NO'} as Record<string,string>)[tag.toLowerCase().split('-')[0]]??null;
 }
-
-/**
- * Hvilket land den besøgende ser ud til at være i, hvis vi kan gætte det.
- *
- * Kun lande, vi rent faktisk sælger i, tæller. Der er ikke noget at tilbyde
- * en tysker endnu, og et tilbud om at skifte til Tyskland ville føre til en
- * tom side på tysk.
- */
-export async function detectCountry(): Promise<string | null> {
-  const h = await headers();
-
-  for (const name of COUNTRY_HEADERS) {
-    const value = h.get(name)?.trim().toUpperCase();
-    if (value && COUNTRIES.some((c) => c.code === value && c.live)) return value;
-  }
-
-  return countryFromLanguage(h.get("accept-language"));
+/** Discovery only: never use country hints for access, taxes or payment eligibility. */
+export function detectCountryFromHeaders(h:Pick<Headers,'get'>,lookup=lookupIpCountry):CountryDetection {
+ const edge=COUNTRY_HEADERS.map(name=>h.get(name)?.trim().toUpperCase()).filter((v):v is string=>Boolean(v&&/^[A-Z]{2}$/.test(v)));
+ const ip=visitorIp(h),fromIp=ip?lookup(ip):null;
+ const candidates=[...new Set([...edge.filter(v=>!['XX','T1'].includes(v)),...(fromIp?[fromIp]:[])])];
+ const guessed=candidates.find(code=>marketFor(code))??countryFromLanguage(h.get('accept-language'));
+ if(edge.some(v=>['XX','T1'].includes(v))||candidates.length>1)return {country:null,suggestedCountry:guessed,needsChoice:true,source:'conflict'};
+ const country=candidates[0];
+ if(country&&marketFor(country))return {country,suggestedCountry:country,needsChoice:false,source:edge.length?'edge':'ip'};
+ return {country:null,suggestedCountry:guessed,needsChoice:true,source:country?'unsupported':'unknown'};
 }
+export async function detectCountry():Promise<CountryDetection>{return detectCountryFromHeaders(await headers());}

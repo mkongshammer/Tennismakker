@@ -47,7 +47,7 @@ export function AdminsForm({ members, meId }: {members: Member[];meId: string;})
             {admins.length > 1 &&
           <form action={removeClubAdmin}>
                 <input type="hidden" name="memberId" value={a.id} />
-                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("Fjern som administrator")}
+                <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("Fjern som administrator")}
 
             </SubmitButton>
               </form>
@@ -89,7 +89,7 @@ export function AdminsForm({ members, meId }: {members: Member[];meId: string;})
                   </div>
                   <form action={makeClubAdmin}>
                     <input type="hidden" name="memberId" value={m.id} />
-                    <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">{tr("G\xF8r til administrator")}
+                    <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText={tr("…")}>{tr("G\xF8r til administrator")}
 
               </SubmitButton>
                   </form>

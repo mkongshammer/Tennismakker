@@ -217,8 +217,8 @@ export function SiteForm({ club }: {club: any;}) {const { tr, money, currency, t
         }
       </div>
 
-      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court">{tr(state.error)}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
       <SubmitButton pendingText={tr("Gemmer\u2026")}>{tr("Gem siden")}</SubmitButton>
     </form>);
 
@@ -241,8 +241,8 @@ export function PostForm() {const { tr, money, currency, timeZone } = useWebsite
         <input type="checkbox" name="pinned" className="h-4 w-4" />{tr("Vis \xF8verst")}
 
       </label>
-      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court">{tr(state.error)}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
       <button className="btn-ghost">{tr("Sl\xE5 op")}</button>
     </form>);
 

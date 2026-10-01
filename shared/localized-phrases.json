@@ -1,0 +1,4461 @@
+{
+  "Klubadministration": {
+    "en": "Club administration",
+    "de": "Clubverwaltung",
+    "sv": "Klubbadministration",
+    "no": "Klubbadministrasjon"
+  },
+  "og sportsgrene": {
+    "en": "and sports",
+    "de": "und Sportarten",
+    "sv": "och sporter",
+    "no": "og idretter"
+  },
+  "Menu ·": {
+    "en": "Menu ·",
+    "de": "Menü ·",
+    "sv": "Meny ·",
+    "no": "Meny ·"
+  },
+  "Kun for klub-administratorer": {
+    "en": "Club administrators only",
+    "de": "Nur für Clubadministratoren",
+    "sv": "Endast för klubbadministratörer",
+    "no": "Kun for klubbadministratorer"
+  },
+  "Din konto er ikke tilknyttet en klub. Kontakt RacketBuddy for at få jeres klub med.": {
+    "en": "Your account is not linked to a club. Contact RacketBuddy to join.",
+    "de": "Dein Konto ist keinem Club zugeordnet. Kontaktiere RacketBuddy, um euren Club hinzuzufügen.",
+    "sv": "Ditt konto är inte kopplat till en klubb. Kontakta RacketBuddy för att lägga till er klubb.",
+    "no": "Kontoen din er ikke knyttet til en klubb. Kontakt RacketBuddy for å legge til klubben."
+  },
+  "Sportsgrene og": {
+    "en": "Sports and",
+    "de": "Sportarten und",
+    "sv": "Sporter och",
+    "no": "Idretter og"
+  },
+  "Klubside: /klub/": {
+    "en": "Club page: /klub/",
+    "de": "Clubseite: /klub/",
+    "sv": "Klubbsida: /klub/",
+    "no": "Klubbside: /klub/"
+  },
+  "Gæstebookinger": {
+    "en": "Guest bookings",
+    "de": "Gastbuchungen",
+    "sv": "Gästbokningar",
+    "no": "Gjestebookinger"
+  },
+  "Omsætning": {
+    "en": "Revenue",
+    "de": "Umsatz",
+    "sv": "Omsättning",
+    "no": "Omsetning"
+  },
+  "Udbetalt til jer": {
+    "en": "Paid out to your club",
+    "de": "An euren Club ausgezahlt",
+    "sv": "Utbetalt till klubben",
+    "no": "Utbetalt til klubben"
+  },
+  "booking": {
+    "en": "booking",
+    "de": "Buchung",
+    "sv": "bokning",
+    "no": "booking"
+  },
+  "skal ind i jeres eget system": {
+    "en": "must be entered in your booking system",
+    "de": "müssen in euer Buchungssystem eingetragen werden",
+    "sv": "måste föras in i ert bokningssystem",
+    "no": "må legges inn i bookingsystemet deres"
+  },
+  "Gæsten har betalt hos os. Før tiden ind i": {
+    "en": "The guest has paid through RacketBuddy. Enter the booking in",
+    "de": "Der Gast hat über RacketBuddy bezahlt. Tragt die Buchung ein in",
+    "sv": "Gästen har betalat via RacketBuddy. För in bokningen i",
+    "no": "Gjesten har betalt via RacketBuddy. Legg bookingen inn i"
+  },
+  ", så banen ikke bliver dobbeltbooket.": {
+    "en": ", to prevent a double booking.",
+    "de": ", um Doppelbuchungen zu vermeiden.",
+    "sv": ", så att banan inte dubbelbokas.",
+    "no": ", slik at banen ikke dobbeltbookes."
+  },
+  "Ført ind": {
+    "en": "Entered",
+    "de": "Eingetragen",
+    "sv": "Införd",
+    "no": "Lagt inn"
+  },
+  "Kommende gæstebookinger": {
+    "en": "Upcoming guest bookings",
+    "de": "Kommende Gastbuchungen",
+    "sv": "Kommande gästbokningar",
+    "no": "Kommende gjestebookinger"
+  },
+  "Ingen bookinger i den kommende uge.": {
+    "en": "No bookings in the coming week.",
+    "de": "Keine Buchungen in der kommenden Woche.",
+    "sv": "Inga bokningar den kommande veckan.",
+    "no": "Ingen bookinger den kommende uken."
+  },
+  "skal føres ind": {
+    "en": "must be entered",
+    "de": "muss eingetragen werden",
+    "sv": "måste föras in",
+    "no": "må legges inn"
+  },
+  "Faste baner": {
+    "en": "Recurring court reservations",
+    "de": "Wiederkehrende Platzreservierungen",
+    "sv": "Återkommande banbokningar",
+    "no": "Faste banereservasjoner"
+  },
+  "Samme bane, samme ugedag, hele sæsonen. Klubben tildeler dem — medlemmet booker dem ikke selv. Tiderne oprettes som almindelige bookinger, så de spærrer banen og kan aflyses enkeltvis.": {
+    "en": "Assign the same court and weekly time for a whole season. Each occurrence reserves the court and can be cancelled individually.",
+    "de": "Weist denselben Platz zur selben Wochenzeit für die ganze Saison zu. Jede Buchung reserviert den Platz und kann einzeln storniert werden.",
+    "sv": "Tilldela samma bana och veckotid för hela säsongen. Varje bokning reserverar banan och kan avbokas separat.",
+    "no": "Tildel samme bane og uketid for hele sesongen. Hver booking reserverer banen og kan avlyses enkeltvis."
+  },
+  "Frigiv tider til gæster": {
+    "en": "Release guest availability",
+    "de": "Zeiten für Gäste freigeben",
+    "sv": "Öppna tider för gäster",
+    "no": "Frigi tider for gjester"
+  },
+  "Kun tider, I frigiver her, kan ses og bookes af spillere udefra.": {
+    "en": "Guests can only see and book times you release here.",
+    "de": "Gäste können nur die hier freigegebenen Zeiten sehen und buchen.",
+    "sv": "Gäster kan bara se och boka tider som ni öppnar här.",
+    "no": "Gjester kan bare se og booke tider dere frigir her."
+  },
+  "Sælger I også baner et andet sted?": {
+    "en": "Do you also sell court bookings elsewhere?",
+    "de": "Verkauft ihr Platzbuchungen auch anderswo?",
+    "sv": "Säljer ni även banbokningar någon annanstans?",
+    "no": "Selger dere banebookinger andre steder også?"
+  },
+  "Bruger I både os og en anden platform, kan vi ikke se hinandens bookinger. Frigiv derfor forskellige tider til hver kanal — eller afsæt en bane til hver. Så kan den samme time ikke sælges to gange.": {
+    "en": "Separate platforms cannot see each other’s bookings. Allocate different times or courts to each channel to prevent double bookings.",
+    "de": "Getrennte Plattformen sehen die Buchungen der anderen nicht. Verteilt unterschiedliche Zeiten oder Plätze auf die Kanäle, um Doppelbuchungen zu verhindern.",
+    "sv": "Separata plattformar ser inte varandras bokningar. Fördela olika tider eller banor mellan kanalerna för att undvika dubbelbokningar.",
+    "no": "Separate plattformer ser ikke hverandres bookinger. Fordel ulike tider eller baner mellom kanalene for å unngå dobbeltbookinger."
+  },
+  "Tag altid tiden ud af jeres eget system, når I frigiver den her.": {
+    "en": "Block the time in your existing system before releasing it here.",
+    "de": "Sperrt die Zeit in eurem bisherigen System, bevor ihr sie hier freigebt.",
+    "sv": "Blockera tiden i ert befintliga system innan ni öppnar den här.",
+    "no": "Sperr tiden i det eksisterende systemet før dere frigir den her."
+  },
+  "Jeres regler": {
+    "en": "Your rules",
+    "de": "Eure Regeln",
+    "sv": "Era regler",
+    "no": "Reglene deres"
+  },
+  "/time": {
+    "en": "/hour",
+    "de": "/Stunde",
+    "sv": "/timme",
+    "no": "/time"
+  },
+  "Slet": {
+    "en": "Delete",
+    "de": "Löschen",
+    "sv": "Radera",
+    "no": "Slett"
+  },
+  "Sidste øjeblik": {
+    "en": "Last minute",
+    "de": "Last Minute",
+    "sv": "Sista minuten",
+    "no": "Siste liten"
+  },
+  "Frigiv automatisk alt, der stadig står tomt tæt på spilletidspunktet. En bane der er ledig om en time er tabt indtægt uanset hvad.": {
+    "en": "Automatically release empty courts shortly before the start time.",
+    "de": "Gebt leere Plätze kurz vor Beginn automatisch frei.",
+    "sv": "Öppna tomma banor automatiskt strax före start.",
+    "no": "Frigi tomme baner automatisk kort tid før start."
+  },
+  "Timer før start": {
+    "en": "Hours before start",
+    "de": "Stunden vor Beginn",
+    "sv": "Timmar före start",
+    "no": "Timer før start"
+  },
+  "0 slår det fra.": {
+    "en": "Set to 0 to disable.",
+    "de": "0 deaktiviert die Funktion.",
+    "sv": "0 stänger av funktionen.",
+    "no": "0 slår funksjonen av."
+  },
+  "Enkelte tider": {
+    "en": "Individual times",
+    "de": "Einzelne Zeiten",
+    "sv": "Enstaka tider",
+    "no": "Enkelttider"
+  },
+  "Til undtagelser — en enkelt aften der alligevel blev fri.": {
+    "en": "For exceptions, such as an evening that becomes available.",
+    "de": "Für Ausnahmen, etwa einen Abend, der doch frei wird.",
+    "sv": "För undantag, till exempel en kväll som blir ledig.",
+    "no": "For unntak, for eksempel en kveld som blir ledig."
+  },
+  "Frigivne enkelttider": {
+    "en": "Released individual times",
+    "de": "Freigegebene Einzelzeiten",
+    "sv": "Öppnade enstaka tider",
+    "no": "Frigitte enkelttider"
+  },
+  "Ingen tider er frigivet endnu.": {
+    "en": "No times released yet.",
+    "de": "Noch keine Zeiten freigegeben.",
+    "sv": "Inga tider har öppnats ännu.",
+    "no": "Ingen tider er frigitt ennå."
+  },
+  "Fjern": {
+    "en": "Remove",
+    "de": "Entfernen",
+    "sv": "Ta bort",
+    "no": "Fjern"
+  },
+  "Kontingent": {
+    "en": "Membership",
+    "de": "Mitgliedsbeitrag",
+    "sv": "Medlemsavgift",
+    "no": "Kontingent"
+  },
+  "Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene går direkte til klubbens konto. Er kontingentet betalt og sæsonen i gang, booker medlemmet til medlemspris.": {
+    "en": "Members sign up and pay online from your club page. Paid members receive member pricing during their membership period.",
+    "de": "Mitglieder melden sich auf eurer Clubseite an und bezahlen online. Bezahlte Mitglieder erhalten während ihrer Mitgliedschaft den Mitgliedspreis.",
+    "sv": "Medlemmar anmäler sig och betalar på klubbsidan. Betalande medlemmar får medlemspris under medlemsperioden.",
+    "no": "Medlemmer melder seg inn og betaler på klubbsiden. Betalende medlemmer får medlemspris i medlemsperioden."
+  },
+  "Sæsonhold": {
+    "en": "Season teams",
+    "de": "Saisonkurse",
+    "sv": "Säsongsgrupper",
+    "no": "Sesonggrupper"
+  },
+  "Træningshold over en sæson. Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene går til klubbens konto.": {
+    "en": "Season teams with online registration and payment to your club.",
+    "de": "Saisonkurse mit Online-Anmeldung und Zahlung an euren Club.",
+    "sv": "Säsongsgrupper med anmälan och betalning online till klubben.",
+    "no": "Sesonggrupper med påmelding og nettbetaling til klubben."
+  },
+  "Nyheder": {
+    "en": "News",
+    "de": "Neuigkeiten",
+    "sv": "Nyheter",
+    "no": "Nyheter"
+  },
+  "Vises øverst på jeres side. Til lukkedage, turneringer og andet, folk skal vide.": {
+    "en": "Shown at the top of your page. Share closures, tournaments and announcements.",
+    "de": "Oben auf eurer Seite angezeigt. Informiert über Schließtage, Turniere und Neuigkeiten.",
+    "sv": "Visas överst på er sida. Informera om stängningar, turneringar och nyheter.",
+    "no": "Vises øverst på siden. Informer om stengninger, turneringer og nyheter."
+  },
+  "Vælg sportsgrene, og opret klubbens": {
+    "en": "Choose sports and add your club’s",
+    "de": "Wählt Sportarten und erstellt eure",
+    "sv": "Välj sporter och skapa klubbens",
+    "no": "Velg idretter og opprett klubbens"
+  },
+  "med egne navne, underlag og priser.": {
+    "en": "with their own names, surfaces and prices.",
+    "de": "mit eigenen Namen, Belägen und Preisen.",
+    "sv": "med egna namn, underlag och priser.",
+    "no": "med egne navn, underlag og priser."
+  },
+  "Automatisk lys og adgang": {
+    "en": "Automatic lights and access",
+    "de": "Automatische Beleuchtung und Zugang",
+    "sv": "Automatiskt ljus och tillträde",
+    "no": "Automatisk lys og adgang"
+  },
+  "Knyt klubbens Shelly-controllere til de bookbare områder og døren. RacketBuddy tænder lyset ud fra bookingerne, og spilleren kan kun åbne døren i tidsvinduet omkring sin egen bekræftede booking.": {
+    "en": "Connect Shelly controllers to courts and doors. Lights follow bookings, and players can open doors during the access window for their confirmed booking.",
+    "de": "Verbindet Shelly-Controller mit Plätzen und Türen. Das Licht folgt den Buchungen. Spieler können die Tür im Zugangsfenster ihrer bestätigten Buchung öffnen.",
+    "sv": "Koppla Shelly-styrenheter till banor och dörrar. Ljuset följer bokningarna. Spelare kan öppna dörren under tillträdesfönstret för sin bekräftade bokning.",
+    "no": "Koble Shelly-kontrollere til baner og dører. Lyset følger bookingene. Spillere kan åpne døren i adgangsvinduet for sin bekreftede booking."
+  },
+  "Priser efter tidspunkt": {
+    "en": "Prices by time",
+    "de": "Preise nach Uhrzeit",
+    "sv": "Priser efter tid",
+    "no": "Priser etter tidspunkt"
+  },
+  "Prime time koster mere. Uden regler her gælder banens pris, og har banen ingen, gælder klubbens.": {
+    "en": "Set prices for popular hours. Otherwise, the court price applies, falling back to the club’s default price.",
+    "de": "Legt Preise für beliebte Zeiten fest. Sonst gilt der Platzpreis oder, falls keiner festgelegt ist, der Standardpreis des Clubs.",
+    "sv": "Ange priser för populära tider. Annars gäller banans pris eller klubbens standardpris om banan saknar eget pris.",
+    "no": "Angi priser for populære tider. Ellers gjelder baneprisen, eller klubbens standardpris hvis banen ikke har egen pris."
+  },
+  "Klippekort": {
+    "en": "Court passes",
+    "de": "Platzkarten",
+    "sv": "Klippkort",
+    "no": "Klippekort"
+  },
+  "Flere banetimer betalt på én gang. Klippet trækkes automatisk, når medlemmet booker — i stedet for en betaling.": {
+    "en": "Sell multiple court hours as a pass. Each booking uses one credit.",
+    "de": "Verkauft mehrere Platzstunden als Karte. Jede Buchung verbraucht ein Guthaben.",
+    "sv": "Sälj flera bantimmar som klippkort. Varje bokning använder ett klipp.",
+    "no": "Selg flere banetimer som klippekort. Hver booking bruker ett klipp."
+  },
+  "Udbetalinger": {
+    "en": "Payouts",
+    "de": "Auszahlungen",
+    "sv": "Utbetalningar",
+    "no": "Utbetalinger"
+  },
+  "Aktivt.": {
+    "en": "Active.",
+    "de": "Aktiv.",
+    "sv": "Aktivt.",
+    "no": "Aktivt."
+  },
+  "Gæster kan betale, og pengene sendes automatisk til jeres konto minus vores andel.": {
+    "en": "Guests can pay and funds are transferred to your account after the platform’s share.",
+    "de": "Gäste können bezahlen. Das Geld wird nach Abzug des Plattformanteils auf euer Konto überwiesen.",
+    "sv": "Gäster kan betala. Pengarna överförs till ert konto efter plattformens andel.",
+    "no": "Gjester kan betale. Pengene overføres til kontoen deres etter plattformens andel."
+  },
+  "Gæster kan ikke booke hos jer endnu. Jeres tider vises, men en booking afvises, indtil dette er på plads.": {
+    "en": "Guests cannot complete bookings until payment setup is ready.",
+    "de": "Gäste können erst buchen, wenn die Zahlungseinrichtung abgeschlossen ist.",
+    "sv": "Gäster kan boka först när betalningen är färdigkonfigurerad.",
+    "no": "Gjester kan booke når betalingsoppsettet er klart."
+  },
+  "Klubben skal have en Stripe-konto, før gæster kan booke og betale. Det tager typisk 5-10 minutter — I skal bruge NemID/MitID og klubbens kontonummer.": {
+    "en": "Set up your club’s Stripe account to accept bookings and payments. Have the club’s bank and identity information ready.",
+    "de": "Richtet ein Stripe-Konto für den Club ein, um Buchungen und Zahlungen anzunehmen. Haltet Bank- und Identitätsangaben bereit.",
+    "sv": "Skapa klubbens Stripe-konto för att ta emot bokningar och betalningar. Ha bank- och identitetsuppgifter redo.",
+    "no": "Opprett klubbens Stripe-konto for å motta bookinger og betalinger. Ha bank- og identitetsopplysninger klare."
+  },
+  "Åbner Stripe…": {
+    "en": "Opening Stripe…",
+    "de": "Stripe wird geöffnet…",
+    "sv": "Öppnar Stripe…",
+    "no": "Åpner Stripe…"
+  },
+  "Jeres aftale": {
+    "en": "Your plan",
+    "de": "Euer Tarif",
+    "sv": "Ert abonnemang",
+    "no": "Avtalen deres"
+  },
+  "kr/md.": {
+    "en": "DKK/month",
+    "de": "DKK/Monat",
+    "sv": "DKK/månad",
+    "no": "DKK/måned"
+  },
+  "I beholder hele beløbet for hver gæstebooking.": {
+    "en": "No platform commission on individual guest bookings.",
+    "de": "Keine Plattformprovision auf einzelne Gastbuchungen.",
+    "sv": "Ingen plattformsprovision på enskilda gästbokningar.",
+    "no": "Ingen plattformprovisjon på enkelte gjestebookinger."
+  },
+  "Tider kan kun frigives, mens abonnementet er aktivt. Bookinger, en gæst har betalt for, står ved magt uanset hvad.": {
+    "en": "You can release times while your subscription is active. Existing paid bookings remain valid.",
+    "de": "Zeiten können bei aktivem Abonnement freigegeben werden. Bereits bezahlte Buchungen bleiben gültig.",
+    "sv": "Tider kan öppnas när abonnemanget är aktivt. Redan betalda bokningar gäller fortfarande.",
+    "no": "Tider kan frigis når abonnementet er aktivt. Allerede betalte bookinger er fortsatt gyldige."
+  },
+  "Fast pris uanset hvor mange bookinger der kommer ind. Vi tager intet af den enkelte booking — hele beløbet går til jer.": {
+    "en": "A fixed subscription price, regardless of booking volume, with no platform commission on individual bookings.",
+    "de": "Fester Abonnementpreis unabhängig von der Zahl der Buchungen. Keine Plattformprovision auf einzelne Buchungen.",
+    "sv": "Fast abonnemangspris oavsett antal bokningar. Ingen plattformsprovision på enskilda bokningar.",
+    "no": "Fast abonnementspris uansett antall bookinger. Ingen plattformprovisjon på enkeltbookinger."
+  },
+  "Betaling aktiv.": {
+    "en": "Payments active.",
+    "de": "Zahlung aktiv.",
+    "sv": "Betalning aktiv.",
+    "no": "Betaling aktiv."
+  },
+  "Kort, fakturaer og opsigelse": {
+    "en": "Cards, invoices and cancellation",
+    "de": "Karten, Rechnungen und Kündigung",
+    "sv": "Kort, fakturor och uppsägning",
+    "no": "Kort, fakturaer og oppsigelse"
+  },
+  "Indtil det betales, trækkes": {
+    "en": "Until payment, the commission is",
+    "de": "Bis zur Zahlung beträgt die Provision",
+    "sv": "Fram till betalning är provisionen",
+    "no": "Frem til betaling er provisjonen"
+  },
+  "% af hver gæstebooking i stedet.": {
+    "en": "% of each guest booking.",
+    "de": "% jeder Gastbuchung.",
+    "sv": "% av varje gästbokning.",
+    "no": "% av hver gjestebooking."
+  },
+  "Vil I skifte model, så skriv til os.": {
+    "en": "Contact us to change your plan.",
+    "de": "Kontaktiert uns, um den Tarif zu ändern.",
+    "sv": "Kontakta oss för att byta abonnemang.",
+    "no": "Kontakt oss for å endre avtalen."
+  },
+  "Sådan finder vi jeres ledige tider": {
+    "en": "How we find availability",
+    "de": "So finden wir freie Zeiten",
+    "sv": "Så hittar vi lediga tider",
+    "no": "Slik finner vi ledige tider"
+  },
+  "I beholder jeres eget bookingsystem. Vælg hvordan vi skal vide, hvad der er ledigt.": {
+    "en": "Keep your existing booking system and choose how availability is shared.",
+    "de": "Behaltet euer Buchungssystem und wählt, wie freie Zeiten übermittelt werden.",
+    "sv": "Behåll ert bokningssystem och välj hur lediga tider delas.",
+    "no": "Behold bookingsystemet deres og velg hvordan ledige tider deles."
+  },
+  "Synkronisering": {
+    "en": "Synchronization",
+    "de": "Synchronisierung",
+    "sv": "Synkronisering",
+    "no": "Synkronisering"
+  },
+  "Synkronisér nu": {
+    "en": "Sync now",
+    "de": "Jetzt synchronisieren",
+    "sv": "Synkronisera nu",
+    "no": "Synkroniser nå"
+  },
+  "Lad os spærre tiderne i": {
+    "en": "Let us block times in",
+    "de": "Zeiten automatisch sperren in",
+    "sv": "Låt oss blockera tiderna i",
+    "no": "La oss sperre tidene i"
+  },
+  "Giver I os et login, spærrer vi selv de tider, I frigiver — så skal I ikke gøre det i hånden hver gang.": {
+    "en": "Provide system access so released times can be blocked automatically.",
+    "de": "Gebt Systemzugang an, damit freigegebene Zeiten automatisch gesperrt werden können.",
+    "sv": "Ange systemåtkomst så att öppnade tider kan blockeras automatiskt.",
+    "no": "Gi systemtilgang slik at frigitte tider kan sperres automatisk."
+  },
+  "Jeres side": {
+    "en": "Your club page",
+    "de": "Eure Clubseite",
+    "sv": "Er klubbsida",
+    "no": "Klubbsiden deres"
+  },
+  "Se den som gæsterne gør": {
+    "en": "View as a guest",
+    "de": "Als Gast ansehen",
+    "sv": "Visa som gäst",
+    "no": "Se som gjest"
+  },
+  "Bruger I os som jeres eneste system, er det her jeres hjemmeside.": {
+    "en": "If RacketBuddy is your only system, this is your club website.",
+    "de": "Wenn RacketBuddy euer einziges System ist, ist dies eure Clubwebsite.",
+    "sv": "Om RacketBuddy är ert enda system är detta er klubbwebbplats.",
+    "no": "Hvis RacketBuddy er det eneste systemet deres, er dette klubbens nettside."
+  },
+  "Udseende": {
+    "en": "Appearance",
+    "de": "Aussehen",
+    "sv": "Utseende",
+    "no": "Utseende"
+  },
+  "Tre måder at vise klubben på. Skift frit — det ændrer kun forsiden, ikke indholdet.": {
+    "en": "Choose one of three layouts. Changing the layout keeps your content.",
+    "de": "Wählt eines von drei Layouts. Eure Inhalte bleiben beim Wechsel erhalten.",
+    "sv": "Välj en av tre layouter. Innehållet behålls när ni byter.",
+    "no": "Velg ett av tre oppsett. Innholdet beholdes når dere bytter."
+  },
+  "Eget domæne": {
+    "en": "Custom domain",
+    "de": "Eigene Domain",
+    "sv": "Egen domän",
+    "no": "Eget domene"
+  },
+  "Jeres side kan ligge på klubbens eget domæne i stedet for hos os. Så står der jerklub.dk i adresselinjen, og vores navigation vises ikke.": {
+    "en": "Host the club page at your own domain with your club address and navigation.",
+    "de": "Verwendet eure eigene Domain für die Clubseite mit eurer Clubadresse und Navigation.",
+    "sv": "Använd er egen domän för klubbsidan med klubbens adress och navigation.",
+    "no": "Bruk eget domene til klubbsiden med klubbens adresse og navigasjon."
+  },
+  "Laver I en ny kode, holder den gamle op med at virke. Medlemmer der allerede er meldt ind, bliver ved med at være det.": {
+    "en": "A new joining code replaces the old code. Existing memberships remain linked.",
+    "de": "Ein neuer Beitrittscode ersetzt den alten. Bestehende Mitgliedschaften bleiben verknüpft.",
+    "sv": "En ny anslutningskod ersätter den gamla. Befintliga medlemskap behåller sin koppling.",
+    "no": "En ny innmeldingskode erstatter den gamle. Eksisterende medlemskap beholder tilknytningen."
+  },
+  "Hvem kan administrere klubben": {
+    "en": "Who can administer the club",
+    "de": "Wer kann den Club verwalten?",
+    "sv": "Vem kan administrera klubben?",
+    "no": "Hvem kan administrere klubben?"
+  },
+  "Én person med nøglen er én person for lidt. Stopper vedkommende i bestyrelsen, mister klubben adgangen til sine egne bookinger og indtægter.": {
+    "en": "Add more than one administrator so club access continues when committee members change.",
+    "de": "Fügt mehr als einen Administrator hinzu, damit der Club bei Vorstandswechseln Zugriff behält.",
+    "sv": "Lägg till fler än en administratör så att klubben behåller åtkomsten vid styrelsebyten.",
+    "no": "Legg til mer enn én administrator slik at klubben beholder tilgangen ved styrebytter."
+  },
+  "Bestyrelse og kontaktpersoner": {
+    "en": "Committee and contacts",
+    "de": "Vorstand und Kontakte",
+    "sv": "Styrelse och kontakter",
+    "no": "Styre og kontaktpersoner"
+  },
+  "Vises på jeres side under Kontakt. I vedligeholder den selv — der skal ikke sendes en mail til os, når kassereren skifter.": {
+    "en": "Contacts appear on your club page. Update them here whenever committee members change.",
+    "de": "Kontakte erscheinen auf eurer Clubseite. Aktualisiert sie hier bei Vorstandswechseln.",
+    "sv": "Kontakterna visas på klubbsidan. Uppdatera dem här vid styrelsebyten.",
+    "no": "Kontaktene vises på klubbsiden. Oppdater dem her ved styrebytter."
+  },
+  "bookinger skal føres ind i jeres system →": {
+    "en": "bookings must be entered in your system →",
+    "de": "Buchungen müssen in euer System eingetragen werden →",
+    "sv": "bokningar måste föras in i ert system →",
+    "no": "bookinger må legges inn i systemet deres →"
+  },
+  "Kom i gang: Vælg sportsgrene og opret baner eller borde →": {
+    "en": "Get started: choose sports and add courts or tables →",
+    "de": "Erste Schritte: Sportarten wählen und Plätze oder Tische anlegen →",
+    "sv": "Kom igång: välj sporter och skapa banor eller bord →",
+    "no": "Kom i gang: velg idretter og opprett baner eller bord →"
+  },
+  "Opsæt udbetalinger, så gæster kan betale →": {
+    "en": "Set up payouts to accept guest payments →",
+    "de": "Auszahlungen einrichten, damit Gäste bezahlen können →",
+    "sv": "Konfigurera utbetalningar så att gäster kan betala →",
+    "no": "Sett opp utbetalinger slik at gjester kan betale →"
+  },
+  "Ledige tider styres gennem klubbens bookingsystem.": {
+    "en": "Availability is managed through your club booking system.",
+    "de": "Freie Zeiten werden im Buchungssystem des Clubs verwaltet.",
+    "sv": "Lediga tider hanteras i klubbens bokningssystem.",
+    "no": "Ledige tider styres i klubbens bookingsystem."
+  },
+  "Åbn bookingsystemets indstillinger": {
+    "en": "Open booking system settings",
+    "de": "Einstellungen des Buchungssystems öffnen",
+    "sv": "Öppna bokningssystemets inställningar",
+    "no": "Åpne bookingsystemets innstillinger"
+  },
+  "dig": {
+    "en": "you",
+    "de": "du",
+    "sv": "du",
+    "no": "du"
+  },
+  "…": {
+    "en": "…",
+    "de": "…",
+    "sv": "…",
+    "no": "…"
+  },
+  "Fjern som administrator": {
+    "en": "Remove administrator role",
+    "de": "Als Administrator entfernen",
+    "sv": "Ta bort som administratör",
+    "no": "Fjern som administrator"
+  },
+  "Der er kun én administrator. Udpeg mindst én mere — så mister klubben ikke adgangen den dag, du stopper i bestyrelsen.": {
+    "en": "There is only one administrator. Appoint another so your club retains access when you leave the board.",
+    "de": "Es gibt nur einen Administrator. Benennt mindestens einen weiteren, damit der Club bei einem Vorstandswechsel Zugriff behält.",
+    "sv": "Det finns bara en administratör. Utse minst en till så att klubben behåller åtkomsten vid styrelsebyten.",
+    "no": "Det er bare én administrator. Utpek minst én til slik at klubben beholder tilgangen ved styrebytter."
+  },
+  "Udpeg et medlem": {
+    "en": "Appoint a member",
+    "de": "Mitglied benennen",
+    "sv": "Utse en medlem",
+    "no": "Utpek et medlem"
+  },
+  "Søg på navn eller e-mail": {
+    "en": "Search name or email",
+    "de": "Nach Name oder E-Mail suchen",
+    "sv": "Sök efter namn eller e-post",
+    "no": "Søk etter navn eller e-post"
+  },
+  "Ingen medlemmer matcher.": {
+    "en": "No matching members.",
+    "de": "Keine passenden Mitglieder.",
+    "sv": "Inga matchande medlemmar.",
+    "no": "Ingen medlemmer matcher."
+  },
+  "Gør til administrator": {
+    "en": "Make administrator",
+    "de": "Zum Administrator machen",
+    "sv": "Gör till administratör",
+    "no": "Gjør til administrator"
+  },
+  "En administrator kan alt det, du kan: frigive tider, se omsætningen, rette hjemmesiden og opsige abonnementet. Udpeg kun folk fra bestyrelsen.": {
+    "en": "Administrators can release sessions, view revenue, edit the website and cancel the subscription. Only appoint authorised board members.",
+    "de": "Administratoren können Zeiten freigeben, Umsätze sehen, die Website bearbeiten und das Abonnement kündigen. Benennt nur befugte Vorstandsmitglieder.",
+    "sv": "Administratörer kan öppna tider, se omsättning, redigera webbplatsen och säga upp abonnemanget. Utse endast behöriga styrelsemedlemmar.",
+    "no": "Administratorer kan frigi tider, se omsetning, redigere nettsiden og si opp abonnementet. Utpek bare autoriserte styremedlemmer."
+  },
+  "· ID": {
+    "en": "· ID",
+    "de": "· ID",
+    "sv": "· ID",
+    "no": "· ID"
+  },
+  "Relæ": {
+    "en": "Relay",
+    "de": "Relais",
+    "sv": "Relä",
+    "no": "Relé"
+  },
+  "svarer til kanal": {
+    "en": "corresponds to channel",
+    "de": "entspricht Kanal",
+    "sv": "motsvarar kanal",
+    "no": "tilsvarer kanal"
+  },
+  "i Shelly. Brug den kendte ledningsfordeling — gæt ikke.": {
+    "en": "in Shelly. Use the verified wiring assignment.",
+    "de": "in Shelly. Verwendet die bestätigte Verkabelung.",
+    "sv": "i Shelly. Använd den bekräftade ledningsfördelningen.",
+    "no": "i Shelly. Bruk den bekreftede ledningsfordelingen."
+  },
+  "Hvad styrer dette relæ?": {
+    "en": "What does this relay control?",
+    "de": "Was steuert dieses Relais?",
+    "sv": "Vad styr detta relä?",
+    "no": "Hva styrer dette releet?"
+  },
+  "Vælg lys eller dør…": {
+    "en": "Choose a light or door…",
+    "de": "Licht oder Tür wählen…",
+    "sv": "Välj ljus eller dörr…",
+    "no": "Velg lys eller dør…"
+  },
+  "Lys på": {
+    "en": "Court lights:",
+    "de": "Platzbeleuchtung:",
+    "sv": "Banbelysning:",
+    "no": "Banelys:"
+  },
+  "Gang / fælleslys": {
+    "en": "Corridor / shared lights",
+    "de": "Flur / gemeinsame Beleuchtung",
+    "sv": "Korridor / gemensam belysning",
+    "no": "Gang / felleslys"
+  },
+  "Dør": {
+    "en": "Door",
+    "de": "Tür",
+    "sv": "Dörr",
+    "no": "Dør"
+  },
+  "Intet tilsluttet — spring over": {
+    "en": "Nothing connected — skip",
+    "de": "Nichts angeschlossen — überspringen",
+    "sv": "Inget anslutet — hoppa över",
+    "no": "Ingenting tilkoblet — hopp over"
+  },
+  "Opret klubbens baner i administrationen først, hvis du vil vælge banelys.": {
+    "en": "Create your club courts first to assign court lights.",
+    "de": "Erstellt zuerst die Plätze in der Verwaltung, um Platzbeleuchtung zuzuordnen.",
+    "sv": "Skapa först klubbens banor i administrationen för att koppla banbelysning.",
+    "no": "Opprett klubbens baner i administrasjonen først for å tilordne banelys."
+  },
+  "Gem og fortsæt": {
+    "en": "Save and continue",
+    "de": "Speichern und fortfahren",
+    "sv": "Spara och fortsätt",
+    "no": "Lagre og fortsett"
+  },
+  "Forkert funktion? Vælg en anden": {
+    "en": "Wrong function? Choose another",
+    "de": "Falsche Funktion? Andere wählen",
+    "sv": "Fel funktion? Välj en annan",
+    "no": "Feil funksjon? Velg en annen"
+  },
+  "Ikke tilsluttet. Dette relæ bliver ikke styret.": {
+    "en": "Not connected. This relay will not be controlled.",
+    "de": "Nicht angeschlossen. Dieses Relais wird nicht gesteuert.",
+    "sv": "Inte anslutet. Detta relä styrs inte.",
+    "no": "Ikke tilkoblet. Dette releet blir ikke styrt."
+  },
+  "✓ Testet og bekræftet af klubben": {
+    "en": "✓ Tested and confirmed by the club",
+    "de": "✓ Vom Club getestet und bestätigt",
+    "sv": "✓ Testat och bekräftat av klubben",
+    "no": "✓ Testet og bekreftet av klubben"
+  },
+  "Stå ved": {
+    "en": "Stand beside",
+    "de": "Stelle dich neben",
+    "sv": "Stå vid",
+    "no": "Stå ved"
+  },
+  ". Testen aktiverer relæet i 3 sekunder med automatisk sluk på controlleren.": {
+    "en": ". The test activates the relay for 3 seconds with automatic controller shutoff.",
+    "de": ". Der Test schaltet das Relais für 3 Sekunden mit automatischer Abschaltung am Controller.",
+    "sv": ". Testet aktiverar reläet i 3 sekunder med automatisk avstängning på styrenheten.",
+    "no": ". Testen aktiverer releet i 3 sekunder med automatisk avslåing på kontrolleren."
+  },
+  "Installationen er klar, og det er sikkert at teste nu. Jeg er på stedet og kan se resultatet.": {
+    "en": "The installation is ready and safe to test. I am on site and can verify the result.",
+    "de": "Die Installation ist bereit und der Test ist sicher. Ich bin vor Ort und kann das Ergebnis prüfen.",
+    "sv": "Installationen är klar och säker att testa. Jag är på plats och kan kontrollera resultatet.",
+    "no": "Installasjonen er klar og trygg å teste. Jeg er på stedet og kan kontrollere resultatet."
+  },
+  "Sender test…": {
+    "en": "Sending test…",
+    "de": "Test wird gesendet…",
+    "sv": "Skickar test…",
+    "no": "Sender test…"
+  },
+  "Var det den rigtige funktion?": {
+    "en": "Did the correct device respond?",
+    "de": "Hat das richtige Gerät reagiert?",
+    "sv": "Reagerade rätt enhet?",
+    "no": "Reagerte riktig enhet?"
+  },
+  "Ja,": {
+    "en": "Yes,",
+    "de": "Ja,",
+    "sv": "Ja,",
+    "no": "Ja,"
+  },
+  "reagerede korrekt, og lyset slukkede igen / døren kunne låse igen efter testen.": {
+    "en": "responded correctly, and the light switched off / door could lock again after the test.",
+    "de": "hat richtig reagiert, und das Licht ging aus / die Tür konnte danach wieder verriegelt werden.",
+    "sv": "reagerade korrekt och ljuset släcktes / dörren kunde låsas igen efter testet.",
+    "no": "reagerte riktig, og lyset slukket / døren kunne låses igjen etter testen."
+  },
+  "Bekræfter…": {
+    "en": "Confirming…",
+    "de": "Wird bestätigt…",
+    "sv": "Bekräftar…",
+    "no": "Bekrefter…"
+  },
+  "Ja, det virker": {
+    "en": "Yes, it works",
+    "de": "Ja, es funktioniert",
+    "sv": "Ja, det fungerar",
+    "no": "Ja, det virker"
+  },
+  "Nej, det var forkert — ret funktionen": {
+    "en": "No, edit the assignment",
+    "de": "Nein, Zuordnung bearbeiten",
+    "sv": "Nej, ändra tilldelningen",
+    "no": "Nei, endre tilordningen"
+  },
+  "Kontrollér enheden i Shelly, og test igen.": {
+    "en": "Check the device in Shelly and test again.",
+    "de": "Prüft das Gerät in Shelly und testet erneut.",
+    "sv": "Kontrollera enheten i Shelly och testa igen.",
+    "no": "Kontroller enheten i Shelly og test igjen."
+  },
+  "controller(e) ·": {
+    "en": "controller(s) ·",
+    "de": "Controller ·",
+    "sv": "styrenheter ·",
+    "no": "kontrollere ·"
+  },
+  "tilsluttede relæer": {
+    "en": "connected relays",
+    "de": "angeschlossene Relais",
+    "sv": "anslutna reläer",
+    "no": "tilkoblede releer"
+  },
+  "Lys:": {
+    "en": "Lights:",
+    "de": "Licht:",
+    "sv": "Ljus:",
+    "no": "Lys:"
+  },
+  "min. før →": {
+    "en": "min before →",
+    "de": "Min. vorher →",
+    "sv": "min före →",
+    "no": "min før →"
+  },
+  "min. efter. Dør:": {
+    "en": "min after. Door:",
+    "de": "Min. danach. Tür:",
+    "sv": "min efter. Dörr:",
+    "no": "min etter. Dør:"
+  },
+  "min. efter.": {
+    "en": "min after.",
+    "de": "Min. danach.",
+    "sv": "min efter.",
+    "no": "min etter."
+  },
+  "Seneste kontrol:": {
+    "en": "Last check:",
+    "de": "Letzte Prüfung:",
+    "sv": "Senaste kontroll:",
+    "no": "Siste kontroll:"
+  },
+  "Kontrollerer…": {
+    "en": "Checking…",
+    "de": "Wird geprüft…",
+    "sv": "Kontrollerar…",
+    "no": "Kontrollerer…"
+  },
+  "Kontrollér forbindelsen nu": {
+    "en": "Check connection now",
+    "de": "Verbindung jetzt prüfen",
+    "sv": "Kontrollera anslutningen nu",
+    "no": "Kontroller forbindelsen nå"
+  },
+  "Pause stopper automatikken og appens dørknap, men slukker ikke lys, der allerede er tændt.": {
+    "en": "Pausing stops automation and app door access. Lights already on remain on.",
+    "de": "Pausieren stoppt die Automatik und den Türzugang in der App. Bereits eingeschaltetes Licht bleibt an.",
+    "sv": "Paus stoppar automatiken och dörråtkomsten i appen. Ljus som redan är på förblir på.",
+    "no": "Pause stopper automatikken og dørtilgangen i appen. Lys som allerede er på, forblir på."
+  },
+  "Sætter på pause…": {
+    "en": "Pausing…",
+    "de": "Wird pausiert…",
+    "sv": "Pausar…",
+    "no": "Setter på pause…"
+  },
+  "Pause / ret opsætning": {
+    "en": "Pause / edit setup",
+    "de": "Pausieren / Einrichtung bearbeiten",
+    "sv": "Pausa / ändra inställningar",
+    "no": "Pause / endre oppsett"
+  },
+  "Opsætningstrin": {
+    "en": "Setup steps",
+    "de": "Einrichtungsschritte",
+    "sv": "Konfigurationssteg",
+    "no": "Oppsettstrinn"
+  },
+  "1. Forbind til Shelly": {
+    "en": "1. Connect Shelly",
+    "de": "1. Mit Shelly verbinden",
+    "sv": "1. Anslut till Shelly",
+    "no": "1. Koble til Shelly"
+  },
+  "Controllerne skal være monteret og vise Online i Shelly Smart Control. Her kopierer du kun oplysninger — intet lys tændes.": {
+    "en": "Controllers must be installed and show Online in Shelly Smart Control. This step copies settings without switching lights on.",
+    "de": "Controller müssen installiert sein und in Shelly Smart Control als Online angezeigt werden. Hier werden nur Einstellungen kopiert, kein Licht eingeschaltet.",
+    "sv": "Styrenheterna ska vara installerade och visa Online i Shelly Smart Control. Här kopieras bara inställningar, inget ljus tänds.",
+    "no": "Kontrollerne skal være montert og vise Online i Shelly Smart Control. Her kopieres bare innstillinger, ingen lys tennes."
+  },
+  "Åbn Shelly i en ny fane ↗": {
+    "en": "Open Shelly in a new tab ↗",
+    "de": "Shelly in neuem Tab öffnen ↗",
+    "sv": "Öppna Shelly i ny flik ↗",
+    "no": "Åpne Shelly i ny fane ↗"
+  },
+  "Find de to første felter samme sted": {
+    "en": "Find both fields together",
+    "de": "Beide Felder an derselben Stelle finden",
+    "sv": "Hitta båda fälten på samma ställe",
+    "no": "Finn begge feltene på samme sted"
+  },
+  "Shelly → User settings (brugerindstillinger) → Authorization cloud key. Kopiér Server URI og Authorization Cloud Key nedenfor.": {
+    "en": "Shelly → User settings → Authorization cloud key. Copy the Server URI and Authorization Cloud Key below.",
+    "de": "Shelly → User settings → Authorization cloud key. Kopiert Server URI und Authorization Cloud Key unten.",
+    "sv": "Shelly → User settings → Authorization cloud key. Kopiera Server URI och Authorization Cloud Key nedan.",
+    "no": "Shelly → User settings → Authorization cloud key. Kopier Server URI og Authorization Cloud Key nedenfor."
+  },
+  "Serveradresse (Server URI)": {
+    "en": "Server address (Server URI)",
+    "de": "Serveradresse (Server URI)",
+    "sv": "Serveradress (Server URI)",
+    "no": "Serveradresse (Server URI)"
+  },
+  "https://shelly-xx-eu.shelly.cloud": {
+    "en": "https://shelly-xx-eu.shelly.cloud",
+    "de": "https://shelly-xx-eu.shelly.cloud",
+    "sv": "https://shelly-xx-eu.shelly.cloud",
+    "no": "https://shelly-xx-eu.shelly.cloud"
+  },
+  "Adgangsnøgle (Authorization Cloud Key)": {
+    "en": "Authorization Cloud Key",
+    "de": "Zugangsschlüssel (Authorization Cloud Key)",
+    "sv": "Åtkomstnyckel (Authorization Cloud Key)",
+    "no": "Tilgangsnøkkel (Authorization Cloud Key)"
+  },
+  "Nøglen kan styre enhederne på din Shelly-konto. Den gemmes krypteret på serveren, aldrig i spillerappen. Send den ikke i e-mail.": {
+    "en": "This key controls devices on your Shelly account. It is stored encrypted on the server, never in the player app. Do not email it.",
+    "de": "Der Schlüssel steuert Geräte auf eurem Shelly-Konto. Er wird verschlüsselt auf dem Server gespeichert, nie in der Spieler-App. Nicht per E-Mail versenden.",
+    "sv": "Nyckeln styr enheter på ert Shelly-konto. Den lagras krypterad på servern, aldrig i spelarappen. Skicka den inte via e-post.",
+    "no": "Nøkkelen styrer enheter på Shelly-kontoen deres. Den lagres kryptert på serveren, aldri i spillerappen. Ikke send den på e-post."
+  },
+  "Hvilke controllere skal klubben bruge?": {
+    "en": "Which controllers will the club use?",
+    "de": "Welche Controller soll der Club verwenden?",
+    "sv": "Vilka styrenheter ska klubben använda?",
+    "no": "Hvilke kontrollere skal klubben bruke?"
+  },
+  "Åbn hver controller i Shelly → Settings → Device Information → Device Id. Indsæt ét ID pr. linje. Vi henter selv relæerne.": {
+    "en": "Open each controller in Shelly → Settings → Device Information → Device Id. Enter one ID per line. We retrieve its relays.",
+    "de": "Öffnet jeden Controller: Shelly → Settings → Device Information → Device Id. Eine ID pro Zeile. Wir laden die Relais.",
+    "sv": "Öppna varje styrenhet: Shelly → Settings → Device Information → Device Id. Ange ett ID per rad. Vi hämtar reläerna.",
+    "no": "Åpne hver kontroller: Shelly → Settings → Device Information → Device Id. Oppgi én ID per linje. Vi henter releene."
+  },
+  "Kontakter Shelly og finder relæer…": {
+    "en": "Connecting to Shelly and finding relays…",
+    "de": "Shelly wird verbunden und Relais werden geladen…",
+    "sv": "Ansluter till Shelly och hämtar reläer…",
+    "no": "Kobler til Shelly og henter releer…"
+  },
+  "Forbind og hent relæer": {
+    "en": "Connect and retrieve relays",
+    "de": "Verbinden und Relais laden",
+    "sv": "Anslut och hämta reläer",
+    "no": "Koble til og hent releer"
+  },
+  "Fortsæt med gemt forbindelse": {
+    "en": "Continue with saved connection",
+    "de": "Mit gespeicherter Verbindung fortfahren",
+    "sv": "Fortsätt med sparad anslutning",
+    "no": "Fortsett med lagret forbindelse"
+  },
+  "2. Hvad styrer relæerne?": {
+    "en": "2. Assign relay functions",
+    "de": "2. Relaisfunktionen zuordnen",
+    "sv": "2. Tilldela reläfunktioner",
+    "no": "2. Tilordne reléfunksjoner"
+  },
+  "af": {
+    "en": "of",
+    "de": "von",
+    "sv": "av",
+    "no": "av"
+  },
+  "gennemgået. Test kun, når du er fysisk på stedet.": {
+    "en": "reviewed. Test only while physically on site.",
+    "de": "geprüft. Nur vor Ort testen.",
+    "sv": "granskade. Testa endast på plats.",
+    "no": "gjennomgått. Test bare på stedet."
+  },
+  "Gennemgåede relæer": {
+    "en": "Reviewed relays",
+    "de": "Geprüfte Relais",
+    "sv": "Granskade reläer",
+    "no": "Gjennomgåtte releer"
+  },
+  "Fortsæt til næste relæ": {
+    "en": "Continue to next relay",
+    "de": "Zum nächsten Relais",
+    "sv": "Fortsätt till nästa relä",
+    "no": "Fortsett til neste relé"
+  },
+  "Alle relæer klar — fortsæt": {
+    "en": "All relays ready — continue",
+    "de": "Alle Relais bereit — fortfahren",
+    "sv": "Alla reläer klara — fortsätt",
+    "no": "Alle releer klare — fortsett"
+  },
+  "Alle relæer er sprunget over. Vælg mindst ét lys eller én dør for at aktivere.": {
+    "en": "All relays are skipped. Select at least one light or door before activation.",
+    "de": "Alle Relais wurden übersprungen. Wählt mindestens ein Licht oder eine Tür zur Aktivierung.",
+    "sv": "Alla reläer har hoppats över. Välj minst ett ljus eller en dörr för aktivering.",
+    "no": "Alle releene er hoppet over. Velg minst ett lys eller én dør for aktivering."
+  },
+  "3. Klar til at aktivere": {
+    "en": "3. Ready to activate",
+    "de": "3. Bereit zur Aktivierung",
+    "sv": "3. Klar att aktivera",
+    "no": "3. Klar til aktivering"
+  },
+  "Kontrollér oversigten én sidste gang. Alle tilsluttede relæer skal være testet og bekræftet af klubben.": {
+    "en": "Review the summary. Every connected relay must be tested and confirmed by the club.",
+    "de": "Prüft die Übersicht. Alle angeschlossenen Relais müssen vom Club getestet und bestätigt sein.",
+    "sv": "Kontrollera översikten. Alla anslutna reläer måste vara testade och bekräftade av klubben.",
+    "no": "Kontroller oversikten. Alle tilkoblede releer må være testet og bekreftet av klubben."
+  },
+  ", relæ": {
+    "en": ", relay",
+    "de": ", Relais",
+    "sv": ", relä",
+    "no": ", relé"
+  },
+  "Udgangspunkt for tider": {
+    "en": "Default timing",
+    "de": "Standardzeiten",
+    "sv": "Standardtider",
+    "no": "Standardtider"
+  },
+  "Lys tænder": {
+    "en": "Lights switch on",
+    "de": "Licht an",
+    "sv": "Ljuset tänds",
+    "no": "Lyset tennes"
+  },
+  "min. før og slukker": {
+    "en": "min before and switch off",
+    "de": "Min. vorher und aus",
+    "sv": "min före och släcks",
+    "no": "min før og slukkes"
+  },
+  "min. efter bookingen.": {
+    "en": "min after the booking.",
+    "de": "Min. nach der Buchung.",
+    "sv": "min efter bokningen.",
+    "no": "min etter bookingen."
+  },
+  "Døren kan åbnes": {
+    "en": "Door access begins",
+    "de": "Türzugang beginnt",
+    "sv": "Dörråtkomst börjar",
+    "no": "Dørtilgang begynner"
+  },
+  "min. før og indtil": {
+    "en": "min before and ends",
+    "de": "Min. vorher und endet",
+    "sv": "min före och slutar",
+    "no": "min før og slutter"
+  },
+  "Tiderne kan ændres nedenfor. Lys kontrolleres hvert minut. Døråbning kræver spillerens egen bekræftede banebooking.": {
+    "en": "Edit timing below. Lights are checked every minute. Door access requires the player's own confirmed court booking.",
+    "de": "Zeiten unten ändern. Licht wird jede Minute geprüft. Türzugang erfordert eine eigene bestätigte Platzbuchung.",
+    "sv": "Ändra tiderna nedan. Ljuset kontrolleras varje minut. Dörråtkomst kräver spelarens egen bekräftade banbokning.",
+    "no": "Endre tidene nedenfor. Lyset kontrolleres hvert minutt. Dørtilgang krever spillerens egen bekreftede banebooking."
+  },
+  "Tilpas tider (valgfrit)": {
+    "en": "Adjust timing (optional)",
+    "de": "Zeiten anpassen (optional)",
+    "sv": "Anpassa tider (valfritt)",
+    "no": "Tilpass tider (valgfritt)"
+  },
+  "Fordelingen er korrekt. Jeg har kontrolleret installationen og har en manuel adgangsmulighed, hvis internet eller strøm svigter.": {
+    "en": "The assignment is correct. I checked the installation and have manual access available if internet or power fails.",
+    "de": "Die Zuordnung stimmt. Ich habe die Installation geprüft und habe bei Strom- oder Internetausfall einen manuellen Zugang.",
+    "sv": "Tilldelningen är korrekt. Jag har kontrollerat installationen och har manuellt tillträde vid ström- eller internetavbrott.",
+    "no": "Tilordningen er riktig. Jeg har kontrollert installasjonen og har manuell tilgang ved strøm- eller internettbrudd."
+  },
+  "Kontrollerer forbindelsen og aktiverer…": {
+    "en": "Checking connection and activating…",
+    "de": "Verbindung wird geprüft und aktiviert…",
+    "sv": "Kontrollerar anslutningen och aktiverar…",
+    "no": "Kontrollerer forbindelsen og aktiverer…"
+  },
+  "Aktivér lys og adgang": {
+    "en": "Activate lights and access",
+    "de": "Licht und Zugang aktivieren",
+    "sv": "Aktivera ljus och tillträde",
+    "no": "Aktiver lys og adgang"
+  },
+  "Controlleroversigt / fjern en controller": {
+    "en": "Controllers / remove a controller",
+    "de": "Controllerübersicht / Controller entfernen",
+    "sv": "Styrenheter / ta bort styrenhet",
+    "no": "Kontrolleroversikt / fjern kontroller"
+  },
+  "Fjern kun en controller, klubben ikke længere skal bruge. Dens relæopsætning slettes.": {
+    "en": "Only remove controllers no longer needed. Their relay settings will be deleted.",
+    "de": "Entfernt nur nicht mehr benötigte Controller. Ihre Relaiszuordnungen werden gelöscht.",
+    "sv": "Ta bara bort styrenheter som inte längre används. Deras reläinställningar raderas.",
+    "no": "Fjern bare kontrollere som ikke lenger brukes. Reléinnstillingene deres slettes."
+  },
+  "relæer": {
+    "en": "relays",
+    "de": "Relais",
+    "sv": "reläer",
+    "no": "releer"
+  },
+  "Fjerner…": {
+    "en": "Removing…",
+    "de": "Wird entfernt…",
+    "sv": "Tar bort…",
+    "no": "Fjerner…"
+  },
+  "Fjern controller": {
+    "en": "Remove controller",
+    "de": "Controller entfernen",
+    "sv": "Ta bort styrenhet",
+    "no": "Fjern kontroller"
+  },
+  "Guiden konfigurerer softwaren. Den kontrollerer ikke ledningsføringen eller installationens elektriske sikkerhed.": {
+    "en": "This guide configures software. It does not verify wiring or electrical safety.",
+    "de": "Diese Anleitung konfiguriert Software. Sie prüft weder Verkabelung noch elektrische Sicherheit.",
+    "sv": "Guiden konfigurerar programvaran. Den kontrollerar inte ledningar eller elsäkerhet.",
+    "no": "Veiledningen konfigurerer programvaren. Den kontrollerer ikke ledninger eller elektrisk sikkerhet."
+  },
+  "— vælg nyt underlag": {
+    "en": "— choose a new surface",
+    "de": "— neuen Belag wählen",
+    "sv": "— välj nytt underlag",
+    "no": "— velg nytt underlag"
+  },
+  "Indendørs": {
+    "en": "Indoor",
+    "de": "Innenbereich",
+    "sv": "Inomhus",
+    "no": "Innendørs"
+  },
+  "Pris / time": {
+    "en": "Price / hour",
+    "de": "Preis / Stunde",
+    "sv": "Pris / timme",
+    "no": "Pris / time"
+  },
+  "klubbens": {
+    "en": "club default",
+    "de": "Clubstandard",
+    "sv": "klubbens standard",
+    "no": "klubbens standard"
+  },
+  "Medlemspris": {
+    "en": "Member price",
+    "de": "Mitgliedspreis",
+    "sv": "Medlemspris",
+    "no": "Medlemspris"
+  },
+  "Tomme prisfelter bruger klubbens pris. Sportsgrenen kan ikke ændres efter første booking.": {
+    "en": "Empty price fields use the club default. A court's sport cannot change after its first booking.",
+    "de": "Leere Preisfelder verwenden den Clubstandard. Die Sportart ist nach der ersten Buchung nicht mehr änderbar.",
+    "sv": "Tomma prisfält använder klubbens standardpris. Sporten kan inte ändras efter första bokningen.",
+    "no": "Tomme prisfelt bruker klubbens standardpris. Idretten kan ikke endres etter første booking."
+  },
+  "Sletter…": {
+    "en": "Deleting…",
+    "de": "Wird gelöscht…",
+    "sv": "Raderar…",
+    "no": "Sletter…"
+  },
+  "bookinger — kan ikke slettes.": {
+    "en": "bookings — cannot be deleted.",
+    "de": "Buchungen — kann nicht gelöscht werden.",
+    "sv": "bokningar — kan inte raderas.",
+    "no": "bookinger — kan ikke slettes."
+  },
+  "Klubbens sportsgrene": {
+    "en": "Club sports",
+    "de": "Sportarten des Clubs",
+    "sv": "Klubbens sporter",
+    "no": "Klubbens idretter"
+  },
+  "Vælg alle de sportsgrene, klubben tilbyder. Gem valget, før du opretter baner eller borde.": {
+    "en": "Select every sport offered by the club. Save before creating courts or tables.",
+    "de": "Wählt alle Sportarten des Clubs. Speichert vor dem Anlegen von Plätzen oder Tischen.",
+    "sv": "Välj alla sporter som klubben erbjuder. Spara innan ni skapar banor eller bord.",
+    "no": "Velg alle idretter klubben tilbyr. Lagre før dere oppretter baner eller bord."
+  },
+  "Gem sportsgrene": {
+    "en": "Save sports",
+    "de": "Sportarten speichern",
+    "sv": "Spara sporter",
+    "no": "Lagre idretter"
+  },
+  "Tilføjer…": {
+    "en": "Adding…",
+    "de": "Wird hinzugefügt…",
+    "sv": "Lägger till…",
+    "no": "Legger til…"
+  },
+  "Tilføj": {
+    "en": "Add",
+    "de": "Hinzufügen",
+    "sv": "Lägg till",
+    "no": "Legg til"
+  },
+  "Klubbens domæne": {
+    "en": "Club domain",
+    "de": "Domain des Clubs",
+    "sv": "Klubbens domän",
+    "no": "Klubbens domene"
+  },
+  "booking.jerklub.dk": {
+    "en": "booking.yourclub.com",
+    "de": "booking.euerclub.de",
+    "sv": "booking.erklubb.se",
+    "no": "booking.deresklubb.no"
+  },
+  "Både et helt domæne og et underdomæne virker. Har I allerede en hjemmeside, I vil beholde, er": {
+    "en": "Use a domain or subdomain. To keep your existing website,",
+    "de": "Domain und Subdomain sind möglich. Um eure bestehende Website zu behalten, ist",
+    "sv": "Både domän och underdomän fungerar. För att behålla er nuvarande webbplats är",
+    "no": "Både domene og underdomene fungerer. For å beholde den eksisterende nettsiden er"
+  },
+  "det enkleste.": {
+    "en": "is the simplest option.",
+    "de": "die einfachste Lösung.",
+    "sv": "det enklaste alternativet.",
+    "no": "det enkleste alternativet."
+  },
+  "Gem domænet": {
+    "en": "Save domain",
+    "de": "Domain speichern",
+    "sv": "Spara domän",
+    "no": "Lagre domene"
+  },
+  "Jeres side ligger på jeres eget domæne. Skifter I domæne, skriv det nye ind ovenfor og gentag opsætningen.": {
+    "en": "Your site is on your own domain. To change it, enter the new domain and repeat setup.",
+    "de": "Eure Seite liegt auf eurer Domain. Zum Wechsel die neue Domain eingeben und die Einrichtung wiederholen.",
+    "sv": "Sidan finns på er egen domän. Ange den nya domänen och upprepa inställningarna för att byta.",
+    "no": "Siden ligger på eget domene. Oppgi det nye domenet og gjenta oppsettet for å bytte."
+  },
+  "Opret en": {
+    "en": "Create a",
+    "de": "Erstellt einen",
+    "sv": "Skapa en",
+    "no": "Opprett en"
+  },
+  "CNAME": {
+    "en": "CNAME",
+    "de": "CNAME",
+    "sv": "CNAME",
+    "no": "CNAME"
+  },
+  "-post hos den, der har jeres domæne, med værdien": {
+    "en": "record with your domain provider using the value",
+    "de": "-Eintrag bei eurem Domainanbieter mit dem Wert",
+    "sv": "-post hos domänleverantören med värdet",
+    "no": "-post hos domeneleverandøren med verdien"
+  },
+  "tennis-makker.onrender.com": {
+    "en": "tennis-makker.onrender.com",
+    "de": "tennis-makker.onrender.com",
+    "sv": "tennis-makker.onrender.com",
+    "no": "tennis-makker.onrender.com"
+  },
+  "på navnet": {
+    "en": "for the name",
+    "de": "für den Namen",
+    "sv": "för namnet",
+    "no": "for navnet"
+  },
+  ". Er det et helt domæne uden underdomæne, skal I i stedet bruge en": {
+    "en": ". For an apex domain, use an",
+    "de": ". Für eine Root-Domain benötigt ihr stattdessen einen",
+    "sv": ". För en rotdomän behöver ni istället en",
+    "no": ". For et rotdomene trenger dere i stedet en"
+  },
+  "ALIAS": {
+    "en": "ALIAS",
+    "de": "ALIAS",
+    "sv": "ALIAS",
+    "no": "ALIAS"
+  },
+  "- eller": {
+    "en": "or",
+    "de": "oder",
+    "sv": "eller",
+    "no": "eller"
+  },
+  "ANAME": {
+    "en": "ANAME",
+    "de": "ANAME",
+    "sv": "ANAME",
+    "no": "ANAME"
+  },
+  "-post — en almindelig CNAME må ikke stå på roden af et domæne.": {
+    "en": "record instead. A regular CNAME cannot be used at the domain root.",
+    "de": "-Eintrag. Ein regulärer CNAME ist an der Domainwurzel nicht erlaubt.",
+    "sv": "-post. En vanlig CNAME kan inte användas på domänens rot.",
+    "no": "-post. En vanlig CNAME kan ikke brukes på domenets rot."
+  },
+  "Skriv til os, når posten er oprettet.": {
+    "en": "Contact us once the record is created.",
+    "de": "Kontaktiert uns, sobald der Eintrag angelegt ist.",
+    "sv": "Kontakta oss när posten är skapad.",
+    "no": "Kontakt oss når posten er opprettet."
+  },
+  "Vi tilføjer domænet hos vores udbyder og får udstedt et certifikat. Det tager typisk under en time, når DNS er slået igennem.": {
+    "en": "We add the domain to our hosting provider and issue a certificate, usually within an hour after DNS propagation.",
+    "de": "Wir ergänzen die Domain beim Hostinganbieter und stellen ein Zertifikat aus, meist innerhalb einer Stunde nach DNS-Aktualisierung.",
+    "sv": "Vi lägger till domänen hos vår leverantör och utfärdar ett certifikat, vanligtvis inom en timme efter DNS-uppdateringen.",
+    "no": "Vi legger til domenet hos leverandøren og utsteder et sertifikat, vanligvis innen en time etter DNS-oppdateringen."
+  },
+  "Trin 3 er manuelt hos os. Vi kan ikke gøre det, før posten i trin 1 er oprettet, og vi får ikke automatisk besked om, at den er — derfor trin 2.": {
+    "en": "Step 3 is handled manually by us after you create the DNS record and notify us.",
+    "de": "Schritt 3 erledigen wir manuell, nachdem ihr den DNS-Eintrag erstellt und uns informiert habt.",
+    "sv": "Steg 3 hanterar vi manuellt när ni har skapat DNS-posten och meddelat oss.",
+    "no": "Trinn 3 håndterer vi manuelt etter at dere har opprettet DNS-posten og informert oss."
+  },
+  "kl.": {
+    "en": "at",
+    "de": "um",
+    "sv": "kl.",
+    "no": "kl."
+  },
+  "Ophæv": {
+    "en": "Remove",
+    "de": "Aufheben",
+    "sv": "Ta bort",
+    "no": "Opphev"
+  },
+  "Der er ingen medlemmer endnu. Del jeres tilmeldingskode, så medlemmerne kan koble sig på klubben — så kan I tildele faste baner.": {
+    "en": "No members yet. Share your join code so members can link to the club and receive recurring court reservations.",
+    "de": "Noch keine Mitglieder. Teilt den Beitrittscode, damit Mitglieder den Club verknüpfen und feste Platzzeiten erhalten können.",
+    "sv": "Inga medlemmar ännu. Dela anslutningskoden så att medlemmar kan koppla sig till klubben och få återkommande bantider.",
+    "no": "Ingen medlemmer ennå. Del innmeldingskoden slik at medlemmer kan koble seg til klubben og få faste banetider."
+  },
+  "Vælg én eller flere baner og ugedage. Gentages hver uge frem til slutdatoen, højst et år frem. Optagede tider springes over og vises efter oprettelse. Betaling opkræves ikke automatisk her.": {
+    "en": "Select courts and weekdays. Reservations repeat weekly until the end date, up to one year ahead. Occupied sessions are skipped and listed afterwards. This does not charge members automatically.",
+    "de": "Wählt Plätze und Wochentage. Wöchentlich bis zum Enddatum, maximal ein Jahr. Belegte Zeiten werden übersprungen und danach angezeigt. Keine automatische Zahlung.",
+    "sv": "Välj banor och veckodagar. Upprepas varje vecka till slutdatum, högst ett år. Upptagna tider hoppas över och visas efteråt. Ingen automatisk betalning.",
+    "no": "Velg baner og ukedager. Gjentas hver uke til sluttdatoen, høyst ett år. Opptatte tider hoppes over og vises etterpå. Ingen automatisk betaling."
+  },
+  "Medlem": {
+    "en": "Member",
+    "de": "Mitglied",
+    "sv": "Medlem",
+    "no": "Medlem"
+  },
+  "Bane": {
+    "en": "Court",
+    "de": "Platz",
+    "sv": "Bana",
+    "no": "Bane"
+  },
+  "Ugedag": {
+    "en": "Weekday",
+    "de": "Wochentag",
+    "sv": "Veckodag",
+    "no": "Ukedag"
+  },
+  "Klokken · dansk tid, én time pr. booking": {
+    "en": "Time · venue time zone, one hour per booking",
+    "de": "Uhrzeit · lokale Platzzeit, eine Stunde pro Buchung",
+    "sv": "Tid · anläggningens tidszon, en timme per bokning",
+    "no": "Tid · anleggets tidssone, én time per booking"
+  },
+  "Fra": {
+    "en": "From",
+    "de": "Von",
+    "sv": "Från",
+    "no": "Fra"
+  },
+  "Til": {
+    "en": "To",
+    "de": "Bis",
+    "sv": "Till",
+    "no": "Til"
+  },
+  "Pris pr. time": {
+    "en": "Price per hour",
+    "de": "Preis pro Stunde",
+    "sv": "Pris per timme",
+    "no": "Pris per time"
+  },
+  "0 hvis den faste bane er dækket af kontingentet. Jeres medlemspris er": {
+    "en": "Use 0 if membership covers this reservation. Your member price is",
+    "de": "0, wenn die Mitgliedschaft diese Reservierung abdeckt. Euer Mitgliedspreis ist",
+    "sv": "0 om medlemskapet täcker denna bokning. Ert medlemspris är",
+    "no": "0 hvis medlemskapet dekker denne reservasjonen. Medlemsprisen deres er"
+  },
+  "Note": {
+    "en": "Note",
+    "de": "Notiz",
+    "sv": "Anteckning",
+    "no": "Merknad"
+  },
+  "fx doublehold": {
+    "en": "e.g. doubles team",
+    "de": "z. B. Doppelgruppe",
+    "sv": "t.ex. dubbelgrupp",
+    "no": "f.eks. doublegruppe"
+  },
+  "Opretter sæsonen…": {
+    "en": "Creating season…",
+    "de": "Saison wird erstellt…",
+    "sv": "Skapar säsongen…",
+    "no": "Oppretter sesongen…"
+  },
+  "Tildel valgte faste baner": {
+    "en": "Assign recurring courts",
+    "de": "Ausgewählte feste Plätze zuweisen",
+    "sv": "Tilldela valda återkommande banor",
+    "no": "Tildel valgte faste baner"
+  },
+  "Kort beskrivelse, fx “Bane 1 en sommeraften”": {
+    "en": "Short description, e.g. Court 1 on a summer evening",
+    "de": "Kurze Beschreibung, z. B. „Platz 1 an einem Sommerabend“",
+    "sv": "Kort beskrivning, t.ex. ”Bana 1 en sommarkväll”",
+    "no": "Kort beskrivelse, f.eks. «Bane 1 en sommerkveld»"
+  },
+  "Uploader…": {
+    "en": "Uploading…",
+    "de": "Wird hochgeladen…",
+    "sv": "Laddar upp…",
+    "no": "Laster opp…"
+  },
+  "Forsidebillede": {
+    "en": "Cover image",
+    "de": "Titelbild",
+    "sv": "Omslagsbild",
+    "no": "Forsidebilde"
+  },
+  "Det første gæster ser. Tag det udendørs i dagslys — helst banerne med folk på.": {
+    "en": "The first thing visitors see. Use a daylight photo, ideally with people on the courts.",
+    "de": "Das erste Bild für Gäste. Nutzt ein Tageslichtfoto, am besten mit Menschen auf den Plätzen.",
+    "sv": "Det första gästerna ser. Använd en bild i dagsljus, helst med människor på banorna.",
+    "no": "Det første gjestene ser. Bruk et bilde i dagslys, helst med folk på banene."
+  },
+  "Klublogo": {
+    "en": "Club logo",
+    "de": "Clublogo",
+    "sv": "Klubblogotyp",
+    "no": "Klubblogo"
+  },
+  "Vises oven på forsidebilledet. PNG med gennemsigtig baggrund virker bedst.": {
+    "en": "Displayed over the cover image. A transparent PNG works best.",
+    "de": "Wird über dem Titelbild angezeigt. PNG mit transparentem Hintergrund eignet sich am besten.",
+    "sv": "Visas över omslagsbilden. PNG med genomskinlig bakgrund fungerar bäst.",
+    "no": "Vises over forsidebildet. PNG med gjennomsiktig bakgrunn fungerer best."
+  },
+  "Billeder af anlægget": {
+    "en": "Venue photos",
+    "de": "Fotos der Anlage",
+    "sv": "Bilder av anläggningen",
+    "no": "Bilder av anlegget"
+  },
+  "Op til otte. Baner, klubhus, omklædning — det gæster gerne vil se på forhånd.": {
+    "en": "Up to eight photos. Show courts, clubhouse and changing rooms so guests know what to expect.",
+    "de": "Bis zu acht Fotos. Zeigt Plätze, Clubhaus und Umkleiden, damit Gäste wissen, was sie erwartet.",
+    "sv": "Upp till åtta bilder. Visa banor, klubbhus och omklädningsrum så att gäster vet vad de kan vänta sig.",
+    "no": "Opptil åtte bilder. Vis baner, klubbhus og garderober slik at gjester vet hva de kan forvente."
+  },
+  "Slet billedet": {
+    "en": "Delete image",
+    "de": "Bild löschen",
+    "sv": "Radera bilden",
+    "no": "Slett bildet"
+  },
+  "Flyt medlemmer og bookinger": {
+    "en": "Import members and bookings",
+    "de": "Mitglieder und Buchungen importieren",
+    "sv": "Importera medlemmar och bokningar",
+    "no": "Importer medlemmer og bookinger"
+  },
+  "Eksportér fra det gamle system og tilpas kolonnerne til skabelonen. Importér højst 500 rækker ad gangen. Banenavne skal matche jeres baner præcist. Dette er en engangsimport; kalenderfeed er til løbende synkronisering.": {
+    "en": "Export from your old system and match the template columns. Import up to 500 rows at a time. Court names must match exactly. This is a one-time import; use a calendar feed for ongoing synchronisation.",
+    "de": "Exportiert aus dem alten System und passt die Spalten an die Vorlage an. Höchstens 500 Zeilen pro Import. Platznamen müssen exakt übereinstimmen. Einmaliger Import; für laufende Synchronisierung den Kalenderfeed nutzen.",
+    "sv": "Exportera från det gamla systemet och anpassa kolumnerna till mallen. Högst 500 rader per import. Bannamnen måste stämma exakt. Engångsimport; använd kalenderflöde för löpande synkronisering.",
+    "no": "Eksporter fra det gamle systemet og tilpass kolonnene til malen. Høyst 500 rader per import. Banenavn må stemme nøyaktig. Engangsimport; bruk kalenderfeed for løpende synkronisering."
+  },
+  "Kildesystem": {
+    "en": "Source system",
+    "de": "Quellsystem",
+    "sv": "Källsystem",
+    "no": "Kildesystem"
+  },
+  "Resasports": {
+    "en": "Resasports",
+    "de": "Resasports",
+    "sv": "Resasports",
+    "no": "Resasports"
+  },
+  "Vælg CSV-fil": {
+    "en": "Choose CSV file",
+    "de": "CSV-Datei wählen",
+    "sv": "Välj CSV-fil",
+    "no": "Velg CSV-fil"
+  },
+  "Eller indsæt CSV": {
+    "en": "Or paste CSV",
+    "de": "Oder CSV einfügen",
+    "sv": "Eller klistra in CSV",
+    "no": "Eller lim inn CSV"
+  },
+  "Vis forhåndsvisning": {
+    "en": "Preview",
+    "de": "Vorschau",
+    "sv": "Förhandsgranska",
+    "no": "Forhåndsvisning"
+  },
+  "Jeg har gennemgået data og har ret til at flytte dem.": {
+    "en": "I reviewed this data and am authorised to import it.",
+    "de": "Ich habe die Daten geprüft und bin zum Import berechtigt.",
+    "sv": "Jag har granskat uppgifterna och har rätt att importera dem.",
+    "no": "Jeg har gjennomgått dataene og har rett til å importere dem."
+  },
+  "Bekræft import": {
+    "en": "Confirm import",
+    "de": "Import bestätigen",
+    "sv": "Bekräfta import",
+    "no": "Bekreft import"
+  },
+  "(kommer senere)": {
+    "en": "(coming later)",
+    "de": "(demnächst)",
+    "sv": "(kommer senare)",
+    "no": "(kommer senere)"
+  },
+  "Hvilket system bruger I? (valgfrit)": {
+    "en": "Which booking system do you use? (optional)",
+    "de": "Welches System nutzt ihr? (optional)",
+    "sv": "Vilket system använder ni? (valfritt)",
+    "no": "Hvilket system bruker dere? (valgfritt)"
+  },
+  "fx Halbooking (Globus Data)": {
+    "en": "e.g. Halbooking (Globus Data)",
+    "de": "z. B. Halbooking (Globus Data)",
+    "sv": "t.ex. Halbooking (Globus Data)",
+    "no": "f.eks. Halbooking (Globus Data)"
+  },
+  "Feed-adresse (.ics)": {
+    "en": "Feed URL (.ics)",
+    "de": "Feed-Adresse (.ics)",
+    "sv": "Flödesadress (.ics)",
+    "no": "Feed-adresse (.ics)"
+  },
+  "https://...": {
+    "en": "https://...",
+    "de": "https://...",
+    "sv": "https://...",
+    "no": "https://..."
+  },
+  "Find eksport- eller abonnér-linket i jeres bookingsystem. Vi læser kun fra det — vi skriver aldrig i jeres kalender.": {
+    "en": "Find the export or subscribe link in your booking system. We only read the feed; we do not modify your calendar.",
+    "de": "Sucht den Export- oder Abonnementlink in eurem System. Wir lesen nur daraus und ändern euren Kalender nicht.",
+    "sv": "Hitta export- eller prenumerationslänken i ert system. Vi läser bara flödet och ändrar inte kalendern.",
+    "no": "Finn eksport- eller abonnementslenken i systemet. Vi leser bare feeden og endrer ikke kalenderen."
+  },
+  "Tænd lys manuelt": {
+    "en": "Switch lights on manually",
+    "de": "Licht manuell einschalten",
+    "sv": "Tänd ljuset manuellt",
+    "no": "Tenn lys manuelt"
+  },
+  "Lyset kan tændes i en afgrænset periode. Derefter følger det igen bookingerne. “Automatik” slukker ikke lyset under en aktiv booking.": {
+    "en": "Switch lights on for a limited period, then resume booking automation. Automatic mode keeps lights on during an active booking.",
+    "de": "Schaltet Licht für eine begrenzte Zeit ein, dann folgt es wieder den Buchungen. Automatik lässt das Licht bei einer aktiven Buchung an.",
+    "sv": "Tänd ljuset under en begränsad tid, sedan följer det åter bokningarna. Automatik behåller ljuset tänt under en aktiv bokning.",
+    "no": "Tenn lyset i en begrenset periode, så følger det bookingene igjen. Automatikk holder lyset tent under en aktiv booking."
+  },
+  "Lys": {
+    "en": "Lights",
+    "de": "Licht",
+    "sv": "Ljus",
+    "no": "Lys"
+  },
+  "Varighed": {
+    "en": "Duration",
+    "de": "Dauer",
+    "sv": "Varaktighet",
+    "no": "Varighet"
+  },
+  "minutter": {
+    "en": "minutes",
+    "de": "Minuten",
+    "sv": "minuter",
+    "no": "minutter"
+  },
+  "Automatik": {
+    "en": "Automatic",
+    "de": "Automatik",
+    "sv": "Automatik",
+    "no": "Automatikk"
+  },
+  "Anvend": {
+    "en": "Apply",
+    "de": "Anwenden",
+    "sv": "Tillämpa",
+    "no": "Bruk"
+  },
+  "Færdiggør lysopsætningen nedenfor først.": {
+    "en": "Complete the light setup below first.",
+    "de": "Schließt zuerst die Lichteinrichtung unten ab.",
+    "sv": "Slutför först ljusinställningarna nedan.",
+    "no": "Fullfør lysoppsettet nedenfor først."
+  },
+  "Tilføj medlem": {
+    "en": "Add member",
+    "de": "Mitglied hinzufügen",
+    "sv": "Lägg till medlem",
+    "no": "Legg til medlem"
+  },
+  "Medlemmet får tilknytning til klubben. Kontingent aktiveres først ved betaling. Eksisterende loginoplysninger ændres ikke.": {
+    "en": "The member joins this club. Membership activates after payment. Existing login details stay unchanged.",
+    "de": "Das Mitglied wird dem Club zugeordnet. Die Mitgliedschaft wird erst nach Zahlung aktiv. Bestehende Zugangsdaten bleiben unverändert.",
+    "sv": "Medlemmen kopplas till klubben. Medlemskapet aktiveras efter betalning. Befintliga inloggningsuppgifter ändras inte.",
+    "no": "Medlemmet knyttes til klubben. Medlemskapet aktiveres etter betaling. Eksisterende innloggingsopplysninger endres ikke."
+  },
+  "Intet kontingent valgt": {
+    "en": "No membership selected",
+    "de": "Keine Mitgliedschaft gewählt",
+    "sv": "Inget medlemskap valt",
+    "no": "Ingen kontingent valgt"
+  },
+  "Gem login nu og udlever det til medlemmet:": {
+    "en": "Save these login details now and give them to the member:",
+    "de": "Zugangsdaten jetzt speichern und dem Mitglied geben:",
+    "sv": "Spara inloggningsuppgifterna nu och lämna dem till medlemmen:",
+    "no": "Lagre innloggingsopplysningene nå og gi dem til medlemmet:"
+  },
+  "lukket": {
+    "en": "closed",
+    "de": "geschlossen",
+    "sv": "stängt",
+    "no": "stengt"
+  },
+  "betalt": {
+    "en": "paid",
+    "de": "bezahlt",
+    "sv": "betalt",
+    "no": "betalt"
+  },
+  "fx Senior": {
+    "en": "e.g. Adult",
+    "de": "z. B. Erwachsene",
+    "sv": "t.ex. Senior",
+    "no": "f.eks. Senior"
+  },
+  "Sæson": {
+    "en": "Season",
+    "de": "Saison",
+    "sv": "Säsong",
+    "no": "Sesong"
+  },
+  "fx Sommer 2026": {
+    "en": "e.g. Summer 2026",
+    "de": "z. B. Sommer 2026",
+    "sv": "t.ex. Sommar 2026",
+    "no": "f.eks. Sommer 2026"
+  },
+  "Gælder fra": {
+    "en": "Valid from",
+    "de": "Gültig ab",
+    "sv": "Gäller från",
+    "no": "Gjelder fra"
+  },
+  "Gælder til": {
+    "en": "Valid until",
+    "de": "Gültig bis",
+    "sv": "Gäller till",
+    "no": "Gjelder til"
+  },
+  "1200": {
+    "en": "1200",
+    "de": "1200",
+    "sv": "1200",
+    "no": "1200"
+  },
+  "Pladser": {
+    "en": "Capacity",
+    "de": "Kapazität",
+    "sv": "Platser",
+    "no": "Plasser"
+  },
+  "0 = intet loft.": {
+    "en": "0 = unlimited.",
+    "de": "0 = unbegrenzt.",
+    "sv": "0 = obegränsat.",
+    "no": "0 = ubegrenset."
+  },
+  "Beskrivelse": {
+    "en": "Description",
+    "de": "Beschreibung",
+    "sv": "Beskrivning",
+    "no": "Beskrivelse"
+  },
+  "fx 25-59 år, inkluderer fri banetid": {
+    "en": "e.g. Ages 25–59, includes court time",
+    "de": "z. B. 25–59 Jahre, inklusive Platzstunden",
+    "sv": "t.ex. 25–59 år, inklusive bantid",
+    "no": "f.eks. 25–59 år, inkluderer banetid"
+  },
+  "Opret kontingent": {
+    "en": "Create membership",
+    "de": "Mitgliedschaft erstellen",
+    "sv": "Skapa medlemskap",
+    "no": "Opprett kontingent"
+  },
+  "Pengene går ubeskåret til klubbens egen konto. Vi tager intet af kontingentet — vi lever af abonnementet.": {
+    "en": "Membership payments go to your club account. RacketBuddy takes no membership commission; our revenue comes from the subscription.",
+    "de": "Mitgliedsbeiträge gehen auf das Clubkonto. RacketBuddy erhebt keine Mitgliedsprovision; unsere Einnahmen kommen aus dem Abonnement.",
+    "sv": "Medlemsavgifter går till klubbens konto. RacketBuddy tar ingen provision på medlemsavgifter; våra intäkter kommer från abonnemanget.",
+    "no": "Kontingenter går til klubbens konto. RacketBuddy tar ingen kontingentprovisjon; inntektene våre kommer fra abonnementet."
+  },
+  "Rolle": {
+    "en": "Role",
+    "de": "Rolle",
+    "sv": "Roll",
+    "no": "Rolle"
+  },
+  "fx Formand": {
+    "en": "e.g. Chair",
+    "de": "z. B. Vorsitzende",
+    "sv": "t.ex. Ordförande",
+    "no": "f.eks. Leder"
+  },
+  "Telefon": {
+    "en": "Phone",
+    "de": "Telefon",
+    "sv": "Telefon",
+    "no": "Telefon"
+  },
+  "Tilføj til bestyrelsen": {
+    "en": "Add board member",
+    "de": "Vorstandsmitglied hinzufügen",
+    "sv": "Lägg till styrelsemedlem",
+    "no": "Legg til styremedlem"
+  },
+  "Rammer flere regler samme time, vinder den øverste. Så kan en specifik regel lægges over en bred.": {
+    "en": "If rules overlap, the first one wins. Put specific rules above broader rules.",
+    "de": "Überlappen Regeln, gilt die oberste. Setzt spezifische Regeln vor allgemeine.",
+    "sv": "Om regler överlappar gäller den översta. Lägg specifika regler före generella.",
+    "no": "Hvis regler overlapper, gjelder den øverste. Legg spesifikke regler foran generelle."
+  },
+  "Hvad hedder reglen": {
+    "en": "Rule name",
+    "de": "Name der Regel",
+    "sv": "Regelns namn",
+    "no": "Regelnavn"
+  },
+  "fx Prime time hverdage": {
+    "en": "e.g. Weekday peak hours",
+    "de": "z. B. Hauptzeiten unter der Woche",
+    "sv": "t.ex. Populära vardagstider",
+    "no": "f.eks. Populære hverdagstider"
+  },
+  "Baner": {
+    "en": "Courts",
+    "de": "Plätze",
+    "sv": "Banor",
+    "no": "Baner"
+  },
+  "Ingen valgt = alle baner.": {
+    "en": "None selected = all courts.",
+    "de": "Keine Auswahl = alle Plätze.",
+    "sv": "Inget valt = alla banor.",
+    "no": "Ingen valgt = alle baner."
+  },
+  "Ugedage": {
+    "en": "Weekdays",
+    "de": "Wochentage",
+    "sv": "Veckodagar",
+    "no": "Ukedager"
+  },
+  "Ingen valgt = alle dage.": {
+    "en": "None selected = all days.",
+    "de": "Keine Auswahl = alle Tage.",
+    "sv": "Inget valt = alla dagar.",
+    "no": "Ingen valgt = alle dager."
+  },
+  "Fra kl.": {
+    "en": "From time",
+    "de": "Von Uhrzeit",
+    "sv": "Från tid",
+    "no": "Fra tidspunkt"
+  },
+  "Til kl.": {
+    "en": "Until time",
+    "de": "Bis Uhrzeit",
+    "sv": "Till tid",
+    "no": "Til tidspunkt"
+  },
+  "Gæstepris": {
+    "en": "Guest price",
+    "de": "Gastpreis",
+    "sv": "Gästpris",
+    "no": "Gjestepris"
+  },
+  "uændret": {
+    "en": "unchanged",
+    "de": "unverändert",
+    "sv": "oförändrat",
+    "no": "uendret"
+  },
+  "Til-tidspunktet er ikke med: 17 til 21 dækker 17, 18, 19 og 20. Lader du medlemsprisen stå tom, beholder medlemmerne deres almindelige pris.": {
+    "en": "The end hour is excluded: 17 to 21 covers 17, 18, 19 and 20. An empty member price keeps the standard member price.",
+    "de": "Die Endzeit ist ausgeschlossen: 17 bis 21 umfasst 17, 18, 19 und 20. Ohne Mitgliedspreis bleibt der reguläre Mitgliedspreis.",
+    "sv": "Sluttiden ingår inte: 17 till 21 omfattar 17, 18, 19 och 20. Ett tomt medlemspris behåller det vanliga medlemspriset.",
+    "no": "Sluttiden er ikke inkludert: 17 til 21 dekker 17, 18, 19 og 20. Et tomt medlemsprisfelt beholder vanlig medlemspris."
+  },
+  "Tilføj prisregel": {
+    "en": "Add price rule",
+    "de": "Preisregel hinzufügen",
+    "sv": "Lägg till prisregel",
+    "no": "Legg til prisregel"
+  },
+  "Dato": {
+    "en": "Date",
+    "de": "Datum",
+    "sv": "Datum",
+    "no": "Dato"
+  },
+  "Frigiver…": {
+    "en": "Releasing…",
+    "de": "Wird freigegeben…",
+    "sv": "Öppnar tider…",
+    "no": "Frigir tider…"
+  },
+  "Frigiv tider": {
+    "en": "Release times",
+    "de": "Zeiten freigeben",
+    "sv": "Öppna tider",
+    "no": "Frigi tider"
+  },
+  "Henter data …": {
+    "en": "Fetching data …",
+    "de": "Daten werden geladen…",
+    "sv": "Hämtar data…",
+    "no": "Henter data…"
+  },
+  "Hent fra Resasports": {
+    "en": "Fetch from Resasports",
+    "de": "Aus Resasports laden",
+    "sv": "Hämta från Resasports",
+    "no": "Hent fra Resasports"
+  },
+  "Hentet fra Resasports-klub": {
+    "en": "Retrieved from Resasports club",
+    "de": "Geladen aus Resasports-Club",
+    "sv": "Hämtat från Resasports-klubb",
+    "no": "Hentet fra Resasports-klubb"
+  },
+  "medlemmer og": {
+    "en": "members and",
+    "de": "Mitglieder und",
+    "sv": "medlemmar och",
+    "no": "medlemmer og"
+  },
+  "bookinger.": {
+    "en": "bookings.",
+    "de": "Buchungen.",
+    "sv": "bokningar.",
+    "no": "bookinger."
+  },
+  "Kontrollér klub-ID, medlemmer og bookingtider nedenfor. Gamle betalinger, kontingenter og wallet-saldi overføres ikke. Dette er en engangsimport; senere ændringer og aflysninger i Resasports bliver ikke synkroniseret.": {
+    "en": "Check the club ID, members and booking times below. Past payments, memberships and wallet balances are not transferred. This is a one-time import; later changes and cancellations in Resasports are not synchronised.",
+    "de": "Prüft Club-ID, Mitglieder und Buchungszeiten. Frühere Zahlungen, Mitgliedschaften und Wallet-Guthaben werden nicht übertragen. Einmaliger Import; spätere Änderungen und Stornierungen werden nicht synchronisiert.",
+    "sv": "Kontrollera klubb-ID, medlemmar och bokningstider. Tidigare betalningar, medlemskap och wallet-saldon överförs inte. Engångsimport; senare ändringar och avbokningar synkroniseras inte.",
+    "no": "Kontroller klubb-ID, medlemmer og bookingtider. Tidligere betalinger, medlemskap og wallet-saldoer overføres ikke. Engangsimport; senere endringer og avlysninger synkroniseres ikke."
+  },
+  "(Resasports #": {
+    "en": "(Resasports #",
+    "de": "(Resasports #",
+    "sv": "(Resasports #",
+    "no": "(Resasports #"
+  },
+  "Vælg tilsvarende bane": {
+    "en": "Choose matching court",
+    "de": "Passenden Platz wählen",
+    "sv": "Välj motsvarande bana",
+    "no": "Velg tilsvarende bane"
+  },
+  "Gennemse hentede data": {
+    "en": "Review retrieved data",
+    "de": "Geladene Daten prüfen",
+    "sv": "Granska hämtade data",
+    "no": "Gjennomgå hentede data"
+  },
+  "Medlemmer": {
+    "en": "Members",
+    "de": "Mitglieder",
+    "sv": "Medlemmar",
+    "no": "Medlemmer"
+  },
+  "Bookinger (lokal tid)": {
+    "en": "Bookings (local time)",
+    "de": "Buchungen (Ortszeit)",
+    "sv": "Bokningar (lokal tid)",
+    "no": "Bookinger (lokal tid)"
+  },
+  "ID": {
+    "en": "ID",
+    "de": "ID",
+    "sv": "ID",
+    "no": "ID"
+  },
+  "Fra – til": {
+    "en": "From – until",
+    "de": "Von – bis",
+    "sv": "Från – till",
+    "no": "Fra – til"
+  },
+  "Klargør import": {
+    "en": "Prepare import",
+    "de": "Import vorbereiten",
+    "sv": "Förbered import",
+    "no": "Klargjør import"
+  },
+  "Hent direkte fra Resasports": {
+    "en": "Retrieve from Resasports",
+    "de": "Direkt aus Resasports laden",
+    "sv": "Hämta direkt från Resasports",
+    "no": "Hent direkte fra Resasports"
+  },
+  "Brug API-adgang udleveret af Nubapp, ikke dit almindelige medlemslogin. Bed om læseadgang til getUsers, getFacilities og getBookings i API v4. Denne ældre API kræver særskilt godkendelse. Oplysningerne bruges kun til dette opslag og gemmes ikke.": {
+    "en": "Use API access supplied by Nubapp, rather than your regular member login. Request read access to getUsers, getFacilities and getBookings in API v4. This legacy API requires separate approval. Credentials are used only for this lookup and are not saved.",
+    "de": "Nutzt den API-Zugang von Nubapp statt des Mitgliedslogins. Fordert Lesezugang für getUsers, getFacilities und getBookings in API v4 an. Diese ältere API benötigt eine separate Freigabe. Zugangsdaten werden nur für diesen Abruf verwendet und nicht gespeichert.",
+    "sv": "Använd API-åtkomst från Nubapp, inte medlemsinloggningen. Begär läsåtkomst till getUsers, getFacilities och getBookings i API v4. Den äldre API-versionen kräver separat godkännande. Uppgifterna används bara för detta uppslag och sparas inte.",
+    "no": "Bruk API-tilgang fra Nubapp, ikke medlemsinnloggingen. Be om lesetilgang til getUsers, getFacilities og getBookings i API v4. Denne eldre API-en krever egen godkjenning. Opplysningene brukes bare til dette oppslaget og lagres ikke."
+  },
+  "Miljø": {
+    "en": "Environment",
+    "de": "Umgebung",
+    "sv": "Miljö",
+    "no": "Miljø"
+  },
+  "Klubbens Resasports": {
+    "en": "Club Resasports account",
+    "de": "Resasports-Konto des Clubs",
+    "sv": "Klubbens Resasports-konto",
+    "no": "Klubbens Resasports-konto"
+  },
+  "Nubapp sandbox": {
+    "en": "Nubapp sandbox",
+    "de": "Nubapp-Sandbox",
+    "sv": "Nubapp-sandbox",
+    "no": "Nubapp-sandbox"
+  },
+  "Bookinger fra": {
+    "en": "Bookings from",
+    "de": "Buchungen ab",
+    "sv": "Bokningar från",
+    "no": "Bookinger fra"
+  },
+  "Bookinger til": {
+    "en": "Bookings until",
+    "de": "Buchungen bis",
+    "sv": "Bokningar till",
+    "no": "Bookinger til"
+  },
+  "Resasports bruger klubbens lokale tidszone:": {
+    "en": "Resasports uses the club’s local time zone: ",
+    "de": "Resasports verwendet die lokale Zeitzone des Clubs:",
+    "sv": "Resasports använder klubbens lokala tidszon:",
+    "no": "Resasports bruker klubbens lokale tidssone:"
+  },
+  "Højst 500 medlems- og bookingrækker samlet. Vælg fremtidige bookinger, højst ét år frem. Sandbox kan indeholde en kopi af rigtige klubdata. Ingen data ændres hos Resasports.": {
+    "en": "Up to 500 member and booking rows in total. Select future bookings within one year. Sandbox may contain copies of real club data. No data is modified in Resasports.",
+    "de": "Insgesamt höchstens 500 Mitglieds- und Buchungszeilen. Wählt zukünftige Buchungen bis zu einem Jahr. Die Sandbox kann Kopien echter Clubdaten enthalten. Resasports-Daten bleiben unverändert.",
+    "sv": "Högst 500 medlems- och bokningsrader totalt. Välj framtida bokningar högst ett år framåt. Sandbox kan innehålla kopior av riktiga klubbdata. Inga data ändras hos Resasports.",
+    "no": "Høyst 500 medlems- og bookingrader samlet. Velg fremtidige bookinger høyst ett år frem. Sandbox kan inneholde kopier av ekte klubbdata. Ingen data endres hos Resasports."
+  },
+  "Hvilke dage?": {
+    "en": "Which days?",
+    "de": "Welche Tage?",
+    "sv": "Vilka dagar?",
+    "no": "Hvilke dager?"
+  },
+  "Hvilke baner? Vælg ingen for alle.": {
+    "en": "Which courts? Select none for all.",
+    "de": "Welche Plätze? Keine Auswahl für alle.",
+    "sv": "Vilka banor? Välj inga för alla.",
+    "no": "Hvilke baner? Velg ingen for alle."
+  },
+  "Aktiverer…": {
+    "en": "Activating…",
+    "de": "Wird aktiviert…",
+    "sv": "Aktiverar…",
+    "no": "Aktiverer…"
+  },
+  "Aktivér reglen": {
+    "en": "Activate rule",
+    "de": "Regel aktivieren",
+    "sv": "Aktivera regeln",
+    "no": "Aktiver regelen"
+  },
+  "Husk at tage de samme tider ud af jeres eget bookingsystem, så den samme bane ikke sælges to gange.": {
+    "en": "Block these sessions in your own booking system so the court is not sold twice.",
+    "de": "Sperrt dieselben Zeiten im bisherigen System, damit der Platz nicht zweimal verkauft wird.",
+    "sv": "Blockera samma tider i ert befintliga system så att banan inte säljs två gånger.",
+    "no": "Sperr de samme tidene i det eksisterende systemet slik at banen ikke selges to ganger."
+  },
+  "Én linje om klubben": {
+    "en": "Club tagline",
+    "de": "Club in einem Satz",
+    "sv": "Klubben i en mening",
+    "no": "Klubben i én setning"
+  },
+  "fx Spil, fællesskab og træning tæt på stationen.": {
+    "en": "e.g. Games, community and coaching near the station.",
+    "de": "z. B. Spielen, Gemeinschaft und Training nahe dem Bahnhof.",
+    "sv": "t.ex. Spel, gemenskap och träning nära stationen.",
+    "no": "f.eks. Spill, fellesskap og trening nær stasjonen."
+  },
+  "Om klubben": {
+    "en": "About the club",
+    "de": "Über den Club",
+    "sv": "Om klubben",
+    "no": "Om klubben"
+  },
+  "Historie, hold, træningstider, stemning.": {
+    "en": "History, teams, coaching and atmosphere.",
+    "de": "Geschichte, Kurse, Trainingszeiten und Atmosphäre.",
+    "sv": "Historia, grupper, träningstider och stämning.",
+    "no": "Historie, grupper, treningstider og stemning."
+  },
+  "Kontingent og indmeldelse": {
+    "en": "Membership and joining",
+    "de": "Mitgliedschaft und Beitritt",
+    "sv": "Medlemskap och anslutning",
+    "no": "Kontingent og innmelding"
+  },
+  "fx Voksne 1.200 kr/år, juniorer 600 kr, familie 2.400 kr. Indmeldelse ved at skrive til kassereren.": {
+    "en": "e.g. List your annual membership prices and how to contact the treasurer to join.",
+    "de": "z. B. Jahresbeiträge und Kontakt zum Kassenwart für den Beitritt.",
+    "sv": "t.ex. Årsavgifter och kontakt till kassören för medlemskap.",
+    "no": "f.eks. Årskontingenter og kontakt til kassereren for innmelding."
+  },
+  "Vises under \"Bliv medlem\".": {
+    "en": "Displayed under Join the club.",
+    "de": "Wird unter „Mitglied werden“ angezeigt.",
+    "sv": "Visas under ”Bli medlem”.",
+    "no": "Vises under «Bli medlem»."
+  },
+  "Adresse": {
+    "en": "Address",
+    "de": "Adresse",
+    "sv": "Adress",
+    "no": "Adresse"
+  },
+  "Stadionvej 12, 4000 Roskilde": {
+    "en": "Street address and postcode",
+    "de": "Straße, Hausnummer und Postleitzahl",
+    "sv": "Gatuadress och postnummer",
+    "no": "Gateadresse og postnummer"
+  },
+  "Praktisk": {
+    "en": "Practical information",
+    "de": "Praktische Informationen",
+    "sv": "Praktisk information",
+    "no": "Praktisk informasjon"
+  },
+  "Hvordan kommer man ind? Er der omklædning? Hvor parkerer man?": {
+    "en": "How do guests enter? Are there changing rooms? Where can they park?",
+    "de": "Wie kommen Gäste hinein? Gibt es Umkleiden? Wo können sie parken?",
+    "sv": "Hur kommer gäster in? Finns omklädningsrum? Var kan de parkera?",
+    "no": "Hvordan kommer gjester inn? Finnes det garderober? Hvor kan de parkere?"
+  },
+  "Det vigtigste for en gæst: hvordan kommer jeg ind på anlægget.": {
+    "en": "Explain how guests enter the venue.",
+    "de": "Erklärt Gästen, wie sie die Anlage betreten.",
+    "sv": "Förklara hur gäster kommer in på anläggningen.",
+    "no": "Forklar hvordan gjester kommer inn på anlegget."
+  },
+  "Kontakt-e-mail": {
+    "en": "Contact email",
+    "de": "Kontakt-E-Mail",
+    "sv": "Kontaktmejl",
+    "no": "Kontakt-e-post"
+  },
+  "Gæstepris pr. time": {
+    "en": "Guest price per hour",
+    "de": "Gastpreis pro Stunde",
+    "sv": "Gästpris per timme",
+    "no": "Gjestepris per time"
+  },
+  "Medlemspris pr. time": {
+    "en": "Member price per hour",
+    "de": "Mitgliedspreis pro Stunde",
+    "sv": "Medlemspris per timme",
+    "no": "Medlemspris per time"
+  },
+  "Tom = samme som gæstepris": {
+    "en": "Empty = guest price",
+    "de": "Leer = Gastpreis",
+    "sv": "Tomt = gästpris",
+    "no": "Tomt = gjestepris"
+  },
+  "Medlemmernes vilkår": {
+    "en": "Member booking rules",
+    "de": "Buchungsregeln für Mitglieder",
+    "sv": "Bokningsregler för medlemmar",
+    "no": "Bookingregler for medlemmer"
+  },
+  "Sæt medlemsprisen til 0, hvis kontingentet dækker banetid. Så booker medlemmer uden at igennem en betaling — kun gæster betaler.": {
+    "en": "Set the member price to 0 if membership includes court time. Members then book without checkout; guests still pay.",
+    "de": "Setzt den Mitgliedspreis auf 0, wenn Platzstunden enthalten sind. Mitglieder buchen dann ohne Zahlung, Gäste bezahlen weiterhin.",
+    "sv": "Sätt medlemspriset till 0 om medlemskapet inkluderar bantid. Medlemmar bokar då utan betalning, medan gäster betalar.",
+    "no": "Sett medlemsprisen til 0 hvis medlemskapet inkluderer banetid. Medlemmer booker da uten betaling, mens gjester betaler."
+  },
+  "Medlemmer booker (dage frem)": {
+    "en": "Member booking window (days)",
+    "de": "Buchungsfenster für Mitglieder (Tage)",
+    "sv": "Medlemmars bokningsfönster (dagar)",
+    "no": "Medlemmenes bookingvindu (dager)"
+  },
+  "Aktive bookinger pr. medlem": {
+    "en": "Active bookings per member",
+    "de": "Aktive Buchungen pro Mitglied",
+    "sv": "Aktiva bokningar per medlem",
+    "no": "Aktive bookinger per medlem"
+  },
+  "Gæster booker (dage frem)": {
+    "en": "Guest booking window (days)",
+    "de": "Buchungsfenster für Gäste (Tage)",
+    "sv": "Gästers bokningsfönster (dagar)",
+    "no": "Gjestenes bookingvindu (dager)"
+  },
+  "Åbner kl.": {
+    "en": "Opening hour",
+    "de": "Öffnungszeit",
+    "sv": "Öppningstid",
+    "no": "Åpningstid"
+  },
+  "Lukker kl.": {
+    "en": "Closing hour",
+    "de": "Schließzeit",
+    "sv": "Stängningstid",
+    "no": "Stengetid"
+  },
+  "Klubfarve": {
+    "en": "Club colour",
+    "de": "Clubfarbe",
+    "sv": "Klubbfärg",
+    "no": "Klubbfarge"
+  },
+  "Anlægget er aflåst": {
+    "en": "Venue is locked",
+    "de": "Anlage ist verschlossen",
+    "sv": "Anläggningen är låst",
+    "no": "Anlegget er låst"
+  },
+  "Vises kun til gæster med en bekræftet booking — i kvitteringsmailen og på deres profil. Aldrig på den offentlige klubside.": {
+    "en": "Shown only to guests with a confirmed booking, in their receipt and profile. Never on the public club page.",
+    "de": "Nur für Gäste mit bestätigter Buchung, in Quittung und Profil. Niemals auf der öffentlichen Clubseite.",
+    "sv": "Visas bara för gäster med bekräftad bokning, på kvittot och profilen. Aldrig på den offentliga klubbsidan.",
+    "no": "Vises bare for gjester med bekreftet booking, på kvitteringen og profilen. Aldri på den offentlige klubbsiden."
+  },
+  "Kode": {
+    "en": "Code",
+    "de": "Code",
+    "sv": "Kod",
+    "no": "Kode"
+  },
+  "fx 4821": {
+    "en": "e.g. 4821",
+    "de": "z. B. 4821",
+    "sv": "t.ex. 4821",
+    "no": "f.eks. 4821"
+  },
+  "Vejledning": {
+    "en": "Instructions",
+    "de": "Anleitung",
+    "sv": "Instruktioner",
+    "no": "Veiledning"
+  },
+  "fx Koden virker fra 15 minutter før din tid. Indgang er bag hallen.": {
+    "en": "e.g. Access begins 15 minutes before your session. Entrance is behind the hall.",
+    "de": "z. B. Zugang 15 Minuten vor Beginn. Eingang hinter der Halle.",
+    "sv": "t.ex. Tillträde 15 minuter före tiden. Ingång bakom hallen.",
+    "no": "f.eks. Adgang 15 minutter før tiden. Inngang bak hallen."
+  },
+  "Gem siden": {
+    "en": "Save page",
+    "de": "Seite speichern",
+    "sv": "Spara sidan",
+    "no": "Lagre siden"
+  },
+  "Overskrift": {
+    "en": "Heading",
+    "de": "Überschrift",
+    "sv": "Rubrik",
+    "no": "Overskrift"
+  },
+  "fx Banerne er lukket lørdag": {
+    "en": "e.g. Courts closed on Saturday",
+    "de": "z. B. Plätze am Samstag geschlossen",
+    "sv": "t.ex. Banorna är stängda på lördag",
+    "no": "f.eks. Banene er stengt på lørdag"
+  },
+  "Tekst": {
+    "en": "Text",
+    "de": "Text",
+    "sv": "Text",
+    "no": "Tekst"
+  },
+  "Vis øverst": {
+    "en": "Pin to top",
+    "de": "Oben anheften",
+    "sv": "Fäst överst",
+    "no": "Fest øverst"
+  },
+  "Slå op": {
+    "en": "Publish post",
+    "de": "Beitrag veröffentlichen",
+    "sv": "Publicera inlägg",
+    "no": "Publiser innlegg"
+  },
+  "Vi har adgang til": {
+    "en": "Connected to",
+    "de": "Verbunden mit",
+    "sv": "Ansluten till",
+    "no": "Tilkoblet til"
+  },
+  "som": {
+    "en": "as",
+    "de": "als",
+    "sv": "som",
+    "no": "som"
+  },
+  "tider spærret": {
+    "en": "times blocked",
+    "de": "Zeiten gesperrt",
+    "sv": "tider blockerade",
+    "no": "tider sperret"
+  },
+  "Disse skal I spærre i hånden:": {
+    "en": "Block these sessions manually:",
+    "de": "Diese Zeiten bitte manuell sperren:",
+    "sv": "Blockera dessa tider manuellt:",
+    "no": "Sperr disse tidene manuelt:"
+  },
+  "Fjern adgangen": {
+    "en": "Remove access",
+    "de": "Zugang entfernen",
+    "sv": "Ta bort åtkomsten",
+    "no": "Fjern tilgangen"
+  },
+  "Uden et login skal I selv spærre tiderne i": {
+    "en": "Without a login, block sessions yourself in",
+    "de": "Ohne Login müsst ihr Zeiten selbst sperren in",
+    "sv": "Utan inloggning måste ni själva blockera tiderna i",
+    "no": "Uten innlogging må dere selv sperre tidene i"
+  },
+  ", før I frigiver dem hos os. Med et login gør vi det for jer, typisk inden for et kvarter.": {
+    "en": "before releasing them here. With a login, we do this for you, usually within 15 minutes.",
+    "de": ", bevor ihr sie hier freigebt. Mit Login übernehmen wir dies, meist innerhalb von 15 Minuten.",
+    "sv": ", innan ni öppnar dem här. Med inloggning gör vi det åt er, vanligtvis inom 15 minuter.",
+    "no": ", før dere frigir dem her. Med innlogging gjør vi det for dere, vanligvis innen 15 minutter."
+  },
+  "Adressen på jeres system": {
+    "en": "Booking system URL",
+    "de": "Adresse eures Buchungssystems",
+    "sv": "Adressen till ert bokningssystem",
+    "no": "Adressen til bookingsystemet deres"
+  },
+  "jerklub.halbooking.dk": {
+    "en": "yourclub.halbooking.dk",
+    "de": "euerclub.halbooking.dk",
+    "sv": "erklubb.halbooking.dk",
+    "no": "deresklubb.halbooking.dk"
+  },
+  "Brugernavn": {
+    "en": "Username",
+    "de": "Benutzername",
+    "sv": "Användarnamn",
+    "no": "Brukernavn"
+  },
+  "Adgangskoden krypteres, før den gemmes, og bruges kun til at spærre de tider, I selv frigiver, og til at føre gæstebookinger ind. Vi rører ikke jeres medlemmer, priser eller opsætning. I kan fjerne adgangen igen når som helst.": {
+    "en": "Your password is stored encrypted and used only to block sessions you release and enter guest bookings. Your members, prices and settings stay unchanged. Revoke access at any time.",
+    "de": "Das Passwort wird verschlüsselt gespeichert und nur zum Sperren freigegebener Zeiten und Eintragen von Gastbuchungen verwendet. Mitglieder, Preise und Einstellungen bleiben unverändert. Zugang jederzeit widerrufbar.",
+    "sv": "Lösenordet lagras krypterat och används bara för att blockera öppnade tider och föra in gästbokningar. Medlemmar, priser och inställningar ändras inte. Åtkomsten kan tas bort när som helst.",
+    "no": "Passordet lagres kryptert og brukes bare til å sperre frigitte tider og legge inn gjestebookinger. Medlemmer, priser og innstillinger endres ikke. Tilgangen kan fjernes når som helst."
+  },
+  "tilmeldt": {
+    "en": "registered",
+    "de": "angemeldet",
+    "sv": "anmälda",
+    "no": "påmeldt"
+  },
+  "Luk": {
+    "en": "Close",
+    "de": "Schließen",
+    "sv": "Stäng",
+    "no": "Lukk"
+  },
+  "Holdets navn": {
+    "en": "Team name",
+    "de": "Name des Kurses",
+    "sv": "Gruppens namn",
+    "no": "Gruppens navn"
+  },
+  "fx Voksne begyndere": {
+    "en": "e.g. Adult beginners",
+    "de": "z. B. Erwachsene Anfänger",
+    "sv": "t.ex. Vuxna nybörjare",
+    "no": "f.eks. Voksne nybegynnere"
+  },
+  "Klokken": {
+    "en": "Time",
+    "de": "Uhrzeit",
+    "sv": "Tid",
+    "no": "Klokkeslett"
+  },
+  "Længde (min)": {
+    "en": "Duration (min)",
+    "de": "Dauer (Min.)",
+    "sv": "Längd (min)",
+    "no": "Varighet (min)"
+  },
+  "Pris for sæsonen": {
+    "en": "Season price",
+    "de": "Preis für die Saison",
+    "sv": "Pris för säsongen",
+    "no": "Pris for sesongen"
+  },
+  "Niveau fra": {
+    "en": "Level from",
+    "de": "Niveau von",
+    "sv": "Nivå från",
+    "no": "Nivå fra"
+  },
+  "til": {
+    "en": "to",
+    "de": "bis",
+    "sv": "till",
+    "no": "til"
+  },
+  "Opret hold": {
+    "en": "Create team",
+    "de": "Kurs erstellen",
+    "sv": "Skapa grupp",
+    "no": "Opprett gruppe"
+  },
+  "Holdet spærrer ikke banen. Vil I have tiden låst, så tildel den også som fast bane — så står den optaget for alle andre.": {
+    "en": "A team does not reserve its court. Also create a recurring court reservation to block the session for other players.",
+    "de": "Ein Kurs reserviert keinen Platz. Legt zusätzlich eine wiederkehrende Platzreservierung an, um die Zeit für andere zu sperren.",
+    "sv": "En grupp reserverar inte banan. Skapa även en återkommande banbokning för att blockera tiden för andra.",
+    "no": "En gruppe reserverer ikke banen. Opprett også en fast banereservasjon for å sperre tiden for andre."
+  },
+  "timer ·": {
+    "en": "sessions ·",
+    "de": "Stunden ·",
+    "sv": "timmar ·",
+    "no": "timer ·"
+  },
+  "time": {
+    "en": "hour",
+    "de": "Stunde",
+    "sv": "timme",
+    "no": "time"
+  },
+  "fx 10-turskort": {
+    "en": "e.g. 10-session pass",
+    "de": "z. B. Zehnerkarte",
+    "sv": "t.ex. 10-klippkort",
+    "no": "f.eks. 10-klippskort"
+  },
+  "Antal timer": {
+    "en": "Number of sessions",
+    "de": "Anzahl Stunden",
+    "sv": "Antal timmar",
+    "no": "Antall timer"
+  },
+  "Samlet pris": {
+    "en": "Total price",
+    "de": "Gesamtpreis",
+    "sv": "Totalpris",
+    "no": "Samlet pris"
+  },
+  "Gælder i (dage)": {
+    "en": "Valid for (days)",
+    "de": "Gültig für (Tage)",
+    "sv": "Gäller i (dagar)",
+    "no": "Gjelder i (dager)"
+  },
+  "0 = udløber aldrig.": {
+    "en": "0 = never expires.",
+    "de": "0 = läuft nie ab.",
+    "sv": "0 = upphör aldrig.",
+    "no": "0 = utløper aldri."
+  },
+  "Opret klippekort": {
+    "en": "Create court pass",
+    "de": "Platzkarte erstellen",
+    "sv": "Skapa klippkort",
+    "no": "Opprett klippekort"
+  },
+  "Medlemmernes bookingkredit": {
+    "en": "Members’ booking credit",
+    "de": "Buchungsguthaben der Mitglieder",
+    "sv": "Medlemmarnas bokningskredit",
+    "no": "Medlemmenes bookingkreditt"
+  },
+  "Kreditten er et tilgodehavende til banebooking. Den indeholder eventuel bonus og er ikke det samme som indbetalt kontantbeløb. Viser op til 200 wallets.": {
+    "en": "This credit can be used for court bookings. It includes any bonus and is separate from the amount deposited. Showing up to 200 wallets.",
+    "de": "Dieses Guthaben ist für Platzbuchungen bestimmt und enthält etwaige Boni. Es ist vom eingezahlten Betrag getrennt. Bis zu 200 Wallets werden angezeigt.",
+    "sv": "Krediten gäller banbokningar och inkluderar eventuell bonus. Den är separat från det insatta beloppet. Visar upp till 200 wallets.",
+    "no": "Kreditten gjelder banebookinger og inkluderer eventuell bonus. Den er separat fra innbetalt beløp. Viser opptil 200 wallets."
+  },
+  "Afventer betalingsafstemning": {
+    "en": "Awaiting payment reconciliation",
+    "de": "Zahlungsabgleich ausstehend",
+    "sv": "Inväntar betalningsavstämning",
+    "no": "Avventer betalingsavstemming"
+  },
+  "Ingen indbetalinger endnu.": {
+    "en": "No deposits yet.",
+    "de": "Noch keine Einzahlungen.",
+    "sv": "Inga insättningar ännu.",
+    "no": "Ingen innbetalinger ennå."
+  },
+  "Klubwallet": {
+    "en": "Club wallet",
+    "de": "Club-Wallet",
+    "sv": "Klubbwallet",
+    "no": "Klubbwallet"
+  },
+  "Medlemmer indbetaler et valgfrit beløb. Det bedste opnåede rabattrin gælder for hele indbetalingen. Eksempel: Betal": {
+    "en": "Members choose a deposit amount. The best eligible bonus tier applies to the whole deposit. Example: Pay",
+    "de": "Mitglieder wählen ihren Einzahlungsbetrag. Die beste erreichte Bonusstufe gilt für die ganze Einzahlung. Beispiel: Bezahle",
+    "sv": "Medlemmar väljer insättningsbelopp. Den bästa uppnådda bonusnivån gäller hela insättningen. Exempel: Betala",
+    "no": "Medlemmer velger innbetalingsbeløp. Det beste oppnådde bonustrinnet gjelder hele innbetalingen. Eksempel: Betal"
+  },
+  ", få": {
+    "en": ", receive",
+    "de": ", erhalte",
+    "sv": ", få",
+    "no": ", få"
+  },
+  "i bookingkredit. Kreditten bruges kun i jeres klub.": {
+    "en": "in booking credit. Credit can only be used at your club.",
+    "de": "als Buchungsguthaben. Nur in eurem Club einlösbar.",
+    "sv": "i bokningskredit. Krediten kan bara användas i er klubb.",
+    "no": "i bookingkreditt. Kreditten kan bare brukes i klubben deres."
+  },
+  "Åbn for indbetalinger": {
+    "en": "Enable deposits",
+    "de": "Einzahlungen aktivieren",
+    "sv": "Aktivera insättningar",
+    "no": "Aktiver innbetalinger"
+  },
+  "Indbetaling fra (": {
+    "en": "Minimum deposit (",
+    "de": "Einzahlung ab (",
+    "sv": "Insättning från (",
+    "no": "Innbetaling fra ("
+  },
+  "Bookingværdi ved denne indbetaling (": {
+    "en": "Booking credit for this deposit (",
+    "de": "Buchungsguthaben bei dieser Einzahlung (",
+    "sv": "Bokningskredit för denna insättning (",
+    "no": "Bookingkreditt for denne innbetalingen ("
+  },
+  "Uden et rabattrin får medlemmet samme beløb i kredit som indbetalingen. Eksisterende kredit bevares, når nye indbetalinger slås fra.": {
+    "en": "Without bonus tiers, members receive credit equal to their deposit. Existing credit remains when new deposits are disabled.",
+    "de": "Ohne Bonusstufe entspricht das Guthaben dem Einzahlungsbetrag. Bestehendes Guthaben bleibt beim Deaktivieren neuer Einzahlungen erhalten.",
+    "sv": "Utan bonusnivå motsvarar krediten insättningen. Befintlig kredit behålls när nya insättningar stängs av.",
+    "no": "Uten bonustrinn tilsvarer kreditten innbetalingen. Eksisterende kreditt beholdes når nye innbetalinger slås av."
+  },
+  "Gem wallet": {
+    "en": "Save wallet",
+    "de": "Wallet speichern",
+    "sv": "Spara wallet",
+    "no": "Lagre wallet"
+  },
+  "Overblik": {
+    "en": "Overview",
+    "de": "Übersicht",
+    "sv": "Översikt",
+    "no": "Oversikt"
+  },
+  "Nøgletal og genveje til klubbens daglige arbejde.": {
+    "en": "Key figures and shortcuts for daily club operations.",
+    "de": "Kennzahlen und Schnellzugriffe für den Cluballtag.",
+    "sv": "Nyckeltal och genvägar för klubbens dagliga arbete.",
+    "no": "Nøkkeltall og snarveier for klubbens daglige arbeid."
+  },
+  "Daglig drift": {
+    "en": "Daily operations",
+    "de": "Täglicher Betrieb",
+    "sv": "Daglig drift",
+    "no": "Daglig drift"
+  },
+  "Bookinger": {
+    "en": "Bookings",
+    "de": "Buchungen",
+    "sv": "Bokningar",
+    "no": "Bookinger"
+  },
+  "Kommende bookinger og faste reservationer.": {
+    "en": "Upcoming bookings and recurring reservations.",
+    "de": "Kommende Buchungen und wiederkehrende Reservierungen.",
+    "sv": "Kommande bokningar och återkommande reservationer.",
+    "no": "Kommende bookinger og faste reservasjoner."
+  },
+  "Frigiv tider og styr, hvornår gæster kan booke.": {
+    "en": "Release times and control when guests can book.",
+    "de": "Zeiten freigeben und Buchungsfenster für Gäste steuern.",
+    "sv": "Öppna tider och styr när gäster kan boka.",
+    "no": "Frigi tider og styr når gjester kan booke."
+  },
+  "Kontingenter og medlemskaber.": {
+    "en": "Membership fees and memberships.",
+    "de": "Mitgliedsbeiträge und Mitgliedschaften.",
+    "sv": "Medlemsavgifter och medlemskap.",
+    "no": "Kontingenter og medlemskap."
+  },
+  "Hold": {
+    "en": "Teams",
+    "de": "Kurse",
+    "sv": "Grupper",
+    "no": "Grupper"
+  },
+  "Sæsonhold og tilmeldinger.": {
+    "en": "Season teams and registrations.",
+    "de": "Saisonkurse und Anmeldungen.",
+    "sv": "Säsongsgrupper och anmälningar.",
+    "no": "Sesonggrupper og påmeldinger."
+  },
+  "Skriv og administrer klubbens opslag.": {
+    "en": "Write and manage club posts.",
+    "de": "Clubbeiträge schreiben und verwalten.",
+    "sv": "Skriv och hantera klubbens inlägg.",
+    "no": "Skriv og administrer klubbens innlegg."
+  },
+  "Baner og sportsgrene": {
+    "en": "Courts and sports",
+    "de": "Plätze und Sportarten",
+    "sv": "Banor och sporter",
+    "no": "Baner og idretter"
+  },
+  "Sportsgrene, baner og borde samt deres underlag.": {
+    "en": "Sports, courts and tables, including their surfaces.",
+    "de": "Sportarten, Plätze, Tische und ihre Beläge.",
+    "sv": "Sporter, banor, bord och deras underlag.",
+    "no": "Idretter, baner, bord og underlag."
+  },
+  "Opsætning": {
+    "en": "Setup",
+    "de": "Einrichtung",
+    "sv": "Inställningar",
+    "no": "Oppsett"
+  },
+  "Lys og adgang": {
+    "en": "Lights and access",
+    "de": "Licht und Zugang",
+    "sv": "Ljus och tillträde",
+    "no": "Lys og adgang"
+  },
+  "Controllere, lys, døre og adgangsvinduer.": {
+    "en": "Controllers, lights, doors and access windows.",
+    "de": "Controller, Licht, Türen und Zugangsfenster.",
+    "sv": "Styrenheter, ljus, dörrar och tillträdesfönster.",
+    "no": "Kontrollere, lys, dører og adgangsvinduer."
+  },
+  "Priser og klippekort": {
+    "en": "Prices and passes",
+    "de": "Preise und Platzkarten",
+    "sv": "Priser och klippkort",
+    "no": "Priser og klippekort"
+  },
+  "Prisregler og klippekort.": {
+    "en": "Pricing rules and passes.",
+    "de": "Preisregeln und Platzkarten.",
+    "sv": "Prisregler och klippkort.",
+    "no": "Prisregler og klippekort."
+  },
+  "Betaling og abonnement": {
+    "en": "Payments and subscription",
+    "de": "Zahlung und Abonnement",
+    "sv": "Betalning och abonnemang",
+    "no": "Betaling og abonnement"
+  },
+  "Udbetalinger, abonnement og fakturaer.": {
+    "en": "Payouts, subscription and invoices.",
+    "de": "Auszahlungen, Abonnement und Rechnungen.",
+    "sv": "Utbetalningar, abonnemang och fakturor.",
+    "no": "Utbetalinger, abonnement og fakturaer."
+  },
+  "Bookingsystem": {
+    "en": "Booking system",
+    "de": "Buchungssystem",
+    "sv": "Bokningssystem",
+    "no": "Bookingsystem"
+  },
+  "Forbind klubbens eksisterende bookingsystem.": {
+    "en": "Connect the club’s existing booking system.",
+    "de": "Bestehendes Buchungssystem des Clubs verbinden.",
+    "sv": "Anslut klubbens befintliga bokningssystem.",
+    "no": "Koble til klubbens eksisterende bookingsystem."
+  },
+  "Hjemmeside": {
+    "en": "Website",
+    "de": "Website",
+    "sv": "Webbplats",
+    "no": "Nettside"
+  },
+  "Klubside, billeder, domæne og design.": {
+    "en": "Club page, images, domain and design.",
+    "de": "Clubseite, Bilder, Domain und Design.",
+    "sv": "Klubbsida, bilder, domän och design.",
+    "no": "Klubbside, bilder, domene og design."
+  },
+  "Administratorer og kontakt": {
+    "en": "Administrators and contacts",
+    "de": "Administratoren und Kontakte",
+    "sv": "Administratörer och kontakter",
+    "no": "Administratorer og kontakter"
+  },
+  "Adgang til administrationen og klubbens kontaktpersoner.": {
+    "en": "Administration access and club contacts.",
+    "de": "Verwaltungszugang und Kontaktpersonen des Clubs.",
+    "sv": "Administrationsåtkomst och klubbens kontaktpersoner.",
+    "no": "Administrasjonstilgang og klubbens kontaktpersoner."
+  },
+  "Vælg klubbens sportsgrene for at komme i gang.": {
+    "en": "Choose your club sports to get started.",
+    "de": "Wählt eure Club-Sportarten für den Einstieg.",
+    "sv": "Välj klubbens sporter för att komma igång.",
+    "no": "Velg klubbens idretter for å komme i gang."
+  },
+  "Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke.": {
+    "en": "Thank you — your subscription has started. Your receipt is in your inbox.",
+    "de": "Danke — das Abonnement läuft. Die Quittung ist in eurem Posteingang.",
+    "sv": "Tack — abonnemanget har startat. Kvittot finns i er inkorg.",
+    "no": "Takk — abonnementet har startet. Kvitteringen ligger i innboksen."
+  },
+  "Betalingen blev afbrudt. Abonnementet er ikke startet.": {
+    "en": "Payment was cancelled. Your subscription has not started.",
+    "de": "Die Zahlung wurde abgebrochen. Das Abonnement wurde nicht gestartet.",
+    "sv": "Betalningen avbröts. Abonnemanget har inte startat.",
+    "no": "Betalingen ble avbrutt. Abonnementet har ikke startet."
+  },
+  "Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det.": {
+    "en": "The billing portal could not open. Contact us for help.",
+    "de": "Das Zahlungsportal konnte nicht geöffnet werden. Kontaktiert uns für Hilfe.",
+    "sv": "Betalningsportalen kunde inte öppnas. Kontakta oss för hjälp.",
+    "no": "Betalingsportalen kunne ikke åpnes. Kontakt oss for hjelp."
+  },
+  "Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os.": {
+    "en": "Your subscription could not start. Try again or contact us.",
+    "de": "Das Abonnement konnte nicht gestartet werden. Versucht es erneut oder kontaktiert uns.",
+    "sv": "Abonnemanget kunde inte startas. Försök igen eller kontakta oss.",
+    "no": "Abonnementet kunne ikke startes. Prøv igjen eller kontakt oss."
+  },
+  "klubbens bookingsystem": {
+    "en": "your club booking system",
+    "de": "das Buchungssystem eures Clubs",
+    "sv": "klubbens bokningssystem",
+    "no": "klubbens bookingsystem"
+  },
+  "jeres eget bookingsystem": {
+    "en": "your existing booking system",
+    "de": "euer bisheriges Buchungssystem",
+    "sv": "ert befintliga bokningssystem",
+    "no": "det eksisterende bookingsystemet deres"
+  },
+  "alle baner": {
+    "en": "all courts",
+    "de": "alle Plätze",
+    "sv": "alla banor",
+    "no": "alle baner"
+  },
+  "Sæt på pause": {
+    "en": "Pause",
+    "de": "Pausieren",
+    "sv": "Pausa",
+    "no": "Sett på pause"
+  },
+  "Aktivér": {
+    "en": "Activate",
+    "de": "Aktivieren",
+    "sv": "Aktivera",
+    "no": "Aktiver"
+  },
+  "Fortsæt opsætning": {
+    "en": "Continue setup",
+    "de": "Einrichtung fortsetzen",
+    "sv": "Fortsätt konfigurera",
+    "no": "Fortsett oppsett"
+  },
+  "Sæt udbetalinger op": {
+    "en": "Set up payouts",
+    "de": "Auszahlungen einrichten",
+    "sv": "Konfigurera utbetalningar",
+    "no": "Sett opp utbetalinger"
+  },
+  "Fornyes {date}.": {
+    "en": "Renews {date}.",
+    "de": "Verlängert sich am {date}.",
+    "sv": "Förnyas {date}.",
+    "no": "Fornyes {date}."
+  },
+  "Fornyes automatisk hver måned.": {
+    "en": "Renews automatically each month.",
+    "de": "Verlängert sich automatisch jeden Monat.",
+    "sv": "Förnyas automatiskt varje månad.",
+    "no": "Fornyes automatisk hver måned."
+  },
+  "Betalingen fejlede.": {
+    "en": "Payment failed.",
+    "de": "Zahlung fehlgeschlagen.",
+    "sv": "Betalningen misslyckades.",
+    "no": "Betalingen mislyktes."
+  },
+  "Abonnementet er opsagt.": {
+    "en": "Subscription cancelled.",
+    "de": "Abonnement gekündigt.",
+    "sv": "Abonnemanget är uppsagt.",
+    "no": "Abonnementet er sagt opp."
+  },
+  "Abonnementet er ikke startet.": {
+    "en": "Subscription not started.",
+    "de": "Abonnement noch nicht gestartet.",
+    "sv": "Abonnemanget har inte startat.",
+    "no": "Abonnementet har ikke startet."
+  },
+  "Forny betaling": {
+    "en": "Renew payment",
+    "de": "Zahlung erneuern",
+    "sv": "Förnya betalning",
+    "no": "Forny betaling"
+  },
+  "Start abonnement": {
+    "en": "Start subscription",
+    "de": "Abonnement starten",
+    "sv": "Starta abonnemang",
+    "no": "Start abonnement"
+  },
+  "Sidst hentet {date}.": {
+    "en": "Last fetched {date}.",
+    "de": "Zuletzt geladen am {date}.",
+    "sv": "Senast hämtat {date}.",
+    "no": "Sist hentet {date}."
+  },
+  "Feed er ikke hentet endnu.": {
+    "en": "The feed has not been fetched yet.",
+    "de": "Feed wurde noch nicht geladen.",
+    "sv": "Flödet har inte hämtats ännu.",
+    "no": "Feeden er ikke hentet ennå."
+  },
+  "jeres system": {
+    "en": "your system",
+    "de": "euer System",
+    "sv": "ert system",
+    "no": "systemet deres"
+  },
+  "Hvad er tilsluttet?": {
+    "en": "What is connected?",
+    "de": "Was ist angeschlossen?",
+    "sv": "Vad är anslutet?",
+    "no": "Hva er tilkoblet?"
+  },
+  "installationen": {
+    "en": "the installation",
+    "de": "die Installation",
+    "sv": "installationen",
+    "no": "installasjonen"
+  },
+  "Test døren i 3 sekunder": {
+    "en": "Test door for 3 seconds",
+    "de": "Tür 3 Sekunden testen",
+    "sv": "Testa dörren i 3 sekunder",
+    "no": "Test døren i 3 sekunder"
+  },
+  "Test lyset i 3 sekunder": {
+    "en": "Test lights for 3 seconds",
+    "de": "Licht 3 Sekunden testen",
+    "sv": "Testa ljuset i 3 sekunder",
+    "no": "Test lyset i 3 sekunder"
+  },
+  "Lys og adgang er aktiveret": {
+    "en": "Lights and access are active",
+    "de": "Licht und Zugang sind aktiviert",
+    "sv": "Ljus och tillträde är aktiverade",
+    "no": "Lys og adgang er aktivert"
+  },
+  "Gør klubben klar — ét trin ad gangen": {
+    "en": "Get your club ready — one step at a time",
+    "de": "Club vorbereiten — Schritt für Schritt",
+    "sv": "Gör klubben klar — ett steg i taget",
+    "no": "Gjør klubben klar — ett trinn av gangen"
+  },
+  "Lys følger bookingerne. Spillere kan åbne døren i klubbens adgangsvindue.": {
+    "en": "Lights follow bookings. Players can open the door during the club access window.",
+    "de": "Licht folgt den Buchungen. Spieler können die Tür im Zugangsfenster öffnen.",
+    "sv": "Ljuset följer bokningarna. Spelare kan öppna dörren under klubbens tillträdesfönster.",
+    "no": "Lyset følger bookingene. Spillere kan åpne døren i klubbens adgangsvindu."
+  },
+  "Forbind controllerne, test hvad de styrer, og aktivér. Du kan lukke siden og fortsætte senere — gemte trin huskes.": {
+    "en": "Connect controllers, test their functions and activate. You can leave and continue later; saved steps are kept.",
+    "de": "Controller verbinden, Funktionen testen und aktivieren. Ihr könnt später fortfahren; gespeicherte Schritte bleiben erhalten.",
+    "sv": "Anslut styrenheterna, testa funktionerna och aktivera. Ni kan fortsätta senare; sparade steg behålls.",
+    "no": "Koble til kontrollerne, test funksjonene og aktiver. Dere kan fortsette senere; lagrede trinn beholdes."
+  },
+  "Afventer minutjobbet": {
+    "en": "Waiting for the next automatic check",
+    "de": "Nächste automatische Prüfung ausstehend",
+    "sv": "Inväntar nästa automatiska kontroll",
+    "no": "Avventer neste automatiske kontroll"
+  },
+  "Gemt sikkert — lad feltet stå tomt": {
+    "en": "Saved securely — leave blank",
+    "de": "Sicher gespeichert — Feld leer lassen",
+    "sv": "Säkert sparat — lämna fältet tomt",
+    "no": "Trygt lagret — la feltet stå tomt"
+  },
+  "Indsæt hele nøglen fra Shelly": {
+    "en": "Paste the complete Shelly key",
+    "de": "Vollständigen Shelly-Schlüssel einfügen",
+    "sv": "Klistra in hela Shelly-nyckeln",
+    "no": "Lim inn hele Shelly-nøkkelen"
+  },
+  "ID for første controller\nID for anden controller": {
+    "en": "First controller ID\nSecond controller ID",
+    "de": "ID des ersten Controllers\nID des zweiten Controllers",
+    "sv": "ID för första styrenheten\nID för andra styrenheten",
+    "no": "ID for første kontroller\nID for andre kontroller"
+  },
+  "Afventer": {
+    "en": "Pending",
+    "de": "Ausstehend",
+    "sv": "Väntar",
+    "no": "Avventer"
+  },
+  "Vælg funktion": {
+    "en": "Choose function",
+    "de": "Funktion wählen",
+    "sv": "Välj funktion",
+    "no": "Velg funksjon"
+  },
+  "Bordets navn": {
+    "en": "Table name",
+    "de": "Tischname",
+    "sv": "Bordets namn",
+    "no": "Bordets navn"
+  },
+  "Banens navn": {
+    "en": "Court name",
+    "de": "Platzname",
+    "sv": "Banans namn",
+    "no": "Banens navn"
+  },
+  "fx Bord 1": {
+    "en": "e.g. Table 1",
+    "de": "z. B. Tisch 1",
+    "sv": "t.ex. Bord 1",
+    "no": "f.eks. Bord 1"
+  },
+  "fx Bane 1": {
+    "en": "e.g. Court 1",
+    "de": "z. B. Platz 1",
+    "sv": "t.ex. Bana 1",
+    "no": "f.eks. Bane 1"
+  },
+  "Type": {
+    "en": "Type",
+    "de": "Typ",
+    "sv": "Typ",
+    "no": "Type"
+  },
+  "Underlag": {
+    "en": "Surface",
+    "de": "Belag",
+    "sv": "Underlag",
+    "no": "Underlag"
+  },
+  "bordet": {
+    "en": "table",
+    "de": "Tisch",
+    "sv": "bordet",
+    "no": "bordet"
+  },
+  "banen": {
+    "en": "court",
+    "de": "Platz",
+    "sv": "banan",
+    "no": "banen"
+  },
+  "bord": {
+    "en": "table",
+    "de": "Tisch",
+    "sv": "bord",
+    "no": "bord"
+  },
+  "bane / bord": {
+    "en": "court / table",
+    "de": "Platz / Tisch",
+    "sv": "bana / bord",
+    "no": "bane / bord"
+  },
+  "Borde": {
+    "en": "Tables",
+    "de": "Tische",
+    "sv": "Bord",
+    "no": "Bord"
+  },
+  "Baner og borde": {
+    "en": "Courts and tables",
+    "de": "Plätze und Tische",
+    "sv": "Banor och bord",
+    "no": "Baner og bord"
+  },
+  "Skift billede": {
+    "en": "Change image",
+    "de": "Bild ändern",
+    "sv": "Byt bild",
+    "no": "Bytt bilde"
+  },
+  "Upload": {
+    "en": "Upload",
+    "de": "Hochladen",
+    "sv": "Ladda upp",
+    "no": "Last opp"
+  },
+  "Land, valuta og tidszone": {
+    "en": "Country, currency and time zone",
+    "de": "Land, Währung und Zeitzone",
+    "sv": "Land, valuta och tidszon",
+    "no": "Land, valuta og tidssone"
+  },
+  "Bookingpriser, kontingenter og wallet bruger klubbens valuta. Bookinger og lys følger klubbens lokale tid. RacketBuddy-abonnementet afregnes fortsat i DKK.": {
+    "en": "Court prices, memberships and wallet credit use your club currency. Bookings and lights follow venue time. The RacketBuddy subscription is billed in DKK.",
+    "de": "Platzpreise, Mitgliedschaften und Guthaben verwenden die Clubwährung. Buchungen und Licht folgen der lokalen Zeit. Das RacketBuddy-Abonnement wird in DKK abgerechnet.",
+    "sv": "Banpriser, medlemskap och wallet använder klubbens valuta. Bokningar och ljus följer lokal tid. RacketBuddy-abonnemanget debiteras i DKK.",
+    "no": "Banepriser, kontingenter og wallet bruker klubbens valuta. Bookinger og lys følger lokal tid. RacketBuddy-abonnementet faktureres i DKK."
+  },
+  "Valuta": {
+    "en": "Currency",
+    "de": "Währung",
+    "sv": "Valuta",
+    "no": "Valuta"
+  },
+  "Lokal tidszone": {
+    "en": "Venue time zone",
+    "de": "Lokale Zeitzone",
+    "sv": "Anläggningens tidszon",
+    "no": "Anleggets tidssone"
+  },
+  "Banepris pr. time": {
+    "en": "Court price per hour",
+    "de": "Platzpreis pro Stunde",
+    "sv": "Banpris per timme",
+    "no": "Banepris per time"
+  },
+  "Jeg har fastsat prisen i den nye valuta. Eksisterende penge og bookinger må ikke omdøbes til en ny valuta.": {
+    "en": "I have set the price in the new currency. Existing credit and bookings cannot be relabelled as a new currency.",
+    "de": "Ich habe den Preis in der neuen Währung festgelegt. Bestehendes Guthaben und Buchungen dürfen nicht in eine andere Währung umbenannt werden.",
+    "sv": "Jag har angett priset i den nya valutan. Befintlig kredit och bokningar får inte döpas om till en annan valuta.",
+    "no": "Jeg har fastsatt prisen i den nye valutaen. Eksisterende kreditt og bookinger kan ikke omdøpes til en annen valuta."
+  },
+  "Gem indstillinger": {
+    "en": "Save settings",
+    "de": "Einstellungen speichern",
+    "sv": "Spara inställningar",
+    "no": "Lagre innstillinger"
+  },
+  "Land": {
+    "en": "Country",
+    "de": "Land",
+    "sv": "Land",
+    "no": "Land"
+  },
+  "Sprog": {
+    "en": "Language",
+    "de": "Sprache",
+    "sv": "Språk",
+    "no": "Språk"
+  },
+  "Gemmer…": {
+    "en": "Saving…",
+    "de": "Wird gespeichert…",
+    "sv": "Sparar…",
+    "no": "Lagrer…"
+  },
+  "Fortsæt": {
+    "en": "Continue",
+    "de": "Weiter",
+    "sv": "Fortsätt",
+    "no": "Fortsett"
+  },
+  "Ikke nu": {
+    "en": "Not now",
+    "de": "Nicht jetzt",
+    "sv": "Inte nu",
+    "no": "Ikke nå"
+  },
+  "Hvor spiller du?": {
+    "en": "Where do you play?",
+    "de": "Wo spielst du?",
+    "sv": "Var spelar du?",
+    "no": "Hvor spiller du?"
+  },
+  "Vi kunne ikke bestemme dit land sikkert. Vælg land og sprog, så viser vi de relevante klubber. Du kan altid ændre valget.": {
+    "en": "We could not reliably determine your country. Choose your country and language to see relevant clubs. You can change this at any time.",
+    "de": "Wir konnten dein Land nicht sicher bestimmen. Wähle Land und Sprache für passende Clubs. Du kannst die Auswahl jederzeit ändern.",
+    "sv": "Vi kunde inte säkert avgöra ditt land. Välj land och språk för att se relevanta klubbar. Du kan ändra valet när som helst.",
+    "no": "Vi kunne ikke fastslå landet ditt sikkert. Velg land og språk for å se relevante klubber. Du kan endre valget når som helst."
+  },
+  "Valget kunne ikke gemmes. Prøv igen.": {
+    "en": "Your choice could not be saved. Try again.",
+    "de": "Die Auswahl konnte nicht gespeichert werden. Versuche es erneut.",
+    "sv": "Valet kunde inte sparas. Försök igen.",
+    "no": "Valget kunne ikke lagres. Prøv igjen."
+  },
+  "Vælg land": {
+    "en": "Choose country",
+    "de": "Land wählen",
+    "sv": "Välj land",
+    "no": "Velg land"
+  },
+  "Vælg sprog": {
+    "en": "Choose language",
+    "de": "Sprache wählen",
+    "sv": "Välj språk",
+    "no": "Velg språk"
+  },
+  "Menu": {
+    "en": "Menu",
+    "de": "Menü",
+    "sv": "Meny",
+    "no": "Meny"
+  },
+  "gratis": {
+    "en": "free",
+    "de": "kostenlos",
+    "sv": "gratis",
+    "no": "gratis"
+  },
+  "Luk for tilmelding": {
+    "en": "Close registration",
+    "de": "Anmeldung schließen",
+    "sv": "Stäng anmälan",
+    "no": "Steng påmelding"
+  },
+  "Åbn igen": {
+    "en": "Reopen",
+    "de": "Wieder öffnen",
+    "sv": "Öppna igen",
+    "no": "Åpne igjen"
+  },
+  "Endnu ikke afprøvet.": {
+    "en": "Not tested yet.",
+    "de": "Noch nicht getestet.",
+    "sv": "Inte testat ännu.",
+    "no": "Ikke testet ennå."
+  },
+  "Opdatér adgangen": {
+    "en": "Update access",
+    "de": "Zugang aktualisieren",
+    "sv": "Uppdatera åtkomst",
+    "no": "Oppdater tilgang"
+  },
+  "Gem adgangen": {
+    "en": "Save access",
+    "de": "Zugang speichern",
+    "sv": "Spara åtkomst",
+    "no": "Lagre tilgang"
+  },
+  "Virkede sidst {date}.": {
+    "en": "Last worked {date}.",
+    "de": "Zuletzt erfolgreich am {date}.",
+    "sv": "Fungerade senast {date}.",
+    "no": "Virket sist {date}."
+  },
+  "Seneste forsøg fejlede: {error}": {
+    "en": "Last attempt failed: {error}",
+    "de": "Letzter Versuch fehlgeschlagen: {error}",
+    "sv": "Senaste försöket misslyckades: {error}",
+    "no": "Siste forsøk mislyktes: {error}"
+  },
+  ", {count} i kø": {
+    "en": ", {count} queued",
+    "de": ", {count} in der Warteschlange",
+    "sv": ", {count} i kö",
+    "no": ", {count} i kø"
+  },
+  ", {count} kunne ikke spærres": {
+    "en": ", {count} could not be blocked",
+    "de": ", {count} konnten nicht gesperrt werden",
+    "sv": ", {count} kunde inte blockeras",
+    "no": ", {count} kunne ikke sperres"
+  },
+  "{domain} er aktivt": {
+    "en": "{domain} is live",
+    "de": "{domain} ist aktiv",
+    "sv": "{domain} är aktiv",
+    "no": "{domain} er aktivt"
+  },
+  "Sådan får I {domain} i luften": {
+    "en": "How to launch {domain}",
+    "de": "So startet ihr {domain}",
+    "sv": "Så publicerar ni {domain}",
+    "no": "Slik publiserer dere {domain}"
+  },
+  "{count} bookinger skal ind i jeres eget system": {
+    "en": "{count} bookings must be entered in your system",
+    "de": "{count} Buchungen müssen in euer System eingetragen werden",
+    "sv": "{count} bokningar måste föras in i ert system",
+    "no": "{count} bookinger må legges inn i systemet deres"
+  },
+  "Forbind": {
+    "en": "Connect",
+    "de": "Verbinden",
+    "sv": "Anslut",
+    "no": "Koble til"
+  },
+  "Test relæer": {
+    "en": "Test relays",
+    "de": "Relais testen",
+    "sv": "Testa reläer",
+    "no": "Test releer"
+  },
+  "Lys før (min.)": {
+    "en": "Lights before (min)",
+    "de": "Licht vorher (Min.)",
+    "sv": "Ljus före (min)",
+    "no": "Lys før (min)"
+  },
+  "Lys efter (min.)": {
+    "en": "Lights after (min)",
+    "de": "Licht danach (Min.)",
+    "sv": "Ljus efter (min)",
+    "no": "Lys etter (min)"
+  },
+  "Dør før (min.)": {
+    "en": "Door before (min)",
+    "de": "Tür vorher (Min.)",
+    "sv": "Dörr före (min)",
+    "no": "Dør før (min)"
+  },
+  "Dør efter (min.)": {
+    "en": "Door after (min)",
+    "de": "Tür danach (Min.)",
+    "sv": "Dörr efter (min)",
+    "no": "Dør etter (min)"
+  },
+  "Dørpuls (sek.)": {
+    "en": "Door pulse (sec)",
+    "de": "Türimpuls (Sek.)",
+    "sv": "Dörrpuls (sek)",
+    "no": "Dørpuls (sek)"
+  },
+  "Filen må højst være 200 KB.": {
+    "en": "File size must not exceed 200 KB.",
+    "de": "Datei darf höchstens 200 KB groß sein.",
+    "sv": "Filen får vara högst 200 KB.",
+    "no": "Filen kan være høyst 200 KB."
+  },
+  "Klassisk": {
+    "en": "Classic",
+    "de": "Klassisch",
+    "sv": "Klassisk",
+    "no": "Klassisk"
+  },
+  "Markant": {
+    "en": "Bold",
+    "de": "Markant",
+    "sv": "Markant",
+    "no": "Markant"
+  },
+  "Enkel": {
+    "en": "Simple",
+    "de": "Einfach",
+    "sv": "Enkel",
+    "no": "Enkel"
+  },
+  "Farvet hoved med banemotiv": {
+    "en": "Coloured header with court illustration",
+    "de": "Farbiger Kopf mit Platzmotiv",
+    "sv": "Färgat sidhuvud med banmotiv",
+    "no": "Farget topp med banemotiv"
+  },
+  "Mørkt hoved, stort klubnavn": {
+    "en": "Dark header, large club name",
+    "de": "Dunkler Kopf, großer Clubname",
+    "sv": "Mörkt sidhuvud, stort klubbnamn",
+    "no": "Mørk topp, stort klubbnavn"
+  },
+  "Lyst og roligt": {
+    "en": "Light and calm",
+    "de": "Hell und ruhig",
+    "sv": "Ljust och lugnt",
+    "no": "Lyst og rolig"
+  },
+  "Søndag": {
+    "en": "Sunday",
+    "de": "Sonntag",
+    "sv": "Söndag",
+    "no": "Søndag"
+  },
+  "Mandag": {
+    "en": "Monday",
+    "de": "Montag",
+    "sv": "Måndag",
+    "no": "Mandag"
+  },
+  "Tirsdag": {
+    "en": "Tuesday",
+    "de": "Dienstag",
+    "sv": "Tisdag",
+    "no": "Tirsdag"
+  },
+  "Onsdag": {
+    "en": "Wednesday",
+    "de": "Mittwoch",
+    "sv": "Onsdag",
+    "no": "Onsdag"
+  },
+  "Torsdag": {
+    "en": "Thursday",
+    "de": "Donnerstag",
+    "sv": "Torsdag",
+    "no": "Torsdag"
+  },
+  "Fredag": {
+    "en": "Friday",
+    "de": "Freitag",
+    "sv": "Fredag",
+    "no": "Fredag"
+  },
+  "Lørdag": {
+    "en": "Saturday",
+    "de": "Samstag",
+    "sv": "Lördag",
+    "no": "Lørdag"
+  },
+  "Søn": {
+    "en": "Sun",
+    "de": "So.",
+    "sv": "Sön",
+    "no": "Søn"
+  },
+  "Man": {
+    "en": "Mon",
+    "de": "Mo.",
+    "sv": "Mån",
+    "no": "Man"
+  },
+  "Tir": {
+    "en": "Tue",
+    "de": "Di.",
+    "sv": "Tis",
+    "no": "Tir"
+  },
+  "Ons": {
+    "en": "Wed",
+    "de": "Mi.",
+    "sv": "Ons",
+    "no": "Ons"
+  },
+  "Tor": {
+    "en": "Thu",
+    "de": "Do.",
+    "sv": "Tor",
+    "no": "Tor"
+  },
+  "Fre": {
+    "en": "Fri",
+    "de": "Fr.",
+    "sv": "Fre",
+    "no": "Fre"
+  },
+  "Lør": {
+    "en": "Sat",
+    "de": "Sa.",
+    "sv": "Lör",
+    "no": "Lør"
+  },
+  "Vent venligst…": {
+    "en": "Please wait…",
+    "de": "Bitte warten…",
+    "sv": "Vänta…",
+    "no": "Vennligst vent…"
+  },
+  "RacketBuddy er klubbens bookingsystem": {
+    "en": "RacketBuddy is the club booking system",
+    "de": "RacketBuddy ist das Buchungssystem des Clubs",
+    "sv": "RacketBuddy är klubbens bokningssystem",
+    "no": "RacketBuddy er klubbens bookingsystem"
+  },
+  "Klubben frigiver selv gæstetider": {
+    "en": "The club releases guest times",
+    "de": "Der Club gibt Gastzeiten selbst frei",
+    "sv": "Klubben öppnar gästtider själv",
+    "no": "Klubben frigir gjestetider selv"
+  },
+  "Kalenderfeed fra klubbens eget system": {
+    "en": "Calendar feed from your booking system",
+    "de": "Kalenderfeed aus eurem Buchungssystem",
+    "sv": "Kalenderflöde från ert bokningssystem",
+    "no": "Kalenderfeed fra bookingsystemet deres"
+  },
+  "Direkte API-integration": {
+    "en": "Direct API integration",
+    "de": "Direkte API-Integration",
+    "sv": "Direkt API-integration",
+    "no": "Direkte API-integrasjon"
+  },
+  "Til klubber uden eget bookingsystem. Alle baner og tider styres her, og medlemmer booker direkte hos os.": {
+    "en": "For clubs without a booking system. Manage all courts and times here; members book directly.",
+    "de": "Für Clubs ohne Buchungssystem. Alle Plätze und Zeiten werden hier verwaltet; Mitglieder buchen direkt.",
+    "sv": "För klubbar utan bokningssystem. Alla banor och tider hanteras här; medlemmar bokar direkt.",
+    "no": "For klubber uten bookingsystem. Alle baner og tider styres her; medlemmer booker direkte."
+  },
+  "Klubben markerer selv præcis hvilke tider gæster må booke. Virker med ethvert bookingsystem, fordi der ikke skal kobles noget sammen.": {
+    "en": "Choose exactly which times guests can book. Works with any booking system without connecting it.",
+    "de": "Wählt genau, welche Zeiten Gäste buchen dürfen. Funktioniert ohne Verbindung mit jedem Buchungssystem.",
+    "sv": "Välj exakt vilka tider gäster får boka. Fungerar med alla bokningssystem utan att ansluta dem.",
+    "no": "Velg nøyaktig hvilke tider gjester kan booke. Virker med ethvert bookingsystem uten å koble det til."
+  },
+  "Vi henter klubbens kalenderfeed og viser det, der ikke allerede er optaget. Kræver at klubbens system kan udstille en .ics-feed.": {
+    "en": "We read the club calendar feed and show unoccupied times. Your system must provide an .ics feed.",
+    "de": "Wir lesen den Clubkalender und zeigen freie Zeiten. Euer System muss einen .ics-Feed bereitstellen.",
+    "sv": "Vi läser klubbens kalenderflöde och visar lediga tider. Ert system måste ha ett .ics-flöde.",
+    "no": "Vi leser klubbens kalenderfeed og viser ledige tider. Systemet må tilby en .ics-feed."
+  },
+  "Direkte opslag i klubbens bookingsystem. Kræver en partneraftale med systemleverandøren og er ikke bygget endnu.": {
+    "en": "Direct booking-system lookup. Requires a provider partnership and is not available yet.",
+    "de": "Direkter Abruf aus dem Buchungssystem. Erfordert eine Partnervereinbarung und ist noch nicht verfügbar.",
+    "sv": "Direkt uppslag i bokningssystemet. Kräver ett leverantörsavtal och är inte tillgängligt ännu.",
+    "no": "Direkte oppslag i bookingsystemet. Krever en leverandøravtale og er ikke tilgjengelig ennå."
+  },
+  "Kun klubbens administrator har adgang.": {
+    "en": "Only your club administrator has access.",
+    "de": "Nur der Clubadministrator hat Zugriff.",
+    "sv": "Endast klubbens administratör har åtkomst.",
+    "no": "Bare klubbens administrator har tilgang."
+  },
+  "Denne funktion kræver en custom-klubløsning.": {
+    "en": "This feature requires a custom club plan.",
+    "de": "Diese Funktion erfordert einen Custom-Tarif.",
+    "sv": "Funktionen kräver en anpassad klubblösning.",
+    "no": "Funksjonen krever en tilpasset klubbløsning."
+  },
+  "Denne funktion er ikke valgt i klubbens abonnement.": {
+    "en": "This feature is not included in the club plan.",
+    "de": "Diese Funktion ist im Clubtarif nicht ausgewählt.",
+    "sv": "Funktionen är inte vald i klubbens abonnemang.",
+    "no": "Funksjonen er ikke valgt i klubbens abonnement."
+  },
+  "Ingen adgang.": {
+    "en": "Access denied.",
+    "de": "Kein Zugriff.",
+    "sv": "Ingen åtkomst.",
+    "no": "Ingen tilgang."
+  },
+  "Ugyldig løsning.": {
+    "en": "Invalid plan.",
+    "de": "Ungültiger Tarif.",
+    "sv": "Ogiltig lösning.",
+    "no": "Ugyldig løsning."
+  },
+  "Udfyld et gyldigt navn, e-mail og telefonnummer.": {
+    "en": "Enter a valid name, email and phone number.",
+    "de": "Gültigen Namen, E-Mail und Telefonnummer eingeben.",
+    "sv": "Ange giltigt namn, e-post och telefonnummer.",
+    "no": "Oppgi gyldig navn, e-post og telefonnummer."
+  },
+  "Kontingentet tilhører ikke klubben.": {
+    "en": "The membership does not belong to this club.",
+    "de": "Die Mitgliedschaft gehört nicht zu diesem Club.",
+    "sv": "Medlemskapet tillhör inte denna klubb.",
+    "no": "Kontingenten tilhører ikke denne klubben."
+  },
+  "Kontoen er knyttet til en anden klub eller administratorrolle. Bed personen kontakte RacketBuddy.": {
+    "en": "This account belongs to another club or administrator role. Ask the person to contact RacketBuddy.",
+    "de": "Das Konto gehört zu einem anderen Club oder einer Administratorrolle. Die Person soll RacketBuddy kontaktieren.",
+    "sv": "Kontot är kopplat till en annan klubb eller administratörsroll. Be personen kontakta RacketBuddy.",
+    "no": "Kontoen er knyttet til en annen klubb eller administratorrolle. Be personen kontakte RacketBuddy."
+  },
+  "Medlemmet er tilføjet. Et valgt kontingent afventer betaling. Der er ikke sendt mail.": {
+    "en": "Member added. Any selected membership awaits payment. No email was sent.",
+    "de": "Mitglied hinzugefügt. Eine gewählte Mitgliedschaft wartet auf Zahlung. Keine E-Mail versendet.",
+    "sv": "Medlemmen är tillagd. Eventuellt valt medlemskap inväntar betalning. Inget mejl har skickats.",
+    "no": "Medlemmet er lagt til. En valgt kontingent avventer betaling. Ingen e-post er sendt."
+  },
+  "Vælg gyldigt land, valuta, tidszone og pris.": {
+    "en": "Choose a valid country, currency, time zone and price.",
+    "de": "Gültiges Land, Währung, Zeitzone und Preis wählen.",
+    "sv": "Välj giltigt land, valuta, tidszon och pris.",
+    "no": "Velg gyldig land, valuta, tidssone og pris."
+  },
+  "Landet på en tilknyttet Stripe-konto kan ikke ændres her. Kontakt RacketBuddy.": {
+    "en": "A connected Stripe account country cannot change here. Contact RacketBuddy.",
+    "de": "Das Land eines verbundenen Stripe-Kontos kann hier nicht geändert werden. Kontaktiert RacketBuddy.",
+    "sv": "Landet på ett anslutet Stripe-konto kan inte ändras här. Kontakta RacketBuddy.",
+    "no": "Landet på en tilkoblet Stripe-konto kan ikke endres her. Kontakt RacketBuddy."
+  },
+  "Bekræft den nye pris i den valgte valuta.": {
+    "en": "Confirm the new price in the selected currency.",
+    "de": "Neuen Preis in der gewählten Währung bestätigen.",
+    "sv": "Bekräfta det nya priset i vald valuta.",
+    "no": "Bekreft den nye prisen i valgt valuta."
+  },
+  "Valutaen er låst, fordi klubben allerede har priser, bookinger eller kredit. Kontakt RacketBuddy for en afstemt overgang.": {
+    "en": "Currency is locked because prices, bookings or credit already exist. Contact RacketBuddy to arrange a reconciled transition.",
+    "de": "Die Währung ist gesperrt, da Preise, Buchungen oder Guthaben bestehen. Kontaktiert RacketBuddy für einen abgestimmten Wechsel.",
+    "sv": "Valutan är låst eftersom priser, bokningar eller kredit redan finns. Kontakta RacketBuddy för ett avstämt byte.",
+    "no": "Valutaen er låst fordi priser, bookinger eller kreditt allerede finnes. Kontakt RacketBuddy for en avstemt overgang."
+  },
+  "Land, valuta og tidszone er gemt. Eksisterende bookingtidspunkter bevares.": {
+    "en": "Country, currency and time zone saved. Existing booking instants are preserved.",
+    "de": "Land, Währung und Zeitzone gespeichert. Bestehende Buchungszeitpunkte bleiben erhalten.",
+    "sv": "Land, valuta och tidszon sparade. Befintliga bokningstidpunkter behålls.",
+    "no": "Land, valuta og tidssone lagret. Eksisterende bookingtidspunkter beholdes."
+  },
+  "Indstillinger kunne ikke gemmes.": {
+    "en": "Settings could not be saved.",
+    "de": "Einstellungen konnten nicht gespeichert werden.",
+    "sv": "Inställningarna kunde inte sparas.",
+    "no": "Innstillingene kunne ikke lagres."
+  },
+  "Kun klub-administratorer har adgang til dette.": {
+    "en": "Only club administrators have access.",
+    "de": "Nur Clubadministratoren haben Zugriff.",
+    "sv": "Endast klubbadministratörer har åtkomst.",
+    "no": "Bare klubbadministratorer har tilgang."
+  },
+  "Indsæt Authorization Cloud Key fra Shelly-appen.": {
+    "en": "Paste the Authorization Cloud Key from Shelly.",
+    "de": "Authorization Cloud Key aus Shelly einfügen.",
+    "sv": "Klistra in Authorization Cloud Key från Shelly.",
+    "no": "Lim inn Authorization Cloud Key fra Shelly."
+  },
+  "Shelly-nøglen ser ikke gyldig ud.": {
+    "en": "The Shelly key is invalid.",
+    "de": "Shelly-Schlüssel ist ungültig.",
+    "sv": "Shelly-nyckeln är ogiltig.",
+    "no": "Shelly-nøkkelen er ugyldig."
+  },
+  "Tilføj controllerne og fordel mindst én relækanal, før styringen aktiveres.": {
+    "en": "Add controllers and assign at least one relay channel before activation.",
+    "de": "Controller hinzufügen und mindestens einen Relaiskanal vor Aktivierung zuordnen.",
+    "sv": "Lägg till styrenheter och tilldela minst en reläkanal före aktivering.",
+    "no": "Legg til kontrollere og tilordne minst én relékanal før aktivering."
+  },
+  "Gennemgå og bekræft alle relæer i guiden først.": {
+    "en": "Review and confirm all relays in the guide first.",
+    "de": "Zuerst alle Relais in der Anleitung prüfen und bestätigen.",
+    "sv": "Granska och bekräfta alla reläer i guiden först.",
+    "no": "Gjennomgå og bekreft alle releer i veiledningen først."
+  },
+  "Shelly-nøglen mangler.": {
+    "en": "Shelly key missing.",
+    "de": "Shelly-Schlüssel fehlt.",
+    "sv": "Shelly-nyckeln saknas.",
+    "no": "Shelly-nøkkelen mangler."
+  },
+  "Gem Shelly-forbindelsen først.": {
+    "en": "Save the Shelly connection first.",
+    "de": "Zuerst Shelly-Verbindung speichern.",
+    "sv": "Spara Shelly-anslutningen först.",
+    "no": "Lagre Shelly-forbindelsen først."
+  },
+  "Giv controlleren et navn.": {
+    "en": "Give the controller a name.",
+    "de": "Controller benennen.",
+    "sv": "Ge styrenheten ett namn.",
+    "no": "Gi kontrolleren et navn."
+  },
+  "Device ID findes ikke på den forbundne Shelly-konto.": {
+    "en": "Device ID not found on the connected Shelly account.",
+    "de": "Device ID fehlt im verbundenen Shelly-Konto.",
+    "sv": "Device ID finns inte på det anslutna Shelly-kontot.",
+    "no": "Device ID finnes ikke på den tilkoblede Shelly-kontoen."
+  },
+  "Controlleren er allerede tilføjet til klubben.": {
+    "en": "Controller already added to the club.",
+    "de": "Controller bereits zum Club hinzugefügt.",
+    "sv": "Styrenheten är redan tillagd i klubben.",
+    "no": "Kontrolleren er allerede lagt til i klubben."
+  },
+  "Controlleren findes ikke.": {
+    "en": "Controller not found.",
+    "de": "Controller nicht gefunden.",
+    "sv": "Styrenheten finns inte.",
+    "no": "Kontrolleren finnes ikke."
+  },
+  "En af de valgte baner tilhører ikke klubben.": {
+    "en": "A selected court does not belong to the club.",
+    "de": "Ein gewählter Platz gehört nicht zum Club.",
+    "sv": "En vald bana tillhör inte klubben.",
+    "no": "En valgt bane tilhører ikke klubben."
+  },
+  "Ukendt relæfunktion.": {
+    "en": "Unknown relay function.",
+    "de": "Unbekannte Relaisfunktion.",
+    "sv": "Okänd reläfunktion.",
+    "no": "Ukjent reléfunksjon."
+  },
+  "Kanalerne er gemt. Gennemgå dem, test relæerne, og aktivér derefter styringen.": {
+    "en": "Channels saved. Review them, test relays and then activate.",
+    "de": "Kanäle gespeichert. Prüfen, Relais testen und dann aktivieren.",
+    "sv": "Kanalerna är sparade. Granska dem, testa reläerna och aktivera sedan.",
+    "no": "Kanalene er lagret. Gjennomgå dem, test releene og aktiver deretter."
+  },
+  "Bekræft først, at det er sikkert at teste relæet.": {
+    "en": "First confirm that it is safe to test the relay.",
+    "de": "Zuerst bestätigen, dass der Relaistest sicher ist.",
+    "sv": "Bekräfta först att det är säkert att testa reläet.",
+    "no": "Bekreft først at det er trygt å teste releet."
+  },
+  "Sæt styringen på pause, før forbindelsen ændres.": {
+    "en": "Pause automation before changing the connection.",
+    "de": "Automatik vor Änderung der Verbindung pausieren.",
+    "sv": "Pausa automatiken innan anslutningen ändras.",
+    "no": "Sett automatikken på pause før forbindelsen endres."
+  },
+  "Kopiér hele Authorization Cloud Key fra Shelly.": {
+    "en": "Copy the entire Shelly Authorization Cloud Key.",
+    "de": "Vollständigen Authorization Cloud Key aus Shelly kopieren.",
+    "sv": "Kopiera hela Authorization Cloud Key från Shelly.",
+    "no": "Kopier hele Authorization Cloud Key fra Shelly."
+  },
+  "Indsæt nøglen fra Shelly.": {
+    "en": "Paste the Shelly key.",
+    "de": "Shelly-Schlüssel einfügen.",
+    "sv": "Klistra in Shelly-nyckeln.",
+    "no": "Lim inn Shelly-nøkkelen."
+  },
+  "Relæet findes ikke.": {
+    "en": "Relay not found.",
+    "de": "Relais nicht gefunden.",
+    "sv": "Reläet finns inte.",
+    "no": "Releet finnes ikke."
+  },
+  "Sæt styringen på pause først.": {
+    "en": "Pause automation first.",
+    "de": "Automatik zuerst pausieren.",
+    "sv": "Pausa automatiken först.",
+    "no": "Sett automatikken på pause først."
+  },
+  "Vælg en af klubbens baner.": {
+    "en": "Choose a club court.",
+    "de": "Einen Clubplatz wählen.",
+    "sv": "Välj en av klubbens banor.",
+    "no": "Velg en av klubbens baner."
+  },
+  "Vælg hvad relæet styrer.": {
+    "en": "Choose what the relay controls.",
+    "de": "Relaisfunktion wählen.",
+    "sv": "Välj vad reläet styr.",
+    "no": "Velg hva releet styrer."
+  },
+  "Bekræft, at du selv har set den rigtige funktion reagere og vende tilbage efter testen.": {
+    "en": "Confirm you saw the correct function respond and return after the test.",
+    "de": "Bestätigt, dass ihr die richtige Funktion und Rückkehr nach dem Test selbst beobachtet habt.",
+    "sv": "Bekräfta att du själv såg rätt funktion reagera och återgå efter testet.",
+    "no": "Bekreft at du selv så riktig funksjon reagere og gå tilbake etter testen."
+  },
+  "Test relæet først.": {
+    "en": "Test the relay first.",
+    "de": "Relais zuerst testen.",
+    "sv": "Testa reläet först.",
+    "no": "Test releet først."
+  },
+  "Bekræftet. Fortsæt til næste relæ.": {
+    "en": "Confirmed. Continue to the next relay.",
+    "de": "Bestätigt. Weiter zum nächsten Relais.",
+    "sv": "Bekräftat. Fortsätt till nästa relä.",
+    "no": "Bekreftet. Fortsett til neste relé."
+  },
+  "Opsætningen er ændret. Test relæet igen.": {
+    "en": "Setup changed. Test the relay again.",
+    "de": "Einrichtung geändert. Relais erneut testen.",
+    "sv": "Inställningarna har ändrats. Testa reläet igen.",
+    "no": "Oppsettet er endret. Test releet igjen."
+  },
+  "Automatik og appens dørknap er sat på pause. Lysenes aktuelle tilstand ændres ikke.": {
+    "en": "Automation and the app door button are paused. Current light states stay unchanged.",
+    "de": "Automatik und Türknopf der App pausiert. Aktueller Lichtzustand bleibt unverändert.",
+    "sv": "Automatiken och appens dörrknapp är pausade. Ljusets nuvarande tillstånd ändras inte.",
+    "no": "Automatikken og appens dørknapp er satt på pause. Lysets nåværende tilstand endres ikke."
+  },
+  "Vælg funktion, test og bekræft alle tilsluttede relæer først.": {
+    "en": "Assign, test and confirm all connected relays first.",
+    "de": "Alle verbundenen Relais zuerst zuordnen, testen und bestätigen.",
+    "sv": "Tilldela, testa och bekräfta alla anslutna reläer först.",
+    "no": "Tilordne, test og bekreft alle tilkoblede releer først."
+  },
+  "Bekræft den samlede opsætning først.": {
+    "en": "Confirm the complete setup first.",
+    "de": "Gesamte Einrichtung zuerst bestätigen.",
+    "sv": "Bekräfta hela konfigurationen först.",
+    "no": "Bekreft hele oppsettet først."
+  },
+  "En controller er offline eller ændret. Kontrollér forbindelsen i Shelly og prøv igen.": {
+    "en": "A controller is offline or changed. Check Shelly and try again.",
+    "de": "Controller offline oder geändert. Verbindung in Shelly prüfen und erneut versuchen.",
+    "sv": "En styrenhet är offline eller ändrad. Kontrollera Shelly och försök igen.",
+    "no": "En kontroller er frakoblet eller endret. Kontroller Shelly og prøv igjen."
+  },
+  "Opsætningen blev ændret under kontrollen. Gennemgå den og aktivér igen.": {
+    "en": "Setup changed during the check. Review and activate again.",
+    "de": "Einrichtung während der Prüfung geändert. Prüfen und erneut aktivieren.",
+    "sv": "Konfigurationen ändrades under kontrollen. Granska och aktivera igen.",
+    "no": "Oppsettet ble endret under kontrollen. Gjennomgå og aktiver igjen."
+  },
+  "Aktiveret. Lysene følger nu bookingerne ved næste minutkontrol.": {
+    "en": "Activated. Lights will follow bookings at the next minute check.",
+    "de": "Aktiviert. Licht folgt den Buchungen ab der nächsten Minutenprüfung.",
+    "sv": "Aktiverat. Ljuset följer bokningarna vid nästa minutkontroll.",
+    "no": "Aktivert. Lyset følger bookingene ved neste minuttkontroll."
+  },
+  "Vælg en gyldig varighed.": {
+    "en": "Choose a valid duration.",
+    "de": "Gültige Dauer wählen.",
+    "sv": "Välj giltig varaktighet.",
+    "no": "Velg gyldig varighet."
+  },
+  "Lysstyringen skal først tilknyttes, testes og aktiveres.": {
+    "en": "Connect, test and activate lighting first.",
+    "de": "Beleuchtung zuerst verbinden, testen und aktivieren.",
+    "sv": "Anslut, testa och aktivera ljuset först.",
+    "no": "Koble til, test og aktiver lyset først."
+  },
+  "Anmodningen er gemt, men controlleren kunne ikke bekræftes. Kontrollér forbindelsen.": {
+    "en": "Request saved, but the controller could not be confirmed. Check the connection.",
+    "de": "Anfrage gespeichert, Controller aber nicht bestätigt. Verbindung prüfen.",
+    "sv": "Begäran sparad, men styrenheten kunde inte bekräftas. Kontrollera anslutningen.",
+    "no": "Forespørselen lagret, men kontrolleren kunne ikke bekreftes. Kontroller forbindelsen."
+  },
+  "Custom løsninger": {
+    "en": "Custom solutions",
+    "de": "Individuelle Lösungen",
+    "sv": "Anpassade lösningar",
+    "no": "Tilpassede løsninger"
+  },
+  "Alt bygges oven på jeres RacketBuddy-klub. I beholder samme login, medlemmer og bookingdata, mens nye moduler bliver koblet på efter behov.": {
+    "en": "Everything builds on your RacketBuddy club. Keep your login, members and bookings while adding modules as needed.",
+    "de": "Alles baut auf eurem RacketBuddy-Club auf. Login, Mitglieder und Buchungen bleiben erhalten, während neue Module ergänzt werden.",
+    "sv": "Allt bygger på er RacketBuddy-klubb. Behåll inloggning, medlemmar och bokningar när nya moduler läggs till.",
+    "no": "Alt bygger på RacketBuddy-klubben. Behold innlogging, medlemmer og bookinger når nye moduler legges til."
+  },
+  "Tilbage til klubadmin": {
+    "en": "Back to club administration",
+    "de": "Zurück zur Clubverwaltung",
+    "sv": "Tillbaka till klubbadministrationen",
+    "no": "Tilbake til klubbadministrasjonen"
+  },
+  "Hjemmesiden styres fra samme klublogin som booking, medlemmer og betaling.": {
+    "en": "Manage the website with the same login as bookings, members and payments.",
+    "de": "Verwaltet die Website mit demselben Login wie Buchungen, Mitglieder und Zahlungen.",
+    "sv": "Hantera webbplatsen med samma inloggning som bokningar, medlemmar och betalningar.",
+    "no": "Administrer nettsiden med samme innlogging som bookinger, medlemmer og betalinger."
+  },
+  "Rediger hjemmeside": {
+    "en": "Edit website",
+    "de": "Website bearbeiten",
+    "sv": "Redigera webbplats",
+    "no": "Rediger nettside"
+  },
+  "Se siden": {
+    "en": "View page",
+    "de": "Seite ansehen",
+    "sv": "Visa sidan",
+    "no": "Se siden"
+  },
+  "Domæne:": {
+    "en": "Domain:",
+    "de": "Domain:",
+    "sv": "Domän:",
+    "no": "Domene:"
+  },
+  "aktivt": {
+    "en": "active",
+    "de": "aktiv",
+    "sv": "aktivt",
+    "no": "aktivt"
+  },
+  "under opsætning": {
+    "en": "being configured",
+    "de": "wird eingerichtet",
+    "sv": "konfigureras",
+    "no": "under oppsett"
+  },
+  "Moduler": {
+    "en": "Modules",
+    "de": "Module",
+    "sv": "Moduler",
+    "no": "Moduler"
+  },
+  "Det her er grundmodellen. Når I får et nyt ønske, kan vi bygge det som et modul i stedet for et separat system.": {
+    "en": "New club requirements can be developed as modules on this platform.",
+    "de": "Neue Clubanforderungen können als Module dieser Plattform entwickelt werden.",
+    "sv": "Nya klubbönskemål kan utvecklas som moduler i denna plattform.",
+    "no": "Nye klubbønsker kan utvikles som moduler på denne plattformen."
+  },
+  "Beskriv kort hvad I ønsker, fx automatisk lys 10 min før en booking.": {
+    "en": "Describe your request, e.g. automatic lights 10 minutes before bookings.",
+    "de": "Beschreibt euren Wunsch, z. B. Licht 10 Minuten vor der Buchung.",
+    "sv": "Beskriv önskemålet, t.ex. automatiskt ljus 10 minuter före bokning.",
+    "no": "Beskriv ønsket, f.eks. automatisk lys 10 minutter før booking."
+  },
+  "Bed om dette modul": {
+    "en": "Request this module",
+    "de": "Modul anfragen",
+    "sv": "Begär denna modul",
+    "no": "Be om denne modulen"
+  },
+  "RacketBuddy har modtaget ønsket.": {
+    "en": "RacketBuddy received your request.",
+    "de": "RacketBuddy hat eure Anfrage erhalten.",
+    "sv": "RacketBuddy har tagit emot önskemålet.",
+    "no": "RacketBuddy har mottatt ønsket."
+  },
+  "Forbind et eksisterende system": {
+    "en": "Connect an existing system",
+    "de": "Bestehendes System verbinden",
+    "sv": "Anslut ett befintligt system",
+    "no": "Koble til et eksisterende system"
+  },
+  "Regnskab, adgang, lys, booking eller et andet API kan kobles på her. Oplysningerne ligger på klubbens RacketBuddy-konto; credentials gemmes krypteret.": {
+    "en": "Register details for accounting, access, lighting, booking or other APIs. Credentials are encrypted in the club account.",
+    "de": "Tragt Angaben für Buchhaltung, Zugang, Licht, Buchung oder andere APIs ein. Zugangsdaten werden im Clubkonto verschlüsselt gespeichert.",
+    "sv": "Registrera uppgifter för redovisning, tillträde, ljus, bokning eller andra API:er. Inloggningsuppgifter lagras krypterade i klubbkontot.",
+    "no": "Registrer opplysninger for regnskap, adgang, lys, booking eller andre API-er. Innloggingsopplysninger lagres kryptert på klubbkontoen."
+  },
+  "Regnskab": {
+    "en": "Accounting",
+    "de": "Buchhaltung",
+    "sv": "Redovisning",
+    "no": "Regnskap"
+  },
+  "Lysstyring": {
+    "en": "Lighting control",
+    "de": "Lichtsteuerung",
+    "sv": "Ljusstyrning",
+    "no": "Lysstyring"
+  },
+  "Adgangskontrol": {
+    "en": "Access control",
+    "de": "Zugangskontrolle",
+    "sv": "Tillträdeskontroll",
+    "no": "Adgangskontroll"
+  },
+  "Betaling": {
+    "en": "Payments",
+    "de": "Zahlung",
+    "sv": "Betalning",
+    "no": "Betaling"
+  },
+  "Andet API/system": {
+    "en": "Other API/system",
+    "de": "Andere API/System",
+    "sv": "Annat API/system",
+    "no": "Annet API/system"
+  },
+  "System": {
+    "en": "System",
+    "de": "System",
+    "sv": "System",
+    "no": "System"
+  },
+  "fx e-conomic, Dinero, Halbooking, Salto": {
+    "en": "e.g. e-conomic, Dinero, Halbooking, Salto",
+    "de": "z. B. e-conomic, Dinero, Halbooking, Salto",
+    "sv": "t.ex. e-conomic, Dinero, Halbooking, Salto",
+    "no": "f.eks. e-conomic, Dinero, Halbooking, Salto"
+  },
+  "API-adresse (hvis relevant)": {
+    "en": "API URL (if relevant)",
+    "de": "API-Adresse (falls relevant)",
+    "sv": "API-adress (om relevant)",
+    "no": "API-adresse (hvis relevant)"
+  },
+  "https://api...": {
+    "en": "https://api...",
+    "de": "https://api...",
+    "sv": "https://api...",
+    "no": "https://api..."
+  },
+  "Konto / reference": {
+    "en": "Account / reference",
+    "de": "Konto / Referenz",
+    "sv": "Konto / referens",
+    "no": "Konto / referanse"
+  },
+  "Kundenr., tenant eller lignende": {
+    "en": "Customer number, tenant or similar",
+    "de": "Kundennummer, Tenant oder Ähnliches",
+    "sv": "Kundnummer, tenant eller liknande",
+    "no": "Kundenummer, tenant eller lignende"
+  },
+  "API-nøgle / token (valgfri)": {
+    "en": "API key / token (optional)",
+    "de": "API-Schlüssel / Token (optional)",
+    "sv": "API-nyckel / token (valfritt)",
+    "no": "API-nøkkel / token (valgfritt)"
+  },
+  "Gemmes krypteret": {
+    "en": "Stored encrypted",
+    "de": "Verschlüsselt gespeichert",
+    "sv": "Lagras krypterat",
+    "no": "Lagres kryptert"
+  },
+  "Gem integration": {
+    "en": "Save integration",
+    "de": "Integration speichern",
+    "sv": "Spara integration",
+    "no": "Lagre integrasjon"
+  },
+  "Jeres integrationer": {
+    "en": "Your integrations",
+    "de": "Eure Integrationen",
+    "sv": "Era integrationer",
+    "no": "Integrasjonene deres"
+  },
+  "Aktiv": {
+    "en": "Active",
+    "de": "Aktiv",
+    "sv": "Aktiv",
+    "no": "Aktiv"
+  },
+  "Klargøres": {
+    "en": "Being prepared",
+    "de": "Wird vorbereitet",
+    "sv": "Förbereds",
+    "no": "Klargjøres"
+  },
+  "Sådan bygger vi videre": {
+    "en": "How we extend the platform",
+    "de": "So erweitern wir die Plattform",
+    "sv": "Så bygger vi vidare",
+    "no": "Slik bygger vi videre"
+  },
+  "Nye klubønsker skal som udgangspunkt blive til genbrugelige RacketBuddy-moduler. Klubspecifik kode kan stadig laves, men den kører med samme login, rettigheder og data som resten af platformen.": {
+    "en": "New club requirements become reusable RacketBuddy modules where possible, using the same login, permissions and data.",
+    "de": "Neue Clubanforderungen werden möglichst wiederverwendbare RacketBuddy-Module mit demselben Login, Rechten und Daten.",
+    "sv": "Nya klubbönskemål blir återanvändbara RacketBuddy-moduler där det går, med samma inloggning, behörigheter och data.",
+    "no": "Nye klubbønsker blir gjenbrukbare RacketBuddy-moduler der det er mulig, med samme innlogging, rettigheter og data."
+  },
+  "Kan tilføjes": {
+    "en": "Available",
+    "de": "Verfügbar",
+    "sv": "Tillgängligt",
+    "no": "Tilgjengelig"
+  },
+  "Ønsket": {
+    "en": "Requested",
+    "de": "Angefragt",
+    "sv": "Begärt",
+    "no": "Forespurt"
+  },
+  "Under udvikling": {
+    "en": "In development",
+    "de": "In Entwicklung",
+    "sv": "Under utveckling",
+    "no": "Under utvikling"
+  },
+  "Sat på pause": {
+    "en": "Paused",
+    "de": "Pausiert",
+    "sv": "Pausat",
+    "no": "Satt på pause"
+  },
+  "Custom hjemmeside": {
+    "en": "Custom website",
+    "de": "Individuelle Website",
+    "sv": "Anpassad webbplats",
+    "no": "Tilpasset nettside"
+  },
+  "Klubbens hjemmeside, eget domæne og indhold styret fra RacketBuddy.": {
+    "en": "Club website, domain and content managed through RacketBuddy.",
+    "de": "Clubwebsite, Domain und Inhalte über RacketBuddy verwalten.",
+    "sv": "Klubbwebbplats, domän och innehåll hanteras via RacketBuddy.",
+    "no": "Klubbnettside, domene og innhold administreres gjennom RacketBuddy."
+  },
+  "Custom booking": {
+    "en": "Custom booking",
+    "de": "Individuelle Buchung",
+    "sv": "Anpassad bokning",
+    "no": "Tilpasset booking"
+  },
+  "Bookingregler, medlemsadgang, gæster, faste tider og specialflows.": {
+    "en": "Booking rules, member access, guests, recurring times and custom flows.",
+    "de": "Buchungsregeln, Mitgliederzugang, Gäste, feste Zeiten und eigene Abläufe.",
+    "sv": "Bokningsregler, medlemsåtkomst, gäster, återkommande tider och anpassade flöden.",
+    "no": "Bookingregler, medlemstilgang, gjester, faste tider og tilpassede flyter."
+  },
+  "Tænd/sluk lys automatisk eller fra klubbens administration.": {
+    "en": "Switch lights automatically or from club administration.",
+    "de": "Licht automatisch oder über die Clubverwaltung schalten.",
+    "sv": "Tänd eller släck ljuset automatiskt eller från klubbadministrationen.",
+    "no": "Slå lys av og på automatisk eller fra klubbadministrasjonen."
+  },
+  "Døre, koder, brikker og adgang knyttet til bookinger og medlemskab.": {
+    "en": "Doors, codes, tags and access linked to bookings and memberships.",
+    "de": "Türen, Codes, Chips und Zugang verbunden mit Buchungen und Mitgliedschaften.",
+    "sv": "Dörrar, koder, taggar och tillträde kopplat till bokningar och medlemskap.",
+    "no": "Dører, koder, brikker og adgang knyttet til bookinger og medlemskap."
+  },
+  "Integration til klubbens regnskabsprogram og automatisk bogføring.": {
+    "en": "Accounting software integration and automatic bookkeeping.",
+    "de": "Buchhaltungsintegration und automatische Verbuchung.",
+    "sv": "Integration med klubbens redovisningsprogram och automatisk bokföring.",
+    "no": "Integrasjon med klubbens regnskapsprogram og automatisk bokføring."
+  },
+  "Medlemmer & kontingent": {
+    "en": "Members and membership fees",
+    "de": "Mitglieder und Beiträge",
+    "sv": "Medlemmar och avgifter",
+    "no": "Medlemmer og kontingenter"
+  },
+  "Kontingent, medlemstyper, rettigheder og automatiske betalinger.": {
+    "en": "Membership fees, member types, permissions and automatic payments.",
+    "de": "Mitgliedsbeiträge, Mitgliedstypen, Rechte und automatische Zahlungen.",
+    "sv": "Medlemsavgifter, medlemstyper, behörigheter och automatiska betalningar.",
+    "no": "Kontingenter, medlemstyper, rettigheter og automatiske betalinger."
+  },
+  "Betalinger": {
+    "en": "Payments",
+    "de": "Zahlungen",
+    "sv": "Betalningar",
+    "no": "Betalinger"
+  },
+  "Betaling, faktura, klippekort, refusioner og udbetalinger.": {
+    "en": "Payments, invoices, passes, refunds and payouts.",
+    "de": "Zahlungen, Rechnungen, Karten, Erstattungen und Auszahlungen.",
+    "sv": "Betalningar, fakturor, klippkort, återbetalningar och utbetalningar.",
+    "no": "Betalinger, fakturaer, klippekort, refusjoner og utbetalinger."
+  },
+  "Kommunikation": {
+    "en": "Communication",
+    "de": "Kommunikation",
+    "sv": "Kommunikation",
+    "no": "Kommunikasjon"
+  },
+  "E-mails, nyheder, påmindelser og beskeder til medlemmer.": {
+    "en": "Emails, news, reminders and member messages.",
+    "de": "E-Mails, Neuigkeiten, Erinnerungen und Mitgliedernachrichten.",
+    "sv": "E-post, nyheter, påminnelser och medlemsmeddelanden.",
+    "no": "E-post, nyheter, påminnelser og medlemsmeldinger."
+  },
+  "Custom integration/API": {
+    "en": "Custom integration/API",
+    "de": "Individuelle Integration/API",
+    "sv": "Anpassad integration/API",
+    "no": "Tilpasset integrasjon/API"
+  },
+  "Forbind RacketBuddy med andre systemer klubben allerede bruger.": {
+    "en": "Connect RacketBuddy to other club systems.",
+    "de": "RacketBuddy mit anderen Clubsystemen verbinden.",
+    "sv": "Anslut RacketBuddy till klubbens andra system.",
+    "no": "Koble RacketBuddy til klubbens andre systemer."
+  },
+  "Specialudvikling": {
+    "en": "Custom development",
+    "de": "Individuelle Entwicklung",
+    "sv": "Specialutveckling",
+    "no": "Spesialutvikling"
+  },
+  "Klubspecifik funktionalitet bygget oven på RacketBuddy-platformen.": {
+    "en": "Club-specific features built on RacketBuddy.",
+    "de": "Clubspezifische Funktionen auf der RacketBuddy-Plattform.",
+    "sv": "Klubbspecifika funktioner byggda på RacketBuddy.",
+    "no": "Klubbspesifikke funksjoner bygget på RacketBuddy."
+  },
+  "Ukendt integrationstype.": {
+    "en": "Unknown integration type.",
+    "de": "Unbekannter Integrationstyp.",
+    "sv": "Okänd integrationstyp.",
+    "no": "Ukjent integrasjonstype."
+  },
+  "Angiv en feed-adresse, når du vælger kalenderfeed.": {
+    "en": "Enter a feed URL for calendar integration.",
+    "de": "Feed-Adresse für Kalenderintegration angeben.",
+    "sv": "Ange en flödesadress för kalenderintegration.",
+    "no": "Oppgi en feed-adresse for kalenderintegrasjon."
+  },
+  "Feed-adressen skal starte med http:// eller https://": {
+    "en": "Feed URL must start with http:// or https://",
+    "de": "Feed-Adresse muss mit http:// oder https:// beginnen",
+    "sv": "Flödesadressen måste börja med http:// eller https://",
+    "no": "Feed-adressen må starte med http:// eller https://"
+  },
+  "Integration gemt.": {
+    "en": "Integration saved.",
+    "de": "Integration gespeichert.",
+    "sv": "Integration sparad.",
+    "no": "Integrasjon lagret."
+  },
+  "Skriv adressen på jeres system.": {
+    "en": "Enter the URL of your system.",
+    "de": "Adresse eures Systems eingeben.",
+    "sv": "Ange adressen till ert system.",
+    "no": "Oppgi adressen til systemet deres."
+  },
+  "Udfyld både brugernavn og adgangskode.": {
+    "en": "Enter both username and password.",
+    "de": "Benutzername und Passwort eingeben.",
+    "sv": "Ange både användarnamn och lösenord.",
+    "no": "Oppgi både brukernavn og passord."
+  },
+  "Adgangen er gemt. Vi spærrer jeres frigivne tider inden for et kvarter.": {
+    "en": "Access saved. Released times are blocked within 15 minutes.",
+    "de": "Zugang gespeichert. Freigegebene Zeiten werden innerhalb von 15 Minuten gesperrt.",
+    "sv": "Åtkomsten är sparad. Öppnade tider blockeras inom 15 minuter.",
+    "no": "Tilgangen er lagret. Frigitte tider sperres innen 15 minutter."
+  },
+  "Sluttidspunktet skal ligge efter starttidspunktet.": {
+    "en": "End time must be after start time.",
+    "de": "Endzeit muss nach Beginn liegen.",
+    "sv": "Sluttiden måste vara efter starttiden.",
+    "no": "Sluttiden må være etter starttiden."
+  },
+  "Angiv en gæstepris.": {
+    "en": "Enter a guest price.",
+    "de": "Gastpreis angeben.",
+    "sv": "Ange ett gästpris.",
+    "no": "Oppgi en gjestepris."
+  },
+  "Prisreglen er tilføjet.": {
+    "en": "Price rule added.",
+    "de": "Preisregel hinzugefügt.",
+    "sv": "Prisregel tillagd.",
+    "no": "Prisregelen er lagt til."
+  },
+  "Vælg mindst én gyldig sportsgren.": {
+    "en": "Choose at least one valid sport.",
+    "de": "Mindestens eine gültige Sportart wählen.",
+    "sv": "Välj minst en giltig sport.",
+    "no": "Velg minst én gyldig idrett."
+  },
+  "Sportsgrenen bruges af en eksisterende bane eller et bord. Ret eller fjern dem først.": {
+    "en": "This sport is used by an existing court or table. Edit or remove it first.",
+    "de": "Sportart wird von einem Platz oder Tisch verwendet. Zuerst bearbeiten oder entfernen.",
+    "sv": "Sporten används av en bana eller ett bord. Ändra eller ta bort dem först.",
+    "no": "Idretten brukes av en bane eller et bord. Endre eller fjern dem først."
+  },
+  "Klubbens sportsgrene er gemt.": {
+    "en": "Club sports saved.",
+    "de": "Clubsportarten gespeichert.",
+    "sv": "Klubbens sporter är sparade.",
+    "no": "Klubbens idretter er lagret."
+  },
+  "Angiv et navn.": {
+    "en": "Enter a name.",
+    "de": "Namen eingeben.",
+    "sv": "Ange ett namn.",
+    "no": "Oppgi et navn."
+  },
+  "Navnet bruges allerede i klubben.": {
+    "en": "This name is already used in the club.",
+    "de": "Name wird im Club bereits verwendet.",
+    "sv": "Namnet används redan i klubben.",
+    "no": "Navnet brukes allerede i klubben."
+  },
+  "Banen eller bordet findes ikke i din klub.": {
+    "en": "Court or table not found in your club.",
+    "de": "Platz oder Tisch nicht in eurem Club gefunden.",
+    "sv": "Banan eller bordet finns inte i din klubb.",
+    "no": "Banen eller bordet finnes ikke i klubben din."
+  },
+  "Sportsgrenen kan ikke ændres efter første booking. Opret en ny bane eller et nyt bord.": {
+    "en": "Sport cannot change after the first booking. Create a new court or table.",
+    "de": "Sportart nach erster Buchung nicht änderbar. Neuen Platz oder Tisch erstellen.",
+    "sv": "Sporten kan inte ändras efter första bokningen. Skapa en ny bana eller ett nytt bord.",
+    "no": "Idretten kan ikke endres etter første booking. Opprett en ny bane eller et nytt bord."
+  },
+  "Prisen skal være et helt antal kroner, mindst 0.": {
+    "en": "Price must be a whole currency amount, at least 0.",
+    "de": "Preis muss eine ganze Währungseinheit sein, mindestens 0.",
+    "sv": "Priset måste vara ett helt valutabelopp, minst 0.",
+    "no": "Prisen må være et helt valutabeløp, minst 0."
+  },
+  "Du har ikke adgang til klubben.": {
+    "en": "You cannot access this club.",
+    "de": "Kein Zugriff auf diesen Club.",
+    "sv": "Du har inte åtkomst till klubben.",
+    "no": "Du har ikke tilgang til klubben."
+  },
+  "Vælg en klub.": {
+    "en": "Choose a club.",
+    "de": "Club wählen.",
+    "sv": "Välj en klubb.",
+    "no": "Velg en klubb."
+  },
+  "Det ser ikke ud som et gyldigt domæne.": {
+    "en": "Invalid domain.",
+    "de": "Ungültige Domain.",
+    "sv": "Ogiltig domän.",
+    "no": "Ugyldig domene."
+  },
+  "Domænet er allerede knyttet til en anden klub.": {
+    "en": "Domain already belongs to another club.",
+    "de": "Domain gehört bereits zu einem anderen Club.",
+    "sv": "Domänen är redan kopplad till en annan klubb.",
+    "no": "Domenet er allerede knyttet til en annen klubb."
+  },
+  "Ukendt billedtype.": {
+    "en": "Unknown image type.",
+    "de": "Unbekannter Bildtyp.",
+    "sv": "Okänd bildtyp.",
+    "no": "Ukjent bildetype."
+  },
+  "Vælg en fil.": {
+    "en": "Choose a file.",
+    "de": "Datei wählen.",
+    "sv": "Välj en fil.",
+    "no": "Velg en fil."
+  },
+  "Billedet er uploadet.": {
+    "en": "Image uploaded.",
+    "de": "Bild hochgeladen.",
+    "sv": "Bilden är uppladdad.",
+    "no": "Bildet er lastet opp."
+  },
+  "Ketsjersport samlet ét sted": {
+    "en": "Racket sports, together",
+    "de": "Schlägersport an einem Ort",
+    "sv": "Racketsport på ett ställe",
+    "no": "Racketsport samlet på ett sted"
+  },
+  "Hjemmeside til klubben": {
+    "en": "Club website",
+    "de": "Clubwebsite",
+    "sv": "Klubbwebbplats",
+    "no": "Klubbnettside"
+  },
+  "Handelsbetingelser": {
+    "en": "Terms",
+    "de": "Geschäftsbedingungen",
+    "sv": "Villkor",
+    "no": "Vilkår"
+  },
+  "Privatliv": {
+    "en": "Privacy",
+    "de": "Datenschutz",
+    "sv": "Integritet",
+    "no": "Personvern"
+  },
+  "Databehandleraftale": {
+    "en": "Data processing agreement",
+    "de": "Auftragsverarbeitungsvertrag",
+    "sv": "Personuppgiftsbiträdesavtal",
+    "no": "Databehandleravtale"
+  },
+  "Til klubber": {
+    "en": "For clubs",
+    "de": "Für Clubs",
+    "sv": "För klubbar",
+    "no": "For klubber"
+  },
+  "Vælg en bane, der hører til klubben.": {
+    "en": "Choose a court belonging to the club.",
+    "de": "Wähle einen Platz des Vereins.",
+    "sv": "Välj en bana som tillhör klubben.",
+    "no": "Velg en bane som tilhører klubben."
+  },
+  "Vælg en dato.": {
+    "en": "Choose a date.",
+    "de": "Wähle ein Datum.",
+    "sv": "Välj ett datum.",
+    "no": "Velg en dato."
+  },
+  "Angiv en pris på 0 kr eller derover.": {
+    "en": "Enter a non-negative price.",
+    "de": "Gib einen Preis ab 0 ein.",
+    "sv": "Ange ett pris på minst 0.",
+    "no": "Angi en pris på minst 0."
+  },
+  "Ingen nye tider blev frigivet — de var allerede frigivet eller ligger i fortiden.": {
+    "en": "No new slots were released. They were already released or are in the past.",
+    "de": "Es wurden keine neuen Zeiten freigegeben. Sie waren bereits freigegeben oder liegen in der Vergangenheit.",
+    "sv": "Inga nya tider släpptes. De var redan tillgängliga eller ligger i det förflutna.",
+    "no": "Ingen nye tider ble frigitt. De var allerede tilgjengelige eller ligger i fortiden."
+  },
+  "Giv holdet et navn.": {
+    "en": "Give the team a name.",
+    "de": "Gib der Gruppe einen Namen.",
+    "sv": "Ge gruppen ett namn.",
+    "no": "Gi gruppen et navn."
+  },
+  "Vælg både en start- og en slutdato.": {
+    "en": "Choose both a start and an end date.",
+    "de": "Wähle ein Start- und ein Enddatum.",
+    "sv": "Välj både start- och slutdatum.",
+    "no": "Velg både start- og sluttdato."
+  },
+  "Sæsonen skal slutte efter den begynder.": {
+    "en": "The season must end after it starts.",
+    "de": "Die Saison muss nach ihrem Beginn enden.",
+    "sv": "Säsongen måste sluta efter att den börjar.",
+    "no": "Sesongen må slutte etter at den begynner."
+  },
+  "Giv klippekortet et navn.": {
+    "en": "Give the prepaid pass a name.",
+    "de": "Gib der Mehrfachkarte einen Namen.",
+    "sv": "Ge klippkortet ett namn.",
+    "no": "Gi klippekortet et navn."
+  },
+  "Antal timer skal være mellem 2 og 100.": {
+    "en": "The number of hours must be between 2 and 100.",
+    "de": "Die Anzahl der Stunden muss zwischen 2 und 100 liegen.",
+    "sv": "Antalet timmar måste vara mellan 2 och 100.",
+    "no": "Antall timer må være mellom 2 og 100."
+  },
+  "Giv kontingentet et navn, fx Senior.": {
+    "en": "Name the membership, e.g. Adult.",
+    "de": "Benenne die Mitgliedschaft, z. B. Erwachsene.",
+    "sv": "Namnge medlemskapet, t.ex. Senior.",
+    "no": "Gi medlemskapet et navn, f.eks. Senior."
+  },
+  "Skriv sæsonens navn, fx Sommer 2026.": {
+    "en": "Enter a season name, e.g. Summer 2026.",
+    "de": "Gib einen Saisonnamen ein, z. B. Sommer 2026.",
+    "sv": "Ange säsongens namn, t.ex. Sommar 2026.",
+    "no": "Skriv sesongens navn, f.eks. Sommer 2026."
+  },
+  "Vælg både en start- og en slutdato for sæsonen.": {
+    "en": "Choose both a start and an end date for the season.",
+    "de": "Wähle ein Start- und ein Enddatum für die Saison.",
+    "sv": "Välj både start- och slutdatum för säsongen.",
+    "no": "Velg både start- og sluttdato for sesongen."
+  },
+  "Vælg gyldige baner, ugedage, tid og pris.": {
+    "en": "Choose valid courts, weekdays, time and price.",
+    "de": "Wähle gültige Plätze, Wochentage, Uhrzeit und Preis.",
+    "sv": "Välj giltiga banor, veckodagar, tid och pris.",
+    "no": "Velg gyldige baner, ukedager, tid og pris."
+  },
+  "Vælg en gyldig periode højst et år frem.": {
+    "en": "Choose a valid period within the next year.",
+    "de": "Wähle einen gültigen Zeitraum innerhalb des nächsten Jahres.",
+    "sv": "Välj en giltig period inom det kommande året.",
+    "no": "Velg en gyldig periode innen det neste året."
+  },
+  "Opret højst 1.500 tider ad gangen.": {
+    "en": "Create no more than 1,500 slots at a time.",
+    "de": "Erstelle höchstens 1.500 Zeiten auf einmal.",
+    "sv": "Skapa högst 1 500 tider åt gången.",
+    "no": "Opprett høyst 1 500 tider om gangen."
+  },
+  "Vælg kun klubbens egne baner.": {
+    "en": "Choose only the club’s own courts.",
+    "de": "Wähle nur die vereinseigenen Plätze.",
+    "sv": "Välj endast klubbens egna banor.",
+    "no": "Velg bare klubbens egne baner."
+  },
+  "Vælg et medlem af klubben.": {
+    "en": "Choose a member of the club.",
+    "de": "Wähle ein Vereinsmitglied.",
+    "sv": "Välj en medlem i klubben.",
+    "no": "Velg et medlem av klubben."
+  },
+  "Skriv et navn.": {
+    "en": "Enter a name.",
+    "de": "Gib einen Namen ein.",
+    "sv": "Ange ett namn.",
+    "no": "Skriv et navn."
+  },
+  "Skriv en rolle, fx Formand.": {
+    "en": "Enter a role, e.g. Chairperson.",
+    "de": "Gib eine Funktion ein, z. B. Vorsitz.",
+    "sv": "Ange en roll, t.ex. Ordförande.",
+    "no": "Skriv en rolle, f.eks. Leder."
+  },
+  "Tilføjet.": {
+    "en": "Added.",
+    "de": "Hinzugefügt.",
+    "sv": "Tillagt.",
+    "no": "Lagt til."
+  },
+  "Vælg mindst én ugedag.": {
+    "en": "Choose at least one weekday.",
+    "de": "Wähle mindestens einen Wochentag.",
+    "sv": "Välj minst en veckodag.",
+    "no": "Velg minst én ukedag."
+  },
+  "Angiv en pris.": {
+    "en": "Enter a price.",
+    "de": "Gib einen Preis ein.",
+    "sv": "Ange ett pris.",
+    "no": "Angi en pris."
+  },
+  "Reglen er aktiv. Tiderne er nu synlige for gæster.": {
+    "en": "The rule is active. Slots are now visible to guests.",
+    "de": "Die Regel ist aktiv. Die Zeiten sind jetzt für Gäste sichtbar.",
+    "sv": "Regeln är aktiv. Tiderna visas nu för gäster.",
+    "no": "Regelen er aktiv. Tidene er nå synlige for gjester."
+  },
+  "Farven skal skrives som en hex-kode, fx #1B62C4.": {
+    "en": "Enter the colour as a hex code, e.g. #1B62C4.",
+    "de": "Gib die Farbe als Hex-Code ein, z. B. #1B62C4.",
+    "sv": "Ange färgen som en hexkod, t.ex. #1B62C4.",
+    "no": "Skriv fargen som en heksadesimal kode, f.eks. #1B62C4."
+  },
+  "Lukketid skal ligge efter åbningstid.": {
+    "en": "Closing time must be after opening time.",
+    "de": "Die Schließzeit muss nach der Öffnungszeit liegen.",
+    "sv": "Stängningstiden måste vara efter öppningstiden.",
+    "no": "Stengetiden må være etter åpningstiden."
+  },
+  "Medlemsprisen skal være 0 kr eller derover.": {
+    "en": "The member price must be non-negative.",
+    "de": "Der Mitgliederpreis muss mindestens 0 sein.",
+    "sv": "Medlemspriset måste vara minst 0.",
+    "no": "Medlemsprisen må være minst 0."
+  },
+  "Siden er opdateret.": {
+    "en": "The page has been updated.",
+    "de": "Die Seite wurde aktualisiert.",
+    "sv": "Sidan har uppdaterats.",
+    "no": "Siden er oppdatert."
+  },
+  "Udfyld både overskrift og tekst.": {
+    "en": "Enter both a title and text.",
+    "de": "Gib einen Titel und einen Text ein.",
+    "sv": "Fyll i både rubrik och text.",
+    "no": "Fyll inn både overskrift og tekst."
+  },
+  "Nyheden er slået op.": {
+    "en": "The news has been published.",
+    "de": "Die Nachricht wurde veröffentlicht.",
+    "sv": "Nyheten har publicerats.",
+    "no": "Nyheten er publisert."
+  },
+  "Angiv kildesystemet, fx Resasports.": {
+    "en": "Enter the source system, e.g. Resasports.",
+    "de": "Gib das Quellsystem an, z. B. Resasports.",
+    "sv": "Ange källsystemet, t.ex. Resasports.",
+    "no": "Angi kildesystemet, f.eks. Resasports."
+  },
+  "Data er ændret. Vis forhåndsvisningen igen.": {
+    "en": "The data has changed. Preview it again.",
+    "de": "Die Daten haben sich geändert. Zeige die Vorschau erneut an.",
+    "sv": "Data har ändrats. Visa förhandsgranskningen igen.",
+    "no": "Dataene er endret. Vis forhåndsvisningen igjen."
+  },
+  "Bekræft at du har gennemgået importen.": {
+    "en": "Confirm that you have reviewed the import.",
+    "de": "Bestätige, dass du den Import geprüft hast.",
+    "sv": "Bekräfta att du har granskat importen.",
+    "no": "Bekreft at du har gjennomgått importen."
+  },
+  "Confirm that Resasports uses your venue time zone.": {
+    "en": "Confirm that Resasports uses your venue time zone.",
+    "de": "Bestätige, dass Resasports die Zeitzone deiner Anlage verwendet.",
+    "sv": "Bekräfta att Resasports använder anläggningens tidszon.",
+    "no": "Bekreft at Resasports bruker anleggets tidssone.",
+    "da": "Bekræft, at Resasports bruger klubbens tidszone."
+  },
+  "Opdatér først Stripe-webhooken under superadmin → Platformindstillinger, så refunderinger og indsigelser kan modtages.": {
+    "en": "First update the Stripe webhook in superadmin → Platform settings so refunds and disputes can be received.",
+    "de": "Aktualisiere zuerst den Stripe-Webhook unter Superadmin → Plattformeinstellungen, damit Erstattungen und Zahlungsstreitigkeiten empfangen werden können.",
+    "sv": "Uppdatera först Stripe-webhooken under superadmin → Plattforminställningar så att återbetalningar och tvister kan tas emot.",
+    "no": "Oppdater først Stripe-webhooken under superadmin → Plattforminnstillinger slik at refusjoner og tvister kan mottas."
+  },
+  "Wallet-indstillinger gemt.": {
+    "en": "Wallet settings saved.",
+    "de": "Wallet-Einstellungen gespeichert.",
+    "sv": "Plånboksinställningarna har sparats.",
+    "no": "Lommebokinnstillingene er lagret."
+  },
+  "{count} tider frigivet til gæster.": {
+    "en": "{count} slots released to guests.",
+    "de": "{count} Zeiten für Gäste freigegeben.",
+    "sv": "{count} tider släppta för gäster.",
+    "no": "{count} tider frigitt til gjester."
+  },
+  "{name} er oprettet.": {
+    "en": "{name} has been created.",
+    "de": "{name} wurde erstellt.",
+    "sv": "{name} har skapats.",
+    "no": "{name} er opprettet."
+  },
+  "{name} er gemt.": {
+    "en": "{name} has been saved.",
+    "de": "{name} wurde gespeichert.",
+    "sv": "{name} har sparats.",
+    "no": "{name} er lagret."
+  },
+  "{name} er oprettet og åbent for tilmelding.": {
+    "en": "{name} has been created and is open for registration.",
+    "de": "{name} wurde erstellt und ist zur Anmeldung geöffnet.",
+    "sv": "{name} har skapats och är öppet för anmälan.",
+    "no": "{name} er opprettet og åpent for påmelding."
+  },
+  "{name} — {season} er oprettet og åben for tilmelding.": {
+    "en": "{name} — {season} has been created and is open for registration.",
+    "de": "{name} — {season} wurde erstellt und ist zur Anmeldung geöffnet.",
+    "sv": "{name} — {season} har skapats och är öppet för anmälan.",
+    "no": "{name} — {season} er opprettet og åpent for påmelding."
+  },
+  "{created} tider oprettet. {skipped} blev sprunget over, fordi der allerede lå en booking: {dates}.": {
+    "en": "{created} slots created. {skipped} were skipped because a booking already existed: {dates}.",
+    "de": "{created} Zeiten erstellt. {skipped} wurden wegen einer bestehenden Buchung übersprungen: {dates}.",
+    "sv": "{created} tider skapade. {skipped} hoppades över eftersom en bokning redan fanns: {dates}.",
+    "no": "{created} tider opprettet. {skipped} ble hoppet over fordi det allerede fantes en booking: {dates}."
+  },
+  "{count} tider oprettet hele perioden igennem.": {
+    "en": "{count} slots created across the entire period.",
+    "de": "{count} Zeiten für den gesamten Zeitraum erstellt.",
+    "sv": "{count} tider skapade för hela perioden.",
+    "no": "{count} tider opprettet for hele perioden."
+  },
+  "Enhed {id} er ikke online. Åbn Shelly og kontrollér Cloud-forbindelsen og ID’et.": {
+    "en": "Device {id} is offline. Open Shelly and check the cloud connection and ID.",
+    "de": "Gerät {id} ist offline. Öffne Shelly und prüfe die Cloud-Verbindung und die ID.",
+    "sv": "Enhet {id} är offline. Öppna Shelly och kontrollera molnanslutningen och ID:t.",
+    "no": "Enhet {id} er frakoblet. Åpne Shelly og kontroller skytilkoblingen og ID-en."
+  },
+  "Enhed {id} har ingen understøttede relæer. Brug en online Shelly med switch-kanaler.": {
+    "en": "Device {id} has no supported relays. Use an online Shelly with switch channels.",
+    "de": "Gerät {id} hat keine unterstützten Relais. Verwende ein verbundenes Shelly-Gerät mit Schaltkanälen.",
+    "sv": "Enhet {id} saknar reläer som stöds. Använd en ansluten Shelly med switchkanaler.",
+    "no": "Enhet {id} har ingen støttede releer. Bruk en tilkoblet Shelly med switch-kanaler."
+  },
+  "{count} controller(e) forbundet. Vælg nu hvad hvert relæ styrer.": {
+    "en": "{count} controllers connected. Choose what each relay controls.",
+    "de": "{count} Controller verbunden. Wähle, was jedes Relais steuert.",
+    "sv": "{count} styrenheter anslutna. Välj vad varje relä styr.",
+    "no": "{count} kontrollere tilkoblet. Velg hva hvert relé styrer."
+  },
+  "Styringen blev ikke kørt: {reason}.": {
+    "en": "Control did not run: {reason}.",
+    "de": "Die Steuerung wurde nicht ausgeführt: {reason}.",
+    "sv": "Styrningen kördes inte: {reason}.",
+    "no": "Styringen ble ikke kjørt: {reason}."
+  },
+  "{failed} kanal(er) fejlede. {changed} blev opdateret.": {
+    "en": "{failed} channels failed. {changed} were updated.",
+    "de": "{failed} Kanäle fehlgeschlagen. {changed} wurden aktualisiert.",
+    "sv": "{failed} kanaler misslyckades. {changed} uppdaterades.",
+    "no": "{failed} kanaler feilet. {changed} ble oppdatert."
+  },
+  "Forbindelsen virker. {checked} kanal(er) kontrolleret, {changed} ændret.": {
+    "en": "Connection works. {checked} channels checked, {changed} changed.",
+    "de": "Die Verbindung funktioniert. {checked} Kanäle geprüft, {changed} geändert.",
+    "sv": "Anslutningen fungerar. {checked} kanaler kontrollerade, {changed} ändrade.",
+    "no": "Tilkoblingen fungerer. {checked} kanaler kontrollert, {changed} endret."
+  },
+  "Række {row}: kontrollér type og e-mail.": {
+    "en": "Row {row}: check type and email.",
+    "de": "Zeile {row}: Typ und E-Mail prüfen.",
+    "sv": "Rad {row}: kontrollera typ och e-post.",
+    "no": "Rad {row}: kontroller type og e-post."
+  },
+  "Række {row}: kontrollér navn og telefon.": {
+    "en": "Row {row}: check name and phone.",
+    "de": "Zeile {row}: Name und Telefonnummer prüfen.",
+    "sv": "Rad {row}: kontrollera namn och telefon.",
+    "no": "Rad {row}: kontroller navn og telefon."
+  },
+  "Række {row}: eksternt ID og entydigt banenavn er påkrævet.": {
+    "en": "Row {row}: an external ID and unique court name are required.",
+    "de": "Zeile {row}: Eine externe ID und ein eindeutiger Platzname sind erforderlich.",
+    "sv": "Rad {row}: externt ID och unikt bannamn krävs.",
+    "no": "Rad {row}: ekstern ID og entydig banenavn kreves."
+  },
+  "Række {row}: vælg en fremtidig booking, højst et år frem og højst 24 timer lang.": {
+    "en": "Row {row}: choose a future booking within one year and no longer than 24 hours.",
+    "de": "Zeile {row}: Wähle eine zukünftige Buchung innerhalb eines Jahres mit höchstens 24 Stunden Dauer.",
+    "sv": "Rad {row}: välj en framtida bokning inom ett år och högst 24 timmar lång.",
+    "no": "Rad {row}: velg en fremtidig booking innen ett år og på høyst 24 timer."
+  },
+  "{members} medlemsrækker og {bookings} bookinger. Ved import kontrolleres konti, dubletter og overlap igen. Ingen betaling opkræves, og der sendes ingen mail.": {
+    "en": "{members} member rows and {bookings} bookings. Accounts, duplicates and overlaps are checked again on import. No payment is collected and no email is sent.",
+    "de": "{members} Mitgliedszeilen und {bookings} Buchungen. Konten, Duplikate und Überschneidungen werden beim Import erneut geprüft. Es werden keine Zahlungen eingezogen und keine E-Mails versendet.",
+    "sv": "{members} medlemsrader och {bookings} bokningar. Konton, dubbletter och överlappningar kontrolleras igen vid import. Ingen betalning tas ut och inget mejl skickas.",
+    "no": "{members} medlemsrader og {bookings} bookinger. Kontoer, duplikater og overlapp kontrolleres igjen ved import. Ingen betaling kreves inn, og ingen e-post sendes."
+  },
+  "Medlem {email} har en anden klub eller administratorrolle. Ingen rækker er importeret.": {
+    "en": "Member {email} belongs to another club or has an administrator role. No rows were imported.",
+    "de": "Mitglied {email} gehört einem anderen Verein an oder hat eine Administratorrolle. Es wurden keine Zeilen importiert.",
+    "sv": "Medlem {email} tillhör en annan klubb eller har en administratörsroll. Inga rader importerades.",
+    "no": "Medlem {email} tilhører en annen klubb eller har en administratorrolle. Ingen rader ble importert."
+  },
+  "Tilføj først medlemmet {email} i samme import eller i medlemsadministrationen.": {
+    "en": "First add member {email} in this import or in member administration.",
+    "de": "Füge Mitglied {email} zuerst in diesem Import oder in der Mitgliederverwaltung hinzu.",
+    "sv": "Lägg först till medlem {email} i samma import eller i medlemsadministrationen.",
+    "no": "Legg først til medlem {email} i samme import eller i medlemsadministrasjonen."
+  },
+  "Booking {id} overlapper en eksisterende booking. Ingen rækker er importeret.": {
+    "en": "Booking {id} overlaps an existing booking. No rows were imported.",
+    "de": "Buchung {id} überschneidet sich mit einer bestehenden Buchung. Es wurden keine Zeilen importiert.",
+    "sv": "Bokning {id} överlappar en befintlig bokning. Inga rader importerades.",
+    "no": "Booking {id} overlapper en eksisterende booking. Ingen rader ble importert."
+  },
+  "Importeret: {members} nye medlemmer, {bookings} bookinger. {skipped} eksisterende rækker blev bevaret. Nye medlemmer bruger “Glemt adgangskode” for at vælge eget login. Kontingent og gamle betalinger er ikke importeret.": {
+    "en": "Imported: {members} new members, {bookings} bookings. {skipped} existing rows were preserved. New members use “Forgot password” to choose their own login. Membership fees and old payments were not imported.",
+    "de": "Importiert: {members} neue Mitglieder, {bookings} Buchungen. {skipped} vorhandene Zeilen wurden beibehalten. Neue Mitglieder wählen über „Passwort vergessen“ ihr eigenes Passwort. Mitgliedsbeiträge und alte Zahlungen wurden nicht importiert.",
+    "sv": "Importerat: {members} nya medlemmar, {bookings} bokningar. {skipped} befintliga rader bevarades. Nya medlemmar använder ”Glömt lösenord” för att välja eget lösenord. Medlemsavgifter och gamla betalningar importerades inte.",
+    "no": "Importert: {members} nye medlemmer, {bookings} bookinger. {skipped} eksisterende rader ble bevart. Nye medlemmer bruker «Glemt passord» for å velge eget passord. Kontingenter og gamle betalinger ble ikke importert."
+  },
+  "Jeg har spærret disse tider i {system} først.": {
+    "en": "I have blocked these slots in {system} first.",
+    "de": "Ich habe diese Zeiten zuerst in {system} gesperrt.",
+    "sv": "Jag har först spärrat dessa tider i {system}.",
+    "no": "Jeg har sperret disse tidene i {system} først."
+  },
+  "Så kan et medlem ikke nå at booke samme time dér. Bagefter findes tiden kun hos os — og når en gæst booker, skriver I bare navnet på.": {
+    "en": "This prevents a member booking the same slot there. The slot will then only be available here; when a guest books, enter their name in your system.",
+    "de": "So kann ein Mitglied dieselbe Zeit dort nicht buchen. Danach ist die Zeit nur hier verfügbar. Trage den Namen des Gastes in dein System ein, sobald er bucht.",
+    "sv": "Då kan en medlem inte boka samma tid där. Därefter finns tiden bara här; när en gäst bokar skriver ni in namnet i ert system.",
+    "no": "Da kan ikke et medlem booke samme tid der. Etterpå finnes tiden bare her; når en gjest booker, skriver dere inn navnet i deres system."
+  }
+}

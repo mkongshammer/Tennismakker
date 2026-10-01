@@ -36,6 +36,7 @@ export function AuthProvider({ children }) {
   };
 
   const savePreferences=async payload=>{const u=(await api.savePreferences(payload)).user;setUser(u);await setInternational(u);};
+  const saveLocation=async payload=>{const u=(await api.saveLocation(payload)).user;setUser(u);await setInternational(u);};
 
   const logout = async () => {
     await disablePush();
@@ -51,7 +52,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, logout, deleteAccount,savePreferences }}>
+    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, logout, deleteAccount,savePreferences,saveLocation }}>
       {children}
     </AuthContext.Provider>
   );

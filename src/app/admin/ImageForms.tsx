@@ -51,10 +51,10 @@ function Uploader({
           placeholder={tr("Kort beskrivelse, fx \u201CBane 1 en sommeraften\u201D")} />
 
         }
-        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+        {state?.error && <p className="text-sm font-semibold text-court">{tr(state.error)}</p>}
+        {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
         <SubmitButton className="btn-ghost" pendingText={tr("Uploader\u2026")}>
-          {current ? "Skift billede" : "Upload"}
+          {current ? tr("Skift billede") : tr("Upload")}
         </SubmitButton>
       </form>
     </div>);
@@ -105,7 +105,7 @@ export function ImageForms({
               <form action={deleteImage} className="absolute right-2 top-2">
                 <input type="hidden" name="id" value={p.id} />
                 <button
-              aria-label="Slet billedet"
+              aria-label={tr("Slet billedet")}
               className="flex h-8 w-8 items-center justify-center rounded-full bg-ink/80 text-chalk">
 
                   ×

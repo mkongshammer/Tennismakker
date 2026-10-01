@@ -10,6 +10,7 @@
 // en almindelig <button>.
 
 import { useFormStatus } from "react-dom";
+import {useWebsiteInternational} from './InternationalProvider';
 
 function Spinner() {
   return (
@@ -49,6 +50,7 @@ export function SubmitButton({
   className?: string;
 }) {
   const { pending } = useFormStatus();
+  const {tr}=useWebsiteInternational();
 
   return (
     <button
@@ -60,7 +62,7 @@ export function SubmitButton({
       {pending ? (
         <span className="inline-flex items-center gap-2">
           <Spinner />
-          {pendingText ?? "Vent venligst…"}
+          {pendingText ?? tr("Vent venligst…")}
         </span>
       ) : (
         children

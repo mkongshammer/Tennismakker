@@ -18,8 +18,7 @@ import { clubSports, facilityLabel } from "../../lib/club-sports";
 // Klub-administration: her styrer klubben, hvordan RacketBuddy henter
 // ledighed, og hvilke tider udefrakommende spillere må booke.
 import { redirect } from "next/navigation";
-import { addDays, format, startOfDay } from "date-fns";
-import { da } from "date-fns/locale";
+import { addDays } from "date-fns";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme, startClubSubscription, openClubBillingPortal } from "../../lib/actions";
@@ -59,7 +58,7 @@ export default async function AdminPageContent({
 
 }: {searchParams: Promise<{stripe?: string;abonnement?: string;}>;section?: AdminSection;}) {
   const query = await searchParams;
-  const prefs = await getPreferences();const tr=(text:string)=>phrase(text,prefs.locale);
+  const prefs = await getPreferences();const tr=(text:string,params?:Record<string,string|number>)=>phrase(text,prefs.locale,params);
   if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][]).toString()}`);
   const currentPage = ADMIN_PAGES.find((p) => p.id === section)!;
   const user = await getCurrentUser();
@@ -178,32 +177,32 @@ export default async function AdminPageContent({
     <InternationalProvider country={club.country} locale={prefs.locale} currency={club.currency} timeZone={club.timeZone}><div className="space-y-6">
 <div>
         <h1 className="display text-3xl">{club.name}</h1>
-        <p className="mt-2 text-sm">{selectedSports.map((s) => sportLabel(s, prefs.locale)).join(" · ") || "Vælg klubbens sportsgrene for at komme i gang."}</p>
-        <a className="inline-block mt-2 font-semibold text-court underline" href="/admin/baner">{tr("Sportsgrene og") + " "}{facilityLabel(selectedSports).toLowerCase()}</a>
+        <p className="mt-2 text-sm">{selectedSports.map((s) => sportLabel(s, prefs.locale)).join(" · ") || tr("Vælg klubbens sportsgrene for at komme i gang.")}</p>
+        <a className="inline-block mt-2 font-semibold text-court underline" href="/admin/baner">{tr("Sportsgrene og") + " "}{tr(facilityLabel(selectedSports)).toLowerCase()}</a>
         <p className="text-sm text-slate">{club.currency} · {club.timeZone}</p>
         <p className="text-slate/70">{tr("Klubside: /klub/")}
-            {club.slug} · {INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS]}
+            {club.slug} · {tr(INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS])}
         </p>
       </div>
 {query.abonnement &&
         <p className="card border border-court/25 text-sm">
           {query.abonnement === "ok" ?
-          "Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke." :
+          tr("Tak — abonnementet er startet. Kvitteringen ligger i jeres indbakke.") :
           query.abonnement === "afbrudt" ?
-          "Betalingen blev afbrudt. Abonnementet er ikke startet." :
+          tr("Betalingen blev afbrudt. Abonnementet er ikke startet.") :
           query.abonnement === "portal" ?
-          "Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det." :
-          "Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os."}
+          tr("Selvbetjeningen kunne ikke åbnes lige nu. Skriv til os, så ordner vi det.") :
+          tr("Abonnementet kunne ikke startes lige nu. Prøv igen, eller skriv til os.")}
         </p>
         }
 <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-<AdminNavigation features={club.customFeatures} mode={club.solutionMode} section={section} facility={facilityLabel(selectedSports)} locale={prefs.locale} />
+<AdminNavigation features={club.customFeatures} mode={club.solutionMode} section={section} facility={tr(facilityLabel(selectedSports))} locale={prefs.locale} />
 <div className="min-w-0 space-y-6">
-<header><h2 className="display text-2xl">{section === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : phrase(currentPage.label, prefs.locale)}</h2><p className="mt-1 text-sm text-slate">{phrase(currentPage.description, prefs.locale)}</p></header>
+<header><h2 className="display text-2xl">{section === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(currentPage.label, prefs.locale)}</h2><p className="mt-1 text-sm text-slate">{phrase(currentPage.description, prefs.locale)}</p></header>
 {section === 'oversigt' && <>
 <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="card">
-          <p className="text-sm text-slate/60">{facilityLabel(selectedSports)}</p>
+          <p className="text-sm text-slate/60">{tr(facilityLabel(selectedSports))}</p>
           <p className="display text-3xl">{club.courts.length}</p>
         </div>
         <div className="card">
@@ -224,10 +223,10 @@ export default async function AdminPageContent({
 {toEnter.length > 0 &&
               <section className="rounded-lg border-2 border-court bg-court/5 p-5">
           <p className="display text-xl text-court-dark">
-            {toEnter.length}{" " + tr("booking")}{toEnter.length === 1 ? "" : "er"}{tr("skal ind i jeres eget system")}
+            {tr("{count} bookinger skal ind i jeres eget system",{count:toEnter.length})}
                 </p>
           <p className="mt-1 text-sm">{tr("G\xE6sten har betalt hos os. F\xF8r tiden ind i")}
-                  {club.externalSystem || "klubbens bookingsystem"}{tr(", s\xE5 banen ikke bliver dobbeltbooket.")}
+                  {club.externalSystem || tr("klubbens bookingsystem")}{tr(", s\xE5 banen ikke bliver dobbeltbooket.")}
 
                 </p>
           <ul className="mt-4 space-y-2">
@@ -306,7 +305,7 @@ export default async function AdminPageContent({
           <RuleForm
                   courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
                   defaultPrice={club.priceHour}
-                  externalSystem={club.externalSystem ?? "jeres eget bookingsystem"} />
+                  externalSystem={club.externalSystem ?? tr("jeres eget bookingsystem")} />
 
 
           {rules.length > 0 &&
@@ -314,10 +313,10 @@ export default async function AdminPageContent({
               <h3 className="mb-2 mt-6 font-bold">{tr("Jeres regler")}</h3>
               <ul className="space-y-2">
                 {rules.map((r: any) => {
-                      const dayNames = ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
+                      const dayNames = ["Søn", "Man", "Tir", "Ons", "Tor", "Fre", "Lør"];
                       const days = r.daysOfWeek.
                       split(",").
-                      map((d: string) => dayNames[Number(d)]).
+                      map((d: string) => tr(dayNames[Number(d)])).
                       join(", ");
                       const courtNames = r.courtIds ?
                       r.courtIds.
@@ -325,7 +324,7 @@ export default async function AdminPageContent({
                       map((id: string) => club.courts.find((c: any) => c.id === id)?.name).
                       filter(Boolean).
                       join(", ") :
-                      "alle baner";
+                      tr("alle baner");
                       return (
                         <li key={r.id} className="card flex flex-wrap items-center justify-between gap-3 py-3">
                       <div>
@@ -338,7 +337,7 @@ export default async function AdminPageContent({
                         <form action={toggleRule}>
                           <input type="hidden" name="id" value={r.id} />
                           <button className="text-sm font-semibold text-court underline">
-                            {r.active ? "Sæt på pause" : "Aktivér"}
+                            {r.active ? tr("Sæt på pause") : tr("Aktivér")}
                           </button>
                         </form>
                         <form action={deleteRule}>
@@ -384,7 +383,7 @@ export default async function AdminPageContent({
           <ReleaseForm
                   courts={club.courts.map((c: any) => ({ id: c.id, name: c.name }))}
                   defaultPrice={club.priceHour}
-                  externalSystem={club.externalSystem ?? "jeres eget bookingsystem"} />
+                  externalSystem={club.externalSystem ?? tr("jeres eget bookingsystem")} />
 
 
           <h3 className="mb-2 mt-6 font-bold">{tr("Frigivne enkelttider")}</h3>
@@ -395,7 +394,7 @@ export default async function AdminPageContent({
               {guestSlots.map((s: any) =>
                   <li key={s.id} className="flex items-center justify-between gap-3 py-2 text-sm">
                   <span className="capitalize">
-                    {format(s.startsAt, "EEE d/M 'kl.' HH:mm", { locale: da })} · {s.court.name} ·{" "}
+                    {formatDate(s.startsAt,prefs.locale,club.timeZone,{weekday:"short",day:"numeric",month:"numeric",hour:"2-digit",minute:"2-digit"})} · {s.court.name} ·{" "}
                     {formatMoney(s.priceKr, club.currency, prefs.locale)}
                   </span>
                   <form action={withdrawGuestSlot}>
@@ -477,7 +476,7 @@ export default async function AdminPageContent({
                     {post.title}
                   </p>
                   <p className="text-xs text-slate">
-                    {format(post.createdAt, "d. MMMM yyyy", { locale: da })}
+                    {formatDate(post.createdAt,prefs.locale,club.timeZone,{dateStyle:"long"})}
                   </p>
                 </div>
                 <form action={deletePost}>
@@ -492,9 +491,9 @@ export default async function AdminPageContent({
 </>}
 {section === 'baner' && <>
 <section id="sportsgrene">
-        <h2 className="display mb-1 text-2xl">{facilityLabel(selectedSports)}</h2>
+        <h2 className="display mb-1 text-2xl">{tr(facilityLabel(selectedSports))}</h2>
         <p className="mb-4 text-sm text-slate">{tr("V\xE6lg sportsgrene, og opret klubbens")}
-                  {facilityLabel(selectedSports).toLowerCase()}{tr("med egne navne, underlag og priser.")}
+                  {tr(facilityLabel(selectedSports)).toLowerCase()}{tr("med egne navne, underlag og priser.")}
                 </p>
         <CourtForm
                   sports={selectedSports}
@@ -604,7 +603,7 @@ export default async function AdminPageContent({
                   </p>
               <form action={startClubPayoutSetup} className="mt-3">
                 <SubmitButton pendingText={tr("\xC5bner Stripe\u2026")}>
-                  {club.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
+                  {club.stripeAccountId ? tr("Fortsæt opsætning") : tr("Sæt udbetalinger op")}
                 </SubmitButton>
               </form>
             </>
@@ -633,8 +632,8 @@ export default async function AdminPageContent({
                 <p className="mt-3 text-sm">
                   <span className="font-bold text-court">{tr("Betaling aktiv.")}</span>{" "}
                   {club.subscriptionRenewsAt ?
-                        `Fornyes ${format(club.subscriptionRenewsAt, "d. MMMM", { locale: da })}.` :
-                        "Fornyes automatisk hver måned."}
+                        tr("Fornyes {date}.",{date:formatDate(club.subscriptionRenewsAt,prefs.locale,club.timeZone,{day:"numeric",month:"long"})}) :
+                        tr("Fornyes automatisk hver måned.")}
                 </p>
                 <form action={openClubBillingPortal} className="mt-3">
                   <SubmitButton className="btn-ghost" pendingText={tr("\xC5bner Stripe\u2026")}>{tr("Kort, fakturaer og opsigelse")}
@@ -647,16 +646,16 @@ export default async function AdminPageContent({
                 <p className="mt-3 text-sm">
                   <span className="font-bold text-court-dark">
                     {club.subscriptionStatus === "past_due" || club.subscriptionStatus === "unpaid" ?
-                          "Betalingen fejlede." :
+                          tr("Betalingen fejlede.") :
                           club.subscriptionStatus === "canceled" ?
-                          "Abonnementet er opsagt." :
-                          "Abonnementet er ikke startet."}
+                          tr("Abonnementet er opsagt.") :
+                          tr("Abonnementet er ikke startet.")}
                   </span>{" "}{tr("Indtil det betales, tr\xE6kkes")}
                         {pct}{tr("% af hver g\xE6stebooking i stedet.")}
                       </p>
                 <form action={startClubSubscription} className="mt-3">
                   <SubmitButton pendingText={tr("\xC5bner Stripe\u2026")}>
-                    {club.stripeCustomerId ? "Forny betaling" : "Start abonnement"}
+                    {club.stripeCustomerId ? tr("Forny betaling") : tr("Start abonnement")}
                   </SubmitButton>
                 </form>
               </>
@@ -686,11 +685,11 @@ export default async function AdminPageContent({
             <p className="font-bold">{tr("Synkronisering")}</p>
             <p className="mt-1 text-sm text-slate/60">
               {club.lastSyncAt ?
-                    `Sidst hentet ${format(club.lastSyncAt, "d. MMMM 'kl.' HH:mm", { locale: da })}.` :
-                    "Feed er ikke hentet endnu."}
+                    tr("Sidst hentet {date}.",{date:formatDate(club.lastSyncAt,prefs.locale,club.timeZone,{dateStyle:"medium",timeStyle:"short"})}) :
+                    tr("Feed er ikke hentet endnu.")}
             </p>
             {club.lastSyncError &&
-                  <p className="mt-2 text-sm font-semibold text-court">{club.lastSyncError}</p>
+                  <p className="mt-2 text-sm font-semibold text-court">{tr(club.lastSyncError)}</p>
                   }
             <form action={syncNow} className="mt-3">
               <button className="btn-ink">{tr("Synkronis\xE9r nu")}</button>
@@ -701,14 +700,14 @@ export default async function AdminPageContent({
 {club.integrationType !== "NATIVE" &&
               <section className="card">
           <h2 className="display mb-1 text-2xl">{tr("Lad os sp\xE6rre tiderne i")}
-                  {club.externalSystem ?? "jeres system"}
+                  {club.externalSystem ?? tr("jeres system")}
           </h2>
           <p className="mb-4 text-sm text-slate">{tr("Giver I os et login, sp\xE6rrer vi selv de tider, I frigiver \u2014 s\xE5 skal I ikke g\xF8re det i h\xE5nden hver gang.")}
 
 
                 </p>
           <SystemLoginForm
-                  system={club.externalSystem ?? "jeres system"}
+                  system={club.externalSystem ?? tr("jeres system")}
                   saved={systemLogin ? { baseUrl: systemLogin.baseUrl, username: systemLogin.username } : null}
                   lastOkAt={systemLogin?.lastOkAt ?? null}
                   lastError={systemLogin?.lastError ?? null}
@@ -761,8 +760,8 @@ export default async function AdminPageContent({
                         "border-slate/20"}`
                         }>
 
-                  <span className="block font-semibold">{label}</span>
-                  <span className="block text-xs text-slate">{hint}</span>
+                  <span className="block font-semibold">{tr(label)}</span>
+                  <span className="block text-xs text-slate">{tr(hint)}</span>
                 </button>
               </form>
                     )}
@@ -821,7 +820,7 @@ export default async function AdminPageContent({
   {toEnter.length > 0 && <Link href="/admin/bookinger" className="block rounded-xl border border-court/30 bg-court/5 p-4 font-semibold">{toEnter.length}{" " + tr("bookinger skal f\xF8res ind i jeres system \u2192")}</Link>}
   {!selectedSports.length && <Link href="/admin/baner" className="block rounded-xl bg-court/5 p-4 font-semibold">{tr("Kom i gang: V\xE6lg sportsgrene og opret baner eller borde \u2192")}</Link>}
   {stripeOn && !club.stripeChargesEnabled && <Link href="/admin/betaling" className="block rounded-xl bg-court/5 p-4 font-semibold">{tr("Ops\xE6t udbetalinger, s\xE5 g\xE6ster kan betale \u2192")}</Link>}
-  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter((p) => clubHasSection(club.solutionMode, p.id, club.customFeatures)).filter((p) => p.id !== 'oversigt').map((p) => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? facilityLabel(selectedSports) + ' og sportsgrene' : phrase(p.label, prefs.locale)} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{phrase(p.description, prefs.locale)}</p></Link>)}</div>
+  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter((p) => clubHasSection(club.solutionMode, p.id, club.customFeatures)).filter((p) => p.id !== 'oversigt').map((p) => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(p.label, prefs.locale)} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{phrase(p.description, prefs.locale)}</p></Link>)}</div>
 </>}
 {section === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>{tr("Ledige tider styres gennem klubbens bookingsystem.")}</p><Link href="/admin/integrationer" className="font-semibold text-court underline">{tr("\xC5bn bookingsystemets indstillinger")}</Link></div>}
 </div></div></div></InternationalProvider>);

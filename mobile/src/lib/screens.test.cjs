@@ -1,5 +1,5 @@
 // Isolated component regressions: no real accounts, messages, bookings or hardware.
-const { test } = require('node:test');
+const { test, before } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -7,6 +7,8 @@ const React = require('react');
 const { create, act } = require('react-test-renderer');
 const { transformSync } = require('@babel/core');
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+let phrases;
+before(async()=>{phrases=await import('../../../shared/phrase-translation.mjs');});
 
 function loadSource(relative, mocks) {
   const filename = path.resolve(__dirname, relative);
@@ -20,6 +22,7 @@ function loadSource(relative, mocks) {
     if (name.endsWith('/international')) return {tr:x=>x,useInternational:()=>({country:'DK',locale:'da',t:x=>x}),money:(n,c='DKK')=>`${n} ${c}`};
     if (name.endsWith('/PreferencesPicker')) return {PreferencesPicker:'PreferencesPicker'};
     if (name.endsWith('/ProfilePreferences')) return {ProfilePreferences:'ProfilePreferences'};
+    if (name.endsWith('/phrase-translation.mjs')) return phrases;
     if (name === 'react') return React;
     throw new Error(`Unexpected dependency ${name}`);
   }, module, module.exports);
@@ -254,15 +257,14 @@ test('country and language persist without converting venue prices, and sport la
   const international = loadSource('./international.js', {
     './dates.js': actualDates,
     '@react-native-async-storage/async-storage': {getItem: async key => storage.get(key), setItem: async (key,value) => storage.set(key,value)},
-    '../../../shared/phrases.json': require('../../../shared/phrases.json'),
-    '../../../shared/translations.json': require('../../../shared/translations.json'),
+    '../../../shared/phrase-translation.mjs': require('../../../shared/phrase-translation.mjs'),
     '../../../shared/international.mjs': require('../../../shared/international.mjs'),
   });
   await international.setInternational({country:'US',locale:'en-US'});
   assert.match(international.money(80,'EUR'),/EUR\s*80/);
   assert.equal(international.tr('Log ind på klubben'),'Log in to your club');
   await international.setInternational({country:'ZZ',locale:'bad'});
-  assert.deepEqual(international.getInternational(),{country:'US',locale:'en-US'});
+  assert.deepEqual(international.getInternational(),{country:'US',locale:'en-US',countryChosen:false,languageChosen:false});
   const {SportPicker} = loadSource('./SportPicker.js', {
     'react-native': {Pressable:'Pressable',Text:'Text',View:'View',StyleSheet:{create:x=>x}},
     '@react-native-async-storage/async-storage': {setItem:async()=>{}},
@@ -277,7 +279,7 @@ test('country and language persist without converting venue prices, and sport la
   assert.equal(tree.root.findByType('Text').props.children,'Bordtennis');
   await act(()=>tree.unmount());
   await international.restoreInternational();
-  assert.deepEqual(international.getInternational(),{country:'US',locale:'da'});
+  assert.deepEqual(international.getInternational(),{country:'US',locale:'da',countryChosen:false,languageChosen:false});
 });
 
 test('mobile booking dates group by venue day and clock rather than device zone', () => {
@@ -288,4 +290,35 @@ test('mobile booking dates group by venue day and clock rather than device zone'
   assert.equal(dates.time(instant,'America/Los_Angeles'),'17:00');
   const grouped=dates.groupByDay([instant,new Date('2027-01-04T07:00:00Z')],x=>x,'America/Los_Angeles');
   assert.equal(grouped.length,1);assert.match(dates.dayLong(instant,'America/Los_Angeles'),/Sunday/);
+});
+
+test('country onboarding automatically applies a known IP country and preserves saved choices',async()=>{
+ let prefs={country:'DK',locale:'da',countryChosen:false,languageChosen:false},calls=0,tree;
+ const {CountryOnboarding}=loadSource('./CountryOnboarding.js',{
+  'react-native':{Modal:'Modal',View:'View',Text:'Text',ScrollView:'ScrollView',Linking:{}},
+  'react-native-safe-area-context':{SafeAreaView:'SafeAreaView'},
+  './auth':{useAuth:()=>({user:null,loading:false})},
+  './api':{api:{location:async()=>{calls++;return {country:'US',needsChoice:false};}}},
+  './international':{useInternational:()=>({...prefs,t:x=>x}),getInternational:()=>prefs,setInternational:async v=>{prefs={...prefs,...v};},marketFor:code=>({defaultLocale:code==='US'?'en-US':'da'})},
+  './PreferencesPicker':{PreferencesPicker:'PreferencesPicker'},'./ui':{Button:'Button'},'./theme':{colors:{}},
+ });
+ await act(async()=>{tree=create(React.createElement(CountryOnboarding));});
+ assert.equal(calls,1);assert.equal(prefs.country,'US');assert.equal(prefs.locale,'en-US');assert.ok(prefs.countryChosen);assert.equal(tree.root.findByType('Modal').props.visible,false);
+ await act(()=>tree.unmount());
+ await act(async()=>{tree=create(React.createElement(CountryOnboarding));});assert.equal(calls,1);await act(()=>tree.unmount());
+});
+
+test('country onboarding asks in a modal on uncertain location and saves the selected country',async()=>{
+ let prefs={country:'DK',locale:'en',countryChosen:false,languageChosen:true},tree;
+ const {CountryOnboarding}=loadSource('./CountryOnboarding.js',{
+  'react-native':{Modal:'Modal',View:'View',Text:'Text',ScrollView:'ScrollView',Linking:{}},'react-native-safe-area-context':{SafeAreaView:'SafeAreaView'},
+  './auth':{useAuth:()=>({user:null,loading:false})},'./api':{api:{location:async()=>({country:null,suggestedCountry:'SE',needsChoice:true})}},
+  './international':{useInternational:()=>({...prefs,t:x=>x}),getInternational:()=>prefs,setInternational:async v=>{prefs={...prefs,...v};},marketFor:()=>({defaultLocale:'sv'})},
+  './PreferencesPicker':{PreferencesPicker:'PreferencesPicker'},'./ui':{Button:'Button'},'./theme':{colors:{}},
+ });
+ await act(async()=>{tree=create(React.createElement(CountryOnboarding));});assert.equal(tree.root.findByType('Modal').props.visible,true);assert.equal(prefs.country,'DK');
+ assert.equal(tree.root.findByType('PreferencesPicker').props.locale,'en');
+ await act(async()=>tree.root.findByType('PreferencesPicker').props.onChange({country:'SE',locale:'sv'}));
+ await act(async()=>tree.root.findAllByType('Button').find(n=>n.props.title===phrases.translatePhrase('Fortsæt','sv')).props.onPress());
+ assert.equal(prefs.country,'SE');assert.equal(prefs.locale,'sv');assert.ok(prefs.countryChosen);assert.equal(tree.root.findByType('Modal').props.visible,false);await act(()=>tree.unmount());
 });

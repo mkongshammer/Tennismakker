@@ -38,7 +38,7 @@ export function RuleForm({
             className="cursor-pointer rounded-xl border border-slate/20 px-4 py-2.5 text-sm font-semibold has-[:checked]:border-court has-[:checked]:bg-court has-[:checked]:text-chalk">
 
               <input type="checkbox" name="days" value={d.v} className="sr-only" />
-              {d.label}
+              {tr(d.label)}
             </label>
           )}
         </div>
@@ -100,8 +100,8 @@ export function RuleForm({
         </div>
       </div>
 
-      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court">{tr(state.error)}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-court">{tr(state.ok)}</p>}
 
       <BlockedFirst system={externalSystem} />
 

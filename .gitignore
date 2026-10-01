@@ -7,3 +7,6 @@ node_modules/
 next-env.d.ts
 tsconfig.tsbuildinfo
 .DS_Store
+
+# Downloaded during builds; packaged country data is the offline fallback.
+/data/ip-country.mmdb
