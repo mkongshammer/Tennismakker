@@ -39,7 +39,7 @@ export default async function Home() {
         <div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/opret-klub" className="btn-court gap-3">{c.clubCta}<Arrow/></Link><Link href="#find-dit-spil" className="btn-ghost">{c.playCta}</Link></div>
       </div>
       <figure className="relative isolate overflow-hidden rounded-[28px] bg-[#e2e9df]">
-        <Image src="/images/club-life-hero.webp" alt={c.photoAlt} width={1536} height={1024} priority sizes="(min-width: 1024px) 550px, (min-width: 640px) 700px, 100vw" className="h-[300px] w-full object-cover sm:h-[380px] lg:h-[440px]"/>
+        <Image src="/images/club-life-hero.webp" alt={c.photoAlt} width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[380px] lg:h-[440px]"/>
         <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-16 text-lg font-semibold text-white">{c.photoCaption}</figcaption>
       </figure>
     </section>
