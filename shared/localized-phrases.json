@@ -1677,7 +1677,8 @@
     "en": "Phone",
     "de": "Telefon",
     "sv": "Telefon",
-    "no": "Telefon"
+    "no": "Telefon",
+    "da": "Telefon"
   },
   "Tilføj til bestyrelsen": {
     "en": "Add board member",
@@ -2553,7 +2554,8 @@
     "en": "Website",
     "de": "Website",
     "sv": "Webbplats",
-    "no": "Nettside"
+    "no": "Nettside",
+    "da": "Hjemmeside"
   },
   "Klubside, billeder, domæne og design.": {
     "en": "Club page, images, domain and design.",
@@ -3686,14 +3688,16 @@
   "Lysstyring": {
     "en": "Lighting control",
     "de": "Lichtsteuerung",
-    "sv": "Ljusstyrning",
-    "no": "Lysstyring"
+    "sv": "Belysningsstyrning",
+    "no": "Lysstyring",
+    "da": "Lysstyring"
   },
   "Adgangskontrol": {
     "en": "Access control",
     "de": "Zugangskontrolle",
     "sv": "Tillträdeskontroll",
-    "no": "Adgangskontroll"
+    "no": "Adgangskontroll",
+    "da": "Adgangskontrol"
   },
   "Betaling": {
     "en": "Payments",
@@ -4463,5 +4467,616 @@
     "de": "Platz buchen. Trainer finden. Club vereinen.",
     "sv": "Boka en bana. Hitta en tränare. Samla klubben.",
     "no": "Book en bane. Finn en trener. Samle klubben."
+  },
+  "Custom løsninger til klubber": {
+    "da": "Custom løsninger til klubber",
+    "en": "Custom solutions for clubs",
+    "de": "Individuelle Lösungen für Clubs",
+    "sv": "Anpassade lösningar för klubbar",
+    "no": "Skreddersydde løsninger for klubber"
+  },
+  "Få bygget en skræddersyet løsning til jeres klub: booking, hjemmeside, lysstyring, adgangskontrol, betaling og integrationer.": {
+    "da": "Få bygget en skræddersyet løsning til jeres klub: booking, hjemmeside, lysstyring, adgangskontrol, betaling og integrationer.",
+    "en": "A tailored solution for your club: bookings, website, lighting, access control, payments and integrations.",
+    "de": "Eine Lösung für euren Club: Buchungen, Website, Lichtsteuerung, Zugangskontrolle, Zahlungen und Integrationen.",
+    "sv": "En anpassad lösning för er klubb: bokning, webbplats, belysning, tillträde, betalning och integrationer.",
+    "no": "En skreddersydd løsning for klubben: booking, nettside, lysstyring, adgangskontroll, betaling og integrasjoner."
+  },
+  "Klubsoftware tilpasset jer": {
+    "da": "Klubsoftware tilpasset jer",
+    "en": "Club software built around you",
+    "de": "Clubsoftware nach euren Bedürfnissen",
+    "sv": "Klubbprogramvara anpassad för er",
+    "no": "Klubbprogramvare tilpasset dere"
+  },
+  "Få bygget præcis det system jeres klub har brug for": {
+    "da": "Få bygget præcis det system jeres klub har brug for",
+    "en": "Build the system your club needs",
+    "de": "Das System, das euer Club braucht",
+    "sv": "Bygg det system er klubb behöver",
+    "no": "Bygg systemet klubben deres trenger"
+  },
+  "Booking, hjemmeside, lysstyring, adgang, betaling og integrationer — bygget som én samlet løsning omkring jeres klub i stedet for endnu et standardsystem, I skal tilpasse jer til.": {
+    "da": "Booking, hjemmeside, lysstyring, adgang, betaling og integrationer — bygget som én samlet løsning omkring jeres klub i stedet for endnu et standardsystem, I skal tilpasse jer til.",
+    "en": "Bookings, website, lighting, access, payments and integrations — brought together around the way your club works.",
+    "de": "Buchungen, Website, Beleuchtung, Zugang, Zahlungen und Integrationen — vereint in einer Lösung, die zu eurem Club passt.",
+    "sv": "Bokning, webbplats, belysning, tillträde, betalning och integrationer — samlade i en lösning som passar er klubb.",
+    "no": "Booking, nettside, lysstyring, adgang, betaling og integrasjoner — samlet i en løsning som passer klubben deres."
+  },
+  "Vælg custom-løsning og opret klub": {
+    "da": "Vælg custom-løsning og opret klub",
+    "en": "Choose Custom and register your club",
+    "de": "Custom wählen und Club anmelden",
+    "sv": "Välj Custom och registrera klubben",
+    "no": "Velg Custom og registrer klubben"
+  },
+  "Se mulighederne": {
+    "da": "Se mulighederne",
+    "en": "Explore the options",
+    "de": "Möglichkeiten entdecken",
+    "sv": "Se möjligheterna",
+    "no": "Se mulighetene"
+  },
+  "Bygget til jeres virkelighed": {
+    "da": "Bygget til jeres virkelighed",
+    "en": "Built for your club life",
+    "de": "Für euren Cluballtag entwickelt",
+    "sv": "Byggt för er klubbvardag",
+    "no": "Bygget for klubbhverdagen deres"
+  },
+  "Én leverandør i stedet for seks forskellige systemer": {
+    "da": "Én leverandør i stedet for seks forskellige systemer",
+    "en": "One partner for your club’s systems",
+    "de": "Ein Partner für eure Clubsysteme",
+    "sv": "En partner för klubbens system",
+    "no": "Én partner for klubbens systemer"
+  },
+  "Vi kan bygge hele løsningen fra bunden eller tage udgangspunkt i det, I allerede bruger. I behøver ikke skifte alt på én gang.": {
+    "da": "Vi kan bygge hele løsningen fra bunden eller tage udgangspunkt i det, I allerede bruger. I behøver ikke skifte alt på én gang.",
+    "en": "We can build the complete solution or start with the systems you already use. You do not have to change everything at once.",
+    "de": "Wir können die gesamte Lösung entwickeln oder auf euren bestehenden Systemen aufbauen. Ihr müsst nicht alles auf einmal umstellen.",
+    "sv": "Vi kan bygga hela lösningen eller utgå från systemen ni redan använder. Ni behöver inte byta allt på en gång.",
+    "no": "Vi kan bygge hele løsningen eller ta utgangspunkt i systemene dere allerede bruker. Dere trenger ikke bytte alt samtidig."
+  },
+  "Booking system": {
+    "da": "Booking system",
+    "en": "Booking system",
+    "de": "Buchungssystem",
+    "sv": "Bokningssystem",
+    "no": "Bookingsystem"
+  },
+  "Baner, hold, trænere, faste tider, gæstebooking, betaling og medlemsregler samlet i én løsning.": {
+    "da": "Baner, hold, trænere, faste tider, gæstebooking, betaling og medlemsregler samlet i én løsning.",
+    "en": "Courts, teams, coaches, recurring slots, guest bookings, payments and membership rules in one solution.",
+    "de": "Plätze, Gruppen, Trainer, feste Zeiten, Gastbuchungen, Zahlungen und Mitgliederregeln in einer Lösung.",
+    "sv": "Banor, grupper, tränare, fasta tider, gästbokning, betalning och medlemsregler i en lösning.",
+    "no": "Baner, lag, trenere, faste tider, gjestebooking, betaling og medlemsregler i én løsning."
+  },
+  "En moderne klubhjemmeside, der hænger direkte sammen med booking, medlemskab, nyheder og betaling.": {
+    "da": "En moderne klubhjemmeside, der hænger direkte sammen med booking, medlemskab, nyheder og betaling.",
+    "en": "A modern club website connected to bookings, memberships, news and payments.",
+    "de": "Eine moderne Clubwebsite, verbunden mit Buchungen, Mitgliedschaften, Neuigkeiten und Zahlungen.",
+    "sv": "En modern klubbwebbplats kopplad till bokningar, medlemskap, nyheter och betalningar.",
+    "no": "En moderne klubbnettside koblet til booking, medlemskap, nyheter og betaling."
+  },
+  "Automatisk styring af bane- og hallys, så lyset kan følge bookinger og kun være tændt, når det er nødvendigt.": {
+    "da": "Automatisk styring af bane- og hallys, så lyset kan følge bookinger og kun være tændt, når det er nødvendigt.",
+    "en": "Control court and hall lighting automatically, so lights can follow bookings and stay on only when needed.",
+    "de": "Platz- und Hallenlicht automatisch steuern, damit es den Buchungen folgt und nur bei Bedarf eingeschaltet ist.",
+    "sv": "Styr ban- och hallbelysning automatiskt så att ljuset följer bokningar och bara är tänt när det behövs.",
+    "no": "Styr bane- og halllys automatisk, slik at lyset følger bookinger og bare er på når det trengs."
+  },
+  "Koder, døre og adgang kan kobles til aktive bookinger og medlemskaber, så adgangen passer til det, der faktisk er booket.": {
+    "da": "Koder, døre og adgang kan kobles til aktive bookinger og medlemskaber, så adgangen passer til det, der faktisk er booket.",
+    "en": "Connect access codes and doors to active bookings and memberships, so access matches the reservation.",
+    "de": "Zugangscodes und Türen mit aktiven Buchungen und Mitgliedschaften verbinden, damit der Zugang zur Reservierung passt.",
+    "sv": "Koppla koder och dörrar till aktiva bokningar och medlemskap så att tillträdet följer bokningen.",
+    "no": "Koble koder og dører til aktive bookinger og medlemskap, slik at adgangen følger bestillingen."
+  },
+  "Betaling og kontingent": {
+    "da": "Betaling og kontingent",
+    "en": "Payments and membership fees",
+    "de": "Zahlungen und Mitgliedsbeiträge",
+    "sv": "Betalning och medlemsavgifter",
+    "no": "Betaling og kontingent"
+  },
+  "Kontingent, gæstebetaling, klippekort, trænerbetaling og andre betalinger kan samles i samme flow.": {
+    "da": "Kontingent, gæstebetaling, klippekort, trænerbetaling og andre betalinger kan samles i samme flow.",
+    "en": "Membership fees, guest payments, passes, coaching payments and other charges can share the same flow.",
+    "de": "Mitgliedsbeiträge, Gastzahlungen, Mehrfachkarten, Trainerzahlungen und weitere Gebühren in einem Ablauf bündeln.",
+    "sv": "Samla medlemsavgifter, gästbetalningar, klippkort, tränarbetalningar och andra avgifter i samma flöde.",
+    "no": "Samle kontingenter, gjestebetaling, klippekort, trenerbetaling og andre avgifter i samme flyt."
+  },
+  "Integrationer": {
+    "da": "Integrationer",
+    "en": "Integrations",
+    "de": "Integrationen",
+    "sv": "Integrationer",
+    "no": "Integrasjoner"
+  },
+  "Behold jeres nuværende system, hvis det giver mening. Vi kan bygge en løsning omkring eksisterende booking, økonomi, låse eller andre systemer.": {
+    "da": "Behold jeres nuværende system, hvis det giver mening. Vi kan bygge en løsning omkring eksisterende booking, økonomi, låse eller andre systemer.",
+    "en": "Keep your current systems where it makes sense. We can build around existing bookings, accounts, locks or other systems.",
+    "de": "Behaltet bestehende Systeme, wo es sinnvoll ist. Wir können vorhandene Buchungs-, Finanz-, Schließ- und andere Systeme einbinden.",
+    "sv": "Behåll era nuvarande system där det passar. Vi kan bygga kring befintlig bokning, ekonomi, lås och andra system.",
+    "no": "Behold dagens systemer der det passer. Vi kan bygge rundt eksisterende booking, økonomi, låser og andre systemer."
+  },
+  "Sådan arbejder vi": {
+    "da": "Sådan arbejder vi",
+    "en": "How we work",
+    "de": "So arbeiten wir",
+    "sv": "Så arbetar vi",
+    "no": "Slik jobber vi"
+  },
+  "Fra problem til færdigt system": {
+    "da": "Fra problem til færdigt system",
+    "en": "From your needs to a working system",
+    "de": "Vom Bedarf zum fertigen System",
+    "sv": "Från behov till färdigt system",
+    "no": "Fra behov til ferdig system"
+  },
+  "Vi tager et møde": {
+    "da": "Vi tager et møde",
+    "en": "We meet with you",
+    "de": "Wir sprechen mit euch",
+    "sv": "Vi träffas",
+    "no": "Vi møtes"
+  },
+  "I viser os, hvordan klubben fungerer i dag, og hvor det gør ondt.": {
+    "da": "I viser os, hvordan klubben fungerer i dag, og hvor det gør ondt.",
+    "en": "Show us how your club works today and what needs improving.",
+    "de": "Zeigt uns, wie euer Club heute arbeitet und was besser werden soll.",
+    "sv": "Visa hur klubben fungerar i dag och vad som behöver bli bättre.",
+    "no": "Vis oss hvordan klubben fungerer i dag og hva som trenger forbedring."
+  },
+  "Vi designer løsningen": {
+    "da": "Vi designer løsningen",
+    "en": "We design the solution",
+    "de": "Wir entwerfen die Lösung",
+    "sv": "Vi utformar lösningen",
+    "no": "Vi utformer løsningen"
+  },
+  "I får et konkret forslag til funktioner, integrationer og pris.": {
+    "da": "I får et konkret forslag til funktioner, integrationer og pris.",
+    "en": "You receive a clear proposal for features, integrations and price.",
+    "de": "Ihr erhaltet einen konkreten Vorschlag für Funktionen, Integrationen und Preis.",
+    "sv": "Ni får ett konkret förslag på funktioner, integrationer och pris.",
+    "no": "Dere får et konkret forslag til funksjoner, integrasjoner og pris."
+  },
+  "Vi bygger og tester": {
+    "da": "Vi bygger og tester",
+    "en": "We build and test",
+    "de": "Wir entwickeln und testen",
+    "sv": "Vi bygger och testar",
+    "no": "Vi bygger og tester"
+  },
+  "Løsningen bliver bygget omkring jeres arbejdsgange og testet sammen med jer.": {
+    "da": "Løsningen bliver bygget omkring jeres arbejdsgange og testet sammen med jer.",
+    "en": "We build around your workflows and test the solution with you.",
+    "de": "Wir entwickeln die Lösung für eure Abläufe und testen sie gemeinsam mit euch.",
+    "sv": "Lösningen byggs kring era arbetsflöden och testas tillsammans med er.",
+    "no": "Løsningen bygges rundt arbeidsflyten deres og testes sammen med dere."
+  },
+  "Vi sætter det i drift": {
+    "da": "Vi sætter det i drift",
+    "en": "We launch your setup",
+    "de": "Wir nehmen das System in Betrieb",
+    "sv": "Vi sätter systemet i drift",
+    "no": "Vi setter systemet i drift"
+  },
+  "Vi hjælper med data, opsætning og overgang, så klubben faktisk kommer godt i gang.": {
+    "da": "Vi hjælper med data, opsætning og overgang, så klubben faktisk kommer godt i gang.",
+    "en": "We help with data, setup and the transition so your club gets off to a good start.",
+    "de": "Wir unterstützen euch bei Daten, Einrichtung und Umstellung für einen guten Start.",
+    "sv": "Vi hjälper till med data, inställningar och övergången så att klubben får en bra start.",
+    "no": "Vi hjelper med data, oppsett og overgang, slik at klubben får en god start."
+  },
+  "Eksempler": {
+    "da": "Eksempler",
+    "en": "Examples",
+    "de": "Beispiele",
+    "sv": "Exempel",
+    "no": "Eksempler"
+  },
+  "Det kan være alt fra en enkelt integration til hele klubbens digitale setup": {
+    "da": "Det kan være alt fra en enkelt integration til hele klubbens digitale setup",
+    "en": "From a single integration to your club’s complete digital setup",
+    "de": "Von einer einzelnen Integration bis zum gesamten digitalen Clubsystem",
+    "sv": "Från en integration till klubbens hela digitala lösning",
+    "no": "Fra én integrasjon til hele klubbens digitale løsning"
+  },
+  "— Booking der automatisk tænder lys på den rigtige bane": {
+    "da": "— Booking der automatisk tænder lys på den rigtige bane",
+    "en": "— Bookings that switch on the right court lights",
+    "de": "— Buchungen, die das Licht am richtigen Platz einschalten",
+    "sv": "— Bokningar som tänder belysningen på rätt bana",
+    "no": "— Booking som tenner lyset på riktig bane"
+  },
+  "— Hjemmeside, medlemskab og betaling i samme system": {
+    "da": "— Hjemmeside, medlemskab og betaling i samme system",
+    "en": "— Website, memberships and payments in one system",
+    "de": "— Website, Mitgliedschaften und Zahlungen in einem System",
+    "sv": "— Webbplats, medlemskap och betalning i samma system",
+    "no": "— Nettside, medlemskap og betaling i samme system"
+  },
+  "— Gæstebooking oven på jeres eksisterende bookingsystem": {
+    "da": "— Gæstebooking oven på jeres eksisterende bookingsystem",
+    "en": "— Guest bookings connected to your current booking system",
+    "de": "— Gastbuchungen in Verbindung mit eurem Buchungssystem",
+    "sv": "— Gästbokning kopplad till ert befintliga bokningssystem",
+    "no": "— Gjestebooking koblet til dagens bookingsystem"
+  },
+  "— Adgangskoder eller låse der følger bookingen": {
+    "da": "— Adgangskoder eller låse der følger bookingen",
+    "en": "— Access codes or locks linked to the booking",
+    "de": "— Zugangscodes oder Schlösser, die der Buchung folgen",
+    "sv": "— Koder eller lås som följer bokningen",
+    "no": "— Adgangskoder eller låser som følger bookingen"
+  },
+  "— Trænerbooking med automatisk betaling og udbetaling": {
+    "da": "— Trænerbooking med automatisk betaling og udbetaling",
+    "en": "— Coaching bookings with automatic payments and payouts",
+    "de": "— Trainerbuchung mit automatischer Zahlung und Auszahlung",
+    "sv": "— Tränarbokning med automatisk betalning och utbetalning",
+    "no": "— Trenerbooking med automatisk betaling og utbetaling"
+  },
+  "— Specialbyggede adminflows til netop jeres klub": {
+    "da": "— Specialbyggede adminflows til netop jeres klub",
+    "en": "— Administration workflows designed for your club",
+    "de": "— Verwaltungsabläufe für euren Club",
+    "sv": "— Administrationsflöden anpassade till er klubb",
+    "no": "— Administrasjonsflyt tilpasset klubben deres"
+  },
+  "Book et møde": {
+    "da": "Book et møde",
+    "en": "Request a meeting",
+    "de": "Gespräch anfragen",
+    "sv": "Boka ett möte",
+    "no": "Be om et møte"
+  },
+  "Fortæl os, hvad I gerne vil have til at fungere bedre": {
+    "da": "Fortæl os, hvad I gerne vil have til at fungere bedre",
+    "en": "Tell us what you would like to improve",
+    "de": "Erzählt uns, was besser funktionieren soll",
+    "sv": "Berätta vad ni vill förbättra",
+    "no": "Fortell oss hva dere vil forbedre"
+  },
+  "Udfyld formularen, så tager vi en kort uforpligtende snak om mulighederne. I behøver ikke have en færdig kravspecifikation.": {
+    "da": "Udfyld formularen, så tager vi en kort uforpligtende snak om mulighederne. I behøver ikke have en færdig kravspecifikation.",
+    "en": "Fill in the form for a short, no-obligation conversation. You do not need a finished specification.",
+    "de": "Füllt das Formular aus, und wir besprechen unverbindlich die Möglichkeiten. Ein fertiges Lastenheft ist nicht nötig.",
+    "sv": "Fyll i formuläret för ett kort, förutsättningslöst samtal. Ni behöver ingen färdig kravspecifikation.",
+    "no": "Fyll ut skjemaet for en kort, uforpliktende samtale. Dere trenger ingen ferdig kravspesifikasjon."
+  },
+  "Mødet er på vej": {
+    "da": "Mødet er på vej",
+    "en": "Your request is on its way",
+    "de": "Eure Anfrage ist eingegangen",
+    "sv": "Er förfrågan är skickad",
+    "no": "Forespørselen er sendt"
+  },
+  "Klub eller virksomhed": {
+    "da": "Klub eller virksomhed",
+    "en": "Club or organisation",
+    "de": "Club oder Unternehmen",
+    "sv": "Klubb eller företag",
+    "no": "Klubb eller virksomhet",
+    "en-US": "Club or organization"
+  },
+  "Dit navn": {
+    "da": "Dit navn",
+    "en": "Your name",
+    "de": "Dein Name",
+    "sv": "Ditt namn",
+    "no": "Ditt navn"
+  },
+  "E-mail": {
+    "da": "E-mail",
+    "en": "Email",
+    "de": "E-Mail",
+    "sv": "E-post",
+    "no": "E-post"
+  },
+  "Hvad vil I gerne have bygget?": {
+    "da": "Hvad vil I gerne have bygget?",
+    "en": "What would you like to build?",
+    "de": "Was möchtet ihr entwickeln lassen?",
+    "sv": "Vad vill ni bygga?",
+    "no": "Hva vil dere bygge?"
+  },
+  "Kontingent og betaling": {
+    "da": "Kontingent og betaling",
+    "en": "Membership fees and payments",
+    "de": "Mitgliedsbeiträge und Zahlungen",
+    "sv": "Medlemsavgifter och betalning",
+    "no": "Kontingent og betaling"
+  },
+  "Integration til eksisterende system": {
+    "da": "Integration til eksisterende system",
+    "en": "Integration with existing systems",
+    "de": "Anbindung bestehender Systeme",
+    "sv": "Integration med befintliga system",
+    "no": "Integrasjon med eksisterende systemer"
+  },
+  "Andet": {
+    "da": "Andet",
+    "en": "Other",
+    "de": "Sonstiges",
+    "sv": "Annat",
+    "no": "Annet"
+  },
+  "Hvornår passer et møde bedst?": {
+    "da": "Hvornår passer et møde bedst?",
+    "en": "When would you like to meet?",
+    "de": "Wann passt euch ein Gespräch?",
+    "sv": "När passar ett möte bäst?",
+    "no": "Når passer et møte best?"
+  },
+  "Fx tirsdag efter kl. 16 eller fredag formiddag": {
+    "da": "Fx tirsdag efter kl. 16 eller fredag formiddag",
+    "en": "For example, Tuesday after 4 pm or Friday morning",
+    "de": "Zum Beispiel dienstags nach 16 Uhr oder freitags vormittags",
+    "sv": "Till exempel tisdag efter kl. 16 eller fredag förmiddag",
+    "no": "For eksempel tirsdag etter kl. 16 eller fredag formiddag"
+  },
+  "Fortæl kort om jeres behov": {
+    "da": "Fortæl kort om jeres behov",
+    "en": "Briefly describe your needs",
+    "de": "Beschreibt kurz euren Bedarf",
+    "sv": "Beskriv kort era behov",
+    "no": "Beskriv kort behovene deres"
+  },
+  "Fx 6 tennisbaner, eksisterende lysanlæg og ønske om booking, betaling og automatisk lysstyring i én løsning.": {
+    "da": "Fx 6 tennisbaner, eksisterende lysanlæg og ønske om booking, betaling og automatisk lysstyring i én løsning.",
+    "en": "For example, six tennis courts, existing lights and a need for bookings, payments and automatic lighting in one solution.",
+    "de": "Zum Beispiel sechs Tennisplätze, vorhandene Beleuchtung und der Wunsch nach Buchung, Zahlung und Lichtsteuerung in einer Lösung.",
+    "sv": "Till exempel sex tennisbanor, befintlig belysning och behov av bokning, betalning och automatisk belysning i en lösning.",
+    "no": "For eksempel seks tennisbaner, eksisterende lys og behov for booking, betaling og automatisk lysstyring i én løsning."
+  },
+  "Det er uforpligtende. Vi kontakter jer for at bekræfte tidspunktet.": {
+    "da": "Det er uforpligtende. Vi kontakter jer for at bekræfte tidspunktet.",
+    "en": "No obligation. We will contact you to confirm a time.",
+    "de": "Unverbindlich. Wir melden uns, um einen Termin zu bestätigen.",
+    "sv": "Det är förutsättningslöst. Vi kontaktar er för att bekräfta en tid.",
+    "no": "Det er uforpliktende. Vi kontakter dere for å bekrefte tidspunktet."
+  },
+  "Sender forespørgsel…": {
+    "da": "Sender forespørgsel…",
+    "en": "Sending request…",
+    "de": "Anfrage wird gesendet…",
+    "sv": "Skickar förfrågan…",
+    "no": "Sender forespørsel…"
+  },
+  "Udfyld klub/virksomhed, navn og en gyldig e-mail.": {
+    "da": "Udfyld klub/virksomhed, navn og en gyldig e-mail.",
+    "en": "Enter your club or organisation, name and a valid email address.",
+    "de": "Gebt Club oder Unternehmen, Namen und eine gültige E-Mail-Adresse an.",
+    "sv": "Ange klubb eller företag, namn och en giltig e-postadress.",
+    "no": "Oppgi klubb eller virksomhet, navn og en gyldig e-postadresse."
+  },
+  "Vælg mindst én ting, I gerne vil tale om.": {
+    "da": "Vælg mindst én ting, I gerne vil tale om.",
+    "en": "Choose at least one topic you would like to discuss.",
+    "de": "Wählt mindestens ein Thema für das Gespräch.",
+    "sv": "Välj minst ett ämne ni vill prata om.",
+    "no": "Velg minst ett tema dere vil snakke om."
+  },
+  "Tak — vi har modtaget din forespørgsel og kontakter dig for at bekræfte mødet.": {
+    "da": "Tak — vi har modtaget din forespørgsel og kontakter dig for at bekræfte mødet.",
+    "en": "Thank you — we have received your request and will contact you to confirm the meeting.",
+    "de": "Vielen Dank — wir haben deine Anfrage erhalten und melden uns zur Terminbestätigung.",
+    "sv": "Tack — vi har fått din förfrågan och kontaktar dig för att bekräfta mötet.",
+    "no": "Takk — vi har mottatt forespørselen og kontakter deg for å bekrefte møtet."
+  },
+  "1. Vælg jeres løsning": {
+    "da": "1. Vælg jeres løsning",
+    "en": "1. Choose your plan",
+    "de": "1. Wählt euren Tarif",
+    "sv": "1. Välj er lösning",
+    "no": "1. Velg løsningen deres"
+  },
+  "Pris ikke offentliggjort": {
+    "da": "Pris ikke offentliggjort",
+    "en": "Price not available",
+    "de": "Preis noch nicht veröffentlicht",
+    "sv": "Pris ännu inte publicerat",
+    "no": "Pris ennå ikke publisert"
+  },
+  "én gang": {
+    "da": "én gang",
+    "en": "once",
+    "de": "einmalig",
+    "sv": "en gång",
+    "no": "én gang"
+  },
+  "måned": {
+    "da": "måned",
+    "en": "month",
+    "de": "Monat",
+    "sv": "månad",
+    "no": "måned"
+  },
+  "Standard klubadministration med baner, bookinger og betaling.": {
+    "da": "Standard klubadministration med baner, bookinger og betaling.",
+    "en": "Standard club management with courts, bookings and payments.",
+    "de": "Standard-Clubverwaltung mit Plätzen, Buchungen und Zahlungen.",
+    "sv": "Standardadministration med banor, bokningar och betalning.",
+    "no": "Standard klubbadministrasjon med baner, booking og betaling."
+  },
+  "Standardadministration plus de funktioner, I vælger nedenfor. Engangsprisen er den samme uanset antal funktioner.": {
+    "da": "Standardadministration plus de funktioner, I vælger nedenfor. Engangsprisen er den samme uanset antal funktioner.",
+    "en": "Standard management plus the features you select below. The setup price is fixed, regardless of how many features you select.",
+    "de": "Standardverwaltung plus die unten gewählten Funktionen. Der einmalige Preis bleibt unabhängig von der Anzahl gleich.",
+    "sv": "Standardadministration plus funktionerna ni väljer nedan. Startpriset är samma oavsett antal funktioner.",
+    "no": "Standardadministrasjon pluss funksjonene dere velger nedenfor. Engangsprisen er den samme uansett antall funksjoner."
+  },
+  "2. Klub og baner": {
+    "da": "2. Klub og baner",
+    "en": "2. Club and courts",
+    "de": "2. Club und Plätze",
+    "sv": "2. Klubb och banor",
+    "no": "2. Klubb og baner"
+  },
+  "Valuta for klubbookinger": {
+    "da": "Valuta for klubbookinger",
+    "en": "Currency for club bookings",
+    "de": "Währung für Clubbuchungen",
+    "sv": "Valuta för klubbbokningar",
+    "no": "Valuta for klubbbookinger"
+  },
+  "Klubbens tidszone": {
+    "da": "Klubbens tidszone",
+    "en": "Venue time zone",
+    "de": "Zeitzone des Clubs",
+    "sv": "Klubbens tidszon",
+    "no": "Klubbens tidssone"
+  },
+  "Klubbens navn": {
+    "da": "Klubbens navn",
+    "en": "Club name",
+    "de": "Name des Clubs",
+    "sv": "Klubbens namn",
+    "no": "Klubbens navn"
+  },
+  "By": {
+    "da": "By",
+    "en": "City",
+    "de": "Ort",
+    "sv": "Ort",
+    "no": "By"
+  },
+  "Vælg sportsgrene og antal baner eller borde. I kan ændre navne, underlag, priser og åbningstider i administrationen.": {
+    "da": "Vælg sportsgrene og antal baner eller borde. I kan ændre navne, underlag, priser og åbningstider i administrationen.",
+    "en": "Choose sports and the number of courts or tables. You can edit names, surfaces, prices and opening hours in your administration.",
+    "de": "Wählt Sportarten und die Anzahl der Plätze oder Tische. Namen, Beläge, Preise und Öffnungszeiten könnt ihr in der Verwaltung ändern.",
+    "sv": "Välj sporter och antal banor eller bord. Ni kan ändra namn, underlag, priser och öppettider i administrationen.",
+    "no": "Velg idretter og antall baner eller bord. Dere kan endre navn, underlag, priser og åpningstider i administrasjonen."
+  },
+  "Antal borde": {
+    "da": "Antal borde",
+    "en": "Number of tables",
+    "de": "Anzahl der Tische",
+    "sv": "Antal bord",
+    "no": "Antall bord"
+  },
+  "Antal baner": {
+    "da": "Antal baner",
+    "en": "Number of courts",
+    "de": "Anzahl der Plätze",
+    "sv": "Antal banor",
+    "no": "Antall baner"
+  },
+  "3. Opret klublogin": {
+    "da": "3. Opret klublogin",
+    "en": "3. Create your club login",
+    "de": "3. Erstellt euren Clubzugang",
+    "sv": "3. Skapa klubbinloggning",
+    "no": "3. Opprett klubbinnlogging"
+  },
+  "Adgangskode": {
+    "da": "Adgangskode",
+    "en": "Password",
+    "de": "Passwort",
+    "sv": "Lösenord",
+    "no": "Passord"
+  },
+  "Brug mindst 10 tegn. Det samme login virker på hjemmesiden og under Klublogin i appen.": {
+    "da": "Brug mindst 10 tegn. Det samme login virker på hjemmesiden og under Klublogin i appen.",
+    "en": "Use at least 10 characters. The same login works on the website and under Club login in the app.",
+    "de": "Verwendet mindestens 10 Zeichen. Derselbe Zugang funktioniert auf der Website und beim Club-Login in der App.",
+    "sv": "Använd minst 10 tecken. Samma inloggning fungerar på webbplatsen och under Klubbinloggning i appen.",
+    "no": "Bruk minst 10 tegn. Samme innlogging fungerer på nettsiden og under Klubbinnlogging i appen."
+  },
+  "Jeg må oprette klubben og accepterer": {
+    "da": "Jeg må oprette klubben og accepterer",
+    "en": "I am authorised to register the club and accept the",
+    "de": "Ich bin berechtigt, den Club anzumelden, und akzeptiere die",
+    "sv": "Jag har rätt att registrera klubben och godkänner",
+    "no": "Jeg har fullmakt til å registrere klubben og godtar",
+    "en-US": "I am authorized to register the club and accept the"
+  },
+  "handelsbetingelserne": {
+    "da": "handelsbetingelserne",
+    "en": "terms",
+    "de": "Geschäftsbedingungen",
+    "sv": "villkoren",
+    "no": "vilkårene"
+  },
+  "og": {
+    "da": "og",
+    "en": "and",
+    "de": "und",
+    "sv": "och",
+    "no": "og"
+  },
+  "databehandleraftalen": {
+    "da": "databehandleraftalen",
+    "en": "data processing agreement",
+    "de": "Vereinbarung zur Auftragsverarbeitung",
+    "sv": "personuppgiftsbiträdesavtalet",
+    "no": "databehandleravtalen"
+  },
+  "Custom koster": {
+    "da": "Custom koster",
+    "en": "Custom costs",
+    "de": "Custom kostet",
+    "sv": "Custom kostar",
+    "no": "Custom koster"
+  },
+  "én gang, uanset antal funktioner.": {
+    "da": "én gang, uanset antal funktioner.",
+    "en": "once, regardless of the selected features.",
+    "de": "einmalig, unabhängig von der Anzahl der Funktionen.",
+    "sv": "en gång, oavsett antal funktioner.",
+    "no": "én gang, uansett antall funksjoner."
+  },
+  "Abonnementet på": {
+    "da": "Abonnementet på",
+    "en": "The subscription of",
+    "de": "Das Abonnement für",
+    "sv": "Abonnemanget på",
+    "no": "Abonnementet på"
+  },
+  "måned starter ved betaling og fornyes månedligt indtil opsigelse. Klubben offentliggøres først efter RacketBuddys godkendelse.": {
+    "da": "måned starter ved betaling og fornyes månedligt indtil opsigelse. Klubben offentliggøres først efter RacketBuddys godkendelse.",
+    "en": "month starts on payment and renews monthly until cancelled. Your club goes live after RacketBuddy approval.",
+    "de": "Monat beginnt mit der Zahlung und verlängert sich monatlich bis zur Kündigung. Der Club wird erst nach Freigabe durch RacketBuddy veröffentlicht.",
+    "sv": "månad börjar vid betalning och förnyas månadsvis tills det sägs upp. Klubben publiceras först efter RacketBuddys godkännande.",
+    "no": "måned starter ved betaling og fornyes månedlig til det sies opp. Klubben publiseres først etter RacketBuddys godkjenning."
+  },
+  "Opretter klub…": {
+    "da": "Opretter klub…",
+    "en": "Creating club…",
+    "de": "Club wird erstellt…",
+    "sv": "Skapar klubb…",
+    "no": "Oppretter klubb…"
+  },
+  "Opret klub og fortsæt til betaling": {
+    "da": "Opret klub og fortsæt til betaling",
+    "en": "Create club and continue to payment",
+    "de": "Club erstellen und zur Zahlung",
+    "sv": "Skapa klubb och fortsätt till betalning",
+    "no": "Opprett klubb og fortsett til betaling"
+  },
+  "Custom-prisen skal offentliggøres af RacketBuddy, før I kan tilmelde jer.": {
+    "da": "Custom-prisen skal offentliggøres af RacketBuddy, før I kan tilmelde jer.",
+    "en": "The Custom price must be published before signup is available.",
+    "de": "RacketBuddy muss den Custom-Preis veröffentlichen, bevor eine Anmeldung möglich ist.",
+    "sv": "RacketBuddy måste publicera Custom-priset innan ni kan registrera er.",
+    "no": "RacketBuddy må publisere Custom-prisen før dere kan registrere dere."
+  },
+  "Kom i gang med jeres klub": {
+    "da": "Kom i gang med jeres klub",
+    "en": "Get started with your club",
+    "de": "Startet mit eurem Club",
+    "sv": "Kom igång med er klubb",
+    "no": "Kom i gang med klubben deres"
+  },
+  "Vælg løsning, opret jeres login og betal abonnementet. Vi gennemgår derefter klubben og aktiverer den.": {
+    "da": "Vælg løsning, opret jeres login og betal abonnementet. Vi gennemgår derefter klubben og aktiverer den.",
+    "en": "Choose your plan, create a login and pay for your subscription. We then review and activate your club.",
+    "de": "Wählt euren Tarif, erstellt einen Zugang und bezahlt das Abonnement. Anschließend prüfen und aktivieren wir euren Club.",
+    "sv": "Välj lösning, skapa inloggning och betala abonnemanget. Därefter granskar och aktiverar vi klubben.",
+    "no": "Velg løsning, opprett innlogging og betal abonnementet. Deretter gjennomgår og aktiverer vi klubben."
   }
 }

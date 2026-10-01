@@ -7,7 +7,6 @@ import { formatMoney } from '../lib/international';
 import { SPORTS, sportLabel } from '../lib/sports';
 import { LandingSearch } from '../components/LandingSearch';
 import { Ball } from '../components/Ball';
-import { setSport } from '../lib/actions';
 
 export const dynamic = 'force-dynamic';
 export async function generateMetadata() {
@@ -46,7 +45,7 @@ export default async function Home() {
 
     <div className="!mt-8 md:!mt-10">
       <LandingSearch country={prefs.country} sport={prefs.sport} locale={prefs.locale}/>
-      <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">{SPORTS.map(s => <form action={setSport} key={s}><input type="hidden" name="sport" value={s}/><button aria-pressed={prefs.sport===s} className={`flex min-h-11 items-center gap-2 rounded-full px-2 text-sm ${prefs.sport===s?'font-bold text-ink':'text-slate hover:text-ink'}`}><Ball sport={s} size={24}/>{sportLabel(s,prefs.locale)}</button></form>)}</div>
+      <ul className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">{SPORTS.map(s => <li key={s} className="flex min-h-11 items-center gap-2 px-2 text-sm text-slate"><Ball sport={s} size={24}/>{sportLabel(s,prefs.locale)}</li>)}</ul>
     </div>
 
     <section aria-labelledby="explore-title">

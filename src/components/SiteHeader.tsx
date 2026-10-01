@@ -21,6 +21,7 @@ type Props = {
 export function SiteHeader({ user, locale }: Props) {
   const pathname = usePathname();
   const t = translator(locale);
+  const marketingPage = ['/', '/custom', '/opret-klub'].includes(pathname);
 
   useEffect(() => {
     if (user?.role !== "COACH" || pathname === "/onboarding-sports") return;
@@ -40,7 +41,10 @@ export function SiteHeader({ user, locale }: Props) {
     };
   }, [pathname, user?.role]);
 
-  const links = [
+  const links = marketingPage ? [
+    { href: '/custom', label: phrase('Til klubber', locale) },
+    ...(user?.role === 'CLUB_ADMIN' ? [{ href: '/admin', label: t('nav.admin') }] : []),
+  ] : [
     { href: "/book", label: t("nav.book") },
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },
@@ -58,17 +62,17 @@ export function SiteHeader({ user, locale }: Props) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate/10 bg-chalk/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
+      <nav className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6">
         <Link href="/" className="display shrink-0 text-lg tracking-tight">
           Racket<span className="text-court">Buddy</span>
         </Link>
 
-        <div className="hidden flex-1 items-center gap-6 text-sm font-semibold md:flex">
+        <div className={`${marketingPage ? 'flex min-w-0 gap-3 text-[13px] sm:gap-6 sm:text-sm' : 'hidden gap-6 text-sm md:flex'} flex-1 items-center font-semibold`}>
           {links.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className={`relative py-1 ${active(l.href) ? "text-court" : "text-slate hover:text-ink"}`}
+              className={`relative py-1 ${marketingPage && l.href === '/admin' ? 'hidden sm:inline-flex' : ''} ${active(l.href) ? "text-court" : "text-slate hover:text-ink"}`}
             >
               {l.label}
               {active(l.href) && (
@@ -100,8 +104,9 @@ export function SiteHeader({ user, locale }: Props) {
             </>
           ) : (
             <>
-              <Link href="/login" className="font-semibold text-slate hover:text-ink">
-                {t("nav.login")}
+              <Link href="/login" aria-label={t('nav.login')} className={`${marketingPage ? 'flex h-10 w-10 items-center justify-center sm:h-auto sm:w-auto' : ''} font-semibold text-slate hover:text-ink`}>
+                {marketingPage && <svg className="sm:hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>}
+                <span className={marketingPage ? 'hidden sm:inline' : undefined}>{t("nav.login")}</span>
               </Link>
               <Link
                 href="/signup"
