@@ -30,21 +30,21 @@ export default async function Home() {
   const prefs = await getPreferences(), c = landingCopy(prefs.locale), prices = await clubSignupPrices();
   const monthly = formatMoney(prices.standard, 'DKK', prefs.locale), setup = prices.custom == null ? null : formatMoney(prices.custom, 'DKK', prefs.locale);
   return <div className="landing space-y-16 md:space-y-24">
-    <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
-      <div className="py-2 lg:py-8">
-        <p className="eyebrow text-slate">{c.eyebrow}</p>
-        <h1 className="mt-5 text-[clamp(2.7rem,5vw,4.5rem)] leading-[1.06] tracking-[-0.045em]">{c.title}<br/><span className="text-court">{c.titleEnd}</span></h1>
-        <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate">{c.lead}</p>
-        <div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/opret-klub" className="btn-court gap-3">{c.clubCta}<Arrow/></Link><Link href="#find-dit-spil" className="btn-ghost">{c.playCta}</Link></div>
-      </div>
-      <figure className="relative isolate overflow-hidden rounded-[28px] bg-[#e2e9df]">
-        <Image src="/images/club-life-hero.webp" alt={c.photoAlt} width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[380px] lg:h-[440px]"/>
-        <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-16 text-lg font-semibold text-white">{c.photoCaption}</figcaption>
-      </figure>
-    </section>
-
-    <div className="!mt-8 md:!mt-10">
+    <div className="space-y-8 md:space-y-10">
       <LandingSearch country={prefs.country} sport={prefs.sport} locale={prefs.locale}/>
+      <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
+        <div className="py-2 lg:py-8">
+          <p className="eyebrow text-slate">{c.eyebrow}</p>
+          <h1 className="mt-5 text-[clamp(2.7rem,5vw,4.5rem)] leading-[1.06] tracking-[-0.045em]">{c.title}<br/><span className="text-court">{c.titleEnd}</span></h1>
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate">{c.lead}</p>
+          <div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/opret-klub" className="btn-court gap-3">{c.clubCta}<Arrow/></Link><Link href="#find-dit-spil" className="btn-ghost">{c.playCta}</Link></div>
+        </div>
+        <figure className="relative isolate overflow-hidden rounded-[28px] bg-[#e2e9df]">
+          <Image src="/images/club-life-hero.webp" alt={c.photoAlt} width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[380px] lg:h-[440px]"/>
+          <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-16 text-lg font-semibold text-white">{c.photoCaption}</figcaption>
+        </figure>
+      </section>
+
       <ul className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">{SPORTS.map(s => <li key={s} className="flex min-h-11 items-center gap-2 px-2 text-sm text-slate"><Ball sport={s} size={24}/>{sportLabel(s,prefs.locale)}</li>)}</ul>
     </div>
 
