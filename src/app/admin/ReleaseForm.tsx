@@ -1,5 +1,7 @@
 "use client";
+import {dayKey} from "../../lib/international";
 
+import {useWebsiteInternational} from "../../components/InternationalProvider";
 import { useFormState } from "react-dom";
 import { releaseGuestSlots } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
@@ -15,8 +17,9 @@ export function ReleaseForm({
   /** Klubbens eget bookingsystem, hvis de har et. Så kræves spærring først. */
   externalSystem: string | null;
 }) {
+  const {tr,currency,timeZone}=useWebsiteInternational();
   const [state, action] = useFormState(releaseGuestSlots, null);
-  const today = new Date().toISOString().slice(0, 10);
+  const today=dayKey(new Date(),timeZone);
 
   return (
     <form action={action} className="card space-y-4">

@@ -1,3 +1,4 @@
+import { validateOrderCheckout, type CheckoutEvidence } from "./payment-validation";
 // Kontingent.
 //
 // Klubbens indtægt, og den funktion der afgør, om en klub kan forlade
@@ -113,6 +114,7 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
           id: true,
           name: true,
           slug: true,
+          currency: true,
           stripeAccountId: true,
           stripeChargesEnabled: true,
         },
@@ -137,10 +139,10 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
   const membership = existing
     ? await db.membership.update({
         where: { id: existing.id },
-        data: { priceKr: type.priceKr, status: "PENDING" },
+        data: { priceKr: type.priceKr, currency: type.club.currency, status: "PENDING" },
       })
     : await db.membership.create({
-        data: { typeId, userId, priceKr: type.priceKr, status: "PENDING" },
+        data: { typeId, userId, priceKr: type.priceKr, currency: type.club.currency, status: "PENDING" },
       });
 
   if (type.priceKr <= 0) {
@@ -183,7 +185,7 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          currency: type.club.currency.toLowerCase(),
           product_data: {
             name: `${type.name} — ${type.seasonName}`,
             description: `Kontingent i ${type.club.name}`,
@@ -213,7 +215,11 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
  * Kan kaldes flere gange uden skade — webhooks kommer nogle gange to
  * gange, og et medlemskab må ikke blive til to.
  */
-export async function confirmMembership(membershipId: string): Promise<void> {
+export async function confirmMembership(membershipId: string, session?: CheckoutEvidence): Promise<void> {
+  if (session) {
+    const order = await db.membership.findUniqueOrThrow({where:{id:membershipId}});
+    validateOrderCheckout(order,session,'membershipId');
+  }
   const membership = await db.membership.findUnique({
     where: { id: membershipId },
     include: { type: { select: { clubId: true } } },
@@ -265,7 +271,7 @@ export async function confirmMembership(membershipId: string): Promise<void> {
         seasonName: full.type.seasonName,
         fromDate: full.type.fromDate,
         toDate: full.type.toDate,
-        priceKr: full.priceKr,
+        priceKr: full.priceKr,currency:full.currency,locale:full.user.locale,
       })
     ).catch((err) => console.error("Kunne ikke sende kontingentkvittering:", err));
   }

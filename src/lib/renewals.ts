@@ -97,7 +97,7 @@ export async function runRenewals(): Promise<RenewalRun> {
   // Nye sæsoner, der fornyer en tidligere.
   const upcoming = await db.membershipType.findMany({
     where: { renewsFromId: { not: null }, active: true, fromDate: { gte: new Date() } },
-    include: { club: { select: { name: true, slug: true, stripeAccountId: true } } },
+    include: { club: { select: { name: true, slug: true,currency:true, stripeAccountId: true } } },
   });
 
   for (const type of upcoming) {
@@ -124,6 +124,7 @@ export async function runRenewals(): Promise<RenewalRun> {
             typeId: type.id,
             userId: old.userId,
             priceKr: type.priceKr,
+            currency:type.club.currency,
             status: "PENDING",
             autoRenew: true,
           },
@@ -137,6 +138,7 @@ export async function runRenewals(): Promise<RenewalRun> {
             typeName: type.name,
             seasonName: type.seasonName,
             priceKr: type.priceKr,
+            currency:type.club.currency,
             chargeDate: type.fromDate,
             clubSlug: type.club.slug,
           })
@@ -166,7 +168,7 @@ async function chargeRenewal(membershipId: string, destination: string | null): 
     where: { id: membershipId },
     include: {
       user: true,
-      type: { include: { club: { select: { name: true, slug: true, stripeAccountId: true } } } },
+      type: { include: { club: { select: { name: true, slug: true,currency:true, stripeAccountId: true } } } },
     },
   });
   if (!membership) return false;
@@ -190,7 +192,7 @@ async function chargeRenewal(membershipId: string, destination: string | null): 
 
     await s.paymentIntents.create({
       amount: membership.priceKr * 100,
-      currency: "dkk",
+      currency: membership.currency.toLowerCase(),
       customer: customerId,
       payment_method: method.id,
       // off_session: medlemmet sidder ikke ved skærmen. Kræver et kort, der

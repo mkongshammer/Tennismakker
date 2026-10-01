@@ -1,3 +1,4 @@
+import { money, tr, useInternational } from "../lib/international";
 import React, { useCallback, useRef, useState } from "react";
 import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { feedback as Alert } from "../lib/feedback";
@@ -8,7 +9,7 @@ import { colors, pageContent } from "../lib/theme";
 import { dayLong, groupByDay, time } from "../lib/dates";
 import { BookingReview } from "../lib/BookingReview";
 
-export default function CoachScreen({ route }) {
+export default function CoachScreen({ route }) {useInternational();
   const { id } = route.params;
   const state = useScreenData(useCallback(() => api.coach(id), [id]));
   const load = state.refresh;
@@ -22,7 +23,7 @@ export default function CoachScreen({ route }) {
   if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   const { coach, packages, reviews, slots } = state.data;
-  const days = groupByDay(slots.map((s) => new Date(s)), (d) => d);
+  const days = groupByDay(slots.map((s) => new Date(s)), (d) => d, coach.timeZone);
 
   const book = async (date) => {
     if (bookingLock.current) return;
@@ -32,7 +33,7 @@ export default function CoachScreen({ route }) {
     try {
       const result = await api.book({
         coachProfileId: coach.id,
-        startsAt: date.toISOString(),
+        startsAt: date.toISOString()
       });
       if (result.status === "REQUESTED") {
         setSelection(null);
@@ -58,98 +59,100 @@ export default function CoachScreen({ route }) {
     <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-      {notice && <Card><Text accessibilityLiveRegion="polite">{notice}</Text></Card>}
+      {notice && <Card><Text accessibilityLiveRegion="polite">{tr(notice)}</Text></Card>}
       <Card>
         <View style={styles.row}>
           <Text style={styles.name}>{coach.name}</Text>
-          <Text style={styles.price}>{coach.priceHour} kr/t</Text>
+          <Text style={styles.price}>{money(coach.priceHour, coach.currency)}/{tr("time")}</Text>
         </View>
-        {coach.rating?.count > 0 && (
+        {coach.rating?.count > 0 &&
           <Text style={styles.rating}>
             <Text style={{ color: colors.court }}>★</Text> {coach.rating.average.toFixed(1)}{" "}
             <Text style={styles.meta}>({coach.rating.count})</Text>
           </Text>
-        )}
+          }
         <Text style={styles.headline}>{coach.headline}</Text>
         <Text style={styles.meta}>{coach.area}</Text>
-        <Text style={styles.meta}>{coach.lessonMinutes ?? 60} minutter · {coach.lessonPriceKr ?? coach.priceHour} kr pr. lektion</Text>
+        <Text style={styles.meta}>{coach.lessonMinutes ?? 60}{" " + tr("minutter \xB7") + " "}{money(coach.lessonPriceKr ?? coach.priceHour, coach.currency)} / {tr("lektion")}</Text>
       </Card>
 
-      {packages.length > 0 && (
+      {packages.length > 0 &&
         <>
-          <Text style={styles.section}>Pakkeforløb</Text>
-          <Text style={styles.sectionHint}>
-            Aftales direkte med træneren — book en enkelt time først for at komme i kontakt.
+          <Text style={styles.section}>{tr("Pakkeforl\xF8b")}</Text>
+          <Text style={styles.sectionHint}>{tr("Aftales direkte med tr\xE6neren \u2014 book en enkelt time f\xF8rst for at komme i kontakt.")}
+
           </Text>
-          {packages.map((p) => (
-            <Card key={p.id}>
+          {packages.map((p) =>
+          <Card key={p.id}>
               <View style={styles.row}>
                 <Text style={styles.packageName}>{p.name}</Text>
-                <Text style={styles.price}>{p.priceKr} kr</Text>
+                <Text style={styles.price}>{money(p.priceKr, coach.currency)}</Text>
               </View>
               <Text style={styles.meta}>
-                {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
+                {p.sessions}{" " + tr("timer \xB7") + " "}{money(Math.round(p.priceKr / p.sessions), coach.currency)} / {tr("time")}
               </Text>
               {p.description ? <Text style={styles.packageDesc}>{p.description}</Text> : null}
             </Card>
-          ))}
+          )}
         </>
-      )}
+        }
 
-      <Text style={styles.section}>Ledige tider</Text>
-      <Text style={styles.sectionHint}>Send en anmodning. Betaling sker efter trænerens godkendelse.</Text>
-      {days.length === 0 ? (
-        <Empty title="Nye træningstider på vej" action="Opdatér tider" onAction={load}>Ingen ledige tider de næste 7 dage. Kig igen senere eller vælg en anden træner.</Empty>
-      ) : (
-        days.map((d) => (
-          <View key={d.date.toISOString()} style={{ marginBottom: 18 }}>
-            <Text style={styles.dayLabel}>{dayLong(d.date)}</Text>
-            {d.items.map((date) => (
-              <Card key={date.toISOString()}>
+      <Text style={styles.meta}>{tr("Lokal tid")}: {coach.timeZone}</Text>
+      <Text style={styles.section}>{tr("Ledige tider")}</Text>
+      <Text style={styles.sectionHint}>{tr("Send en anmodning. Betaling sker efter tr\xE6nerens godkendelse.")}</Text>
+      {days.length === 0 ?
+        <Empty title={tr("Nye tr\xE6ningstider p\xE5 vej")} action={tr("Opdat\xE9r tider")} onAction={load}>{tr("Ingen ledige tider de n\xE6ste 7 dage. Kig igen senere eller v\xE6lg en anden tr\xE6ner.")}</Empty> :
+
+        days.map((d) =>
+        <View key={d.date.toISOString()} style={{ marginBottom: 18 }}>
+            <Text style={styles.dayLabel}>{dayLong(d.date, coach.timeZone)}</Text>
+            {d.items.map((date) =>
+          <Card key={date.toISOString()}>
                 <View style={styles.row}>
-                  <View style={{ flexShrink: 1 }}><Text style={styles.slotTime}>{time(date)}</Text>
-                    <Text style={styles.meta}>{coach.lessonMinutes ?? 60} min · {coach.lessonPriceKr ?? coach.priceHour} kr</Text>
+                  <View style={{ flexShrink: 1 }}><Text style={styles.slotTime}>{time(date, coach.timeZone)}</Text>
+                    <Text style={styles.meta}>{coach.lessonMinutes ?? 60}{" " + tr("min \xB7") + " "}{money(coach.lessonPriceKr ?? coach.priceHour, coach.currency)}</Text>
                   </View>
                   <Button
-                    title="Vælg tid"
-                    disabled={booking !== null}
-                    onPress={() => { setBookingError(null); setSelection(date); }}
-                    loading={booking === date.toISOString()}
-                  />
+                title={tr("V\xE6lg tid")}
+                disabled={booking !== null}
+                onPress={() => {setBookingError(null);setSelection(date);}}
+                loading={booking === date.toISOString()} />
+
                 </View>
               </Card>
-            ))}
+          )}
           </View>
-        ))
-      )}
+        )
+        }
 
-      {reviews.length > 0 && (
+      {reviews.length > 0 &&
         <>
-          <Text style={styles.section}>Hvad elever siger</Text>
-          {reviews.map((r) => (
-            <Card key={r.id}>
+          <Text style={styles.section}>{tr("Hvad elever siger")}</Text>
+          {reviews.map((r) =>
+          <Card key={r.id}>
               <Text style={{ color: colors.court }}>{"★".repeat(r.rating)}</Text>
               {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
               <Text style={styles.meta}>{r.authorName}</Text>
             </Card>
-          ))}
+          )}
         </>
-      )}
+        }
     </ScrollView>
     {selection && <BookingReview
-      visible
-      title={coach.name}
-      details={[dayLong(selection), `${time(selection)} · ${coach.lessonMinutes ?? 60} minutter`]}
-      priceKr={coach.lessonPriceKr ?? coach.priceHour}
-      hint="Du sender en anmodning til træneren. Du betaler først, når træneren har godkendt tiden."
-      action="Send anmodning"
-      busy={booking !== null}
-      error={bookingError}
-      onConfirm={() => book(selection)}
-      onClose={() => setSelection(null)}
-    />}
-    </>
-  );
+        visible
+        title={coach.name}
+        details={[dayLong(selection, coach.timeZone), `${time(selection, coach.timeZone)} · ${coach.lessonMinutes ?? 60} ${tr("minutter")}`]}
+        currency={coach.currency}
+        priceKr={coach.lessonPriceKr ?? coach.priceHour}
+        hint={tr("Du sender en anmodning til tr\xE6neren. Du betaler f\xF8rst, n\xE5r tr\xE6neren har godkendt tiden.")}
+        action={tr("Send anmodning")}
+        busy={booking !== null}
+        error={bookingError}
+        onConfirm={() => book(selection)}
+        onClose={() => setSelection(null)} />
+      }
+    </>);
+
 }
 
 const styles = StyleSheet.create({
@@ -165,5 +168,5 @@ const styles = StyleSheet.create({
   packageDesc: { marginTop: 8, lineHeight: 19 },
   dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.ink },
   slotTime: { fontSize: 20, fontWeight: "800", color: colors.ink },
-  comment: { marginTop: 6, lineHeight: 19 },
+  comment: { marginTop: 6, lineHeight: 19 }
 });

@@ -109,6 +109,8 @@ model Club {
   subscriptionStatus   String?
   subscriptionRenewsAt DateTime?
 
+  currency String @default("DKK") // ISO currency; existing stored prices remain DKK
+  timeZone String @default("Europe/Copenhagen")
   country String @default("DK")
 
   // Stripe Connect — kontoen pengene sendes videre til, når nogen booker
@@ -349,6 +351,8 @@ model Booking {
   startsAt          DateTime
   endsAt            DateTime
   priceKr           Int
+  currency          String @default("DKK") // immutable price snapshot
+  timeZone          String @default("Europe/Copenhagen") // venue time zone at booking
   // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
   // klippet gives tilbage, hvis bookingen aflyses.
   packagePurchaseId String?
@@ -495,7 +499,10 @@ model CoachProfile {
   user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   headline      String // fx "DTF-uddannet træner, speciale i serv"
   sports        String @default("TENNIS") // kommasepareret
-  priceHour     Int // kr pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
+  country       String @default("DK")
+  currency      String @default("DKK")
+  timeZone      String @default("Europe/Copenhagen")
+  priceHour     Int // major currency units pr. time — prisen for én lektion regnes ud fra den og lessonMinutes
   // Længden på én lektion. Juniorer og teknik-timer er ofte kortere end en
   // hel time, og en træner, der kun kan sælge 60 minutter ad gangen, kan
   // ikke sætte sin egen dag op.
@@ -563,6 +570,7 @@ model Payment {
   bookingId   String   @unique
   booking     Booking  @relation(fields: [bookingId], references: [id])
   amountKr    Int
+  currency    String @default("DKK")
   platformFee Int // RacketBuddys andel (kommission/transaktionsgebyr)
   provider    String   @default("mock") // "mock" | "stripe"
   providerRef String? // fx Stripe PaymentIntent-id
@@ -735,6 +743,7 @@ model PasswordReset {
 // sessionsUsed frem for at slette klip: en elev skal kunne se, hvad der er
 // brugt, og vi skal kunne svare på det, hvis der bliver spurgt.
 model PackagePurchase {
+  currency String @default("DKK")
   id             String       @id @default(cuid())
   userId         String
   user           User         @relation(fields: [userId], references: [id])
@@ -923,6 +932,7 @@ model MembershipType {
 // Et felt ville betyde, at fornyelsen overskrev sidste sæson, og så kan
 // ingen svare på, hvem der var medlem i 2025.
 model Membership {
+  currency String @default("DKK")
   id     String         @id @default(cuid())
   typeId String
   type   MembershipType @relation(fields: [typeId], references: [id])
@@ -990,6 +1000,7 @@ model SeasonTeam {
 }
 
 model TeamSignup {
+  currency String @default("DKK")
   id     String     @id @default(cuid())
   teamId String
   team   SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -1035,6 +1046,7 @@ model ClubPunchCard {
 }
 
 model ClubPunchPurchase {
+  currency String @default("DKK")
   id     String        @id @default(cuid())
   cardId String
   card   ClubPunchCard @relation(fields: [cardId], references: [id])
@@ -1176,6 +1188,7 @@ model PushDelivery {
 }
 
 model ClubWallet {
+  currency String @default("DKK")
   id String @id @default(cuid())
   userId String
   clubId String
@@ -1195,6 +1208,7 @@ model WalletEntry {
   @@index([walletId, createdAt])
 }
 model WalletTopup {
+  currency String @default("DKK")
   id String @id @default(cuid())
   userId String
   clubId String

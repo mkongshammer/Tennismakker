@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { LanguagePicker } from "./LanguagePicker";
 import { translator } from "../lib/i18n";
 import type { Locale } from "../lib/sports";
 
@@ -45,10 +46,10 @@ export function SiteHeader({ user, locale }: Props) {
     { href: "/beskeder", label: t("nav.messages") },
     ...(user?.role === "CLUB_ADMIN"
       ? [
-          { href: "/admin", label: "Klubadmin" },
+          { href: "/admin", label: t("nav.admin") },
           { href: "/admin/custom", label: "Custom" },
         ]
-      : [{ href: "/custom", label: "Til klubber" }]),
+      : [{ href: "/custom", label: locale === "da" ? "Til klubber" : "For clubs" }]),
   ];
 
   const active = (href: string) =>
@@ -77,6 +78,7 @@ export function SiteHeader({ user, locale }: Props) {
         </div>
 
         <div className="ml-auto flex items-center gap-2 text-sm">
+          <details className="relative"><summary className="cursor-pointer list-none min-h-11 flex items-center px-2 font-semibold" aria-label={t('common.language')}>{locale.toUpperCase()} ▾</summary><div className="absolute right-0 top-full mt-2 w-64 rounded-xl border bg-white p-4 shadow-lg"><LanguagePicker active={locale}/></div></details>
           {user ? (
             <>
               <Link

@@ -1,4 +1,6 @@
 "use server";
+import { profileLocation } from "./profile-location";
+import { marketFor, validCurrency, validTimeZone,wallTime } from "./international";
 import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
 import {createCourtReservation} from "./court-reservation";
 import { requireCustomClub } from "./club-management-actions";
@@ -103,9 +105,15 @@ export async function signup(_prev: unknown, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const role = String(formData.get("role") ?? "PLAYER");
   const level = Number(formData.get("level") ?? 3);
-  const area = String(formData.get("area") ?? "").trim();
+  let location;
+  try {location=profileLocation({country:formData.get('country')??'DK',locale:formData.get('locale')??'da',area:formData.get('area')});} catch(e) {return {error:(e as Error).message};}
+  const {area,country,locale}=location;
+  const market=marketFor(country)!;
+  const currency=String(formData.get('currency')??market.currency),timeZone=String(formData.get('timeZone')??market.timeZone);
+  const coachPrice=Number(formData.get('priceHour')??350);
+  if(role==='COACH' && (!validCurrency(currency)||!validTimeZone(timeZone)||!Number.isSafeInteger(coachPrice)||coachPrice<1||coachPrice>10000)) return {error:locale==='da'?'Vælg gyldig valuta, tidszone og trænerpris.':'Choose a valid currency, time zone and coaching price.'};
 
-  if (!email.includes("@") || password.length < 8 || !name) {
+  if (!email.includes("@") || password.length < 8 || Buffer.byteLength(password)>72 || !name || !Number.isFinite(level)) {
     return { error: "Udfyld navn, gyldig e-mail og en adgangskode på mindst 8 tegn." };
   }
   if (!["PLAYER", "COACH"].includes(role)) {
@@ -120,7 +128,7 @@ export async function signup(_prev: unknown, formData: FormData) {
       name,
       role,
       level: Math.min(7, Math.max(1, level)),
-      area: area || null,
+      ...location,
       passwordHash: await bcrypt.hash(password, 10),
       // Knappen sad under sætningen om vilkårene. Det er accepten.
       termsAcceptedAt: new Date(),
@@ -133,13 +141,14 @@ export async function signup(_prev: unknown, formData: FormData) {
   // opdager det først, når en elev har booket til den forkerte.
   if (role === "COACH") {
     const sports = normaliseSports(formData.getAll("sports").map(String));
-    const priceHour = Math.min(5000, Math.max(50, Number(formData.get("priceHour") ?? 350)));
+    const priceHour = coachPrice;
     const headline = String(formData.get("headline") ?? "").trim();
 
     await db.coachProfile.create({
       data: {
         userId: user.id,
-        headline: headline || "Ny træner på RacketBuddy",
+        country,currency,timeZone,
+        headline: headline || (locale==="da"?"Ny træner på RacketBuddy":"New coach on RacketBuddy"),
         sports: sports.join(","),
         priceHour,
         specialties: "",
@@ -632,6 +641,8 @@ export async function bookCoachSlot(formData: FormData) {
     data: {
       kind: "COACH",
       status: "REQUESTED",
+      currency: coach!.currency,
+      timeZone: coach!.timeZone,
       startsAt,
       endsAt,
       priceKr: price,
@@ -649,7 +660,7 @@ export async function bookCoachSlot(formData: FormData) {
         playerName: user.name,
         playerLevel: user.level,
         startsAt,
-        priceKr: price,
+        priceKr: price,currency:coach.currency,timeZone:coach.timeZone,locale:coachUser.locale,
         withCredit: credits.length > 0,
       })
     );
@@ -691,11 +702,13 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
     return { error: "Dine ledige tider kunne ikke læses. Prøv at markere dem igen." };
   }
 
+  const timeZone=String(formData.get("timeZone")??user.coachProfile.timeZone),priceHour=Number(formData.get("priceHour")??350);
+  if(!validTimeZone(timeZone)||!Number.isSafeInteger(priceHour)||priceHour<0||priceHour>10000)return {error:"Choose a valid time zone and hourly price."};
   await db.coachProfile.update({
     where: { userId: user.id },
     data: {
       headline: String(formData.get("headline") ?? "").trim(),
-      priceHour: Math.max(0, Number(formData.get("priceHour") ?? 350)),
+      priceHour,timeZone,
       lessonMinutes: normaliseLessonMinutes(formData.get("lessonMinutes")),
       specialties: String(formData.get("specialties") ?? "").trim(),
       area: String(formData.get("area") ?? "").trim(),
@@ -860,7 +873,7 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const blocked = await requireBlockedFirst(clubId, formData);
   if (blocked) return { error: blocked };
 
-  const court = await db.court.findFirst({ where: { id: courtId, clubId } });
+  const court = await db.court.findFirst({ where: { id: courtId, clubId },include:{club:true} });
   if (!court) return { error: "Vælg en bane, der hører til klubben." };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: "Vælg en dato." };
   if (!(fromHour >= 0 && toHour <= 24 && fromHour < toHour)) {
@@ -871,8 +884,9 @@ export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
   const [y, m, d] = date.split("-").map(Number);
   let created = 0;
   for (let h = fromHour; h < toHour; h++) {
-    const startsAt = new Date(y, m - 1, d, h, 0, 0, 0);
-    const endsAt = new Date(y, m - 1, d, h + 1, 0, 0, 0);
+    const startsAt=wallTime(date,h,0,court.club.timeZone);
+    if(!startsAt)continue;
+    const endsAt=addHours(startsAt,1);
     if (startsAt < new Date()) continue;
     try {
       await db.guestSlot.create({ data: { courtId, startsAt, endsAt, priceKr } });
@@ -1810,13 +1824,14 @@ export async function updatePreferences(formData: FormData) {
   const locale = String(formData.get("locale") ?? "da");
   const sport = String(formData.get("sport") ?? "TENNIS");
 
+  if (!COUNTRIES.some(c=>c.code===country) || !(LOCALES as readonly string[]).includes(locale) || !(SPORTS as readonly string[]).includes(sport)) return;
   await setPreferenceCookies({ country, locale: locale as any, sport: sport as any });
 
   const user = await getCurrentUser();
   if (user) {
     await db.user.update({
       where: { id: user.id },
-      data: { country, locale },
+      data: { country, locale, countryChosen: true },
     });
   }
 
@@ -2078,13 +2093,13 @@ export async function updateClubSite(_prev: unknown, formData: FormData) {
   const address = String(formData.get("address") ?? "").trim();
   const existing = await db.club.findUnique({
     where: { id: clubId },
-    select: { address: true, city: true, latitude: true },
+    select: { address: true, city: true, latitude: true, country: true },
   });
 
   const addressChanged = address && address !== existing?.address;
   const coords =
     addressChanged || (address && existing?.latitude == null)
-      ? await geocode(address, existing?.city ?? "").catch(() => null)
+      ? await geocode(address, existing?.city ?? "", existing?.country ?? "DK").catch(() => null)
       : null;
 
   await db.club.update({

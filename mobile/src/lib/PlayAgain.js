@@ -1,4 +1,4 @@
-// "Spil igen": samme bane, samme tid, næste uge, ét tryk.
+import { tr, useInternational } from "./international"; // "Spil igen": samme bane, samme tid, næste uge, ét tryk.
 //
 // Det er appens vigtigste knap, af samme grund som på websitet: en bane
 // bookes sjældent én gang — den bookes hver tirsdag kl. 18. At gøre
@@ -10,9 +10,9 @@ import { feedback as Alert } from "./feedback";
 import { api, checkoutUrl } from "./api";
 import { Button, Card } from "./ui";
 import { colors } from "./theme";
-import { DAYS } from "./dates";
+import { weekday, time as localTime } from "./dates";
 
-export function PlayAgain({ items, onBooked }) {
+export function PlayAgain({ items, onBooked }) {useInternational();
   const [busyId, setBusyId] = useState(null);
   const lock = useRef(false);
 
@@ -38,15 +38,13 @@ export function PlayAgain({ items, onBooked }) {
 
   return (
     <View style={{ marginBottom: 20 }}>
-      <Text style={styles.title}>Spil igen</Text>
-      <Text style={styles.subtitle}>Samme bane, samme tid, næste uge.</Text>
+      <Text style={styles.title}>{tr("Spil igen")}</Text>
+      <Text style={styles.subtitle}>{tr("Samme bane, samme tid, n\xE6ste uge.")}</Text>
 
       {items.map((item) => {
         const d = new Date(item.startsAt);
-        const day = DAYS[d.getDay()];
-        const time = `${String(d.getHours()).padStart(2, "0")}:${String(
-          d.getMinutes()
-        ).padStart(2, "0")}`;
+        const day = weekday(d, item.timeZone);
+        const time = localTime(d, item.timeZone);
 
         return (
           <Card key={item.bookingId}>
@@ -58,17 +56,17 @@ export function PlayAgain({ items, onBooked }) {
                 </Text>
               </View>
               <Button
-                title={`Book næste ${day}`}
+                title={`${tr("Book næste")} ${day}`}
                 onPress={() => rebook(item.bookingId)}
                 loading={busyId === item.bookingId}
-                disabled={busyId !== null}
-              />
+                disabled={busyId !== null} />
+
             </View>
-          </Card>
-        );
+          </Card>);
+
       })}
-    </View>
-  );
+    </View>);
+
 }
 
 const styles = StyleSheet.create({
@@ -76,5 +74,5 @@ const styles = StyleSheet.create({
   subtitle: { color: colors.slate, marginTop: 2, marginBottom: 10, fontSize: 13 },
   row: { gap: 12 },
   what: { fontWeight: "800" },
-  when: { color: colors.slate, marginTop: 2, fontSize: 13, fontVariant: ["tabular-nums"] },
+  when: { color: colors.slate, marginTop: 2, fontSize: 13, fontVariant: ["tabular-nums"] }
 });

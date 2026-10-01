@@ -1,3 +1,4 @@
+import {formatMoney} from "../../lib/international";
 import { CUSTOM_FEATURES } from "../../lib/club-features";
 import { setClubSolution } from "../../lib/club-management-actions";
 import React from "react";
@@ -188,7 +189,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-slate/50">Pris</dt>
-                    <dd>{club.priceHour} kr/time</dd>
+                    <dd>{formatMoney(club.priceHour,club.currency,"da")}/time</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-slate/50">Model</dt>

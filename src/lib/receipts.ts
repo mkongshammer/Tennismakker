@@ -10,6 +10,7 @@
 // bogføringsforpligtelse, klubben har over for SKAT — ikke en, vi kan
 // påtage os på deres vegne. Det her er kvitteringer, og de hedder det.
 
+import {formatDate} from "./international";
 import { db } from "./db";
 
 export type Receipt = {
@@ -19,10 +20,11 @@ export type Receipt = {
   description: string;
   clubOrCoach: string;
   amountKr: number;
+  currency:string;
 };
 
 /** Alt, personen har betalt hos os, nyeste først. */
-export async function receiptsFor(userId: string): Promise<Receipt[]> {
+export async function receiptsFor(userId: string,locale="da"): Promise<Receipt[]> {
   const [payments, memberships, signups, punches, packages] = await Promise.all([
     db.payment.findMany({
       where: { status: "PAID", booking: { userId } },
@@ -59,14 +61,11 @@ export async function receiptsFor(userId: string): Promise<Receipt[]> {
       id: p.id,
       date: p.createdAt,
       kind: isCoach ? "Trænertime" : "Banebooking",
-      description: p.booking.startsAt.toLocaleString("da-DK", {
-        dateStyle: "long",
-        timeStyle: "short",
-      }),
+      description: formatDate(p.booking.startsAt,locale,p.booking.timeZone,{dateStyle:"long",timeStyle:"short"}),
       clubOrCoach: isCoach
         ? (p.booking.coachProfile?.user.name ?? "Træner")
         : (p.booking.court?.club.name ?? "Klub"),
-      amountKr: p.amountKr,
+      amountKr: p.amountKr,currency:p.currency,
     });
   }
 
@@ -77,7 +76,7 @@ export async function receiptsFor(userId: string): Promise<Receipt[]> {
       kind: "Kontingent",
       description: `${m.type.name} — ${m.type.seasonName}`,
       clubOrCoach: m.type.club.name,
-      amountKr: m.priceKr,
+      amountKr: m.priceKr,currency:m.currency,
     });
   }
 
@@ -88,7 +87,7 @@ export async function receiptsFor(userId: string): Promise<Receipt[]> {
       kind: "Sæsonhold",
       description: s.team.name,
       clubOrCoach: s.team.club.name,
-      amountKr: s.priceKr,
+      amountKr: s.priceKr,currency:s.currency,
     });
   }
 
@@ -99,7 +98,7 @@ export async function receiptsFor(userId: string): Promise<Receipt[]> {
       kind: "Klippekort",
       description: `${p.name} — ${p.sessions} timer`,
       clubOrCoach: "Klubben",
-      amountKr: p.priceKr,
+      amountKr: p.priceKr,currency:p.currency,
     });
   }
 
@@ -110,7 +109,7 @@ export async function receiptsFor(userId: string): Promise<Receipt[]> {
       kind: "Pakkeforløb",
       description: `${p.name} — ${p.sessions} timer`,
       clubOrCoach: p.coachProfile.user.name,
-      amountKr: p.priceKr,
+      amountKr: p.priceKr,currency:p.currency,
     });
   }
 

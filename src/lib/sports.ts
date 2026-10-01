@@ -1,3 +1,4 @@
+import { MARKETS, countryLabel } from "./international";
 // Sportsgrene, lande og sprog for RacketBuddy.
 //
 // Platformen dækker ketsjersport bredt, men tennis er hovedsporet: det er
@@ -39,22 +40,9 @@ export const SURFACE_LABELS: Record<string, Record<BaseLocale, string>> = {
   INDE: { da: "Indendørs", en: "Indoor", de: "Halle", sv: "Inomhus", no: "Innendørs" },
 };
 
-// Hvert land har sit eget sprog som standard. Før faldt alt uden for
-// Danmark tilbage på engelsk, hvilket er det dårligste valg begge veje:
-// en svensker læser dansk lettere end engelsk, og en tysker forventer tysk.
-//
-// `live` siger, om vi rent faktisk sælger der. Landene står i listen, fordi
-// sproget og valutaen er klar — men vi tilbyder ikke et land, hvor der ikke
-// er en eneste klub. En tysker, der får siden på tysk og så ingen baner
-// finder, er en dårligere oplevelse end en tysker, der læser dansk.
-export const COUNTRIES = [
-  { code: "DK", live: true, flag: "🇩🇰", da: "Danmark", en: "Denmark", de: "Dänemark", sv: "Danmark", no: "Danmark", currency: "kr", defaultLocale: "da" },
-  { code: "SE", live: false, flag: "🇸🇪", da: "Sverige", en: "Sweden", de: "Schweden", sv: "Sverige", no: "Sverige", currency: "kr", defaultLocale: "sv" },
-  { code: "NO", live: false, flag: "🇳🇴", da: "Norge", en: "Norway", de: "Norwegen", sv: "Norge", no: "Norge", currency: "kr", defaultLocale: "no" },
-  { code: "DE", live: false, flag: "🇩🇪", da: "Tyskland", en: "Germany", de: "Deutschland", sv: "Tyskland", no: "Tyskland", currency: "€", defaultLocale: "de" },
-] as const;
-
-export type CountryCode = (typeof COUNTRIES)[number]["code"];
+// Discovery is open in supported European and North American Connect markets.
+export const COUNTRIES = MARKETS.map(c => ({ ...c, da: countryLabel(c.code, 'da'), en: c.name, de: countryLabel(c.code, 'de'), sv: countryLabel(c.code, 'sv'), no: countryLabel(c.code, 'no') }));
+export type CountryCode = string;
 
 // Sprogene, der har hver sin ordbog.
 export const BASE_LOCALES = ["da", "en", "de", "sv", "no"] as const;
@@ -112,7 +100,7 @@ export function countryName(code: string, locale: Locale): string {
 }
 
 export function currencyFor(code: string): string {
-  return COUNTRIES.find((c) => c.code === code)?.currency ?? "kr";
+  return COUNTRIES.find((c) => c.code === code)?.currency ?? "DKK";
 }
 
 export function sportLabel(sport: string, locale: Locale): string {
@@ -162,20 +150,5 @@ export function sportColor(sport: string): string {
 /** Landene, vi rent faktisk sælger i. Resten venter. */
 export const LIVE_COUNTRIES = COUNTRIES.filter((c) => c.live);
 
-/**
- * Sprogene, man kan vælge nu.
- *
- * Kun dansk indtil videre. Ordbøgerne er færdige for alle seks, og de står
- * grå i vælgeren, så de fortæller, hvor vi er på vej hen — men et sprog,
- * man kan vælge, er en påstand om et marked. Vi sælger kun i Danmark.
- *
- * Åbnes et marked, sættes både `live` på landet og flaget her.
- */
-export const LOCALE_LIVE: Record<Locale, boolean> = {
-  da: true,
-  en: false,
-  "en-US": false,
-  de: false,
-  sv: false,
-  no: false,
-};
+/** Language is independent from country and the currency of a booked venue. */
+export const LOCALE_LIVE: Record<Locale, boolean> = { da: true, en: true, 'en-US': true, de: true, sv: true, no: true };

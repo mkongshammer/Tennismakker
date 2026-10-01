@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { useInternational, money, tr } from "../lib/international";
+import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { api } from "../lib/api";
 import { AppHeading, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, SPORT_LABELS, sportColor } from "../lib/theme";
@@ -8,58 +10,59 @@ import { CourtGraphic } from "../lib/CourtGraphic";
 import { useScreenData } from "../lib/useScreenData";
 import { CourtScene } from "../lib/CourtScene";
 
-function Stars({ average, count }) {
-  if (!count) return <Text style={styles.newBadge}>Ny på RacketBuddy</Text>;
+function Stars({ average, count }) {useInternational();
+  if (!count) return <Text style={styles.newBadge}>{tr("Ny p\xE5 RacketBuddy")}</Text>;
   return (
     <Text style={styles.rating}>
       <Text style={{ color: colors.court }}>★</Text> {average.toFixed(1)}{" "}
       <Text style={styles.meta}>({count})</Text>
-    </Text>
-  );
+    </Text>);
+
 }
 
 export default function ClubsScreen({ navigation }) {
+  const { country } = useInternational();
   const [sport, setSport] = useSport();
   const [query, setQuery] = useState("");
-  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport), [sport]));
+  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport, country), [sport, country]));
   const state = { loading, error, clubs: data?.clubs ?? [] };
   const needle = query.trim().toLocaleLowerCase("da-DK");
-  const clubs = state.clubs.filter(c => `${c.name} ${c.city}`.toLocaleLowerCase("da-DK").includes(needle));
+  const clubs = state.clubs.filter((c) => `${c.name} ${c.city}`.toLocaleLowerCase("da-DK").includes(needle));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
         <FlatList
-          contentContainerStyle={pageContent}
-          data={state.loading ? [] : clubs}
-          ListHeaderComponent={<>
-            <AppHeading eyebrow="DIT NÆSTE SPIL" title="Mere tid på banen." subtitle="Find en klub, vælg en tid, og kom ud at spille." />
+        contentContainerStyle={pageContent}
+        data={state.loading ? [] : clubs}
+        ListHeaderComponent={<>
+            <PreferencesPicker /><AppHeading eyebrow={tr("DIT N\xC6STE SPIL")} title={tr("Mere tid p\xE5 banen.")} subtitle={tr("Find en klub, v\xE6lg en tid, og kom ud at spille.")} />
             <View style={styles.hero}>
-              <View style={styles.heroCopy}><Text style={styles.heroEyebrow}>BANEN ER DIN</Text><Text style={styles.heroTitle}>Klar til næste\nserve?</Text><Text style={styles.heroHint}>Dit næste spil starter med en ledig bane.</Text></View>
+              <View style={styles.heroCopy}><Text style={styles.heroEyebrow}>{tr("BANEN ER DIN")}</Text><Text style={styles.heroTitle}>{tr("Klar til n\xE6ste\\nserve?")}</Text><Text style={styles.heroHint}>{tr("Dit n\xE6ste spil starter med en ledig bane.")}</Text></View>
               <View style={styles.heroArt}><CourtScene height={180} /></View>
             </View>
-            <Text style={styles.label}>Hvad spiller du?</Text>
+            <Text style={styles.label}>{tr("Hvad spiller du?")}</Text>
             <SportPicker value={sport} onChange={setSport} />
-            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel="Søg klub eller by" placeholder="Søg klub eller by" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel="Ryd søgning" onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
-            <View style={styles.resultRow}><Text style={styles.resultTitle}>{SPORT_LABELS[sport]}klubber</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? "klub" : "klubber"}</Text>}</View>
+            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("S\xF8g klub eller by")} placeholder={tr("S\xF8g klub eller by")} placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
+            <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}
-          keyExtractor={(c) => c.id}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={refresh}
-            />
-          }
-          ListEmptyComponent={
-            state.loading ? <Loading label="Finder klubber…" /> : error && !data ? null : <Empty title={needle ? "Ingen klubber matcher" : "Flere baner på vej"} icon="⌕" action={needle ? "Ryd søgning" : undefined} onAction={() => setQuery("")}>{needle ? "Prøv et andet klubnavn eller en anden by." : "Der er ingen klubber for denne sportsgren endnu. Prøv en anden sportsgren ovenfor."}</Empty>
-          }
-          renderItem={({ item }) => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Se ledige tider hos ${item.name}`}
-              style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
-              onPress={() => navigation.navigate("Klub", { slug: item.slug, name: item.name })}
-            >
+        keyExtractor={(c) => c.id}
+        refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={refresh} />
+
+        }
+        ListEmptyComponent={
+        state.loading ? <Loading label={tr("Finder klubber\u2026")} /> : error && !data ? null : <Empty title={needle ? tr("Ingen klubber matcher") : tr("Flere baner p\xE5 vej")} icon="⌕" action={needle ? tr("Ryd s\xF8gning") : undefined} onAction={() => setQuery("")}>{needle ? tr("Pr\xF8v et andet klubnavn eller en anden by.") : tr("Der er ingen klubber for denne sportsgren endnu. Pr\xF8v en anden sportsgren ovenfor.")}</Empty>
+        }
+        renderItem={({ item }) =>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Se ledige tider hos ${item.name}`}
+          style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
+          onPress={() => navigation.navigate("Klub", { slug: item.slug, name: item.name })}>
+
               <Card style={{ padding: 0, overflow: "hidden" }}>
                 <View style={styles.clubBody}>
                 <View style={styles.thumb}>
@@ -72,17 +75,17 @@ export default function ClubsScreen({ navigation }) {
                   </View>
                   <Text style={styles.meta}>{item.city}</Text>
                   <Text style={styles.meta}>
-                    {item.courtCount} baner
-                  </Text>
+                    {item.courtCount}{tr("baner")}
+                </Text>
                 </View>
                 </View>
-                <View style={styles.cardFoot}><Text style={styles.price}>Fra {item.priceHour} kr. <Text style={styles.meta}>/ time</Text></Text><View style={styles.cardAction}><Text style={styles.actionText}>Se tider</Text><Text style={styles.arrow}>↗</Text></View></View>
+                <View style={styles.cardFoot}><Text style={styles.price}>{tr("Fra") + " "}{money(item.priceHour, item.currency)} <Text style={styles.meta}>{tr("/ time")}</Text></Text><View style={styles.cardAction}><Text style={styles.actionText}>{tr("Se tider")}</Text><Text style={styles.arrow}>↗</Text></View></View>
               </Card>
             </Pressable>
-          )}
-        />
-    </View>
-  );
+        } />
+
+    </View>);
+
 }
 
 const styles = StyleSheet.create({
@@ -110,5 +113,5 @@ const styles = StyleSheet.create({
   cardFoot: { flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderColor: colors.border },
   cardAction: { flexDirection: "row", alignItems: "center", gap: 10 },
   actionText: { color: colors.court, fontWeight: "700", fontSize: 14 },
-  arrow: { color: colors.court, fontSize: 22 },
+  arrow: { color: colors.court, fontSize: 22 }
 });

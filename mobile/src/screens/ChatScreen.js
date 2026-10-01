@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { tr, useInternational } from "../lib/international";import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -6,8 +6,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
-} from "react-native";
+  View } from
+"react-native";
 import { api } from "../lib/api";
 import { Button, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent } from "../lib/theme";
@@ -17,7 +17,7 @@ import { mergeMessages } from "../lib/messages.mjs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function ChatScreen({ route }) {
+export default function ChatScreen({ route }) {useInternational();
   const { id } = route.params;
   const state = useScreenData(useCallback(() => api.thread(id), [id]), { pollMs: 8000 });
   const load = state.refresh;
@@ -30,7 +30,7 @@ export default function ChatScreen({ route }) {
   const nearBottom = useRef(true);
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
-  useEffect(() => { setSent([]); setDraft(""); setSendError(null); nearBottom.current = true; }, [id]);
+  useEffect(() => {setSent([]);setDraft("");setSendError(null);nearBottom.current = true;}, [id]);
 
   const send = async () => {
     const body = draft.trim();
@@ -42,7 +42,7 @@ export default function ChatScreen({ route }) {
       const msg = await api.sendMessage(id, body);
       setDraft("");
       nearBottom.current = true;
-      setSent(messages => mergeMessages(messages, [msg]));
+      setSent((messages) => mergeMessages(messages, [msg]));
     } catch (e) {
       setSendError(e.message);
     } finally {
@@ -58,9 +58,9 @@ export default function ChatScreen({ route }) {
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.mist }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={headerHeight}
-    >
-      <Text style={styles.subject}>Om: {state.data.subject}</Text>
+      keyboardVerticalOffset={headerHeight}>
+
+      <Text style={styles.subject}>{tr("Om:") + " "}{state.data.subject}</Text>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {sendError && <Text accessibilityRole="alert" style={{ padding: 12, color: colors.court }}>{sendError}</Text>}
 
@@ -75,14 +75,14 @@ export default function ChatScreen({ route }) {
           nearBottom.current = contentSize.height - contentOffset.y - layoutMeasurement.height < 100;
         }}
         scrollEventThrottle={100}
-        onContentSizeChange={() => { if (nearBottom.current) listRef.current?.scrollToEnd({ animated: false }); }}
+        onContentSizeChange={() => {if (nearBottom.current) listRef.current?.scrollToEnd({ animated: false });}}
         ListEmptyComponent={
-          <Text style={styles.empty}>
-            Ingen beskeder endnu — skriv den første og aftal en tid.
-          </Text>
+        <Text style={styles.empty}>{tr("Ingen beskeder endnu \u2014 skriv den f\xF8rste og aftal en tid.")}
+
+        </Text>
         }
-        renderItem={({ item }) => (
-          <View style={item.mine ? styles.rowMine : styles.rowTheirs}>
+        renderItem={({ item }) =>
+        <View style={item.mine ? styles.rowMine : styles.rowTheirs}>
             <View style={[styles.bubble, item.mine ? styles.mine : styles.theirs]}>
               <Text style={item.mine ? styles.textMine : styles.textTheirs}>{item.body}</Text>
               <Text style={item.mine ? styles.timeMine : styles.timeTheirs}>
@@ -90,24 +90,24 @@ export default function ChatScreen({ route }) {
               </Text>
             </View>
           </View>
-        )}
-      />
+        } />
+
 
       <View style={{ backgroundColor: colors.chalk, paddingBottom: Math.max(12, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border }}><View style={styles.composer}>
         <TextInput
-          style={styles.input}
-          value={draft}
-          onChangeText={setDraft}
-          placeholder="Skriv en besked…"
-          accessibilityLabel="Besked"
-          editable={!sending}
-          multiline
-          maxLength={2000}
-        />
-        <Button title="Send" onPress={send} loading={sending} disabled={!draft.trim()} />
+            style={styles.input}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={tr("Skriv en besked\u2026")}
+            accessibilityLabel={tr("Besked")}
+            editable={!sending}
+            multiline
+            maxLength={2000} />
+
+        <Button title={tr("Send")} onPress={send} loading={sending} disabled={!draft.trim()} />
       </View></View>
-    </KeyboardAvoidingView>
-  );
+    </KeyboardAvoidingView>);
+
 }
 
 const styles = StyleSheet.create({
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border
   },
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     padding: 12,
     backgroundColor: "#fff",
     alignItems: "flex-end",
-    width: "100%", maxWidth: 960, alignSelf: "center",
+    width: "100%", maxWidth: 960, alignSelf: "center"
   },
   input: {
     flex: 1,
@@ -147,6 +147,6 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     fontSize: 16,
     color: colors.ink,
-    minHeight: 48,
-  },
+    minHeight: 48
+  }
 });

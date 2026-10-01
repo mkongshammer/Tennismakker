@@ -7,6 +7,8 @@ export type MapClub = {
   latitude: number | null;
   longitude: number | null;
   priceHour: number;
+  currency: string;
+  country: string;
   courtCount: number;
   surfaces: string[];
   color: string;

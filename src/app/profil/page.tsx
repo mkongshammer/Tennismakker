@@ -1,3 +1,4 @@
+import {formatMoney,formatDate} from "../../lib/international";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -28,7 +29,7 @@ export default async function ProfilPage({
   const query = await searchParams;
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  const t = translator((await getPreferences()).locale);
+  const prefs=await getPreferences(),t=translator(prefs.locale);
 
   const coachRequests = user!.coachProfile
     ? await db.booking.findMany({
@@ -222,7 +223,7 @@ export default async function ProfilPage({
                     : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
                 <p className="break-words text-sm capitalize text-slate/60">
-                  {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr ·{" "}
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
                   {t(
                     b.status === "REQUESTED"
                       ? "profile.awaitingCoach"
@@ -318,7 +319,7 @@ export default async function ProfilPage({
               <li key={b.id} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{b.user.name}</p>
                 <p className="break-words text-sm capitalize text-slate/60">
-                  {format(b.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })} · {b.priceKr} kr (din andel udbetales automatisk)
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} (din andel udbetales automatisk)
                 </p>
               </li>
             ))}

@@ -78,10 +78,11 @@ export async function GET(req: Request) {
       startsAt: b.startsAt.toISOString(),
       endsAt: b.endsAt.toISOString(),
       priceKr: b.priceKr,
+      currency:b.currency,timeZone:b.timeZone,
       title:
         b.kind === "COURT"
           ? `${b.court?.club.name} — ${b.court?.name}`
-          : `Trænertime: ${b.coachProfile?.user.name}`,
+          : `${b.coachProfile?.user.name}`,
       access: bookingDoorAccess(b, now),
     })),
   });
@@ -181,6 +182,8 @@ export async function POST(req: Request) {
       data: {
         kind: "COACH",
         status: "REQUESTED",
+      currency: coach.currency,
+      timeZone: coach.timeZone,
         startsAt,
         endsAt: lessonEndsAt,
         priceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
@@ -200,6 +203,7 @@ export async function POST(req: Request) {
           playerLevel: auth.user.level,
           startsAt,
           priceKr: booking.priceKr,
+          currency:booking.currency,timeZone:booking.timeZone,locale:coachUser.locale,
           withCredit: credits.length > 0,
         })
       );

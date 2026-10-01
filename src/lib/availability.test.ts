@@ -6,7 +6,7 @@ import {hourDate} from './slots';
 for(const type of ['nativeAdapter','manualAdapter','icalAdapter'])test(`${type} hides partial overlaps and keeps adjacent times`,async()=>{
  const day=new Date(Date.now()+3*86400000);day.setHours(10,0,0,0);const end=dates.addHours(day,3);
  let query:any;
- const club={courts:[{id:'court',name:'Bane'}],rules:[],priceRules:[],openHour:10,closeHour:13,lastMinuteHours:0,lastSyncAt:new Date()};
+ const club={timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,courts:[{id:'court',name:'Bane'}],rules:[],priceRules:[],openHour:10,closeHour:13,lastMinuteHours:0,lastSyncAt:new Date()};
  const db={club:{findUnique:async()=>club},booking:{findMany:async({where}:any)=>{query=where;return [{courtId:'court',startsAt:dates.addMinutes(day,-30),endsAt:dates.addMinutes(day,30)}];}},guestSlot:{findMany:async()=>[0,1,2].map(h=>({courtId:'court',court:club.courts[0],startsAt:dates.addHours(day,h),endsAt:dates.addHours(day,h+1),priceKr:100}))},externalBusy:{findMany:async()=>[]}};
  const api=loadIsolatedModule('src/lib/integrations/adapters.ts',{'date-fns':dates,'../db':{db},'../pricing':{priceFor:()=>100},'../slots':{hourDate}});
  const result=await api[type].getAvailability({clubId:'club',from:day,until:end});assert.deepEqual(result.slots.map((s:any)=>s.startsAt.getHours()),[11,12]);

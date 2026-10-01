@@ -4,6 +4,8 @@
 // et sidskift. Ingen af delene? Dansk og tennis — platformen starter i
 // Danmark, og tennis er hovedsporet.
 
+import { headers } from "next/headers";
+import { marketFor } from "./international";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "./session";
 import { DEFAULT_SPORT, type Locale, type Sport, SPORTS, LOCALES } from "./sports";
@@ -43,12 +45,14 @@ export async function getPreferences(): Promise<Preferences> {
   const cookieCountry = jar.get(`${COOKIE}_country`)?.value;
   const cookieLocale = jar.get(`${COOKIE}_locale`)?.value;
 
+  const accepted=(await headers()).get("accept-language") ?? "da";
+  const preferred=accepted.split(",").map(v=>v.trim().split(";")[0]).map(v=>v==="en-US"?v:v.split("-")[0]).find(v=>(LOCALES as readonly string[]).includes(v));
   return {
-    country: cookieCountry ?? "DK",
+    country: marketFor(cookieCountry) ? cookieCountry! : "DK",
     locale:
       cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
         ? (cookieLocale as Locale)
-        : "da",
+        : (preferred ?? "en") as Locale,
     sport,
     countryChosen: Boolean(cookieCountry),
   };

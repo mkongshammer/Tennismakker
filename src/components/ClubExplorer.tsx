@@ -1,4 +1,4 @@
-"use client";
+"use client";import { useWebsiteInternational } from "./InternationalProvider";
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -9,15 +9,15 @@ import { SURFACES } from "../lib/levels";
 // Leaflet kræver window, så kortet må ikke renderes på serveren.
 const ClubMapView = dynamic(() => import("./ClubMapView"), {
   ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-slate/50">
-      Henter kort
-    </div>
-  ),
+  loading: () =>
+  <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-slate/50">Loading map…
+
+  </div>
+
 });
 
 /** Banemotiv i klubbens farve — vi har ingen fotos, så banen selv er billedet. */
-function CourtGraphic({ color }: { color: string }) {
+function CourtGraphic({ color }: {color: string;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   return (
     <svg viewBox="0 0 120 72" className="h-full w-full" aria-hidden="true">
       <rect width="120" height="72" fill={color} />
@@ -32,21 +32,21 @@ function CourtGraphic({ color }: { color: string }) {
       </g>
       {/* nettet står på tværs og rager ud over sidelinjerne */}
       <line x1="60" y1="6" x2="60" y2="66" stroke="#FAF7F0" strokeWidth="2.6" />
-    </svg>
-  );
+    </svg>);
+
 }
 
-function Rating({ average, count }: { average: number; count: number }) {
-  if (count === 0) return <span className="text-sm text-slate/45">Ny på RacketBuddy</span>;
+function Rating({ average, count }: {average: number;count: number;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
+  if (count === 0) return <span className="text-sm text-slate/45">{tr("Ny p\xE5 RacketBuddy")}</span>;
   return (
     <span className="text-sm">
       <span className="text-court">★</span> {average.toFixed(1)}{" "}
       <span className="text-slate/45">({count})</span>
-    </span>
-  );
+    </span>);
+
 }
 
-export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
+export function ClubExplorer({ clubs, country = "DK", locale = "da" }: {clubs: MapClub[];country?: string;locale?: import("../lib/sports").Locale;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false); // kun mobil
   const cardRefs = useRef<Record<string, HTMLLIElement | null>>({});
@@ -58,32 +58,32 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
     if (!activeId) return;
     cardRefs.current[activeId]?.scrollIntoView({
       block: "nearest",
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ?
+      "auto" :
+      "smooth"
     });
   }, [activeId]);
 
-  const list = (
-    <ul className="space-y-4">
+  const list =
+  <ul className="space-y-4">
       {clubs.map((club) => {
-        const active = club.id === activeId;
-        return (
-          <li
-            key={club.id}
-            ref={(el) => {
-              cardRefs.current[club.id] = el;
-            }}
-            onMouseEnter={() => setActiveId(club.id)}
-            onMouseLeave={() => setActiveId(null)}
-          >
+      const active = club.id === activeId;
+      return (
+        <li
+          key={club.id}
+          ref={(el) => {
+            cardRefs.current[club.id] = el;
+          }}
+          onMouseEnter={() => setActiveId(club.id)}
+          onMouseLeave={() => setActiveId(null)}>
+
             <Link
-              href={`/klub/${club.slug}`}
-              onFocus={() => setActiveId(club.id)}
-              className={`flex gap-3 rounded-xl border bg-white p-3 transition-shadow sm:gap-4 ${
-                active ? "border-court shadow-md" : "border-slate/10"
-              }`}
-            >
+            href={`/klub/${club.slug}`}
+            onFocus={() => setActiveId(club.id)}
+            className={`flex gap-3 rounded-xl border bg-white p-3 transition-shadow sm:gap-4 ${
+            active ? "border-court shadow-md" : "border-slate/10"}`
+            }>
+
               <div className="h-[64px] w-[96px] shrink-0 overflow-hidden rounded-lg sm:h-[72px] sm:w-[120px]">
                 <CourtGraphic color={club.color} />
               </div>
@@ -98,25 +98,25 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
                   {club.city}
                 </p>
                 <p className="mt-1 text-sm text-slate/60">
-                  {club.courtCount} baner ·{" "}
+                  {club.courtCount}{" " + tr("baner \xB7")}{" "}
                   {club.surfaces.map((s) => SURFACES[s] ?? s).join(", ")}
                 </p>
                 <p className="mt-2">
-                  <span className="font-bold">fra {club.priceHour} kr</span>
-                  <span className="text-slate/60"> / time</span>
-                  {club.guestSlotsToday > 0 && (
-                    <span className="ml-2 rounded-full bg-court/10 px-2 py-0.5 text-xs font-bold text-court-dark">
-                      {club.guestSlotsToday} ledige i dag
-                    </span>
-                  )}
+                  <span className="font-bold">{tr("fra") + " "}{money(club.priceHour, club.currency)}</span>
+                  <span className="text-slate/60">{" " + tr("/ time")}</span>
+                  {club.guestSlotsToday > 0 &&
+                <span className="ml-2 rounded-full bg-court/10 px-2 py-0.5 text-xs font-bold text-court-dark">
+                      {club.guestSlotsToday}{tr("ledige i dag")}
+                </span>
+                }
                 </p>
               </div>
             </Link>
-          </li>
-        );
-      })}
-    </ul>
-  );
+          </li>);
+
+    })}
+    </ul>;
+
 
   return (
     <>
@@ -124,41 +124,41 @@ export function ClubExplorer({ clubs }: { clubs: MapClub[] }) {
       <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div>{list}</div>
         <div className="sticky top-6 h-[calc(100vh-8rem)] overflow-hidden rounded-xl border border-slate/10">
-          {mappable.length > 0 ? (
-            <ClubMapView clubs={mappable} activeId={activeId} onSelect={setActiveId} />
-          ) : (
-            <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">
-              Ingen klubber har en adresse endnu.
-            </div>
-          )}
+          {mappable.length > 0 ?
+          <ClubMapView country={country} locale={locale} clubs={mappable} activeId={activeId} onSelect={setActiveId} /> :
+
+          <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">{tr("Ingen klubber har en adresse endnu.")}
+
+          </div>
+          }
         </div>
       </div>
 
       {/* Telefon: listen som udgangspunkt, kortet på en knap */}
       <div className="lg:hidden">
-        {showMap ? (
-          <div className="h-[70vh] overflow-hidden rounded-xl border border-slate/10">
-            {mappable.length > 0 ? (
-              <ClubMapView clubs={mappable} activeId={activeId} onSelect={setActiveId} />
-            ) : (
-              <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">
-                Ingen klubber har en adresse endnu.
-              </div>
-            )}
+        {showMap ?
+        <div className="h-[70vh] overflow-hidden rounded-xl border border-slate/10">
+            {mappable.length > 0 ?
+          <ClubMapView country={country} locale={locale} clubs={mappable} activeId={activeId} onSelect={setActiveId} /> :
+
+          <div className="flex h-full items-center justify-center p-6 text-center text-sm text-slate/50">{tr("Ingen klubber har en adresse endnu.")}
+
           </div>
-        ) : (
-          list
-        )}
+          }
+          </div> :
+
+        list
+        }
 
         <div className="sticky bottom-[max(1.25rem,env(safe-area-inset-bottom))] mt-5 flex justify-center">
           <button
             onClick={() => setShowMap((v) => !v)}
-            className="min-h-[44px] rounded-full bg-ink px-6 py-3 font-semibold text-chalk shadow-lg"
-          >
+            className="min-h-[44px] rounded-full bg-ink px-6 py-3 font-semibold text-chalk shadow-lg">
+
             {showMap ? "Vis liste" : "Vis kort"}
           </button>
         </div>
       </div>
-    </>
-  );
+    </>);
+
 }

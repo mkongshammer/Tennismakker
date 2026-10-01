@@ -1,3 +1,5 @@
+import {marketFor} from "../../../../lib/international";
+import {validArea} from "../../../../lib/profile-location";
 import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { userFromRequest } from "../../../../lib/session";
@@ -10,14 +12,18 @@ export async function OPTIONS() { return preflight(); }
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
-  const selectedRegion = isDanishRegion(rawRegion) ? rawRegion : regionForArea(rawRegion) ?? "";
+
   const levelParam = url.searchParams.get("niveau");
   const level = levelParam ? Number(levelParam) : null;
   const me = await userFromRequest(req);
+  const country=me?.country ?? url.searchParams.get("land") ?? "DK";
+  if(!marketFor(country)) return apiError("Unsupported country.");
+  const selectedRegion=country==="DK"?(isDanishRegion(rawRegion)?rawRegion:regionForArea(rawRegion)??""):rawRegion;
 
   const requests = await db.matchRequest.findMany({
     where: {
       status: "OPEN",
+      requester:{country},
       ...(level && level >= 1 && level <= 7 ? { level } : {}),
     },
     include: { requester: true },
@@ -26,14 +32,14 @@ export async function GET(req: Request) {
   });
 
   const filtered = selectedRegion
-    ? requests.filter((request) => regionForArea(request.area) === selectedRegion)
+    ? requests.filter((request) => country==="DK" ? regionForArea(request.area) === selectedRegion : request.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
     : requests;
 
   return json({
     matches: filtered.map((r: any) => ({
       id: r.id,
       message: r.message,
-      area: regionForArea(r.area) ?? r.area,
+      area: country==="DK" ? regionForArea(r.area) ?? r.area : r.area,
       level: r.level,
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
@@ -52,7 +58,7 @@ export async function POST(req: Request) {
   const message = String(body.message ?? "").trim();
   const area = String(body.area ?? "").trim();
   if (!message) return apiError("Skriv en besked.");
-  if (!isDanishRegion(area)) return apiError("Vælg en af de fem danske regioner.");
+  if (!validArea(auth.user.country,area)) return apiError("Choose a valid city/area.");
 
   const created = await db.matchRequest.create({
     data: {

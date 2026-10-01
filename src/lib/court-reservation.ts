@@ -6,8 +6,11 @@ export async function createCourtReservation(args:{data:Prisma.BookingUncheckedC
  if(!courtId)return db.booking.create(args);
  return db.$transaction(async tx=>{
   await tx.$queryRaw`SELECT id FROM "Court" WHERE id=${courtId} FOR UPDATE`;
+  const venue=await tx.court.findUniqueOrThrow({where:{id:courtId},include:{club:true}});
+  await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${venue.clubId} FOR UPDATE`;
+  const club=await tx.club.findUniqueOrThrow({where:{id:venue.clubId}});
   const where={courtId,startsAt:{lt:new Date(endsAt)},endsAt:{gt:new Date(startsAt)}};
   if(await tx.booking.findFirst({where:{...where,OR:[{status:'CONFIRMED'},{status:'HOLD',OR:[{checkoutParams:{not:null}},{holdExpiresAt:null},{holdExpiresAt:{gt:new Date()}}]}]}})||await tx.externalBusy.findFirst({where}))throw new CourtReservationConflict('Tiden er netop blevet optaget. Vælg en anden tid.');
-  return tx.booking.create(args);
+  return tx.booking.create({data:{...args.data,currency:club.currency,timeZone:club.timeZone}});
  });
 }

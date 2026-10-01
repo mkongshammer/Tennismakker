@@ -1,12 +1,13 @@
 "use server";
 
 import { createMatchRequest as baseCreateMatchRequest } from "../../../lib/actions";
-import { isDanishRegion } from "../../../lib/regions";
+import {validArea} from "../../../lib/profile-location";
+import {getCurrentUser} from "../../../lib/session";
 
 export async function createMatchRequest(prev: unknown, formData: FormData) {
   const area = String(formData.get("area") ?? "").trim();
-  if (!isDanishRegion(area)) {
-    return { error: "Vælg en af de fem danske regioner." };
+  if (!validArea((await getCurrentUser())?.country??"DK",area)) {
+    return { error: "Choose a valid city/area." };
   }
   return baseCreateMatchRequest(prev, formData);
 }

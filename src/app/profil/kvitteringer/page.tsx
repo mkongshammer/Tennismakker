@@ -1,3 +1,5 @@
+import {formatMoney,formatDate} from "../../../lib/international";
+import {getPreferences} from "../../../lib/preferences";
 // Kvitteringer.
 //
 // Alt personen har betalt hos os, ét sted. Halbooking kalder det Fakturaer
@@ -15,8 +17,8 @@ export default async function KvitteringerPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const receipts = await receiptsFor(user.id);
-  const total = receipts.reduce((sum, r) => sum + r.amountKr, 0);
+  const prefs=await getPreferences(),receipts=await receiptsFor(user.id,prefs.locale);
+  const totals=new Map<string,number>();for(const r of receipts)totals.set(r.currency,(totals.get(r.currency)??0)+r.amountKr);
 
   return (
     <div className="space-y-6">
@@ -47,13 +49,13 @@ export default async function KvitteringerPage() {
                 {receipts.map((r) => (
                   <tr key={`${r.kind}-${r.id}`} className="border-b border-slate/10">
                     <td className="py-2 pr-3 whitespace-nowrap font-data tabular-nums">
-                      {r.date.toLocaleDateString("da-DK")}
+                      {formatDate(r.date,prefs.locale,"UTC",{day:"numeric",month:"short",year:"numeric"})}
                     </td>
                     <td className="py-2 pr-3 whitespace-nowrap">{r.kind}</td>
                     <td className="py-2 pr-3">{r.description}</td>
                     <td className="py-2 pr-3">{r.clubOrCoach}</td>
                     <td className="py-2 text-right font-data tabular-nums">
-                      {r.amountKr.toLocaleString("da-DK")} kr
+                      {formatMoney(r.amountKr,r.currency,prefs.locale)}
                     </td>
                   </tr>
                 ))}
@@ -64,7 +66,7 @@ export default async function KvitteringerPage() {
                     I alt
                   </td>
                   <td className="py-3 text-right font-data font-bold tabular-nums">
-                    {total.toLocaleString("da-DK")} kr
+                    {Array.from(totals,([currency,total])=><p key={currency}>{formatMoney(total,currency,prefs.locale)}</p>)}
                   </td>
                 </tr>
               </tfoot>

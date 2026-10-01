@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
 import { issueToken } from "../../../../../lib/session";
-import { isDanishRegion } from "../../../../../lib/regions";
+import { profileLocation } from "../../../../../lib/profile-location";
+import { phrase } from "../../../../../lib/phrases";
+import type { Locale } from "../../../../../lib/sports";
 import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
 
 export const dynamic = "force-dynamic";
@@ -13,19 +15,18 @@ export async function POST(req: Request) {
   const password = String(body.password ?? "");
   const name = String(body.name ?? "").trim();
   const level = Number(body.level ?? 3);
-  const area = String(body.area ?? "").trim();
+  let location;
+  try { location=profileLocation(body); } catch(e) { return apiError((e as Error).message); }
+  const err=(message:string)=>apiError(phrase(message,location.locale as Locale));
 
-  if (!email.includes("@") || !name) {
-    return apiError("Udfyld navn og en gyldig e-mail.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name || name.length>150 || !Number.isFinite(level)) {
+    return err("Udfyld navn og en gyldig e-mail.");
   }
-  if (password.length < 8) {
-    return apiError("Adgangskoden skal være mindst 8 tegn.");
-  }
-  if (!isDanishRegion(area)) {
-    return apiError("Vælg en af de fem danske regioner.");
+  if (password.length < 8 || Buffer.byteLength(password)>72) {
+    return err("Adgangskoden skal være mindst 8 tegn.");
   }
   if (await db.user.findUnique({ where: { email } })) {
-    return apiError("Der findes allerede en konto med den e-mail.");
+    return err("Der findes allerede en konto med den e-mail.");
   }
 
   const user = await db.user.create({
@@ -34,7 +35,8 @@ export async function POST(req: Request) {
       name,
       role: "PLAYER",
       level: Math.min(7, Math.max(1, level)),
-      area,
+      ...location,
+      termsAcceptedAt: new Date(),
       passwordHash: await bcrypt.hash(password, 10),
     },
   });

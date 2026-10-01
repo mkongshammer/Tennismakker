@@ -1,3 +1,4 @@
+import { profileLocation } from "../../../../lib/profile-location";
 import {walletBlocksDeletion} from "../../../../lib/wallet";
 import { json, preflight, publicUser, requireUser } from "../../../../lib/api/helpers";
 import { db } from "../../../../lib/db";
@@ -47,4 +48,13 @@ export async function DELETE(req: Request) {
   });
 
   return json({ ok: true });
+}
+
+/** Saves discovery preferences without changing a club or coach payout account. */
+export async function POST(req: Request) {
+  const auth=await requireUser(req); if ('response' in auth) return auth.response;
+  const body=await req.json().catch(()=>({}));
+  try {const data=profileLocation({country:body.country??auth.user.country,locale:body.locale??auth.user.locale,area:body.area??auth.user.area});
+    const user=await db.user.update({where:{id:auth.user.id},data,include:{coachProfile:true}}); return json({user:publicUser(user)});
+  } catch(e) {return json({error:(e as Error).message},400);}
 }

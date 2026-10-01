@@ -10,6 +10,8 @@ import { getCurrentUser } from "../../../../lib/session";
 import { SubmitButton } from "../../../../components/SubmitButton";
 import { PackageForm } from "./PackageForm";
 import { deactivatePackage } from "./actions";
+import {getPreferences} from '../../../../lib/preferences';
+import {formatMoney} from '../../../../lib/international';
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,8 @@ export default async function PakkerPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (!user.coachProfile) redirect("/profil");
+  const currency=user.coachProfile.currency;
+  const {locale}=await getPreferences();
 
   const [packages, purchases] = await Promise.all([
     db.coachPackage.findMany({
@@ -41,7 +45,7 @@ export default async function PakkerPage() {
         </p>
       </div>
 
-      <PackageForm priceHour={user.coachProfile.priceHour} />
+      <PackageForm priceHour={user.coachProfile.priceHour} currency={user.coachProfile.currency} />
 
       {packages.length > 0 && (
         <section>
@@ -55,7 +59,7 @@ export default async function PakkerPage() {
                     {!p.active && <span className="ml-2 text-xs text-slate-light">slået fra</span>}
                   </p>
                   <p className="text-sm text-slate">
-                    {p.sessions} timer · {p.priceKr} kr · {Math.round(p.priceKr / p.sessions)} kr pr. time
+                    {p.sessions} timer · {formatMoney(p.priceKr,currency,locale)} · {formatMoney(Math.round(p.priceKr / p.sessions),currency,locale)} pr. time
                   </p>
                   {p.description && <p className="mt-1 text-sm text-slate">{p.description}</p>}
                 </div>

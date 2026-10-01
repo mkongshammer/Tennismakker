@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pressable, Text, View, StyleSheet } from "react-native";
 import { colors, SPORTS, SPORT_LABELS, sportColor } from "./theme";
 import { useFocusEffect } from "@react-navigation/native";
+import { tr, useInternational } from "./international";
 
 const KEY = "rb_sport";
 
@@ -15,6 +16,7 @@ export async function getSavedSport() {
 }
 
 export function SportPicker({ value, onChange }) {
+  useInternational();
   const select = (sport) => {
     onChange(sport);
     AsyncStorage.setItem(KEY, sport).catch(() => {});
@@ -34,7 +36,7 @@ export function SportPicker({ value, onChange }) {
           >
             <View style={[styles.dot, { backgroundColor: sportColor(s) }]} />
             <Text style={[styles.label, active && styles.labelActive]}>
-              {SPORT_LABELS[s]}
+              {tr(SPORT_LABELS[s])}
             </Text>
           </Pressable>
         );

@@ -21,6 +21,7 @@ export type CoachTimes = {
   id: string;
   weeklySlots: string;
   lessonMinutes: number;
+  timeZone?: string;
 };
 
 /** Alle tider træneren tilbyder, uanset om nogen har taget dem. */
@@ -28,7 +29,8 @@ export function offeredSlots(coach: CoachTimes, days = BOOKING_WINDOW_DAYS): Dat
   return upcomingSlotsFromWeekly(
     parseWeeklySlots(coach.weeklySlots),
     days,
-    coach.lessonMinutes
+    coach.lessonMinutes,
+    coach.timeZone ?? "Europe/Copenhagen"
   );
 }
 

@@ -1,5 +1,6 @@
+import { marketFor } from "../../../../lib/international";
 import { db } from "../../../../lib/db";
-import { json, preflight } from "../../../../lib/api/helpers";
+import { apiError, json, preflight } from "../../../../lib/api/helpers";
 import { clubRatings } from "../../../../lib/reviews";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export async function OPTIONS() { return preflight(); }
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const country = url.searchParams.get("land")?.toUpperCase() || "DK";
+  if(!marketFor(country)) return apiError("Unsupported country.");
   const sport = url.searchParams.get("sport")?.toUpperCase();
 
   const clubs = await db.club.findMany({
@@ -39,6 +41,7 @@ export async function GET(req: Request) {
       longitude: c.longitude,
       color: c.color,
       priceHour: c.priceHour,
+      country:c.country,currency:c.currency,timeZone:c.timeZone,
       courtCount: c.courts.length,
       surfaces: Array.from(new Set(c.courts.map((court: any) => court.surface))),
       rating: ratings.get(c.id) ?? { average: 0, count: 0 },

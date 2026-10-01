@@ -6,11 +6,14 @@ import { updateCoachProfile, startCoachPayoutSetup } from "./actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { WeeklyCalendar } from "./WeeklyCalendar";
 import { LESSON_LENGTHS, describeLength, lessonPriceKr } from "../../../lib/slots";
+import {TIME_ZONES,formatMoney} from "../../../lib/international";
+import {useWebsiteInternational} from "../../../components/InternationalProvider";
 import { DK_REGIONS, regionForArea } from "../../../lib/regions";
 import { useSearchParams } from "next/navigation";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
 export default function TraenerProfilPage() {
+  const {locale,tr}=useWebsiteInternational();
   const [state, action] = useFormState(updateCoachProfile, null);
   const [profile, setProfile] = useState<any>(null);
   // Længde og timepris styres af siden, så prisen pr. lektion og antallet af
@@ -71,7 +74,7 @@ export default function TraenerProfilPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="label" htmlFor="priceHour">Pris (kr/time)</label>
+            <label className="label" htmlFor="priceHour">Pris / time ({profile.currency})</label>
             <input
               className="input"
               id="priceHour"
@@ -85,7 +88,7 @@ export default function TraenerProfilPage() {
           </div>
           <div>
             <label className="label" htmlFor="area">Region</label>
-            <select
+            {profile.country==="DK"?<select
               className="input"
               id="area"
               name="area"
@@ -96,9 +99,10 @@ export default function TraenerProfilPage() {
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>
+            </select>:<input className="input" id="area" name="area" defaultValue={profile.area} required maxLength={100}/>}
           </div>
         </div>
+        <label className="label block">{tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
         <div>
           <label className="label" htmlFor="lessonMinutes">Længden på én lektion</label>
           <select
@@ -113,7 +117,7 @@ export default function TraenerProfilPage() {
             ))}
           </select>
           <p className="mt-1 text-xs text-slate">
-            Eleven betaler {lessonPriceKr(priceHour, lessonMinutes)} kr for én lektion.
+            Eleven betaler {formatMoney(lessonPriceKr(priceHour,lessonMinutes),profile.currency,locale)} for én lektion.
             Timeprisen er stadig den, du sammenlignes på i oversigten.
           </p>
         </div>

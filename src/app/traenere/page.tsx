@@ -1,3 +1,4 @@
+import {formatMoney} from "../../lib/international";
 import Link from "next/link";
 import { imageUrl } from "../../lib/imageUrl";
 import { db } from "../../lib/db";
@@ -22,7 +23,7 @@ export default async function TraenerePage({
 
   const allCoaches = await db.coachProfile.findMany({
     where: {
-      sports: { contains: prefs.sport },
+      sports: { contains: prefs.sport },country:prefs.country,
     },
     include: {
       user: true,
@@ -34,7 +35,7 @@ export default async function TraenerePage({
   });
 
   const coaches = selectedRegion
-    ? allCoaches.filter((coach) => regionForArea(coach.area) === selectedRegion)
+    ? allCoaches.filter((coach) => prefs.country==="DK"?regionForArea(coach.area)===selectedRegion:coach.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
     : allCoaches;
 
   const ratings = await coachRatings(coaches.map((c: any) => c.id));
@@ -51,12 +52,12 @@ export default async function TraenerePage({
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
           <label className="label" htmlFor="region">Region</label>
-          <select className="input" id="region" name="region" defaultValue={selectedRegion}>
+          {prefs.country==="DK"?<select className="input" id="region" name="region" defaultValue={selectedRegion}>
             <option value="">Hele Danmark</option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>
+          </select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
         </div>
         <button className="btn-ink">{t("common.search")}</button>
         {selectedRegion && <Link href="/traenere" className="btn-ghost">Nulstil</Link>}
@@ -87,7 +88,7 @@ export default async function TraenerePage({
                 )}
                 <p className="text-lg font-bold">{c.user.name}</p>
               </div>
-              <p className="display text-xl text-court">{c.priceHour} kr/t</p>
+              <p className="display text-xl text-court">{formatMoney(c.priceHour,c.currency,prefs.locale)} {t("common.perHour")}</p>
             </div>
             <div className="mt-1">
               <Stars

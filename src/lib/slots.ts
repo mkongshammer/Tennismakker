@@ -1,5 +1,6 @@
 // Hjælpere til at generere bookbare timeslots.
 import { addDays, addMinutes, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
+import { addCalendarDays, dayKey, wallTime } from "./international";
 
 export type WeeklySlot = { day: number; from: number; to: number }; // day: 0=søn ... 6=lør
 
@@ -31,17 +32,19 @@ export function lessonStarts(fromHour: number, toHour: number, lessonMinutes: nu
 export function upcomingSlotsFromWeekly(
   pattern: WeeklySlot[],
   days = 7,
-  lessonMinutes = 60
+  lessonMinutes = 60,
+  timeZone?: string
 ): Date[] {
   const now = new Date();
   const slots: Date[] = [];
   for (let d = 0; d < days; d++) {
     const day = addDays(now, d);
+    const localKey = timeZone ? addCalendarDays(dayKey(now,timeZone),d) : null;
     for (const p of pattern) {
-      if (day.getDay() !== p.day) continue;
+      if ((localKey ? new Date(`${localKey}T12:00:00Z`).getUTCDay() : day.getDay()) !== p.day) continue;
       for (const m of lessonStarts(p.from, p.to, lessonMinutes)) {
-        const start = minuteDate(day, m);
-        if (start > now) slots.push(start);
+        const start = localKey ? wallTime(localKey,Math.floor(m/60),m%60,timeZone) : minuteDate(day, m);
+        if (start && start > now) slots.push(start);
       }
     }
   }

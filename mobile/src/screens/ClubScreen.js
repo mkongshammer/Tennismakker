@@ -1,3 +1,4 @@
+import { money, tr, useInternational } from "../lib/international";
 import React, { useCallback, useRef, useState } from "react";
 import {
   RefreshControl,
@@ -6,12 +7,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
-} from "react-native";
+  View } from
+"react-native";
 import { api, checkoutUrl } from "../lib/api";
 import { feedback as Alert } from "../lib/feedback";
 import { useScreenData } from "../lib/useScreenData";
-import { Empty, ErrorMessage, Loading } from "../lib/ui";
+import { Button, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, SURFACES, sportColor } from "../lib/theme";
 import { dayLong, dayShort, groupByDay, time } from "../lib/dates";
 import { BookingReview } from "../lib/BookingReview";
@@ -21,33 +22,33 @@ import { readableSurface } from "../lib/contrast.mjs";
 // bunden. Samme signatur som websitets .court-tile — bare tegnet med
 // StyleSheet i stedet for CSS. Linjen ligger i bunden, ikke midt i feltet,
 // så den aldrig skærer gennem prisen.
-function CourtTile({ slot, onPress, loading, disabled }) {
+function CourtTile({ slot, onPress, loading, disabled }) {useInternational();
   const tint = sportColor(slot.sport);
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
-      accessibilityLabel={`${slot.courtName}, ${time(slot.start)}, ${slot.priceKr} kroner. Se og vælg tid`}
+      accessibilityLabel={`${slot.courtName}, ${time(slot.start, slot.timeZone)}, ${money(slot.priceKr, slot.currency)}oner. Se og vælg tid`}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
-        styles.tile,
-        { backgroundColor: tint, opacity: pressed || loading ? 0.85 : 1 },
-      ]}
-    >
+      styles.tile,
+      { backgroundColor: tint, opacity: pressed || loading ? 0.85 : 1 }]
+      }>
+
       <View style={{ flex: 1 }}>
-        <Text style={styles.tileTime}>{time(slot.start)}</Text>
+        <Text style={styles.tileTime}>{time(slot.start, slot.timeZone)}</Text>
         <Text style={styles.tileMeta}>
           {slot.courtName} · {SURFACES[slot.surface] ?? slot.surface}
         </Text>
       </View>
-      <Text style={styles.tilePrice}>{loading ? "…" : `${slot.priceKr} kr`}</Text>
+      <Text style={styles.tilePrice}>{loading ? "…" : `${money(slot.priceKr, slot.currency)}`}</Text>
       <View style={styles.tileBaseline} />
-    </Pressable>
-  );
+    </Pressable>);
+
 }
 
-export default function ClubScreen({ route }) {
+export default function ClubScreen({ route }) {useInternational();
   const { slug } = route.params;
   const state = useScreenData(useCallback(() => api.club(slug, 7), [slug]));
   const load = state.refresh;
@@ -65,8 +66,8 @@ export default function ClubScreen({ route }) {
   const { club, slots } = state.data;
   const hero = readableSurface(club.color);
   const courtSport = (id) => club.courts.find((c) => c.id === id)?.sport ?? "TENNIS";
-  const parsed = slots.map((s) => ({ ...s, start: new Date(s.startsAt), sport: courtSport(s.courtId) }));
-  const days = groupByDay(parsed, (s) => s.start);
+  const parsed = slots.map((s) => ({ ...s, start: new Date(s.startsAt), sport: courtSport(s.courtId), currency: club.currency, timeZone: club.timeZone }));
+  const days = groupByDay(parsed, (s) => s.start, club.timeZone);
   const selectedDay = Math.min(dayIndex, Math.max(0, days.length - 1));
   const current = days[selectedDay] ?? null;
 
@@ -79,12 +80,12 @@ export default function ClubScreen({ route }) {
     try {
       const { checkoutUrl: path, status } = await api.book({
         courtId: slot.courtId,
-        startsAt: slot.startsAt,
+        startsAt: slot.startsAt
       });
       setNotice("Tiden er reserveret midlertidigt. Fuldfør betalingen for at bekræfte den. Du kan også fortsætte under Min profil.");
       setSelection(null);
       // Betaling foregår hos Stripe, så appen aldrig rører kortdata
-      if(status === "CONFIRMED") { setNotice("Din bane er booket og bekræftet."); Alert.alert("Booking bekræftet", "Din bane er booket."); setSelection(null); await load(); return; }
+      if (status === "CONFIRMED") {setNotice("Din bane er booket og bekræftet.");Alert.alert("Booking bekræftet", "Din bane er booket.");setSelection(null);await load();return;}
       await Linking.openURL(checkoutUrl(path));
       await load();
     } catch (e) {
@@ -102,7 +103,7 @@ export default function ClubScreen({ route }) {
     <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-      {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.chalk, lineHeight: 21 }} accessibilityLiveRegion="polite">{notice}</Text>}
+      {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.chalk, lineHeight: 21 }} accessibilityLiveRegion="polite">{tr(notice)}</Text>}
       <View style={[styles.hero, { backgroundColor: hero.backgroundColor }]}>
         <Text style={[styles.heroTitle, { color: hero.color }]}>{club.name}</Text>
         <Text style={[styles.heroCity, { color: hero.color }]}>
@@ -110,71 +111,74 @@ export default function ClubScreen({ route }) {
         </Text>
         {club.description ? <Text style={[styles.heroText, { color: hero.color }]}>{club.description}</Text> : null}
         <Text style={[styles.heroMeta, { color: hero.color }]}>
-          {club.courts.length} baner · fra {club.priceHour} kr/time
+          {club.courts.length} {tr("baner")} · {tr("Fra")} {money(club.priceHour, club.currency)}/{tr("time")}
         </Text>
       </View>
 
-      <Text style={styles.section}>Ledige tider</Text>
-      <Text style={{ color: colors.slate, marginBottom: 14, lineHeight: 22 }}>Vælg en tid for at se detaljerne inden betaling.</Text>
+      <Button title={tr("Se på kort")} variant="quiet" onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(Number.isFinite(club.latitude) && Number.isFinite(club.longitude) ? `${club.latitude},${club.longitude}` : `${club.address ?? club.name}, ${club.city}, ${club.country}`)}`).catch(() => Alert.alert(tr("Kunne ikke åbne siden. Prøv igen.")))} />
+      <Text style={styles.heroMeta}>{tr("Lokal tid")}: {club.timeZone}</Text>
+      <Text style={styles.section}>{tr("Ledige tider")}</Text>
+      <Text style={{ color: colors.slate, marginBottom: 14, lineHeight: 22 }}>{tr("V\xE6lg en tid for at se detaljerne inden betaling.")}</Text>
 
-      {days.length === 0 ? (
-        <Empty title="Banen er optaget lige nu" action="Opdatér tider" onAction={load}>Ingen ledige tider de næste 7 dage. Prøv igen senere eller se en anden klub.</Empty>
-      ) : (
+      {days.length === 0 ?
+        <Empty title={tr("Banen er optaget lige nu")} action={tr("Opdat\xE9r tider")} onAction={load}>{tr("Ingen ledige tider de n\xE6ste 7 dage. Pr\xF8v igen senere eller se en anden klub.")}</Empty> :
+
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
             <View style={{ flexDirection: "row", gap: 8 }}>
-              {days.map((d, i) => (
-                <Pressable
-                  key={d.date.toISOString()}
-                  onPress={() => setDayIndex(i)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedDay === i }}
-                  style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}
-                >
+              {days.map((d, i) =>
+              <Pressable
+                key={d.date.toISOString()}
+                onPress={() => setDayIndex(i)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: selectedDay === i }}
+                style={[styles.dayChip, selectedDay === i && styles.dayChipActive]}>
+
                   <Text style={[styles.dayChipText, selectedDay === i && styles.dayChipTextActive]}>
-                    {dayShort(d.date)}
+                    {dayShort(d.date, club.timeZone)}
                   </Text>
                 </Pressable>
-              ))}
+              )}
             </View>
           </ScrollView>
 
-          {current && (
-            <>
-              <Text style={styles.dayLabel}>{dayLong(current.date)}</Text>
+          {current &&
+          <>
+              <Text style={styles.dayLabel}>{dayLong(current.date, club.timeZone)}</Text>
               <View style={{ gap: 10 }}>
                 {current.items.map((slot) => {
-                  const key = slot.courtId + slot.startsAt;
-                  return (
-                    <CourtTile
-                      key={key}
-                      slot={slot}
-                      onPress={() => { setBookingError(null); setSelection(slot); }}
-                      loading={booking === key}
-                      disabled={booking !== null}
-                    />
-                  );
-                })}
+                const key = slot.courtId + slot.startsAt;
+                return (
+                  <CourtTile
+                    key={key}
+                    slot={slot}
+                    onPress={() => {setBookingError(null);setSelection(slot);}}
+                    loading={booking === key}
+                    disabled={booking !== null} />);
+
+
+              })}
               </View>
             </>
-          )}
+          }
         </>
-      )}
+        }
     </ScrollView>
     {selection && <BookingReview
-      visible
-      title={club.name}
-      details={[selection.courtName, dayLong(selection.start), `${time(selection.start)}${selection.endsAt ? ` – ${time(new Date(selection.endsAt))}` : ""}`]}
-      priceKr={selection.priceKr}
-      hint="Du reserverer tiden midlertidigt og fortsætter til betaling. Bookingen er først bekræftet, når betalingen er gennemført."
-      action="Reservér og gå til betaling"
-      busy={booking !== null}
-      error={bookingError}
-      onConfirm={() => book(selection)}
-      onClose={() => setSelection(null)}
-    />}
-    </>
-  );
+        visible
+        title={club.name}
+        details={[selection.courtName, dayLong(selection.start, club.timeZone), `${time(selection.start, club.timeZone)}${selection.endsAt ? ` – ${time(new Date(selection.endsAt), club.timeZone)}` : ""}`]}
+        currency={club.currency}
+        priceKr={selection.priceKr}
+        hint={tr("Du reserverer tiden midlertidigt og forts\xE6tter til betaling. Bookingen er f\xF8rst bekr\xE6ftet, n\xE5r betalingen er gennemf\xF8rt.")}
+        action={tr("Reserv\xE9r og g\xE5 til betaling")}
+        busy={booking !== null}
+        error={bookingError}
+        onConfirm={() => book(selection)}
+        onClose={() => setSelection(null)} />
+      }
+    </>);
+
 }
 
 const styles = StyleSheet.create({
@@ -193,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.chalk,
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 9
   },
   dayChipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   dayChipText: { fontWeight: "700", color: colors.ink },
@@ -208,7 +212,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 12,
     alignItems: "center",
-    overflow: "hidden",
+    overflow: "hidden"
   },
   tileTime: { color: colors.chalk, fontSize: 20, fontWeight: "800", fontVariant: ["tabular-nums"] },
   tileMeta: { color: colors.chalk, marginTop: 2, fontSize: 14 },
@@ -216,7 +220,7 @@ const styles = StyleSheet.create({
     color: colors.chalk,
     fontWeight: "800",
     fontSize: 16,
-    fontVariant: ["tabular-nums"],
+    fontVariant: ["tabular-nums"]
   },
   // Baglinjen — banemarkering, ikke en overstregning. Ligger i bunden af
   // feltet, samme rettelse som på websitet.
@@ -226,6 +230,6 @@ const styles = StyleSheet.create({
     right: 14,
     bottom: 7,
     height: 2,
-    backgroundColor: "rgba(255,255,255,0.45)",
-  },
+    backgroundColor: "rgba(255,255,255,0.45)"
+  }
 });

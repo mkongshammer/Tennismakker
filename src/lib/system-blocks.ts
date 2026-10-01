@@ -16,6 +16,7 @@
 // vente på tyve browsersessioner — og en fejl halvvejs ville efterlade
 // halvdelen spærret uden at nogen vidste hvilke.
 
+import {dayKey,wallParts} from "./international";
 import { addDays } from "date-fns";
 import { db } from "./db";
 import { getClubAvailability } from "./integrations";
@@ -94,7 +95,7 @@ export async function processBlocks(limit = 10): Promise<BlockRun> {
       // Tider, der er passeret, spærres ikke. De kan ikke sælges længere.
       startsAt: { gte: new Date() },
     },
-    include: { court: { select: { name: true } } },
+    include: { court: { select: { name: true,club:{select:{timeZone:true}} } } },
     orderBy: { startsAt: "asc" },
     take: limit,
   });
@@ -103,8 +104,8 @@ export async function processBlocks(limit = 10): Promise<BlockRun> {
     const result = await reserveInClubSystem({
       clubId: b.clubId,
       courtName: b.court.name,
-      date: toDateString(b.startsAt),
-      time: toTimeString(b.startsAt),
+      date: dayKey(b.startsAt,b.court.club.timeZone),
+      time: `${String(wallParts(b.startsAt,b.court.club.timeZone).hour).padStart(2,"0")}:${String(wallParts(b.startsAt,b.court.club.timeZone).minute).padStart(2,"0")}`,
     });
 
     if (result.verified) {
@@ -174,14 +175,4 @@ export async function blockSummary(clubId: string) {
       error: f.error as string | null,
     })),
   };
-}
-
-function toDateString(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate()
-  ).padStart(2, "0")}`;
-}
-
-function toTimeString(d: Date): string {
-  return `${String(d.getHours()).padStart(2, "0")}:00`;
 }

@@ -1,15 +1,15 @@
-import React from "react";
+import { tr, useInternational } from "./international";import React from "react";
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
-  View,
-} from "react-native";
+  View } from
+"react-native";
 import { colors } from "./theme";
 
 // Quiet variants keep account actions subordinate to booking actions.
-export function Button({ title, onPress, variant = "court", disabled, loading }) {
+export function Button({ title, onPress, variant = "court", disabled, loading }) {useInternational();
   const quiet = variant === "quiet" || variant === "dangerQuiet";
   const bg = quiet ? "transparent" : variant === "ink" ? colors.ink : colors.court;
   const foreground = variant === "dangerQuiet" ? "#9B2525" : quiet ? colors.ink : colors.chalk;
@@ -18,75 +18,75 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
-      accessibilityLabel={title}
+      accessibilityLabel={tr(title)}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] },
-      ]}
-    >
+      styles.button,
+      { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] }]
+      }>
+
       {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={foreground} />}
-      <Text style={[styles.buttonText, { color: foreground, fontWeight: quiet ? "600" : "700" }]}>{title}</Text>
-    </Pressable>
-  );
+      <Text style={[styles.buttonText, { color: foreground, fontWeight: quiet ? "600" : "700" }]}>{tr(title)}</Text>
+    </Pressable>);
+
 }
 
-export function Card({ children, style }) {
+export function Card({ children, style }) {useInternational();
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
 // tone: "ink" (standard) | "court"
-export function Badge({ children, tone = "ink" }) {
+export function Badge({ children, tone = "ink" }) {useInternational();
   return (
     <View
       style={[
-        styles.badge,
-        { backgroundColor: tone === "court" ? colors.court : colors.ink },
-      ]}
-    >
+      styles.badge,
+      { backgroundColor: tone === "court" ? colors.court : colors.ink }]
+      }>
+
       <Text style={styles.badgeText}>{children}</Text>
-    </View>
-  );
+    </View>);
+
 }
 
-export function Loading({ label = "Henter…" }) {
+export function Loading({ label = "Henter…" }) {useInternational();
   return (
     <View style={styles.center}>
       <ActivityIndicator color={colors.court} />
-      <Text style={styles.muted}>{label}</Text>
-    </View>
-  );
+      <Text style={styles.muted}>{tr(label)}</Text>
+    </View>);
+
 }
 
-export function ErrorMessage({ message, onRetry }) {
+export function ErrorMessage({ message, onRetry }) {useInternational();
   return (
     <View style={styles.center}>
-      <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{message}</Text>
-      {onRetry && <Button title="Prøv igen" onPress={onRetry} variant="ink" />}
-    </View>
-  );
+      <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{tr(message)}</Text>
+      {onRetry && <Button title={tr("Pr\xF8v igen")} onPress={onRetry} variant="ink" />}
+    </View>);
+
 }
 
-export function Empty({ children, title = "Her er lidt stille endnu", icon = "○", action, onAction }) {
+export function Empty({ children, title = "Her er lidt stille endnu", icon = "○", action, onAction }) {useInternational();
   return (
     <View style={styles.empty}>
       <View style={styles.emptyIcon}><Text accessible={false} style={styles.emptySymbol}>{icon}</Text></View>
-      <Text accessibilityRole="header" style={styles.emptyTitle}>{title}</Text>
+      <Text accessibilityRole="header" style={styles.emptyTitle}>{tr(title)}</Text>
       <Text style={styles.muted}>{children}</Text>
       {action && onAction && <Button title={action} variant="quiet" onPress={onAction} />}
-    </View>
-  );
+    </View>);
+
 }
 
-export function Avatar({ name = "", size = 48, tone = "light" }) {
-  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase();
+export function Avatar({ name = "", size = 48, tone = "light" }) {useInternational();
+  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();
   return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? colors.inkSoft : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.court, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
 }
 
-export function AppHeading({ eyebrow, title, subtitle, trailing }) {
+export function AppHeading({ eyebrow, title, subtitle, trailing }) {useInternational();
   return <View style={styles.headingWrap}><View style={{ flex: 1 }}>
     {!!eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}
-    <Text accessibilityRole="header" style={styles.heading}>{title}</Text>
+    <Text accessibilityRole="header" style={styles.heading}>{tr(title)}</Text>
     {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
   </View>{trailing}</View>;
 }
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     minWidth: 48,
     gap: 8,
-    justifyContent: "center",
+    justifyContent: "center"
   },
   buttonText: { color: colors.chalk, fontWeight: "700", fontSize: 16, textAlign: "center" },
   card: {
@@ -115,13 +115,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.035,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 1,
+    elevation: 1
   },
   badge: {
     alignSelf: "flex-start",
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 3
   },
   badgeText: { color: colors.chalk, fontSize: 12, fontWeight: "700" },
   center: { padding: 32, alignItems: "center", gap: 12 },
@@ -134,5 +134,5 @@ const styles = StyleSheet.create({
   headingWrap: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
   eyebrow: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 },
   heading: { color: colors.ink, fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
-  subtitle: { color: colors.slate, fontSize: 15, lineHeight: 23, marginTop: 8, maxWidth: 560 },
+  subtitle: { color: colors.slate, fontSize: 15, lineHeight: 23, marginTop: 8, maxWidth: 560 }
 });

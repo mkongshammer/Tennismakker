@@ -1,3 +1,4 @@
+import { validateOrderCheckout, type CheckoutEvidence } from "./payment-validation";
 // Sæsonhold.
 //
 // Træningshold over en sæson: "Voksne begyndere, tirsdag 18-19, forår
@@ -83,6 +84,7 @@ export async function signUpForTeam(userId: string, teamId: string): Promise<Sig
         select: {
           name: true,
           slug: true,
+          currency: true,
           stripeAccountId: true,
           stripeChargesEnabled: true,
         },
@@ -105,10 +107,10 @@ export async function signUpForTeam(userId: string, teamId: string): Promise<Sig
   const signup = existing
     ? await db.teamSignup.update({
         where: { id: existing.id },
-        data: { priceKr: team.priceKr, status: "PENDING" },
+        data: { priceKr: team.priceKr, currency: team.club.currency, status: "PENDING" },
       })
     : await db.teamSignup.create({
-        data: { teamId, userId, priceKr: team.priceKr },
+        data: { teamId, userId, priceKr: team.priceKr,currency:team.club.currency },
       });
 
   const settings = await getSettings();
@@ -137,7 +139,7 @@ export async function signUpForTeam(userId: string, teamId: string): Promise<Sig
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          currency: team.club.currency.toLowerCase(),
           product_data: {
             name: team.name,
             description: `Sæsonhold i ${team.club.name}`,
@@ -162,7 +164,11 @@ export async function signUpForTeam(userId: string, teamId: string): Promise<Sig
 }
 
 /** Markerer tilmeldingen som betalt. Kan kaldes flere gange uden skade. */
-export async function confirmTeamSignup(signupId: string): Promise<void> {
+export async function confirmTeamSignup(signupId: string, session?: CheckoutEvidence): Promise<void> {
+  if (session) {
+    const order = await db.teamSignup.findUniqueOrThrow({where:{id:signupId}});
+    validateOrderCheckout(order,session,'teamSignupId');
+  }
   await db.teamSignup.updateMany({
     where: { id: signupId, status: { not: "PAID" } },
     data: { status: "PAID", paidAt: new Date() },

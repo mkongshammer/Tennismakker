@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
 import { normaliseBuddySports } from "../../../../lib/buddy-sports";
-import { isDanishRegion } from "../../../../lib/regions";
+import {validArea} from "../../../../lib/profile-location";
+import {marketFor,validCurrency,validTimeZone} from "../../../../lib/international";
 
 export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const user = await getCurrentUser();
@@ -19,15 +20,18 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const sports = normaliseBuddySports(formData.getAll("sports").map(String));
 
   if (!headline) return { error: "Skriv en kort overskrift til din trænerprofil." };
-  if (!isDanishRegion(area)) return { error: "Vælg en af de fem danske regioner." };
-  if (!Number.isFinite(priceHour) || priceHour < 50 || priceHour > 5000) {
-    return { error: "Sæt en timepris mellem 50 og 5.000 kr." };
+  const country=user.country,market=marketFor(country)!;
+  const currency=String(formData.get("currency")??market.currency),timeZone=String(formData.get("timeZone")??market.timeZone);
+  if(!validCurrency(currency)||!validTimeZone(timeZone))return {error:"Choose a valid currency and time zone."};
+  if (!validArea(country,area)) return { error: "Choose a valid city/area." };
+  if (!Number.isSafeInteger(priceHour) || priceHour < 1 || priceHour > 10000) {
+    return { error: "Set an hourly price between 1 and 10,000." };
   }
   if (sports.length === 0) return { error: "Vælg mindst én sportsgren, du vil tilbyde træning i." };
 
   await db.coachProfile.create({
     data: {
-      userId: user.id,
+      userId: user.id,country,currency,timeZone,
       headline,
       sports: sports.join(","),
       priceHour: Math.round(priceHour),

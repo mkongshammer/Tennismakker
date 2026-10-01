@@ -41,7 +41,7 @@ test('manual light action never commands another club or a door',async()=>{
 });
 test('reservation lock preserves holds with a prepared checkout even after local expiry',async()=>{
  let query:any,writes=0,locked=false;
- const tx={$queryRaw:async()=>{locked=true;},booking:{findFirst:async({where}:any)=>{assert.equal(locked,true);query=where;return{id:'occupied'};},create:async()=>{writes++;}},externalBusy:{findFirst:async()=>null}};
+ const tx={$queryRaw:async()=>{locked=true;},court:{findUniqueOrThrow:async()=>({clubId:"club"})},club:{findUniqueOrThrow:async()=>({currency:"DKK",timeZone:"Europe/Copenhagen"})},booking:{findFirst:async({where}:any)=>{assert.equal(locked,true);query=where;return{id:'occupied'};},create:async()=>{writes++;}},externalBusy:{findFirst:async()=>null}};
  const {createCourtReservation}=loadIsolatedModule('src/lib/court-reservation.ts',{'./db':{db:{$transaction:async(fn:any)=>fn(tx)}}});
  await assert.rejects(createCourtReservation({data:{courtId:'c',startsAt:new Date(),endsAt:new Date(Date.now()+3600000)}}),/optaget/);
  assert.ok(query.OR[1].OR.some((x:any)=>x.checkoutParams?.not===null));assert.equal(writes,0);

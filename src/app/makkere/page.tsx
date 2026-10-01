@@ -43,7 +43,7 @@ export default async function MakkerePage({
   const [openRequests, myResponses] = await Promise.all([
     db.matchRequest.findMany({
       where: {
-        status: "OPEN",
+        status: "OPEN",requester:{country:prefs.country},
         source: "POST",
         sport: prefs.sport,
         ...(level && level >= 1 && level <= 7 ? { level } : {}),
@@ -70,7 +70,7 @@ export default async function MakkerePage({
 
   const filteredRequests = openRequests.filter((request) => {
     if (request.requesterId !== user?.id && respondedPostIds.has(request.id)) return false;
-    if (selectedRegion && regionForArea(request.area) !== selectedRegion) return false;
+    if (selectedRegion && (prefs.country==="DK"?regionForArea(request.area)!==selectedRegion:!request.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))) return false;
     return true;
   });
 
@@ -95,12 +95,12 @@ export default async function MakkerePage({
         <input type="hidden" name="filtrer" value="1" />
         <div>
           <label className="label" htmlFor="region">Region</label>
-          <select className="input" id="region" name="region" defaultValue={selectedRegion}>
+          {prefs.country==="DK"?<select className="input" id="region" name="region" defaultValue={selectedRegion}>
             <option value="">Alle regioner</option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>
+          </select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
         </div>
         <div>
           <label className="label" htmlFor="niveau">Niveau</label>

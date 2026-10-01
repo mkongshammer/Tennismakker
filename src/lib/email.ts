@@ -1,3 +1,4 @@
+import {formatMoney,formatDate} from "./international";
 // E-mail-lag for RacketBuddy.
 //
 // Samme mønster som betalingslaget: én abstraktion, så udbyderen kan skiftes
@@ -88,6 +89,8 @@ export function bookingReceipt(opts: {
   what: string;
   startsAt: Date;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
   bookingId: string;
   access?: { hasLock: boolean; code: string | null; instructions: string | null };
 }): Mail {
@@ -107,8 +110,8 @@ export function bookingReceipt(opts: {
       `Din booking er bekræftet.`,
       ``,
       `${opts.what}`,
-      `${danishDateTime(opts.startsAt)}`,
-      `Betalt: ${opts.priceKr} kr`,
+      `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
+      `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
       ...accessLines,
       ``,
       `Se dine bookinger: ${baseUrl()}/profil`,
@@ -129,15 +132,17 @@ export function clubBookingNotice(opts: {
   playerEmail: string;
   startsAt: Date;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
   needsClubEntry: boolean;
   externalSystem: string | null;
 }): Mail {
   const lines = [
     `Ny gæstebooking i ${opts.clubName}`,
     ``,
-    `${opts.courtName} — ${danishDateTime(opts.startsAt)}`,
+    `${opts.courtName} — ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
     `Spiller: ${opts.playerName} (${opts.playerEmail})`,
-    `Betalt: ${opts.priceKr} kr`,
+    `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
     ``,
   ];
 
@@ -156,7 +161,7 @@ export function clubBookingNotice(opts: {
 
   return {
     to: opts.to,
-    subject: `Ny booking: ${opts.courtName}, ${danishDateTime(opts.startsAt)}`,
+    subject: `Ny booking: ${opts.courtName}, ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
     body: lines.join("\n"),
   };
 }
@@ -168,19 +173,21 @@ export function coachBookingNotice(opts: {
   playerEmail: string;
   startsAt: Date;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
   length: string;
 }): Mail {
   return {
     to: opts.to,
-    subject: `Ny elev: ${danishDateTime(opts.startsAt)}`,
+    subject: `Ny elev: ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
     body: [
       `Hej ${opts.coachName}`,
       ``,
       `Du har fået en ny booking.`,
       ``,
-      `${danishDateTime(opts.startsAt)} · ${opts.length}`,
+      `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})} · ${opts.length}`,
       `Elev: ${opts.playerName} (${opts.playerEmail})`,
-      `Beløb: ${opts.priceKr} kr — din andel udbetales automatisk`,
+      `Beløb: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")} — din andel udbetales automatisk`,
       ``,
       `Din kalender: ${baseUrl()}/profil`,
       ``,
@@ -219,6 +226,7 @@ export function cancellationNotice(opts: {
   what: string;
   startsAt: Date;
   refundKr: number | null;
+  currency?:string;locale?:string;timeZone?:string;
 }): Mail {
   return {
     to: opts.to,
@@ -229,7 +237,7 @@ export function cancellationNotice(opts: {
       `Din booking er aflyst.`,
       ``,
       `${opts.what}`,
-      `${danishDateTime(opts.startsAt)}`,
+      `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
       ``,
       opts.refundKr !== null
         ? `Du får ${opts.refundKr} kr retur. Beløbet er typisk på din konto inden for 5-10 hverdage.`
@@ -313,10 +321,11 @@ export function coachDecision(opts: {
   coachName: string;
   startsAt: Date;
   approved: boolean;
+  currency?:string;locale?:string;timeZone?:string;
   paidWithCredit: boolean;
   bookingId: string;
 }): Mail {
-  const when = danishDateTime(opts.startsAt);
+  const when = formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"});
 
   if (!opts.approved) {
     return {
@@ -379,17 +388,19 @@ export function coachRequestNotice(opts: {
   playerLevel: number;
   startsAt: Date;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
   withCredit: boolean;
 }): Mail {
   return {
     to: opts.to,
-    subject: `Ny anmodning: ${danishDateTime(opts.startsAt)}`,
+    subject: `Ny anmodning: ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
     body: [
       `Hej ${opts.coachName}`,
       "",
       `${opts.playerName} (niveau ${opts.playerLevel}) vil booke en time hos dig:`,
-      danishDateTime(opts.startsAt),
-      opts.withCredit ? "Betales med klip fra et pakkeforløb." : `${opts.priceKr} kr`,
+      formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"}),
+      opts.withCredit ? "Betales med klip fra et pakkeforløb." : `${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
       "",
       "Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",
       "",
@@ -414,6 +425,8 @@ export function membershipReceipt(opts: {
   fromDate: Date;
   toDate: Date;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
 }): Mail {
   const period = `${danishDate(opts.fromDate)} – ${danishDate(opts.toDate)}`;
 
@@ -428,7 +441,7 @@ export function membershipReceipt(opts: {
       `Type: ${opts.typeName}`,
       `Sæson: ${opts.seasonName}`,
       `Gælder: ${period}`,
-      opts.priceKr > 0 ? `Betalt: ${opts.priceKr} kr` : "Pris: gratis",
+      opts.priceKr > 0 ? `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}` : "Pris: gratis",
       "",
       "Du kan nu booke klubbens baner til medlemspris. Se dine bookinger",
       `her: ${baseUrl()}/profil`,
@@ -453,6 +466,8 @@ export function renewalNotice(opts: {
   typeName: string;
   seasonName: string;
   priceKr: number;
+  currency?:string;
+  locale?:string;timeZone?:string;
   chargeDate: Date;
   clubSlug: string;
 }): Mail {
@@ -465,7 +480,7 @@ export function renewalNotice(opts: {
       `Dit medlemskab i ${opts.clubName} fornyes automatisk til den nye sæson.`,
       "",
       `Sæson: ${opts.seasonName} (${opts.typeName})`,
-      `Beløb: ${opts.priceKr} kr`,
+      `Beløb: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
       `Trækkes: ${danishDate(opts.chargeDate)}`,
       "",
       "Skal det ikke fornyes, kan du slå det fra her — så sker der ingenting:",

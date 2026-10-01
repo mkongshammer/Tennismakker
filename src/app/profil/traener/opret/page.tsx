@@ -1,5 +1,7 @@
 "use client";
 
+import {useWebsiteInternational} from "../../../../components/InternationalProvider";
+import {CURRENCIES,TIME_ZONES,marketFor} from "../../../../lib/international";
 import { useFormState } from "react-dom";
 import { SPORTS, sportLabel } from "../../../../lib/sports";
 import { DK_REGIONS } from "../../../../lib/regions";
@@ -7,6 +9,7 @@ import { createCoachProfile } from "./actions";
 import { SubmitButton } from "../../../../components/SubmitButton";
 
 export default function OpretTraenerprofilPage() {
+  const {country,locale,tr}=useWebsiteInternational(),market=marketFor(country)!;
   const [state, action] = useFormState(createCoachProfile, null);
 
   return (
@@ -36,7 +39,7 @@ export default function OpretTraenerprofilPage() {
             {SPORTS.map((sport) => (
               <label key={sport} className="flex items-center gap-2 rounded-xl border border-slate/15 p-3 text-sm font-semibold">
                 <input type="checkbox" name="sports" value={sport} />
-                {sportLabel(sport, "da")}
+                {sportLabel(sport, locale)}
               </label>
             ))}
           </div>
@@ -44,20 +47,21 @@ export default function OpretTraenerprofilPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="label" htmlFor="priceHour">Pris (kr/time)</label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={50} max={5000} defaultValue={350} required />
+            <label className="label" htmlFor="priceHour">Pris / time</label>
+            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={350} required />
           </div>
           <div>
             <label className="label" htmlFor="area">Region</label>
-            <select className="input" id="area" name="area" defaultValue="" required>
+            {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
               <option value="" disabled>Vælg region</option>
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>
+            </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
           </div>
         </div>
 
+        <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
         {state?.error ? <p className="text-sm font-semibold text-court">{state.error}</p> : null}
 
         <SubmitButton className="btn-court w-full" pendingText="Opretter…">

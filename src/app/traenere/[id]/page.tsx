@@ -1,3 +1,4 @@
+import {formatMoney,formatDate} from "../../../lib/international";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -45,7 +46,7 @@ export default async function TraenerPage({
   const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
 
   const free = await freeSlots(coach);
-  const t = translator((await getPreferences()).locale);
+  const prefs=await getPreferences(),t=translator(prefs.locale),money=(n:number)=>formatMoney(n,coach.currency,prefs.locale),date=(d:Date,options:Intl.DateTimeFormatOptions)=>formatDate(d,prefs.locale,coach.timeZone,options);
   const credits = user ? await creditsWith(user.id, coach.id) : [];
   const photoId = await approvedCoachPhotoId(coach.id);
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
@@ -54,7 +55,7 @@ export default async function TraenerPage({
   // Gruppér pr. dag
   const byDay = new Map<string, Date[]>();
   for (const s of free) {
-    const key = format(s, "EEEE d. MMMM", { locale: da });
+    const key = date(s,{weekday:"long",day:"numeric",month:"long"});
     byDay.set(key, [...(byDay.get(key) ?? []), s]);
   }
 
@@ -76,6 +77,7 @@ export default async function TraenerPage({
         </p>
       )}
 
+      <p className="mb-3 text-sm text-slate">{prefs.locale==="da"?"Lokal tid":"Venue time"}: {coach.timeZone}</p>
       <div className="card">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -88,7 +90,7 @@ export default async function TraenerPage({
             ) : null}
             <h1 className="display text-3xl">{coach.user.name}</h1>
           </div>
-          <p className="display text-2xl text-court">{coach.priceHour} kr/t</p>
+          <p className="display text-2xl text-court">{money(coach.priceHour)}/h</p>
         </div>
         <div className="mt-2">
           <Stars average={rating.average} count={rating.count} />
@@ -142,15 +144,15 @@ export default async function TraenerPage({
               <li key={p.id} className="card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-bold">{p.name}</p>
-                  <p className="display text-xl text-court">{p.priceKr} kr</p>
+                  <p className="display text-xl text-court">{money(p.priceKr)}</p>
                 </div>
                 <p className="text-sm text-slate/60">
-                  {p.sessions} timer · {Math.round(p.priceKr / p.sessions)} kr pr. time
+                  {p.sessions} timer · {money(Math.round(p.priceKr/p.sessions))}/h
                   {p.priceKr < coach.priceHour * p.sessions && (
                     <>
                       {" · "}
                       <span className="font-bold text-court">
-                        spar {coach.priceHour * p.sessions - p.priceKr} kr
+                        spar {money(coach.priceHour*p.sessions-p.priceKr)}
                       </span>
                     </>
                   )}
@@ -198,12 +200,12 @@ export default async function TraenerPage({
                     key={s.toISOString()}
                     coachProfileId={coach.id}
                     startsAt={s.toISOString()}
-                    time={format(s, "HH:mm")}
+                    time={date(s,{hour:"2-digit",minute:"2-digit",hour12:false})}
                   />
                 ) : (
                   <Link key={s.toISOString()} href="/login"
                     className="rounded-md border border-slate/20 px-3 py-1.5 text-sm text-slate/50">
-                    {format(s, "HH:mm")}
+                    {date(s,{hour:"2-digit",minute:"2-digit",hour12:false})}
                   </Link>
                 )
               )}

@@ -82,25 +82,25 @@ async function handleEvent(type: string, object: any) {
       // Kontingent: klubbens indtægt, ikke en booking.
       const teamSignupId = session.metadata?.teamSignupId;
       if (teamSignupId) {
-        await confirmTeamSignup(teamSignupId);
+        await confirmTeamSignup(teamSignupId, session);
         return;
       }
 
       const punchPurchaseId = session.metadata?.punchPurchaseId;
       if (punchPurchaseId) {
-        await confirmPunchPurchase(punchPurchaseId);
+        await confirmPunchPurchase(punchPurchaseId, session);
         return;
       }
 
       const membershipId = session.metadata?.membershipId;
       if (membershipId) {
-        await confirmMembership(membershipId);
+        await confirmMembership(membershipId, session);
         return;
       }
 
       const purchaseId = session.metadata?.purchaseId;
       if (purchaseId) {
-        await confirmPackagePurchase(purchaseId);
+        await confirmPackagePurchase(purchaseId, session);
         return;
       }
 

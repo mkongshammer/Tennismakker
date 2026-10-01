@@ -16,7 +16,10 @@ function loadSource(relative, mocks) {
   });
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)(name => {
-    if (name in mocks) return mocks[name];
+    if (name in mocks) return name.endsWith("/ui")?{Button:"Button",...mocks[name]}:mocks[name];
+    if (name.endsWith('/international')) return {tr:x=>x,useInternational:()=>({country:'DK',locale:'da',t:x=>x}),money:(n,c='DKK')=>`${n} ${c}`};
+    if (name.endsWith('/PreferencesPicker')) return {PreferencesPicker:'PreferencesPicker'};
+    if (name.endsWith('/ProfilePreferences')) return {ProfilePreferences:'ProfilePreferences'};
     if (name === 'react') return React;
     throw new Error(`Unexpected dependency ${name}`);
   }, module, module.exports);
@@ -243,4 +246,46 @@ test('club search filters real names and cities, can clear, and preserves select
     assert.equal(list().props.data.length,2);
     await act(()=>header.unmount());
   }finally{await act(()=>tree.unmount());}
+});
+
+test('country and language persist without converting venue prices, and sport labels refresh', async () => {
+  const storage = new Map();
+  const actualDates = loadSource('./dates.js', {'../../../shared/international.mjs': require('../../../shared/international.mjs')});
+  const international = loadSource('./international.js', {
+    './dates.js': actualDates,
+    '@react-native-async-storage/async-storage': {getItem: async key => storage.get(key), setItem: async (key,value) => storage.set(key,value)},
+    '../../../shared/phrases.json': require('../../../shared/phrases.json'),
+    '../../../shared/translations.json': require('../../../shared/translations.json'),
+    '../../../shared/international.mjs': require('../../../shared/international.mjs'),
+  });
+  await international.setInternational({country:'US',locale:'en-US'});
+  assert.match(international.money(80,'EUR'),/EUR\s*80/);
+  assert.equal(international.tr('Log ind på klubben'),'Log in to your club');
+  await international.setInternational({country:'ZZ',locale:'bad'});
+  assert.deepEqual(international.getInternational(),{country:'US',locale:'en-US'});
+  const {SportPicker} = loadSource('./SportPicker.js', {
+    'react-native': {Pressable:'Pressable',Text:'Text',View:'View',StyleSheet:{create:x=>x}},
+    '@react-native-async-storage/async-storage': {setItem:async()=>{}},
+    '@react-navigation/native': {},
+    './theme': {colors:{},SPORTS:['BORDTENNIS'],SPORT_LABELS:{BORDTENNIS:'Bordtennis'},sportColor:()=>null},
+    './international': international,
+  });
+  let tree;
+  await act(async()=>{tree=create(React.createElement(SportPicker,{value:'BORDTENNIS',onChange:()=>{}}));});
+  assert.equal(tree.root.findByType('Text').props.children,'Table tennis');
+  await act(async()=>international.setInternational({locale:'da'}));
+  assert.equal(tree.root.findByType('Text').props.children,'Bordtennis');
+  await act(()=>tree.unmount());
+  await international.restoreInternational();
+  assert.deepEqual(international.getInternational(),{country:'US',locale:'da'});
+});
+
+test('mobile booking dates group by venue day and clock rather than device zone', () => {
+  const dates=loadSource('./dates.js',{'../../../shared/international.mjs':require('../../../shared/international.mjs')});
+  dates.setDateLocale('en-US');
+  const instant=new Date('2027-01-04T01:00:00Z');
+  assert.equal(dates.isoDay(instant,'America/Los_Angeles'),'2027-01-03');
+  assert.equal(dates.time(instant,'America/Los_Angeles'),'17:00');
+  const grouped=dates.groupByDay([instant,new Date('2027-01-04T07:00:00Z')],x=>x,'America/Los_Angeles');
+  assert.equal(grouped.length,1);assert.match(dates.dayLong(instant,'America/Los_Angeles'),/Sunday/);
 });

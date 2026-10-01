@@ -1,3 +1,4 @@
+import {formatMoney} from "./international";
 // Tal om, hvordan det går.
 //
 // To ting tælles forskelligt, og det er værd at kende forskellen:
@@ -138,7 +139,8 @@ export async function economy(): Promise<{
 
   const sums = await Promise.all(
     ps.map((p) =>
-      db.payment.aggregate({
+      db.payment.groupBy({
+        by:["currency"],
         _sum: { amountKr: true, platformFee: true },
         _count: true,
         where: { status: "PAID", ...(p.since ? { createdAt: { gte: p.since } } : {}) },
@@ -157,17 +159,17 @@ export async function economy(): Promise<{
       {
         label: "Betalinger",
         note: "gennemført",
-        values: sums.map((s) => String(s._count)),
+        values: sums.map((s) => String(s.reduce((n,row)=>n+row._count,0))),
       },
       {
         label: "Beløb gennem platformen",
         note: "klubbens og vores tilsammen",
-        values: sums.map((s) => kr(s._sum.amountKr ?? 0)),
+        values: sums.map((s) => s.length?s.map(row=>formatMoney(row._sum.amountKr??0,row.currency,"da")).join(" · "):formatMoney(0,"DKK","da")),
       },
       {
         label: "Vores andel",
         note: "før Stripes gebyr",
-        values: sums.map((s) => kr(s._sum.platformFee ?? 0)),
+        values: sums.map((s) => s.length?s.map(row=>formatMoney(row._sum.platformFee??0,row.currency,"da")).join(" · "):formatMoney(0,"DKK","da")),
       },
     ],
     subscriptionMonthly: subscribers.reduce((sum, c) => sum + c.subscriptionKr, 0),

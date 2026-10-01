@@ -19,6 +19,7 @@
 
 import { useWalletIfCovered, cancelWalletBooking } from "./wallet";
 import { db } from "./db";
+import { toMinor } from "./international";
 import { platformAccountCountry, stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
 import { describeLength } from "./slots";
@@ -148,15 +149,15 @@ export async function startCheckout(bookingId: string): Promise<string> {
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          currency: (booking.currency ?? "DKK").toLowerCase(),
           product_data: { name: what },
-          unit_amount: booking.priceKr * 100, // Stripe regner i øre
+          unit_amount: toMinor(booking.priceKr, booking.currency ?? "DKK"),
         },
         quantity: 1,
       },
     ],
     payment_intent_data: {
-      application_fee_amount: fee * 100,
+      application_fee_amount: toMinor(fee, booking.currency ?? "DKK"),
       transfer_data: { destination: account.id },
       ...(isSubscriptionClub ? { on_behalf_of: account.id } : {}),
       metadata: { bookingId },
@@ -242,12 +243,13 @@ export async function confirmBookingPayment(bookingId: string, proof: BookingPay
       create: {
         bookingId,
         amountKr: booking.priceKr,
+        currency: booking.currency ?? "DKK",
         platformFee: fee,
         provider: proof.provider,
         providerRef,
         status: "PAID",
       },
-      update: { status: "PAID", provider: proof.provider, providerRef, amountKr: booking.priceKr, platformFee: fee },
+      update: { status: "PAID", provider: proof.provider, providerRef, amountKr: booking.priceKr, platformFee: fee, currency: booking.currency ?? "DKK" },
     });
     return { booking: await tx.booking.findUniqueOrThrow({ where: { id: bookingId } }), changed: true };
   });
@@ -298,6 +300,7 @@ export async function notifyBookingConfirmed(booking: any) {
       what,
       startsAt: booking.startsAt,
       priceKr: booking.priceKr,
+      currency:booking.currency,locale:booking.user?.locale,timeZone:booking.timeZone,
       bookingId: booking.id,
       access:
         booking.kind === "COURT" && booking.court
@@ -325,6 +328,7 @@ export async function notifyBookingConfirmed(booking: any) {
           playerEmail: booking.user.email,
           startsAt: booking.startsAt,
           priceKr: booking.priceKr,
+          currency:booking.currency,locale:admin.locale,timeZone:booking.timeZone,
           needsClubEntry: booking.needsClubEntry,
           externalSystem: booking.court.club.externalSystem,
         })
@@ -342,6 +346,7 @@ export async function notifyBookingConfirmed(booking: any) {
         playerEmail: booking.user.email,
         startsAt: booking.startsAt,
         priceKr: booking.priceKr,
+      currency:booking.currency,locale:booking.user?.locale,timeZone:booking.timeZone,
       })
     );
   }

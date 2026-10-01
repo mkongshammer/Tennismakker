@@ -32,7 +32,7 @@ export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:s
     const email=r.email.toLowerCase();const existing=await tx.user.findUnique({where:{email}});
     if(existing&&(existing.role!=='PLAYER'||existing.clubId&&existing.clubId!==club.id))throw Error(`Medlem ${email} har en anden klub eller administratorrolle. Ingen rækker er importeret.`);
     if(existing){await tx.user.update({where:{id:existing.id},data:{clubId:club.id}});skipped++;}
-    else {await tx.user.create({data:{email,name:r.name,phone:r.phone||null,clubId:club.id,passwordHash:crypto.randomBytes(32).toString('hex')}});members++;}
+    else {await tx.user.create({data:{email,name:r.name,phone:r.phone||null,clubId:club.id,country:club.country,countryChosen:true,locale:club.country==='DK'?'da':'en',passwordHash:crypto.randomBytes(32).toString('hex')}});members++;}
    }
    for(const r of rows.filter(r=>r.type==='booking')){
     const importKey=crypto.createHash('sha256').update(JSON.stringify([club.id,source,r.external_id])).digest('hex');
@@ -41,7 +41,7 @@ export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:s
     const court=courts.find(c=>c.name===r.court)!,startsAt=importDate(r.start),endsAt=importDate(r.end);
     const clash=await tx.booking.findFirst({where:{courtId:court.id,status:{in:['CONFIRMED','HOLD']},startsAt:{lt:endsAt},endsAt:{gt:startsAt}}});
     if(clash)throw Error(`Booking ${r.external_id} overlapper en eksisterende booking. Ingen rækker er importeret.`);
-    const booking=await tx.booking.create({data:{courtId:court.id,userId:member.id,startsAt,endsAt,kind:'COURT',status:'CONFIRMED',priceKr:0}});
+    const booking=await tx.booking.create({data:{courtId:court.id,userId:member.id,startsAt,endsAt,kind:'COURT',status:'CONFIRMED',priceKr:0,currency:club.currency,timeZone:club.timeZone}});
     await tx.bookingImport.create({data:{key:importKey,bookingId:booking.id}});bookings++;
    }
    return {members,bookings,skipped};

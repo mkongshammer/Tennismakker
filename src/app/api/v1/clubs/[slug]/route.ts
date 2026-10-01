@@ -1,4 +1,4 @@
-import { addDays, startOfDay } from "date-fns";
+import {addCalendarDays,dayKey,wallTime} from "../../../../../lib/international";
 import { db } from "../../../../../lib/db";
 import { getClubAvailability } from "../../../../../lib/integrations";
 import { apiError, json, preflight } from "../../../../../lib/api/helpers";
@@ -22,8 +22,8 @@ export async function GET(
 
   const url = new URL(req.url);
   const days = Math.min(14, Math.max(1, Number(url.searchParams.get("dage") ?? 7)));
-  const from = startOfDay(new Date());
-  const { slots } = await getClubAvailability(club.id, from, addDays(from, days));
+  const key=dayKey(new Date(),club.timeZone),from=wallTime(key,0,0,club.timeZone)!;
+  const { slots } = await getClubAvailability(club.id, from, wallTime(addCalendarDays(key,Number.isFinite(days)?days:7),0,0,club.timeZone)!);
 
   return json({
     club: {
@@ -34,6 +34,8 @@ export async function GET(
       description: club.description,
       color: club.color,
       priceHour: club.priceHour,
+      country:club.country,currency:club.currency,timeZone:club.timeZone,
+      address:club.address,latitude:club.latitude,longitude:club.longitude,
       courts: club.courts.map((c: any) => ({
         id: c.id,
         name: c.name,

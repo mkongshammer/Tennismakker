@@ -41,7 +41,7 @@ export async function createPackage(
     };
   }
   if (!Number.isInteger(priceKr) || priceKr < 50 || priceKr > 100000) {
-    return { error: "Prisen skal være mellem 50 og 100.000 kr." };
+    return { error: `Prisen skal være mellem 50 og 100.000 ${coach.currency}.` };
   }
 
   await db.coachPackage.create({

@@ -1,6 +1,8 @@
+import {wallTimeCandidates,validTimeZone} from "./international";
 /** Read-only legacy Nubapp API. Contract: https://sport.nubapp.com/api/v4/docs.json */
 export type ResaSnapshot = {
  applicationId:string;
+ timeZone?:string;
  members:{id:string;email:string;name:string;phone:string}[];
  facilities:{id:string;name:string}[];
  bookings:{id:string;userId:string;facilityId:string;start:string;end:string}[];
@@ -11,16 +13,15 @@ function object(value:unknown):Record<string,unknown> {if(!value||typeof value!=
 function id(value:unknown):string {const s=String(value??'');if(!/^[1-9]\d{0,14}$/.test(s))throw fail();return s;}
 function text(value:unknown,max:number):string {if(typeof value!=='string'||value.length>max)throw fail();return value.trim();}
 
-// Reject nonexistent AND ambiguous Danish wall-clock times rather than moving a booking.
-export function resaDate(value:unknown):string {
- const s=text(value,19);if(!/^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d$/.test(s))throw fail();
- const wall=Date.parse(s.replace(' ','T')+'Z');if(!Number.isFinite(wall))throw fail();
- const formatter=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Copenhagen',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
- const candidates=[1,2].map(offset=>new Date(wall-offset*3600000)).filter(d=>formatter.format(d)===s);
+// Ambiguous or missing local times require an import with an explicit UTC offset.
+export function resaDate(value:unknown,timeZone='Europe/Copenhagen'):string {
+ const s=text(value,19),match=/^(\d{4}-\d\d-\d\d) (\d\d):(\d\d):(\d\d)$/.exec(s);
+ if(!match||!validTimeZone(timeZone)||Number(match[4])>59)throw fail();
+ const candidates=wallTimeCandidates(match[1],+match[2],+match[3],timeZone);
  if(candidates.length!==1)throw Error('Et bookingtidspunkt er ugyldigt eller tvetydigt ved sommertidsskift. Brug CSV med eksplicit tidszone for denne booking.');
- return candidates[0].toISOString().replace('.000Z','Z');
+ return new Date(+candidates[0]+Number(match[4])*1000).toISOString().replace('.000Z','Z');
 }
-export async function fetchResasports(c:ResaCredentials, from:string, to:string, fetcher:typeof fetch=fetch):Promise<ResaSnapshot>{
+export async function fetchResasports(c:ResaCredentials, from:string, to:string, fetcher:typeof fetch=fetch,timeZone="Europe/Copenhagen"):Promise<ResaSnapshot>{
  id(c.applicationId);id(c.actorId);
  if(!c.username||!c.password||c.username.length>200||c.password.length>1000||(c.token?.length??0)>4000)throw Error('Udfyld API-bruger, API-adgangskode, klub-ID og administrator-ID fra Nubapp.');
  for(const d of [from,to])if(!/^\d{4}-\d\d-\d\d$/.test(d)||new Date(d).toISOString().slice(0,10)!==d)throw Error('Vælg gyldige datoer.');
@@ -54,12 +55,12 @@ export async function fetchResasports(c:ResaCredentials, from:string, to:string,
  const bookings=(await read('bookings/getBookings.php',{start_timestamp:from+' 00:00:00',end_timestamp:to+' 23:59:59'},'bookings')).map(raw=>{
   const r=object(raw);
   if(r.dead_timestamp!==null&&r.dead_timestamp!==undefined&&r.dead_timestamp!=='')throw Error('En booking har en udløbstid i Resasports. Afklar dens status før import eller brug CSV.');
-  const b={id:id(r.id_booking),userId:id(r.id_user),facilityId:id(r.id_facility),start:resaDate(r.start_timestamp),end:resaDate(r.end_timestamp)};
+  const b={id:id(r.id_booking),userId:id(r.id_user),facilityId:id(r.id_facility),start:resaDate(r.start_timestamp,timeZone),end:resaDate(r.end_timestamp,timeZone)};
   if(!seen.has(b.userId)||!facilities.some(f=>f.id===b.facilityId)||b.end<=b.start||Date.parse(b.end)-Date.parse(b.start)>86400000)throw fail();return b;
  });
  if(new Set(bookings.map(b=>b.id)).size!==bookings.length)throw fail();
  if(members.length+bookings.length>500)throw Error('Der er over 500 medlems- og bookingrækker. Vælg færre bookingdage eller brug opdelt CSV-import.');
- return {applicationId:c.applicationId,members,facilities,bookings};
+ return {applicationId:c.applicationId,timeZone,members,facilities,bookings};
 }
 export function resaCsv(snapshot:ResaSnapshot,mapping:Record<string,string>):string {
  const rows:string[][]=[['type','email','name','phone','court','start','end','external_id']];

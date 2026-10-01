@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { api, setToken, getToken, onSessionExpired } from "./api";
 
+import { restoreInternational,setInternational } from "./international";
 import { disablePush } from "./push";
 
 const AuthContext = createContext(null);
@@ -13,7 +14,7 @@ export function AuthProvider({ children }) {
 
   const restore = useCallback(async () => {
     setLoading(true); setSessionError(null);
-    try { if (await getToken()) setUser((await api.me()).user); }
+    try { await restoreInternational(); if (await getToken()) {const u=(await api.me()).user;setUser(u);await setInternational(u);} }
     catch (error) { if (error.status !== 401) setSessionError(error.message); }
     finally { setLoading(false); }
   }, []);
@@ -24,13 +25,17 @@ export function AuthProvider({ children }) {
     if (clubOnly && u.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
     await setToken(token);
     setUser(u);
+    await setInternational(u);
   };
 
   const signup = async (payload) => {
     const { token, user: u } = await api.signup(payload);
     await setToken(token);
     setUser(u);
+    await setInternational(u);
   };
+
+  const savePreferences=async payload=>{const u=(await api.savePreferences(payload)).user;setUser(u);await setInternational(u);};
 
   const logout = async () => {
     await disablePush();
@@ -46,7 +51,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, logout, deleteAccount }}>
+    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, logout, deleteAccount,savePreferences }}>
       {children}
     </AuthContext.Provider>
   );

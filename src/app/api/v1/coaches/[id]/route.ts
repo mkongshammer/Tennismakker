@@ -33,6 +33,7 @@ export async function GET(
       name: coach.user.name,
       headline: coach.headline,
       priceHour: coach.priceHour,
+      country:coach.country,currency:coach.currency,timeZone:coach.timeZone,
       lessonMinutes: coach.lessonMinutes,
       lessonPriceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
       area: coach.area,

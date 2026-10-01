@@ -1,3 +1,4 @@
+import { validateOrderCheckout, type CheckoutEvidence } from "./payment-validation";
 // Klubbens klippekort.
 //
 // Ti banetimer betalt på én gang. Trænerne har det i forvejen
@@ -89,6 +90,7 @@ export async function buyPunchCard(userId: string, cardId: string): Promise<BuyR
           id: true,
           name: true,
           slug: true,
+          currency: true,
           stripeAccountId: true,
           stripeChargesEnabled: true,
         },
@@ -107,7 +109,7 @@ export async function buyPunchCard(userId: string, cardId: string): Promise<BuyR
       clubId: card.club.id,
       name: card.name,
       sessions: card.sessions,
-      priceKr: card.priceKr,
+      priceKr: card.priceKr, currency: card.club.currency,
       expiresAt,
     },
   });
@@ -136,7 +138,7 @@ export async function buyPunchCard(userId: string, cardId: string): Promise<BuyR
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          currency: card.club.currency.toLowerCase(),
           product_data: {
             name: card.name,
             description: `${card.sessions} banetimer i ${card.club.name}`,
@@ -160,7 +162,11 @@ export async function buyPunchCard(userId: string, cardId: string): Promise<BuyR
   return { ok: true, checkoutUrl: session.url };
 }
 
-export async function confirmPunchPurchase(purchaseId: string): Promise<void> {
+export async function confirmPunchPurchase(purchaseId: string, session?: CheckoutEvidence): Promise<void> {
+  if (session) {
+    const order = await db.clubPunchPurchase.findUniqueOrThrow({where:{id:purchaseId}});
+    validateOrderCheckout(order,session,'punchPurchaseId');
+  }
   await db.clubPunchPurchase.updateMany({
     where: { id: purchaseId, status: { not: "PAID" } },
     data: { status: "PAID" },

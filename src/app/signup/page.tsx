@@ -16,7 +16,7 @@ function splitTerms(sentence: string) {
 }
 
 export default async function SignupPage() {
-  const { locale } = await getPreferences();
+  const { locale,country } = await getPreferences();
   const t = translator(locale);
   const parts = splitTerms(translate("auth.termsNote", locale));
 
@@ -44,6 +44,7 @@ export default async function SignupPage() {
           coachAreaNote: t("auth.coachAreaNote"),
           coachRest: t("auth.coachRest"),
         }}
+        initialCountry={country}
         locale={locale}
         terms={{
           ...parts,

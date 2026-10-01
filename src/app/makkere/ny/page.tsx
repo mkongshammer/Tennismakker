@@ -1,5 +1,6 @@
 "use client";
 
+import {useWebsiteInternational} from "../../../components/InternationalProvider";
 import { useFormState } from "react-dom";
 import { createMatchRequest } from "./actions";
 import { LEVELS, MATCH_TYPES } from "../../../lib/levels";
@@ -7,6 +8,7 @@ import { DK_REGIONS } from "../../../lib/regions";
 import { SubmitButton } from "../../../components/SubmitButton";
 
 export default function NytOpslagPage() {
+  const {country,locale,tr}=useWebsiteInternational();
   const [state, action] = useFormState(createMatchRequest, null);
 
   return (
@@ -44,12 +46,12 @@ export default function NytOpslagPage() {
         </div>
         <div>
           <label className="label" htmlFor="area">Region</label>
-          <select className="input" id="area" name="area" defaultValue="" required>
+          {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
             <option value="" disabled>Vælg region</option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>
+          </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
         <SubmitButton className="btn-court w-full" pendingText="Slår op…">Slå op</SubmitButton>

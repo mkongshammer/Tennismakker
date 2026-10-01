@@ -52,6 +52,9 @@ export function publicUser(user: any) {
     role: user.role,
     level: user.level,
     area: user.area,
+    country: user.country ?? "DK",
+    locale: user.locale ?? "da",
+    countryChosen: Boolean(user.countryChosen),
     clubId: user.clubId ?? null,
     isCoach: Boolean(user.coachProfile),
   };

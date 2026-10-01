@@ -9,8 +9,10 @@ import {
   View,
   Pressable,
   Linking,
-  useWindowDimensions,
-} from "react-native";
+  useWindowDimensions } from
+"react-native";
+import { useInternational, tr } from "../lib/international";
+import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
 import { colors } from "../lib/theme";
@@ -20,6 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
   const { login, signup } = useAuth();
+  const { country, locale } = useInternational();
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,8 +51,8 @@ export default function LoginScreen() {
     lock.current = true;
     setBusy(true);
     try {
-      if (mode !== "signup") await login(email.trim().toLowerCase(), password, mode === "club");
-      else await signup({ email: email.trim().toLowerCase(), password, name: name.trim(), area, level: 3 });
+      if (mode !== "signup") await login(email.trim().toLowerCase(), password, mode === "club");else
+      await signup({ email: email.trim().toLowerCase(), password, name: name.trim(), area: area.trim(), country, locale, level: 3 });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -61,107 +64,108 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
+      behavior={Platform.OS === "ios" ? "padding" : undefined}>
+
       <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={[styles.wrap, { paddingTop: Math.max(24, insets.top + 20), paddingBottom: Math.max(24, insets.bottom + 16) }, desktop && styles.desktopWrap]} keyboardShouldPersistTaps="handled">
         <View style={[styles.welcome, desktop && styles.desktopWelcome]}>
-        <Text style={styles.logo}>
-          Racket<Text style={{ color: colors.optic }}>Buddy</Text><Text style={{ color: colors.optic }}>.</Text>
+        <Text style={styles.logo}>{"Racket"}
+            <Text style={{ color: colors.optic }}>{"Buddy"}</Text><Text style={{ color: colors.optic }}>.</Text>
         </Text>
         <View style={styles.welcomeBody}>
-          <Text style={styles.kicker}>MERE TID PÅ BANEN</Text>
-          <Text style={styles.heroTitle}>{mode === "club" ? "Din klub.\nSamlet ét sted." : "Godt spil\nstarter her."}</Text>
-          <Text style={styles.tagline}>{mode === "club" ? "Bookinger, medlemmer og klubdrift — også når du er på farten." : "Din næste bane, træner og medspiller. Lige ved hånden."}</Text>
+          <Text style={styles.kicker}>{tr("MERE TID P\xC5 BANEN")}</Text>
+          <Text style={styles.heroTitle}>{mode === "club" ? tr("Din klub.\nSamlet \xE9t sted.") : tr("Godt spil\nstarter her.")}</Text>
+          <Text style={styles.tagline}>{mode === "club" ? tr("Bookinger, medlemmer og klubdrift \u2014 ogs\xE5 n\xE5r du er p\xE5 farten.") : tr("Din n\xE6ste bane, tr\xE6ner og medspiller. Lige ved h\xE5nden.")}</Text>
         </View>
         <CourtScene height={desktop ? 220 : 110} />
         </View>
         <View style={[styles.form, desktop && styles.desktopForm]}>
-        <Text accessibilityRole="header" style={styles.formTitle}>{mode === "club" ? "Klublogin" : mode === "signup" ? "Velkommen på holdet" : "Velkommen tilbage"}</Text>
-        <Text style={styles.formHint}>{mode === "club" ? "Brug klubbens administratorkonto." : mode === "signup" ? "Opret din profil og find dit næste spil." : "Log ind som spiller eller træner."}</Text>
-        {mode === "signup" && (
+        <PreferencesPicker onChange={async (value) => {setArea("");await import("../lib/international").then((m) => m.setInternational(value));}} />
+        <Text accessibilityRole="header" style={styles.formTitle}>{mode === "club" ? tr("Klublogin") : mode === "signup" ? tr("Velkommen p\xE5 holdet") : tr("Velkommen tilbage")}</Text>
+        <Text style={styles.formHint}>{mode === "club" ? tr("Brug klubbens administratorkonto.") : mode === "signup" ? tr("Opret din profil og find dit n\xE6ste spil.") : tr("Log ind som spiller eller tr\xE6ner.")}</Text>
+        {mode === "signup" &&
           <>
-            <Text style={styles.label}>Navn</Text>
-            <TextInput accessibilityLabel="Navn" editable={!busy} autoComplete="name" maxLength={120} style={styles.input} value={name} onChangeText={setName} autoCapitalize="words" />
+            <Text style={styles.label}>{tr("Navn")}</Text>
+            <TextInput accessibilityLabel={tr("Navn")} editable={!busy} autoComplete="name" maxLength={120} style={styles.input} value={name} onChangeText={setName} autoCapitalize="words" />
           </>
-        )}
+          }
 
-        <Text style={styles.label}>E-mail</Text>
+        <Text style={styles.label}>{tr("E-mail")}</Text>
         <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="email"
-          accessibilityLabel="E-mail"
-          editable={!busy}
-          autoCorrect={false}
-          returnKeyType="next"
-          placeholder="dig@eksempel.dk"
-          placeholderTextColor={colors.slateLight}
-          onSubmitEditing={() => passwordRef.current?.focus()}
-        />
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="email"
+            accessibilityLabel={tr("E-mail")}
+            editable={!busy}
+            autoCorrect={false}
+            returnKeyType="next"
+            placeholder={tr("dig@eksempel.dk")}
+            placeholderTextColor={colors.slateLight}
+            onSubmitEditing={() => passwordRef.current?.focus()} />
 
-        <Text style={styles.label}>Adgangskode</Text>
+
+        <Text style={styles.label}>{tr("Adgangskode")}</Text>
         <View style={styles.passwordWrap}><TextInput
-          style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: "transparent" }]}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          ref={passwordRef}
-          accessibilityLabel="Adgangskode"
-          editable={!busy}
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          returnKeyType="go"
-          onSubmitEditing={submit}
-        /><Pressable accessibilityRole="button" accessibilityLabel={showPassword ? "Skjul adgangskode" : "Vis adgangskode"} disabled={busy} onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}><Text style={{ color: colors.court, fontWeight: "700", fontSize: 13 }}>{showPassword ? "Skjul" : "Vis"}</Text></Pressable></View>
-        {mode === "signup" && <Text style={{ marginTop: 6, color: colors.slate }}>Mindst 8 tegn.</Text>}
+              style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: "transparent" }]}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              ref={passwordRef}
+              accessibilityLabel={tr("Adgangskode")}
+              editable={!busy}
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
+              returnKeyType="go"
+              onSubmitEditing={submit} />
+            <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? tr("Skjul adgangskode") : tr("Vis adgangskode")} disabled={busy} onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}><Text style={{ color: colors.court, fontWeight: "700", fontSize: 13 }}>{showPassword ? tr("Skjul") : tr("Vis")}</Text></Pressable></View>
+        {mode === "signup" && <Text style={{ marginTop: 6, color: colors.slate }}>{tr("Mindst 8 tegn.")}</Text>}
         {mode !== "signup" && <Pressable accessibilityRole="link" onPress={() => Linking.openURL("https://racketbuddy.app/login/glemt").catch(() => setError("Kunne ikke åbne siden. Prøv igen."))}>
-          <Text style={[styles.switch, { textAlign: "right", paddingVertical: 10, marginTop: 4 }]}>Glemt adgangskode?</Text>
+          <Text style={[styles.switch, { textAlign: "right", paddingVertical: 10, marginTop: 4 }]}>{tr("Glemt adgangskode?")}</Text>
         </Pressable>}
 
-        {mode === "signup" && (
+        {mode === "signup" &&
           <>
-            <Text style={styles.label}>Region</Text>
-            <View style={styles.chips}>
-              {DK_REGIONS.map((region) => (
-                <Pressable
-                  key={region}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: area === region }}
-                  disabled={busy}
-                  onPress={() => setArea(region)}
-                  style={[styles.chip, area === region && styles.chipActive]}
-                >
+            <Text style={styles.label}>{country === "DK" ? tr("Region") : tr("By / område")}</Text>
+            {country === "DK" ? <View style={styles.chips}>
+              {DK_REGIONS.map((region) =>
+              <Pressable
+                key={tr(region)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: area === region }}
+                disabled={busy}
+                onPress={() => setArea(region)}
+                style={[styles.chip, area === region && styles.chipActive]}>
+
                   <Text style={[styles.chipText, area === region && styles.chipTextActive]}>
-                    {region}
+                    {tr(region)}
                   </Text>
                 </Pressable>
-              ))}
-            </View>
+              )}
+            </View> : <TextInput accessibilityLabel={tr("By / område")} style={styles.input} value={area} onChangeText={setArea} editable={!busy} maxLength={100} />}
           </>
-        )}
+          }
 
-        {error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>}
+        {error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{tr(error)}</Text>}
 
         <View style={{ marginTop: 16 }}>
           <Button
-            title={mode === "club" ? "Log ind på klubben" : mode === "login" ? "Log ind" : "Opret profil"}
-            onPress={submit}
-            loading={busy}
-          />
+              title={mode === "club" ? tr("Log ind p\xE5 klubben") : mode === "login" ? tr("Log ind") : tr("Opret profil")}
+              onPress={submit}
+              loading={busy} />
+
         </View>
 
-        <View style={{marginTop:12}}><Button variant="quiet" title={mode === "club" ? "Tilbage til spiller- og trænerlogin" : "Klublogin"} disabled={busy} onPress={()=>{setMode(mode === "club" ? "login" : "club");setError(null);}}/></View>
-        <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => { setMode(mode === "login" ? "signup" : "login"); setError(null); }}>
+        <View style={{ marginTop: 12 }}><Button variant="quiet" title={mode === "club" ? tr("Tilbage til spiller- og tr\xE6nerlogin") : tr("Klublogin")} disabled={busy} onPress={() => {setMode(mode === "club" ? "login" : "club");setError(null);}} /></View>
+        <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => {setMode(mode === "login" ? "signup" : "login");setError(null);}}>
           <Text style={styles.switch}>
-            {mode === "login" ? "Ny her? Opret profil" : "Har du en konto? Log ind"}
+            {mode === "login" ? tr("Ny her? Opret profil") : tr("Har du en konto? Log ind")}
           </Text>
         </Pressable>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
-  );
+    </KeyboardAvoidingView>);
+
 }
 
 const styles = StyleSheet.create({
@@ -187,7 +191,7 @@ const styles = StyleSheet.create({
     padding: 15,
     fontSize: 16,
     color: colors.ink,
-    minHeight: 52,
+    minHeight: 52
   },
   passwordWrap: { flexDirection: "row", borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.chalk, alignItems: "center" },
   passwordToggle: { minWidth: 52, minHeight: 52, alignItems: "center", justifyContent: "center" },
@@ -202,11 +206,11 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#fff",
+    backgroundColor: "#fff"
   },
   chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
   chipText: { fontWeight: "600", color: colors.ink, fontSize: 13 },
   chipTextActive: { color: colors.chalk },
   error: { color: colors.court, fontWeight: "600", marginTop: 14 },
-  switch: { color: colors.court, textAlign: "center", marginTop: 20, fontWeight: "600" },
+  switch: { color: colors.court, textAlign: "center", marginTop: 20, fontWeight: "600" }
 });

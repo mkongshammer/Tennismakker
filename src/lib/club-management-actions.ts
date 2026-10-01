@@ -33,9 +33,9 @@ export async function addClubMember(_prev:unknown,form:FormData):Promise<{ok?:st
     const result=await db.$transaction(async tx=>{
       let member=await tx.user.findUnique({where:{email}});const created=!member;
       if(member && (member.role!=='PLAYER'||(member.clubId&&member.clubId!==club.id)))throw Error('Kontoen er knyttet til en anden klub eller administratorrolle. Bed personen kontakte RacketBuddy.');
-      if(!member)member=await tx.user.create({data:{email,name,phone:phone||null,passwordHash,clubId:club.id}});
+      if(!member)member=await tx.user.create({data:{email,name,phone:phone||null,passwordHash,clubId:club.id,country:club.country,countryChosen:true,locale:club.country==="DK"?"da":"en"}});
       else await tx.user.update({where:{id:member.id},data:{clubId:club.id}});
-      if(type)await tx.membership.upsert({where:{typeId_userId:{typeId:type.id,userId:member.id}},create:{typeId:type.id,userId:member.id,priceKr:type.priceKr,status:'PENDING'},update:{}});
+      if(type)await tx.membership.upsert({where:{typeId_userId:{typeId:type.id,userId:member.id}},create:{typeId:type.id,userId:member.id,priceKr:type.priceKr,currency:club.currency,status:'PENDING'},update:{}});
       return {created};
     });
     revalidatePath('/admin','layout');

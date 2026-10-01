@@ -1,3 +1,5 @@
+import * as international from "./international";
+import * as phrases from "./phrases";
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import React from 'react';
@@ -25,12 +27,15 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
       for (const item of clause.namedBindings.elements) mocks[key][item.name.text] = item.name.text;
     }
   }
-  const club = {solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
+  const club = {currency:"DKK",timeZone:"Europe/Copenhagen",country:"DK",solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
   const db: any = { club: {findUnique: async ({where}: any) => { assert.equal(where.id, 'club-a'); return club; }} };
   for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel']) {
     db[model] = {findMany: async () => {queries.push(model);return [];}, findUnique: async () => {queries.push(model);return null;}};
   }
   Object.assign(mocks, {
+    "../../lib/preferences":{getPreferences:async()=>({locale:"da",country:"DK",sport:"TENNIS"})},
+    "../../lib/international":international,
+    "../../lib/phrases":phrases,
     react: React, 'date-fns': dates, 'date-fns/locale': {},
     '../../lib/admin-navigation': navigation, '../../lib/club-features':features, '../../lib/sports': sports, '../../lib/club-sports': clubSports,
     '../../lib/db': {db}, '../../lib/session': {getCurrentUser:async()=>role ? {role,clubId:'club-a'} : null},

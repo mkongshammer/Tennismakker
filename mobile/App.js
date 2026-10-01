@@ -1,4 +1,4 @@
-import {PushLifecycle,flushPushNavigation} from "./src/lib/PushLifecycle";
+import { tr, useInternational } from "./src/lib/international";import { PushLifecycle, flushPushNavigation } from "./src/lib/PushLifecycle";
 import AppPortal from "./src/screens/AppPortal";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
@@ -42,68 +42,68 @@ const screenOptions = {
   headerTintColor: colors.ink,
   headerTitleStyle: { fontWeight: "700", fontSize: 17 },
   headerShadowVisible: false,
-  headerRight: () => <ProfileButton />,
+  headerRight: () => <ProfileButton />
 };
 
-function ClubsStack() {
+function ClubsStack() {useInternational();
   return (
     <ClubStack.Navigator screenOptions={screenOptions}>
-      <ClubStack.Screen name="Klubber" component={ClubsScreen} options={{ title: "Book bane" }} />
+      <ClubStack.Screen name="Klubber" component={ClubsScreen} options={{ title: tr("Book bane") }} />
       <ClubStack.Screen
         name="Klub"
         component={ClubScreen}
-        options={({ route }) => ({ title: route.params?.name ?? "Klub" })}
-      />
-    </ClubStack.Navigator>
-  );
+        options={({ route }) => ({ title: route.params?.name ?? "Klub" })} />
+
+    </ClubStack.Navigator>);
+
 }
 
-function CoachesStack() {
+function CoachesStack() {useInternational();
   return (
     <CoachStack.Navigator screenOptions={screenOptions}>
-      <CoachStack.Screen name="Traenere" component={CoachesScreen} options={{ title: "Find træner" }} />
+      <CoachStack.Screen name="Traenere" component={CoachesScreen} options={{ title: tr("Find tr\xE6ner") }} />
       <CoachStack.Screen
         name="Traener"
         component={CoachScreen}
-        options={({ route }) => ({ title: route.params?.name ?? "Træner" })}
-      />
-    </CoachStack.Navigator>
-  );
+        options={({ route }) => ({ title: route.params?.name ?? "Træner" })} />
+
+    </CoachStack.Navigator>);
+
 }
 
-function MatchesStack() {
+function MatchesStack() {useInternational();
   return (
     <MatchStack.Navigator screenOptions={screenOptions}>
-      <MatchStack.Screen name="Spillere" component={SwipeScreen} options={{ title: "Find medspiller" }} />
-      <MatchStack.Screen name="Makkere" component={MatchesScreen} options={{ title: "Opslag" }} />
-      <MatchStack.Screen name="NytOpslag" component={NewMatchScreen} options={{ title: "Opret opslag" }} />
-    </MatchStack.Navigator>
-  );
+      <MatchStack.Screen name="Spillere" component={SwipeScreen} options={{ title: tr("Find medspiller") }} />
+      <MatchStack.Screen name="Makkere" component={MatchesScreen} options={{ title: tr("Opslag") }} />
+      <MatchStack.Screen name="NytOpslag" component={NewMatchScreen} options={{ title: tr("Opret opslag") }} />
+    </MatchStack.Navigator>);
+
 }
 
-function MessagesStack() {
+function MessagesStack() {useInternational();
   return (
     <ChatStack.Navigator screenOptions={screenOptions}>
-      <ChatStack.Screen name="Beskeder" component={ThreadsScreen} options={{ title: "Beskeder" }} />
+      <ChatStack.Screen name="Beskeder" component={ThreadsScreen} options={{ title: tr("Beskeder") }} />
       <ChatStack.Screen
         name="Samtale"
         component={ChatScreen}
-        options={({ route }) => ({ title: route.params?.name ?? "Samtale" })}
-      />
-    </ChatStack.Navigator>
-  );
+        options={({ route }) => ({ title: route.params?.name ?? "Samtale" })} />
+
+    </ChatStack.Navigator>);
+
 }
 
 // Rækkefølgen matcher websitets bundlinje præcist: Book, Trænere,
 // Medspillere, Beskeder. Profilen er bevidst ikke en femte fane.
-function MainTabs() {
-  const {user}=useAuth();
+function MainTabs() {useInternational();
+  const { user } = useAuth();
   const { width } = useWindowDimensions();
   const desktop = Platform.OS === "web" && width >= 900;
   return (
     <Tabs.Navigator
       initialRouteName={user?.role === "CLUB_ADMIN" ? "AdminTab" : "KlubberTab"}
-      tabBar={props => desktop ? <DesktopNavigation {...props} /> : <BottomTabBar {...props} />}
+      tabBar={(props) => desktop ? <DesktopNavigation {...props} /> : <BottomTabBar {...props} />}
       sceneContainerStyle={desktop ? { marginLeft: 232 } : undefined}
       screenOptions={{
         headerShown: false,
@@ -113,81 +113,81 @@ function MainTabs() {
         tabBarItemStyle: { borderRadius: 16, marginHorizontal: 4, marginBottom: 4 },
         tabBarActiveBackgroundColor: colors.courtTint,
         tabBarHideOnKeyboard: true,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
-      }}
-    >
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" }
+      }}>
+
       <Tabs.Screen
         name="KlubberTab"
         component={ClubsStack}
         options={{
-          title: "Book bane",
-          tabBarIcon: ({ focused, color }) => <IconCourt active={focused} color={color} />,
-        }}
-      />
+          title: tr("Book bane"),
+          tabBarIcon: ({ focused, color }) => <IconCourt active={focused} color={color} />
+        }} />
+
       <Tabs.Screen
         name="TraenereTab"
         component={CoachesStack}
         options={{
-          title: "Trænere",
-          tabBarIcon: ({ focused, color }) => <IconCoach active={focused} color={color} />,
-        }}
-      />
+          title: tr("Tr\xE6nere"),
+          tabBarIcon: ({ focused, color }) => <IconCoach active={focused} color={color} />
+        }} />
+
       <Tabs.Screen
         name="MakkereTab"
         component={MatchesStack}
         options={{
-          title: "Medspillere",
-          tabBarIcon: ({ focused, color }) => <IconPlayers active={focused} color={color} />,
-        }}
-      />
+          title: tr("Medspillere"),
+          tabBarIcon: ({ focused, color }) => <IconPlayers active={focused} color={color} />
+        }} />
+
       <Tabs.Screen
         name="BeskederTab"
         component={MessagesStack}
         options={{
-          title: "Beskeder",
-          tabBarIcon: ({ focused, color }) => <IconMessages active={focused} color={color} />,
-        }}
-      />
-      {user?.role === "CLUB_ADMIN" && <Tabs.Screen name="AdminTab" component={AppPortal} options={{title:"Min klub",tabBarIcon:({color})=><IconCourt color={color}/>}}/>}
-    </Tabs.Navigator>
-  );
+          title: tr("Beskeder"),
+          tabBarIcon: ({ focused, color }) => <IconMessages active={focused} color={color} />
+        }} />
+
+      {user?.role === "CLUB_ADMIN" && <Tabs.Screen name="AdminTab" component={AppPortal} options={{ title: tr("Min klub"), tabBarIcon: ({ color }) => <IconCourt color={color} /> }} />}
+    </Tabs.Navigator>);
+
 }
 
-function Root() {
+function Root() {useInternational();
   const { user, loading, sessionError, restore } = useAuth();
 
-  if (loading) return <Loading label="Starter RacketBuddy…" />;
+  if (loading) return <Loading label={tr("Starter RacketBuddy\u2026")} />;
   if (sessionError) return <View style={{ flex: 1, justifyContent: "center", backgroundColor: colors.mist }}><ErrorMessage message={sessionError} onRetry={restore} /></View>;
   if (!user) return <LoginScreen />;
 
   return (
     <RootStack.Navigator initialRouteName="MainTabs">
-      <RootStack.Screen name="WalletPortal" component={AppPortal} initialParams={{destination:"/wallet"}} options={{title:"Min klubwallet"}}/>
+      <RootStack.Screen name="WalletPortal" component={AppPortal} initialParams={{ destination: "/wallet" }} options={{ title: tr("Min klubwallet") }} />
       <RootStack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <RootStack.Screen
         name="Profil"
         component={ProfileScreen}
         options={{
-          title: "Min profil",
+          title: tr("Min profil"),
           presentation: "modal",
           headerStyle: { backgroundColor: colors.chalk },
           headerTintColor: colors.ink,
           headerShadowVisible: false,
           headerTitleStyle: { fontWeight: "700" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.court, fontWeight: "700" }}>Luk</Text></Pressable>,
-        }}
-      />
-    </RootStack.Navigator>
-  );
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.court, fontWeight: "700" }}>{tr("Luk")}</Text></Pressable>
+        }} />
+
+    </RootStack.Navigator>);
+
 }
 
-export default function App() {
+export default function App() {useInternational();
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
     <View style={{ flex: 1, width: "100%", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer documentTitle={{ formatter: options => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
+        <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
           <SessionStatusBar />
           <PushLifecycle />
           <Root />
@@ -195,8 +195,8 @@ export default function App() {
       </AuthProvider>
     </SafeAreaProvider>
     </View>
-    </View>
-  );
+    </View>);
+
 }
 
-function SessionStatusBar() { return <StatusBar style="dark" />; }
+function SessionStatusBar() {useInternational();return <StatusBar style="dark" />;}

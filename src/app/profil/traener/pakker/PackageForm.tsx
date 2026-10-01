@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import {useWebsiteInternational} from '../../../../components/InternationalProvider';
 import { useFormState } from "react-dom";
 import { createPackage } from "./actions";
 import { SubmitButton } from "../../../../components/SubmitButton";
@@ -9,7 +10,8 @@ import {
   MIN_PACKAGE_SESSIONS,
 } from "../../../../lib/package-limits";
 
-export function PackageForm({ priceHour }: { priceHour: number }) {
+export function PackageForm({ priceHour,currency='DKK' }: { priceHour: number;currency?:string }) {
+  const {tr,money}=useWebsiteInternational();
   const [state, action] = useFormState(createPackage, null);
 
   // Prisen pr. time regnes ud, mens man skriver. Uden det er en pakke bare
@@ -47,7 +49,7 @@ export function PackageForm({ priceHour }: { priceHour: number }) {
           <p className="mt-1 text-xs text-slate">Maks. {MAX_PACKAGE_SESSIONS} timer pr. pakkeforløb.</p>
         </div>
         <div>
-          <label className="label" htmlFor="priceKr">Samlet pris (kr)</label>
+          <label className="label" htmlFor="priceKr">{tr('Samlet pris')} ({currency})</label>
           <input
             className="input"
             id="priceKr"
@@ -69,10 +71,10 @@ export function PackageForm({ priceHour }: { priceHour: number }) {
 
       {perHour !== null && (
         <div className="rounded-xl bg-mist p-3 text-sm">
-          <span className="font-bold">{perHour} kr pr. time</span>
-          <span className="text-slate"> mod {priceHour} kr for en enkelttime. </span>
+          <span className="font-bold">{money(perHour,currency)} {tr('pr. time')}</span>
+          <span className="text-slate"> · {money(priceHour,currency)} {tr('for en enkelttime.')}</span>
           {saving > 0 ? (
-            <span className="font-semibold text-court">Eleven sparer {saving} kr.</span>
+            <span className="font-semibold text-court">{tr('Eleven sparer')} {money(saving,currency)}.</span>
           ) : (
             <span className="font-semibold text-court-dark">
               Pakken er ikke billigere end at betale pr. gang — så er der ingen grund

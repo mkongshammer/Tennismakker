@@ -17,7 +17,7 @@ import { baseLocale, type BaseLocale, type Locale } from "./sports";
 // fra hinanden, første gang nogen rettede den ene.
 type Dict = Record<string, Record<BaseLocale, string> & { "en-US"?: string }>;
 
-const T: Dict = {
+export const T: Dict = {
   // Navigation
   "nav.book": {
     da: "Book bane",
@@ -139,18 +139,18 @@ const T: Dict = {
   // steder: i hero'ens overlinje, hvor den møder en ny besøgende, og i
   // footeren, hvor den bliver stående uanset hvor man er på sitet.
   "availability.now": {
-    da: "Tilgængelig i Danmark",
-    en: "Available in Denmark",
-    de: "Verfügbar in Dänemark",
-    sv: "Tillgängligt i Danmark",
-    no: "Tilgjengelig i Danmark",
+    da: "Klubber i Europa og Nordamerika",
+    en: "Clubs in Europe and North America",
+    de: "Clubs in Europa und Nordamerika",
+    sv: "Klubbar i Europa och Nordamerika",
+    no: "Klubber i Europa og Nord-Amerika",
   },
   "availability.soon": {
-    da: "Tilgængelig i Danmark — flere lande på vej",
-    en: "Available in Denmark — more countries coming",
-    de: "Verfügbar in Dänemark — weitere Länder folgen",
-    sv: "Tillgängligt i Danmark — fler länder på väg",
-    no: "Tilgjengelig i Danmark — flere land på vei",
+    da: "Spil på tværs af Europa og Nordamerika",
+    en: "Play across Europe and North America",
+    de: "Spiele in Europa und Nordamerika",
+    sv: "Spela i Europa och Nordamerika",
+    no: "Spill i Europa og Nord-Amerika",
   },
 
   // Book bane

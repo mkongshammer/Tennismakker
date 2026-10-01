@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import { tr, useInternational } from "../lib/international";import React, { useCallback, useRef, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { feedback as Alert } from "../lib/feedback";
@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { AppHeading, Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, LEVELS, MATCH_TYPES } from "../lib/theme";
 
-export default function MatchesScreen({ navigation }) {
+export default function MatchesScreen({ navigation }) {useInternational();
   const state = useScreenData(useCallback(() => api.matches(), []));
   const load = state.refresh;
   const [busyId, setBusyId] = useState(null);
@@ -22,7 +22,7 @@ export default function MatchesScreen({ navigation }) {
       // Send brugeren direkte ind i samtalen, så de kan aftale en tid med det samme
       navigation.navigate("BeskederTab", {
         screen: "Samtale",
-        params: { id: threadId, name: otherName },
+        params: { id: threadId, name: otherName }
       });
     } catch (e) {
       Alert.alert("Kunne ikke svare", e.message);
@@ -42,24 +42,24 @@ export default function MatchesScreen({ navigation }) {
       data={state.data.matches}
       keyExtractor={(m) => m.id}
       refreshControl={
-        <RefreshControl
-          refreshing={state.refreshing}
-          onRefresh={load}
-        />
+      <RefreshControl
+        refreshing={state.refreshing}
+        onRefresh={load} />
+
       }
       ListHeaderComponent={
-        <View style={{ marginBottom: 12 }}>
-          <AppHeading eyebrow="SKAL VI SPILLE?" title="Find din næste kamp." subtitle="Svar på en spilleaftale, eller invitér selv andre med på banen." />
+      <View style={{ marginBottom: 12 }}>
+          <AppHeading eyebrow={tr("SKAL VI SPILLE?")} title={tr("Find din n\xE6ste kamp.")} subtitle={tr("Svar p\xE5 en spilleaftale, eller invit\xE9r selv andre med p\xE5 banen.")} />
           {state.error && <ErrorMessage message={state.error} onRetry={load} />}
           <Button
-            title="Opret opslag"
-            onPress={() => navigation.navigate("NytOpslag")}
-          />
+          title={tr("Opret opslag")}
+          onPress={() => navigation.navigate("NytOpslag")} />
+
         </View>
       }
-      ListEmptyComponent={<Empty title="Vær den første på banen" icon="↗">Ingen åbne spilleaftaler lige nu. Opret et opslag og invitér andre med.</Empty>}
-      renderItem={({ item }) => (
-        <Card>
+      ListEmptyComponent={<Empty title={tr("V\xE6r den f\xF8rste p\xE5 banen")} icon="↗">{tr("Ingen \xE5bne spilleaftaler lige nu. Opret et opslag og invit\xE9r andre med.")}</Empty>}
+      renderItem={({ item }) =>
+      <Card>
           <View style={styles.row}>
             <Text style={styles.name}>{item.requesterName}</Text>
             <Badge>{`${item.level} · ${LEVELS[item.level] ?? ""}`}</Badge>
@@ -67,17 +67,17 @@ export default function MatchesScreen({ navigation }) {
           <Text style={styles.type}>{MATCH_TYPES[item.matchType] ?? item.matchType}</Text>
           <Text style={styles.message}>{item.message}</Text>
           <Text style={styles.meta}>{item.area}</Text>
-          {item.isMine ? (
-            <Text style={styles.mine}>Dit opslag</Text>
-          ) : (
-            <View style={{ marginTop: 12 }}>
-              <Button title="Slå til" onPress={() => accept(item.id)} loading={busyId === item.id} disabled={busyId !== null} />
+          {item.isMine ?
+        <Text style={styles.mine}>{tr("Dit opslag")}</Text> :
+
+        <View style={{ marginTop: 12 }}>
+              <Button title={tr("Sl\xE5 til")} onPress={() => accept(item.id)} loading={busyId === item.id} disabled={busyId !== null} />
             </View>
-          )}
+        }
         </Card>
-      )}
-    />
-  );
+      } />);
+
+
 }
 
 const styles = StyleSheet.create({
@@ -86,5 +86,5 @@ const styles = StyleSheet.create({
   type: { color: colors.court, fontWeight: "700", fontSize: 12, marginTop: 6 },
   message: { marginTop: 6, lineHeight: 20 },
   meta: { color: colors.slate, marginTop: 6, fontSize: 13 },
-  mine: { color: colors.slate, marginTop: 10, fontStyle: "italic" },
+  mine: { color: colors.slate, marginTop: 10, fontStyle: "italic" }
 });

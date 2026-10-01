@@ -1,3 +1,5 @@
+import {dayKey,wallTime,addCalendarDays} from "../../lib/international";
+import {CountryPicker} from "../../components/CountryPicker";
 // "Book bane" — indgangen til baner.
 //
 // Viser kun godkendte klubber i brugerens land, filtreret på den valgte
@@ -32,10 +34,11 @@ export default async function BookPage() {
 
   const ratings = await clubRatings(clubs.map((c: any) => c.id));
 
-  const today = startOfDay(new Date());
+
   const availability = await Promise.all(
     clubs.map(async (c: any) => {
-      const { slots } = await getClubAvailability(c.id, today, addDays(today, 1));
+      const key=dayKey(new Date(),c.timeZone),today=wallTime(key,0,0,c.timeZone)!;
+      const { slots } = await getClubAvailability(c.id, today, wallTime(addCalendarDays(key,1),0,0,c.timeZone)!);
       const forSport = slots.filter((s) =>
         c.courts.some((court: any) => court.id === s.courtId)
       );
@@ -53,6 +56,7 @@ export default async function BookPage() {
     latitude: c.latitude,
     longitude: c.longitude,
     priceHour: c.priceHour,
+    currency:c.currency,country:c.country,
     courtCount: c.courts.length,
     surfaces: Array.from(new Set(c.courts.map((court: any) => court.surface))) as string[],
     color: c.color,
@@ -70,11 +74,12 @@ export default async function BookPage() {
         <h1 className="display text-3xl">{t("book.title")}</h1>
         <p className="text-slate/70">
           {clubs.length > 0
-            ? `${clubs.length} klubber · ${totalFree} ledige tider i dag`
+            ? `${clubs.length} ${prefs.locale==="da"?"klubber":"clubs"} · ${totalFree} ${prefs.locale==="da"?"ledige tider i dag":"available times today"}`
             : t("book.intro")}
         </p>
       </div>
 
+      <div className="mb-5"><CountryPicker active={prefs.country} locale={prefs.locale}/></div>
       <SportPicker active={prefs.sport} locale={prefs.locale} />
 
       {clubs.length === 0 ? (
@@ -85,7 +90,7 @@ export default async function BookPage() {
           </Link>
         </div>
       ) : (
-        <ClubExplorer clubs={data} />
+        <ClubExplorer clubs={data} country={prefs.country} locale={prefs.locale} />
       )}
 
       <div className="card mt-10 border-court/30 bg-court/5">

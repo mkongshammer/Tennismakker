@@ -1,3 +1,4 @@
+import { wallParts } from "./international";
 // Hvad koster en time?
 //
 // Indtil nu var svaret ét tal for hele klubben. Men en hal koster mere end
@@ -33,6 +34,7 @@ export type CourtPricing = {
 };
 
 export type ClubPricing = {
+  timeZone?: string;
   priceHour: number;
   memberPriceHour: number | null;
 };
@@ -58,11 +60,13 @@ function matches(list: string, value: string): boolean {
 export function ruleApplies(
   rule: PriceRuleInput,
   courtId: string,
-  startsAt: Date
+  startsAt: Date,
+  timeZone?: string
 ): boolean {
   if (!matches(rule.courtIds, courtId)) return false;
-  if (!matches(rule.daysOfWeek, String(startsAt.getDay()))) return false;
-  const hour = startsAt.getHours();
+  const local = timeZone ? wallParts(startsAt,timeZone) : null;
+  if (!matches(rule.daysOfWeek, String(local?.weekday ?? startsAt.getDay()))) return false;
+  const hour = local?.hour ?? startsAt.getHours();
   return hour >= rule.fromHour && hour < rule.toHour;
 }
 
@@ -82,7 +86,7 @@ export function priceFor(opts: {
 }): number {
   const { club, court, startsAt, rules, isMember } = opts;
 
-  const rule = rules.find((r) => ruleApplies(r, court.id, startsAt));
+  const rule = rules.find((r) => ruleApplies(r, court.id, startsAt, club.timeZone));
   if (rule) {
     if (isMember && rule.memberPriceHour != null) return rule.memberPriceHour;
     if (!isMember) return rule.priceKr;

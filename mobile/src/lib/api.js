@@ -1,4 +1,5 @@
 // Klient mod RacketBuddy-API'et (/api/v1 i web-repoet).
+import {getInternational} from "./international";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
@@ -53,14 +54,15 @@ export const api = {
   unregisterPush: token => request("/push", {method:"DELETE",body:{token}}),
   appHandoff: destination => request("/app-handoff", {method:"POST",body:{destination}}),
   me: () => request("/me"),
+  savePreferences: payload=>request("/me",{method:"POST",body:payload}),
   deleteAccount: () => request("/me", { method: "DELETE" }),
 
-  clubs: (sport = "TENNIS", country = "DK") =>
+  clubs: (sport = "TENNIS", country = getInternational().country) =>
     request(`/clubs?sport=${sport}&land=${country}`, { auth: false }),
   club: (slug, days = 7) => request(`/clubs/${slug}?dage=${days}`, { auth: false }),
 
-  coaches: (sport = "TENNIS", area) => {
-    const q = new URLSearchParams({ sport });
+  coaches: (sport = "TENNIS", area, country=getInternational().country) => {
+    const q = new URLSearchParams({ sport,land:country });
     if (area) q.set("omraade", area);
     return request(`/coaches?${q}`, { auth: false });
   },
@@ -71,7 +73,7 @@ export const api = {
     request("/bookings/rebook", { method: "POST", body: { bookingId } }),
 
   matches: (params = {}) => {
-    const q = new URLSearchParams();
+    const q = new URLSearchParams({land:getInternational().country});
     if (params.area) q.set("omraade", params.area);
     if (params.level) q.set("niveau", String(params.level));
     const qs = q.toString();
@@ -81,7 +83,7 @@ export const api = {
   acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
 
   players: (params = {}) => {
-    const q = new URLSearchParams();
+    const q = new URLSearchParams({land:getInternational().country});
     if (params.area) q.set("omraade", params.area);
     if (params.sport) q.set("sport", params.sport);
     const qs = q.toString();

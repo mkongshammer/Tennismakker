@@ -1,3 +1,5 @@
+import { dayKey, wallTime, addCalendarDays, formatMoney, formatDate } from "../lib/international";
+import { phrase } from "../lib/phrases";
 // Klubbens side.
 //
 // For klubber på NATIVE er det her deres eneste hjemmeside — så siden skal
@@ -24,11 +26,11 @@ import { sportLabel } from "../lib/sports";
 import { imageUrl } from "../lib/imageUrl";
 
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: {params: {slug: string;};}) {
   const club = await db.club.findUnique({ where: { slug: params.slug } });
   return {
     title: club ? `${club.name} — book bane` : "Klub",
-    description: club?.tagline ?? club?.about ?? undefined,
+    description: club?.tagline ?? club?.about ?? undefined
   };
 }
 
@@ -43,13 +45,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export async function ClubPage({
   slug,
   searchParams,
-  ownDomain = false,
-}: {
-  slug: string;
-  searchParams: { dag?: string; optaget?: string; fejl?: string; afvist?: string };
-  /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */
-  ownDomain?: boolean;
-}) {
+  ownDomain = false
+
+
+
+
+
+}: {slug: string;searchParams: {dag?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
   const club = await db.club.findUnique({
     where: { slug },
     include: {
@@ -57,32 +59,33 @@ export async function ClubPage({
       posts: { orderBy: [{ pinned: "desc" }, { createdAt: "desc" }], take: 3 },
       images: { where: { kind: "PHOTO" }, orderBy: { sortOrder: "asc" }, take: 8 },
       people: { orderBy: { sortOrder: "asc" } },
-      _count: { select: { members: true } },
-    },
+      _count: { select: { members: true } }
+    }
   });
   if (!club || club.status !== "APPROVED") notFound();
 
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
+  const tr = (text: string) => phrase(text, prefs.locale),money = (n: number) => formatMoney(n, club.currency, prefs.locale),date = (d: Date, options: Intl.DateTimeFormatOptions) => formatDate(d, prefs.locale, club.timeZone, options);
   await releaseExpiredHolds();
 
   // Ikke bare "koblet til klubben", men "tæller som medlem" — har klubben
   // kontingent hos os, skal det være betalt og løbende. Se countsAsMember.
   const isMember = await countsAsMember(user?.clubId ?? null, club.id, user?.id ?? null);
   const [memberships, teams, punchCards, myPunches] = await Promise.all([
-    openTypes(club.id),
-    openTeams(club.id),
-    db.clubPunchCard.findMany({ where: { clubId: club.id, active: true } }),
-    user ? punchesIn(user.id, club.id) : Promise.resolve([]),
-  ]);
+  openTypes(club.id),
+  openTeams(club.id),
+  db.clubPunchCard.findMany({ where: { clubId: club.id, active: true } }),
+  user ? punchesIn(user.id, club.id) : Promise.resolve([])]
+  );
 
-  const today = startOfDay(new Date());
+  const todayKey = dayKey(new Date(), club.timeZone),today = wallTime(todayKey, 0, 0, club.timeZone)!;
   const dayOffset = Math.min(6, Math.max(0, Number(searchParams.dag ?? 0) || 0));
-  const day = addDays(today, dayOffset);
+  const dayKeyValue = addCalendarDays(todayKey, dayOffset),day = wallTime(dayKeyValue, 0, 0, club.timeZone)!;
 
   const [{ slots }, ratings] = await Promise.all([
-    getClubAvailability(club.id, day, addDays(day, 1), { isMember }),
-    clubRatings([club.id]),
-  ]);
+  getClubAvailability(club.id, day, wallTime(addCalendarDays(dayKeyValue, 1), 0, 0, club.timeZone)!, { isMember }),
+  clubRatings([club.id])]
+  );
   const rating = ratings.get(club.id) ?? { average: 0, count: 0 };
 
   const hours: number[] = [];
@@ -93,71 +96,71 @@ export async function ClubPage({
   return (
     <div className="space-y-12">
       {/* Klubbens hoved — udseendet følger klubbens valgte tema */}
-      {club.theme === "MARKANT" ? (
-        <section className="rounded-2xl bg-ink px-6 py-14 text-chalk sm:px-10 sm:py-20">
+      {club.theme === "MARKANT" ?
+      <section className="rounded-2xl bg-ink px-6 py-14 text-chalk sm:px-10 sm:py-20">
           <p className="eyebrow text-chalk/85">
             {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
           </p>
           <h1
-            className="display mt-3 text-4xl leading-[0.95] sm:text-7xl"
-            style={{ color: club.color }}
-          >
+          className="display mt-3 text-4xl leading-[0.95] sm:text-7xl"
+          style={{ color: club.color }}>
+
             {club.name}
           </h1>
-          {club.tagline && (
-            <p className="mt-5 max-w-xl text-lg text-chalk/80">{club.tagline}</p>
-          )}
+          {club.tagline &&
+        <p className="mt-5 max-w-xl text-lg text-chalk/80">{club.tagline}</p>
+        }
           <p className="data mt-8 text-sm text-chalk/60">
             {club.address ? `${club.address}, ` : ""}
-            {club.city} · {club.courts.length} baner
-            {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+            {club.city} · {club.courts.length}{tr("baner")}
+          {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
           </p>
-        </section>
-      ) : club.theme === "ENKEL" ? (
-        <section className="border-b border-slate/15 pb-8">
+        </section> :
+      club.theme === "ENKEL" ?
+      <section className="border-b border-slate/15 pb-8">
           <div
-            className="mb-5 h-1.5 w-16 rounded-full"
-            style={{ backgroundColor: club.color }}
-          />
+          className="mb-5 h-1.5 w-16 rounded-full"
+          style={{ backgroundColor: club.color }} />
+
           <h1 className="display text-3xl sm:text-5xl">{club.name}</h1>
-          {club.tagline && (
-            <p className="mt-2 max-w-xl text-lg text-slate">{club.tagline}</p>
-          )}
+          {club.tagline &&
+        <p className="mt-2 max-w-xl text-lg text-slate">{club.tagline}</p>
+        }
           <p className="mt-4 text-sm text-slate">
             {club.address ? `${club.address}, ` : ""}
-            {club.city} · {club.courts.length} baner
-            {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+            {club.city} · {club.courts.length}{tr("baner")}
+          {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
           </p>
-        </section>
-      ) : (
-        <section className="relative overflow-hidden rounded-2xl">
-          {club.heroId ? (
-            <>
+        </section> :
+
+      <section className="relative overflow-hidden rounded-2xl">
+          {club.heroId ?
+        <>
               {/* Klubbens eget billede. Et mørkt lag ovenpå, så teksten kan
-                  læses uanset hvor lyst billedet er. */}
+               læses uanset hvor lyst billedet er. */}
               <img
-                src={imageUrl(club.heroId)}
-                alt=""
-                className="h-[300px] w-full object-cover sm:h-[420px]"
-              />
+            src={imageUrl(club.heroId)}
+            alt=""
+            className="h-[300px] w-full object-cover sm:h-[420px]" />
+
               <div
-                className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(to top, ${club.color}f2 0%, ${club.color}99 45%, ${club.color}33 100%)`,
-                }}
-              />
-            </>
-          ) : (
-            <div
-              className="h-[260px] w-full sm:h-[340px]"
-              style={{ backgroundColor: club.color }}
-            >
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to top, ${club.color}f2 0%, ${club.color}99 45%, ${club.color}33 100%)`
+            }} />
+
+            </> :
+
+        <div
+          className="h-[260px] w-full sm:h-[340px]"
+          style={{ backgroundColor: club.color }}>
+
               <svg
-                className="h-full w-full opacity-[0.15]"
-                viewBox="0 0 400 200"
-                preserveAspectRatio="none"
-                aria-hidden="true"
-              >
+            className="h-full w-full opacity-[0.15]"
+            viewBox="0 0 400 200"
+            preserveAspectRatio="none"
+            aria-hidden="true">
+
                 <g stroke="#fff" strokeWidth="1.5" fill="none">
                   <rect x="30" y="18" width="340" height="164" />
                   <line x1="30" y1="44" x2="370" y2="44" />
@@ -169,380 +172,382 @@ export async function ClubPage({
                 <line x1="200" y1="8" x2="200" y2="192" stroke="#fff" strokeWidth="3" />
               </svg>
             </div>
-          )}
+        }
 
           <div className="absolute inset-x-0 bottom-0 p-6 text-chalk sm:p-10">
-            {club.logoId && (
-              <img
-                src={imageUrl(club.logoId)}
-                alt={`${club.name} logo`}
-                className="mb-4 h-16 w-16 rounded-xl bg-chalk/95 object-contain p-1.5 sm:h-20 sm:w-20"
-              />
-            )}
+            {club.logoId &&
+          <img
+            src={imageUrl(club.logoId)}
+            alt={`${club.name} logo`}
+            className="mb-4 h-16 w-16 rounded-xl bg-chalk/95 object-contain p-1.5 sm:h-20 sm:w-20" />
+
+          }
             <p className="eyebrow text-chalk">
               {sports.map((s) => sportLabel(s, prefs.locale)).join(" · ")}
             </p>
             <h1 className="display mt-1 text-3xl drop-shadow-sm sm:text-5xl">
               {club.name}
             </h1>
-            {club.tagline && (
-              <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
-            )}
+            {club.tagline &&
+          <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
+          }
             <p className="mt-3 text-sm font-semibold text-chalk/85">
               {club.address ? `${club.address}, ` : ""}
-              {club.city} · {club.courts.length} baner
-              {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
+              {club.city} · {club.courts.length}{tr("baner")}
+            {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
             </p>
-            {isMember && (
-              <p className="data mt-3 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">
-                Du er medlem — medlemspris
-              </p>
-            )}
+            {isMember &&
+          <p className="data mt-3 inline-block rounded-full bg-chalk/20 px-3 py-1 text-sm font-bold">{tr("Du er medlem \u2014 medlemspris")}
+
+          </p>
+          }
           </div>
         </section>
-      )}
+      }
 
       {/* Afvist af klubbens egne regler. Beskeden kommer fra club-rules.ts
-          og er skrevet til at kunne læses af den, der blev afvist. */}
-      {searchParams.afvist && (
-        <p className="rounded-xl border-2 border-court/30 bg-court/5 p-4 text-sm font-semibold">
+           og er skrevet til at kunne læses af den, der blev afvist. */}
+      {searchParams.afvist &&
+      <p className="rounded-xl border-2 border-court/30 bg-court/5 p-4 text-sm font-semibold">
           {searchParams.afvist}
         </p>
-      )}
+      }
 
-      {(searchParams.optaget || searchParams.fejl) && (
-        <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
-          {searchParams.fejl === "betaling"
-            ? "Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked."
-            : searchParams.fejl === "passeret"
-              ? "Det tidspunkt er passeret. Vælg en anden tid."
-              : "Den tid var lige taget. Her er resten af dagen — vælg en anden."}
+      {(searchParams.optaget || searchParams.fejl) &&
+      <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
+          {searchParams.fejl === "betaling" ?
+        "Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked." :
+        searchParams.fejl === "passeret" ?
+        "Det tidspunkt er passeret. Vælg en anden tid." :
+        "Den tid var lige taget. Her er resten af dagen — vælg en anden."}
         </p>
-      )}
+      }
 
       {/* Nyheder fra klubben */}
-      {club.posts.length > 0 && (
-        <section>
-          <h2 className="display mb-3 text-2xl">Nyt fra klubben</h2>
+      {club.posts.length > 0 &&
+      <section>
+          <h2 className="display mb-3 text-2xl">{tr("Nyt fra klubben")}</h2>
           <ul className="space-y-3">
-            {club.posts.map((post: any) => (
-              <li key={post.id} className="card">
+            {club.posts.map((post: any) =>
+          <li key={post.id} className="card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="font-bold">{post.title}</p>
                   <p className="text-xs text-slate">
-                    {format(post.createdAt, "d. MMMM", { locale: da })}
+                    {date(post.createdAt, { day: "numeric", month: "long" })}
                   </p>
                 </div>
                 <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">
                   {post.body}
                 </p>
               </li>
-            ))}
+          )}
           </ul>
         </section>
-      )}
+      }
 
       {/* Booking */}
       <section>
-        {!club.stripeChargesEnabled && (
+        {!club.stripeChargesEnabled &&
         <div className="mb-5 rounded-xl border border-court/30 bg-court/5 p-4">
-          <p className="font-bold">Denne klub kan ikke tage imod bookinger endnu</p>
-          <p className="mt-1 text-sm text-slate">
-            Klubben er ved at få sin betalingsopsætning på plads. Tiderne
-            nedenfor er vejledende, og en booking vil blive afvist indtil da.
+          <p className="font-bold">{tr("Denne klub kan ikke tage imod bookinger endnu")}</p>
+          <p className="mt-1 text-sm text-slate">{tr("Klubben er ved at f\xE5 sin betalingsops\xE6tning p\xE5 plads. Tiderne nedenfor er vejledende, og en booking vil blive afvist indtil da.")}
+
+
           </p>
         </div>
-      )}
+        }
 
-      <h2 className="display mb-1 text-2xl">Book bane</h2>
+      <h2 className="display mb-1 text-2xl">{tr("Book bane")}</h2>
         <p className="mb-4 text-sm text-slate">
-          {club.memberPriceHour != null && !isMember
-            ? `Gæstepris ${club.priceHour} kr. Medlemmer betaler ${club.memberPriceHour} kr.`
-            : "Tiden holdes i 10 minutter, mens du betaler."}
+          {club.memberPriceHour != null && !isMember ?
+          `${tr("Gæstepris")} ${money(club.priceHour)}. ${tr("Medlemspris")} ${money(club.memberPriceHour)}.` :
+          "Tiden holdes i 10 minutter, mens du betaler."}
         </p>
 
         <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
           <div className="flex w-max gap-2">
             {Array.from({ length: 7 }, (_, i) => {
-              const d = addDays(today, i);
-              const active = isSameDay(d, day);
+              const d = wallTime(addCalendarDays(todayKey, i), 0, 0, club.timeZone)!;
+              const active = i === dayOffset;
               return (
                 <Link
                   key={i}
                   href={`/klub/${club.slug}?dag=${i}`}
                   className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold capitalize ${
-                    active
-                      ? "bg-ink text-chalk"
-                      : "border border-slate/20 bg-chalk text-slate"
-                  }`}
-                >
-                  {format(d, "EEE d/M", { locale: da })}
-                </Link>
-              );
+                  active ?
+                  "bg-ink text-chalk" :
+                  "border border-slate/20 bg-chalk text-slate"}`
+                  }>
+
+                  {date(d, { weekday: "short", day: "numeric", month: "numeric" })}
+                </Link>);
+
             })}
           </div>
         </div>
 
+        <p className="mb-3 text-xs text-slate">{tr("Lokal tid")}: {club.timeZone}</p>
         <BookingGrid
           courts={club.courts.map((c: any) => ({
             id: c.id,
             name: c.name,
             surface: c.surface,
             sport: c.sport,
-            indoor: c.indoor,
+            indoor: c.indoor
           }))}
           slots={slots.map((s) => ({
             courtId: s.courtId,
             startsAt: s.startsAt.toISOString(),
-            priceKr: s.priceKr,
+            priceKr: s.priceKr
           }))}
           hours={hours}
           loggedIn={Boolean(user)}
           locale={prefs.locale}
-        />
+          currency={club.currency} timeZone={club.timeZone} />
 
-        {!user && slots.length > 0 && (
-          <p className="mt-4 text-sm text-slate">
-            <Link href="/login" className="font-semibold text-court underline">
-              Log ind
-            </Link>{" "}
-            for at booke en bane.
-          </p>
-        )}
+
+        {!user && slots.length > 0 &&
+        <p className="mt-4 text-sm text-slate">
+            <Link href="/login" className="font-semibold text-court underline">{tr("Log ind")}
+
+          </Link>{" "}{tr("for at booke en bane.")}
+
+        </p>
+        }
       </section>
 
       {/* Praktisk og om */}
-      {(club.about || club.practicalInfo) && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          {club.about && (
-            <div className="card">
-              <h2 className="display text-xl">Om klubben</h2>
+      {(club.about || club.practicalInfo) &&
+      <section className="grid gap-4 sm:grid-cols-2">
+          {club.about &&
+        <div className="card">
+              <h2 className="display text-xl">{tr("Om klubben")}</h2>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
                 {club.about}
               </p>
             </div>
-          )}
-          {club.practicalInfo && (
-            <div className="card">
-              <h2 className="display text-xl">Praktisk</h2>
+        }
+          {club.practicalInfo &&
+        <div className="card">
+              <h2 className="display text-xl">{tr("Praktisk")}</h2>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
                 {club.practicalInfo}
               </p>
             </div>
-          )}
+        }
         </section>
-      )}
+      }
 
-      {teams.length > 0 && (
-        <section className="card">
-          <h2 className="display text-2xl">Sæsonhold</h2>
-          <p className="mt-1 text-sm text-slate">
-            Træning på et fast hold hele sæsonen. Pladsen er din, når der er
-            betalt.
-          </p>
+      {teams.length > 0 &&
+      <section className="card">
+          <h2 className="display text-2xl">{tr("S\xE6sonhold")}</h2>
+          <p className="mt-1 text-sm text-slate">{tr("Tr\xE6ning p\xE5 et fast hold hele s\xE6sonen. Pladsen er din, n\xE5r der er betalt.")}
+
+
+        </p>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {teams.map((team) => (
-              <li key={team.id} className="rounded-xl border border-slate/15 p-4">
+            {teams.map((team) =>
+          <li key={team.id} className="rounded-xl border border-slate/15 p-4">
                 <p className="font-bold">{team.name}</p>
                 <p className="mt-0.5 text-sm text-slate">
-                  {["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"][team.dayOfWeek]} kl.{" "}
-                  {String(team.hour).padStart(2, "0")}:00 · {team.minutes} min ·
-                  niveau {team.levelFrom}–{team.levelTo}
+                  {["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"][team.dayOfWeek]}{" " + tr("kl.")}{" "}
+                  {String(team.hour).padStart(2, "0")}:00 · {team.minutes}{tr("min \xB7 niveau")}
+              {team.levelFrom}–{team.levelTo}
                 </p>
                 <p className="text-sm text-slate">
-                  {team.fromDate.toLocaleDateString("da-DK", { day: "numeric", month: "short" })} –{" "}
-                  {team.toDate.toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" })}
+                  {team.fromDate.toLocaleDateString(prefs.locale, {timeZone:"UTC", day: "numeric", month: "short" })} –{" "}
+                  {team.toDate.toLocaleDateString(prefs.locale, {timeZone:"UTC", day: "numeric", month: "short", year: "numeric" })}
                   {team.coachName && ` · ${team.coachName}`}
                 </p>
-                {team.description && (
-                  <p className="mt-1 text-sm text-slate">{team.description}</p>
-                )}
+                {team.description &&
+            <p className="mt-1 text-sm text-slate">{team.description}</p>
+            }
                 <p className="display mt-2 text-xl text-court">
-                  {team.priceKr > 0 ? `${team.priceKr} kr` : "Gratis"}
+                  {team.priceKr > 0 ? money(team.priceKr) : "Gratis"}
                 </p>
-                {team.full ? (
-                  <p className="mt-2 text-sm font-semibold text-slate">Fuldtegnet</p>
-                ) : user ? (
-                  <form action={joinSeasonTeam} className="mt-3">
+                {team.full ?
+            <p className="mt-2 text-sm font-semibold text-slate">{tr("Fuldtegnet")}</p> :
+            user ?
+            <form action={joinSeasonTeam} className="mt-3">
                     <input type="hidden" name="teamId" value={team.id} />
                     <input type="hidden" name="slug" value={club.slug} />
-                    <SubmitButton pendingText="Åbner…">Tilmeld</SubmitButton>
-                  </form>
-                ) : (
-                  <Link href="/login" className="btn-ghost mt-3 inline-block">
-                    Log ind for at tilmelde
-                  </Link>
-                )}
-                {team.capacity > 0 && !team.full && (
-                  <p className="mt-2 text-xs text-slate-light">
-                    {team.capacity - team.taken} pladser tilbage
-                  </p>
-                )}
+                    <SubmitButton pendingText={tr("\xC5bner\u2026")}>{tr("Tilmeld")}</SubmitButton>
+                  </form> :
+
+            <Link href="/login" className="btn-ghost mt-3 inline-block">{tr("Log ind for at tilmelde")}
+
+            </Link>
+            }
+                {team.capacity > 0 && !team.full &&
+            <p className="mt-2 text-xs text-slate-light">
+                    {team.capacity - team.taken}{tr("pladser tilbage")}
+            </p>
+            }
               </li>
-            ))}
+          )}
           </ul>
         </section>
-      )}
+      }
 
-      {punchCards.length > 0 && (
-        <section className="card">
-          <h2 className="display text-2xl">Klippekort</h2>
-          <p className="mt-1 text-sm text-slate">
-            Flere banetimer betalt på én gang. Klippet bruges automatisk, når
-            du booker.
-          </p>
+      {punchCards.length > 0 &&
+      <section className="card">
+          <h2 className="display text-2xl">{tr("Klippekort")}</h2>
+          <p className="mt-1 text-sm text-slate">{tr("Flere banetimer betalt p\xE5 \xE9n gang. Klippet bruges automatisk, n\xE5r du booker.")}
 
-          {myPunches.map((p) => (
-            <p key={p.purchaseId} className="mt-3 rounded-xl bg-court/10 p-3 text-sm font-semibold text-court">
-              Du har {p.left} af {p.total} timer tilbage på {p.name}
+
+        </p>
+
+          {myPunches.map((p) =>
+        <p key={p.purchaseId} className="mt-3 rounded-xl bg-court/10 p-3 text-sm font-semibold text-court">{tr("Du har")}
+          {p.left}{" " + tr("af") + " "}{p.total}{" " + tr("timer tilbage p\xE5") + " "}{p.name}
               {p.expiresAt &&
-                ` — gælder til ${p.expiresAt.toLocaleDateString("da-DK")}`}
+          ` — gælder til ${p.expiresAt.toLocaleDateString(prefs.locale,{timeZone:club.timeZone})}`}
             </p>
-          ))}
+        )}
 
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {punchCards.map((card: any) => (
-              <li key={card.id} className="rounded-xl border border-slate/15 p-4">
+            {punchCards.map((card: any) =>
+          <li key={card.id} className="rounded-xl border border-slate/15 p-4">
                 <p className="font-bold">{card.name}</p>
                 <p className="mt-0.5 text-sm text-slate">
-                  {card.sessions} timer
-                  {card.validDays > 0 && ` · gælder ${card.validDays} dage`}
+                  {card.sessions}{tr("timer")}
+              {card.validDays > 0 && ` · gælder ${card.validDays} dage`}
                 </p>
-                {card.description && (
-                  <p className="mt-1 text-sm text-slate">{card.description}</p>
-                )}
+                {card.description &&
+            <p className="mt-1 text-sm text-slate">{card.description}</p>
+            }
                 <p className="display mt-2 text-xl text-court">
-                  {card.priceKr} kr
+                  {money(card.priceKr)}
                   <span className="ml-2 text-sm font-normal text-slate">
-                    {Math.round(card.priceKr / card.sessions)} kr pr. time
+                    {money(Math.round(card.priceKr / card.sessions))} / {tr("time")}
                   </span>
                 </p>
-                {user ? (
-                  <form action={buyClubPunchCard} className="mt-3">
+                {user ?
+            <form action={buyClubPunchCard} className="mt-3">
                     <input type="hidden" name="cardId" value={card.id} />
                     <input type="hidden" name="slug" value={club.slug} />
-                    <SubmitButton pendingText="Åbner…">Køb</SubmitButton>
-                  </form>
-                ) : (
-                  <Link href="/login" className="btn-ghost mt-3 inline-block">
-                    Log ind for at købe
-                  </Link>
-                )}
+                    <SubmitButton pendingText={tr("\xC5bner\u2026")}>{tr("K\xF8b")}</SubmitButton>
+                  </form> :
+
+            <Link href="/login" className="btn-ghost mt-3 inline-block">{tr("Log ind for at k\xF8be")}
+
+            </Link>
+            }
               </li>
-            ))}
+          )}
           </ul>
         </section>
-      )}
+      }
 
       {/* Medlemskab */}
-      {club.joinCode && !isMember && (
+      {club.joinCode && !isMember &&
       <section className="rounded-2xl bg-ink px-6 py-8 text-chalk sm:px-10">
-          <h2 className="display text-2xl">Bliv medlem</h2>
+          <h2 className="display text-2xl">{tr("Bliv medlem")}</h2>
           <p className="mt-2 max-w-xl text-chalk/80">
-            {club.memberPriceHour != null
-              ? `Medlemmer booker til ${club.memberPriceHour} kr i timen i stedet for ${club.priceHour} kr.`
-              : "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}
-            Har du fået en kode af klubben, kan du tilmelde dig her.
-          </p>
-          {memberships.length > 0 && (
-            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-              {memberships.map((m) => (
-                <li key={m.id} className="rounded-xl bg-chalk/10 p-4">
+            {club.memberPriceHour != null ?
+          `${tr("Medlemspris")} ${money(club.memberPriceHour)} / ${tr("time")}. ${tr("Gæstepris")} ${money(club.priceHour)}.` :
+          "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}{tr("Har du f\xE5et en kode af klubben, kan du tilmelde dig her.")}
+
+        </p>
+          {memberships.length > 0 &&
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+              {memberships.map((m) =>
+          <li key={m.id} className="rounded-xl bg-chalk/10 p-4">
                   <p className="font-bold text-chalk">
                     {m.name} — {m.seasonName}
                   </p>
                   <p className="mt-0.5 text-sm text-chalk/70">
-                    {m.fromDate.toLocaleDateString("da-DK", { day: "numeric", month: "short" })} –{" "}
-                    {m.toDate.toLocaleDateString("da-DK", { day: "numeric", month: "short", year: "numeric" })}
+                    {m.fromDate.toLocaleDateString(prefs.locale, {timeZone:"UTC", day: "numeric", month: "short" })} –{" "}
+                    {m.toDate.toLocaleDateString(prefs.locale, {timeZone:"UTC", day: "numeric", month: "short", year: "numeric" })}
                   </p>
-                  {m.description && (
-                    <p className="mt-1 text-sm text-chalk/70">{m.description}</p>
-                  )}
+                  {m.description &&
+            <p className="mt-1 text-sm text-chalk/70">{m.description}</p>
+            }
                   <p className="display mt-2 text-xl text-optic">
-                    {m.priceKr > 0 ? `${m.priceKr} kr` : "Gratis"}
+                    {m.priceKr > 0 ? money(m.priceKr) : "Gratis"}
                   </p>
-                  {m.full ? (
-                    <p className="mt-2 text-sm font-semibold text-chalk/60">Fuldtegnet</p>
-                  ) : user ? (
-                    <form action={joinClubMembership} className="mt-3">
+                  {m.full ?
+            <p className="mt-2 text-sm font-semibold text-chalk/60">{tr("Fuldtegnet")}</p> :
+            user ?
+            <form action={joinClubMembership} className="mt-3">
                       <input type="hidden" name="typeId" value={m.id} />
                       <input type="hidden" name="slug" value={club.slug} />
-                      <SubmitButton className="btn-court" pendingText="Åbner…">
-                        Tilmeld
-                      </SubmitButton>
-                    </form>
-                  ) : (
-                    <Link href="/login" className="btn-court mt-3 inline-block">
-                      Log ind for at tilmelde
-                    </Link>
-                  )}
-                  {m.capacity > 0 && !m.full && (
-                    <p className="mt-2 text-xs text-chalk/50">
-                      {m.capacity - m.taken} pladser tilbage
-                    </p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+                      <SubmitButton className="btn-court" pendingText={tr("\xC5bner\u2026")}>{tr("Tilmeld")}
 
-          {club.membershipInfo && (
-            <p className="mt-4 max-w-xl whitespace-pre-line text-chalk/80">
+              </SubmitButton>
+                    </form> :
+
+            <Link href="/login" className="btn-court mt-3 inline-block">{tr("Log ind for at tilmelde")}
+
+            </Link>
+            }
+                  {m.capacity > 0 && !m.full &&
+            <p className="mt-2 text-xs text-chalk/50">
+                      {m.capacity - m.taken}{tr("pladser tilbage")}
+            </p>
+            }
+                </li>
+          )}
+            </ul>
+        }
+
+          {club.membershipInfo &&
+        <p className="mt-4 max-w-xl whitespace-pre-line text-chalk/80">
               {club.membershipInfo}
             </p>
-          )}
-          <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">
-            Indløs kode
-          </Link>
+        }
+          <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">{tr("Indl\xF8s kode")}
+
+        </Link>
         </section>
-      )}
+      }
 
       {/* Galleri */}
-      {club.images.length > 0 && (
-        <section>
-          <h2 className="display mb-3 text-2xl">Anlægget</h2>
+      {club.images.length > 0 &&
+      <section>
+          <h2 className="display mb-3 text-2xl">{tr("Anl\xE6gget")}</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {club.images.map((img: any) => (
-              <img
-                key={img.id}
-                src={imageUrl(img.id)}
-                alt={img.alt ?? `${club.name}`}
-                loading="lazy"
-                className="aspect-[4/3] w-full rounded-xl object-cover"
-              />
-            ))}
+            {club.images.map((img: any) =>
+          <img
+            key={img.id}
+            src={imageUrl(img.id)}
+            alt={img.alt ?? `${club.name}`}
+            loading="lazy"
+            className="aspect-[4/3] w-full rounded-xl object-cover" />
+
+          )}
           </div>
         </section>
-      )}
+      }
 
       {/* Kontakt */}
       <section className="card">
-        <h2 className="display text-xl">Kontakt</h2>
+        <h2 className="display text-xl">{tr("Kontakt")}</h2>
         <dl className="mt-3 grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2">
-          {club.address && (
-            <div className="flex gap-2">
-              <dt className="text-slate">Adresse</dt>
+          {club.address &&
+          <div className="flex gap-2">
+              <dt className="text-slate">{tr("Adresse")}</dt>
               <dd>{club.address}, {club.city}</dd>
             </div>
-          )}
-          {club.contactEmail && (
-            <div className="flex gap-2">
-              <dt className="text-slate">E-mail</dt>
+          }
+          {club.contactEmail &&
+          <div className="flex gap-2">
+              <dt className="text-slate">{tr("E-mail")}</dt>
               <dd>
                 <a href={`mailto:${club.contactEmail}`} className="underline">
                   {club.contactEmail}
                 </a>
               </dd>
             </div>
-          )}
-          {club.contactPhone && (
-            <div className="flex gap-2">
-              <dt className="text-slate">Telefon</dt>
+          }
+          {club.contactPhone &&
+          <div className="flex gap-2">
+              <dt className="text-slate">{tr("Telefon")}</dt>
               <dd>{club.contactPhone}</dd>
             </div>
-          )}
+          }
           <div className="flex gap-2">
-            <dt className="text-slate">Åbent</dt>
+            <dt className="text-slate">{tr("\xC5bent")}</dt>
             <dd className="data">
               {club.openHour}–{club.closeHour}
             </dd>
@@ -551,25 +556,25 @@ export async function ClubPage({
       </section>
 
       {/* Bestyrelsen. Klubben vedligeholder den selv fra administrationen. */}
-      {club.people.length > 0 && (
-        <section className="card">
-          <h2 className="display text-xl">Bestyrelse</h2>
+      {club.people.length > 0 &&
+      <section className="card">
+          <h2 className="display text-xl">{tr("Bestyrelse")}</h2>
           <ul className="mt-3 grid gap-x-8 gap-y-3 text-sm sm:grid-cols-2">
-            {club.people.map((person: any) => (
-              <li key={person.id}>
+            {club.people.map((person: any) =>
+          <li key={person.id}>
                 <p className="font-bold">{person.name}</p>
                 <p className="text-slate">{person.role}</p>
-                {person.email && (
-                  <a href={`mailto:${person.email}`} className="text-court underline">
+                {person.email &&
+            <a href={`mailto:${person.email}`} className="text-court underline">
                     {person.email}
                   </a>
-                )}
+            }
                 {person.phone && <p className="text-slate">{person.phone}</p>}
               </li>
-            ))}
+          )}
           </ul>
         </section>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }

@@ -1,30 +1,12 @@
-// Dansk datoformatering uden ekstra afhængigheder.
-export const DAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
-const DAYS_SHORT = ["søn", "man", "tir", "ons", "tor", "fre", "lør"];
-const MONTHS = [
-  "januar", "februar", "marts", "april", "maj", "juni",
-  "juli", "august", "september", "oktober", "november", "december",
-];
-
-export const time = (d) =>
-  `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-
-export const dayShort = (d) => `${DAYS_SHORT[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`;
-
-export const dayLong = (d) => `${DAYS[d.getDay()]} d. ${d.getDate()}. ${MONTHS[d.getMonth()]}`;
-
-export const dateTimeLong = (d) => `${dayLong(d)} kl. ${time(d)}`;
-
-export const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-/** Grupperer tider (ISO-strenge eller objekter med startsAt) pr. kalenderdag. */
-export function groupByDay(items, getDate) {
-  const map = new Map();
-  for (const item of items) {
-    const d = getDate(item);
-    const key = isoDay(d);
-    if (!map.has(key)) map.set(key, { date: d, items: [] });
-    map.get(key).items.push(item);
-  }
-  return Array.from(map.values());
-}
+import {formatDate,dayKey} from '../../../shared/international.mjs';
+let locale='da';
+export function setDateLocale(value){locale=value;}
+// A booking's venue zone is explicit. The customer's device zone never changes a slot.
+const stamp=(d,zone,options)=>formatDate(d,locale,zone??'Europe/Copenhagen',options);
+export const time=(d,zone)=>stamp(d,zone,{hour:'2-digit',minute:'2-digit',hour12:false});
+export const dayShort=(d,zone)=>stamp(d,zone,{weekday:'short',day:'numeric',month:'numeric'});
+export const dayLong=(d,zone)=>stamp(d,zone,{weekday:'long',day:'numeric',month:'long'});
+export const dateTimeLong=(d,zone)=>stamp(d,zone,{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',hour12:false});
+export const weekday=(d,zone)=>stamp(d,zone,{weekday:'long'});
+export const isoDay=(d,zone)=>dayKey(d,zone??'Europe/Copenhagen');
+export function groupByDay(items,getDate,zone){const map=new Map();for(const item of items){const d=getDate(item),key=isoDay(d,zone);if(!map.has(key))map.set(key,{date:d,items:[]});map.get(key).items.push(item);}return Array.from(map.values());}

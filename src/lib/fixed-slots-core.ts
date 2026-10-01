@@ -1,3 +1,4 @@
+import {wallTime} from "./international";
 // Fast bane — datoregningen.
 //
 // Uden importer, så den kan afprøves. Det er den del, der kan gå galt uden
@@ -51,18 +52,11 @@ export function occurrences(from: Date, to: Date, dayOfWeek: number, hour: numbe
 export function zonedOccurrences(from:Date,to:Date,day:number,hour:number,timeZone:string):Date[] {
  if(!Number.isInteger(day)||day<0||day>6||!Number.isInteger(hour)||hour<0||hour>23||!Number.isFinite(+from)||!Number.isFinite(+to)||to<from||+to-+from>366*86400000)throw Error('Ugyldig gentagelse.');
  const out:Date[]=[];
- const formatter=new Intl.DateTimeFormat('en-GB',{timeZone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
  for(let d=new Date(Date.UTC(from.getUTCFullYear(),from.getUTCMonth(),from.getUTCDate()));+d<=+to;d.setUTCDate(d.getUTCDate()+1)){
   if(d.getUTCDay()!==day)continue;
-  const wall=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),hour);let instant=wall;
-  for(let i=0;i<3;i++){
-   const p=Object.fromEntries(formatter.formatToParts(new Date(instant)).map(p=>[p.type,p.value]));
-   const actual=Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute);
-   if(actual===wall)break;instant+=wall-actual;
-  }
-  const parts=Object.fromEntries(formatter.formatToParts(new Date(instant)).map(p=>[p.type,p.value]));
-  if(+parts.hour!==hour)throw Error('Et tidspunkt findes ikke ved skift til sommertid. Vælg en anden time.');
-  out.push(new Date(instant));
+  const instant=wallTime(d.toISOString().slice(0,10),hour,0,timeZone);
+  if(!instant)throw Error('Et tidspunkt findes ikke ved skift til sommertid. Vælg en anden time.');
+  out.push(instant);
  }
  return out;
 }

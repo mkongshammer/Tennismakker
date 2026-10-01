@@ -1,7 +1,7 @@
 import { addDays, addHours } from "date-fns";
 import { db } from "../db";
 import { priceFor } from "../pricing";
-import { hourDate } from "../slots";
+import { calendarDays, wallTime } from "../international";
 import type {
   AdapterInput,
   AvailabilityResult,
@@ -29,10 +29,10 @@ async function openingHourSlots(
 
   const now = new Date();
   const slots: AvailableSlot[] = [];
-  for (let day = new Date(from); day <= until; day = addDays(day, 1)) {
+  for (const day of calendarDays(from,until,club.timeZone)) {
     for (let h = club.openHour; h < club.closeHour; h++) {
-      const startsAt = hourDate(day, h);
-      if (startsAt < now || startsAt < from || startsAt > until) continue;
+      const startsAt = wallTime(day,h,0,club.timeZone);
+      if (!startsAt || startsAt < now || startsAt < from || startsAt >= until) continue;
       for (const court of club.courts) {
         slots.push({
           courtId: court.id,
@@ -118,7 +118,7 @@ export const manualAdapter: BookingSystemAdapter = {
 
     // 1. Tider klubben har frigivet enkeltvis
     const released = await db.guestSlot.findMany({
-      where: { court: { clubId }, startsAt: { gte: start, lte: until } },
+      where: { court: { clubId }, startsAt: { gte: start, lt: until } },
       include: { court: true },
     });
     for (const r of released) {
@@ -142,11 +142,11 @@ export const manualAdapter: BookingSystemAdapter = {
         ? rule.courtIds.split(",").map((c) => c.trim()).filter(Boolean)
         : club.courts.map((c: any) => c.id);
 
-      for (let day = new Date(start); day <= until; day = addDays(day, 1)) {
-        if (!days.includes(day.getDay())) continue;
+      for (const day of calendarDays(start,until,club.timeZone)) {
+        if (!days.includes(new Date(`${day}T12:00:00Z`).getUTCDay())) continue;
         for (let h = rule.fromHour; h < rule.toHour; h++) {
-          const startsAt = hourDate(day, h);
-          if (startsAt < now || startsAt > until) continue;
+          const startsAt = wallTime(day,h,0,club.timeZone);
+          if (!startsAt || startsAt < start || startsAt >= until) continue;
           for (const id of courtIds) {
             const court = club.courts.find((c: any) => c.id === id);
             if (!court) continue;
@@ -166,10 +166,10 @@ export const manualAdapter: BookingSystemAdapter = {
     // 3. Sidste-øjebliks-frigivelse: en tom bane om en time er tabt indtægt
     if (club.lastMinuteHours > 0) {
       const cutoff = addHours(now, club.lastMinuteHours);
-      for (let day = new Date(start); day <= until; day = addDays(day, 1)) {
+      for (const day of calendarDays(start,until,club.timeZone)) {
         for (let h = club.openHour; h < club.closeHour; h++) {
-          const startsAt = hourDate(day, h);
-          if (startsAt < now || startsAt > cutoff || startsAt > until) continue;
+          const startsAt = wallTime(day,h,0,club.timeZone);
+          if (!startsAt || startsAt < start || startsAt > cutoff || startsAt >= until) continue;
           for (const court of club.courts) {
             add({
               courtId: court.id,

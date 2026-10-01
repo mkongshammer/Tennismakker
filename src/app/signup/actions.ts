@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { db } from "../../lib/db";
 import { signup as baseSignup } from "../../lib/actions";
 import { normaliseBuddySports, saveSignupSportsIntent } from "../../lib/buddy-sports";
-import { isDanishRegion } from "../../lib/regions";
+import { validArea } from "../../lib/profile-location";
 
 function intentKey(email: string) {
   const hash = crypto.createHash("sha256").update(email).digest("hex");
@@ -17,8 +17,8 @@ export async function signup(prev: unknown, formData: FormData) {
   const sports = normaliseBuddySports(formData.getAll("sports").map(String));
   const area = String(formData.get("area") ?? "").trim();
 
-  if (!isDanishRegion(area)) {
-    return { error: "Vælg en af de fem danske regioner." };
+  if (!validArea(String(formData.get("country")??"DK"), area)) {
+    return { error: formData.get("locale")==="da" ? "Vælg et gyldigt område." : "Choose a valid city/area." };
   }
 
   if (sports.length === 0) {

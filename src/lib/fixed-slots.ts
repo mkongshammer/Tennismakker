@@ -33,7 +33,7 @@ export type CreateResult = {
  * i en sæson.
  */
 export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResult> {
-  const court = await db.court.findUnique({ where: { id: input.courtId } });
+  const court = await db.court.findUnique({ where: { id: input.courtId }, include: { club: true } });
   if (!court) throw new Error("Banen findes ikke.");
 
   return db.$transaction(async tx => {
@@ -52,7 +52,7 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
   });
 
   const now = new Date();
-  const times = occurrences(input.fromDate, input.toDate, input.dayOfWeek, input.hour, "Europe/Copenhagen").filter(
+  const times = occurrences(input.fromDate, input.toDate, input.dayOfWeek, input.hour, court.club.timeZone).filter(
     (t) => t > now
   );
 
@@ -87,6 +87,8 @@ export async function createFixedSlot(input: FixedSlotInput): Promise<CreateResu
         startsAt,
         endsAt,
         priceKr: input.priceKr,
+        currency: court.club.currency,
+        timeZone: court.club.timeZone,
         userId: input.userId,
         courtId: input.courtId,
         fixedSlotId: slot.id,

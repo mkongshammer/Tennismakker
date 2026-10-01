@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import { tr, useInternational } from "../lib/international";import React, { useCallback, useRef, useState } from "react";
 import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { feedback as Alert } from "../lib/feedback";
@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { AppHeading, Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, LEVELS, SPORT_LABELS } from "../lib/theme";
 
-export default function SwipeScreen({ navigation }) {
+export default function SwipeScreen({ navigation }) {useInternational();
   const state = useScreenData(useCallback(() => api.players(), []));
   const load = state.refresh;
   const [busyId, setBusyId] = useState(null);
@@ -20,7 +20,7 @@ export default function SwipeScreen({ navigation }) {
       const { threadId, otherName } = await api.contactPlayer(player.id);
       navigation.navigate("BeskederTab", {
         screen: "Samtale",
-        params: { id: threadId, name: otherName },
+        params: { id: threadId, name: otherName }
       });
     } catch (e) {
       Alert.alert("Kunne ikke åbne beskeder", e.message);
@@ -40,19 +40,19 @@ export default function SwipeScreen({ navigation }) {
       data={state.data.players}
       keyExtractor={(p) => p.id}
       refreshControl={
-        <RefreshControl
-          refreshing={state.refreshing}
-          onRefresh={load}
-        />
+      <RefreshControl
+        refreshing={state.refreshing}
+        onRefresh={load} />
+
       }
       ListHeaderComponent={
-        <View style={styles.header}>
+      <View style={styles.header}>
           {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-          <AppHeading eyebrow="BEDRE SAMMEN" title="Find din makker." subtitle="Samme sport. Nyt bekendtskab. Skriv til en spiller og aftal jeres næste kamp." />
-          <Button title="Se åbne spilleaftaler ↗" variant="ink" onPress={() => navigation.navigate("Makkere")} />
+          <AppHeading eyebrow={tr("BEDRE SAMMEN")} title={tr("Find din makker.")} subtitle={tr("Samme sport. Nyt bekendtskab. Skriv til en spiller og aftal jeres n\xE6ste kamp.")} />
+          <Button title={tr("Se \xE5bne spilleaftaler \u2197")} variant="ink" onPress={() => navigation.navigate("Makkere")} />
         </View>
       }
-      ListEmptyComponent={<Empty title="Gør plads til en ny makker" icon="↗" action="Se spilleaftaler" onAction={() => navigation.navigate("Makkere")}>Der er ingen andre spillerprofiler at vise endnu. Prøv de åbne opslag.</Empty>}
+      ListEmptyComponent={<Empty title={tr("G\xF8r plads til en ny makker")} icon="↗" action={tr("Se spilleaftaler")} onAction={() => navigation.navigate("Makkere")}>{tr("Der er ingen andre spillerprofiler at vise endnu. Pr\xF8v de \xE5bne opslag.")}</Empty>}
       renderItem={({ item }) => {
         const initials = item.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
         return (
@@ -64,29 +64,29 @@ export default function SwipeScreen({ navigation }) {
               <View style={styles.info}>
                 <View style={styles.nameRow}>
                   <Text style={styles.name}>{item.name}</Text>
-                  {item.isCoach ? <Badge>Træner</Badge> : null}
+                  {item.isCoach ? <Badge>{tr("Tr\xE6ner")}</Badge> : null}
                 </View>
-                <Text style={styles.meta}>
-                  Niveau {item.level} · {LEVELS[item.level] ?? ""}
+                <Text style={styles.meta}>{tr("Niveau")}
+                  {item.level} · {LEVELS[item.level] ?? ""}
                 </Text>
                 {item.area ? <Text style={styles.meta}>{item.area}</Text> : null}
-                {item.sports?.length ? <Text style={styles.sports}>{item.sports.map(s => SPORT_LABELS[s] ?? s).join(" · ")}</Text> : null}
+                {item.sports?.length ? <Text style={styles.sports}>{item.sports.map((s) => SPORT_LABELS[s] ?? s).join(" · ")}</Text> : null}
               </View>
             </View>
             {item.bio ? <Text style={styles.bio}>{item.bio}</Text> : null}
             <View style={{ marginTop: 12 }}>
               <Button
-                title="Send besked"
+                title={tr("Send besked")}
                 onPress={() => contact(item)}
                 disabled={busyId !== null}
-                loading={busyId === item.id}
-              />
+                loading={busyId === item.id} />
+
             </View>
-          </Card>
-        );
-      }}
-    />
-  );
+          </Card>);
+
+      }} />);
+
+
 }
 
 const styles = StyleSheet.create({
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     backgroundColor: colors.courtTint,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center"
   },
   initials: { color: colors.court, fontWeight: "800", fontSize: 17 },
   info: { flex: 1 },
@@ -108,5 +108,5 @@ const styles = StyleSheet.create({
   name: { color: colors.ink, fontWeight: "800", fontSize: 19 },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   sports: { color: colors.court, fontWeight: "700", marginTop: 4, fontSize: 12 },
-  bio: { marginTop: 12, lineHeight: 20 },
+  bio: { marginTop: 12, lineHeight: 20 }
 });

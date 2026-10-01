@@ -82,7 +82,7 @@ export default async function SpillerePage({ searchParams }: Props) {
           (sport) => sport.toLocaleLowerCase("da") === selectedSport.toLocaleLowerCase("da"),
         )
       : true;
-    const regionMatches = selectedRegion ? regionForArea(player.area) === selectedRegion : true;
+    const regionMatches = selectedRegion ? (user.country==="DK"?regionForArea(player.area)===selectedRegion:player.area?.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase())) : true;
     return sportMatches && regionMatches;
   });
 

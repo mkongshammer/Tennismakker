@@ -1,3 +1,4 @@
+import { validateOrderCheckout, type CheckoutEvidence } from "./payment-validation";
 // Klippekort hos en træner.
 //
 // Et pakkeforløb er ti timer betalt på én gang. Det var indtil nu kun tekst
@@ -114,7 +115,7 @@ export async function startPackageCheckout(
       packageId: pack.id,
       name: pack.name,
       sessions: pack.sessions,
-      priceKr: pack.priceKr,
+      priceKr: pack.priceKr, currency: pack.coachProfile.currency,
       platformFee: fee,
     },
   });
@@ -151,7 +152,7 @@ export async function startPackageCheckout(
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          currency: pack.coachProfile.currency.toLowerCase(),
           product_data: {
             name: `${pack.name} hos ${pack.coachProfile.user.name}`,
             description: `${pack.sessions} timer, betalt på én gang`,
@@ -176,7 +177,11 @@ export async function startPackageCheckout(
 }
 
 /** Markerer købet som betalt. Kan kaldes flere gange uden skade. */
-export async function confirmPackagePurchase(purchaseId: string): Promise<void> {
+export async function confirmPackagePurchase(purchaseId: string, session?: CheckoutEvidence): Promise<void> {
+  if (session) {
+    const order = await db.packagePurchase.findUniqueOrThrow({where:{id:purchaseId}});
+    validateOrderCheckout(order,session,'purchaseId');
+  }
   await db.packagePurchase.updateMany({
     where: { id: purchaseId, status: "HOLD" },
     data: { status: "PAID" },

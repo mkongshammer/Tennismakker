@@ -1,3 +1,5 @@
+import {InternationalProvider} from "../components/InternationalProvider";
+import { CountryPicker } from "../components/CountryPicker";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -77,7 +79,7 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@500;700&display=swap"
         />
       </head>
-      <body className="min-h-screen">
+      <body className="min-h-screen"><InternationalProvider locale={prefs.locale} country={prefs.country}>
         {onOwnDomain ? null : (
           <SiteHeader
             user={user ? { name: user.name, role: user.role } : null}
@@ -109,17 +111,18 @@ export default async function RootLayout({
               <p className="display text-lg">
                 Racket<span className="text-court">Buddy</span>
               </p>
-              <p className="mt-1 text-sm text-slate">Ketsjersport samlet ét sted</p>
+              <p className="mt-1 text-sm text-slate">{prefs.locale === "da" ? "Ketsjersport samlet ét sted" : "Racket sports, together"}</p>
               <p className="mt-1 text-sm text-slate">{t("availability.soon")}</p>
               <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
                 <Link href="/opret-klub" className="hover:text-ink">{t("club.signup")}</Link>
-                <Link href="/hjemmeside" className="hover:text-ink">Hjemmeside til klubben</Link>
+                <Link href="/hjemmeside" className="hover:text-ink">{prefs.locale==="da"?"Hjemmeside til klubben":"Club website"}</Link>
                 <Link href="/app" className="hover:text-ink">App</Link>
-                <Link href="/vilkaar" className="hover:text-ink">Handelsbetingelser</Link>
-                <Link href="/privatliv" className="hover:text-ink">Privatliv</Link>
-                <Link href="/databehandleraftale" className="hover:text-ink">Databehandleraftale</Link>
+                <Link href="/vilkaar" className="hover:text-ink">{prefs.locale==="da"?"Handelsbetingelser":"Terms"}</Link>
+                <Link href="/privatliv" className="hover:text-ink">{prefs.locale==="da"?"Privatliv":"Privacy"}</Link>
+                <Link href="/databehandleraftale" className="hover:text-ink">{prefs.locale==="da"?"Databehandleraftale":"Data processing agreement"}</Link>
               </div>
-              <div className="mt-6 border-t border-slate/10 pt-5">
+              <div className="mt-6 border-t border-slate/10 pt-5 space-y-4">
+                <CountryPicker active={prefs.country} locale={prefs.locale} />
                 <p className="mb-2 text-xs font-bold text-slate">{t("common.language")}</p>
                 <LanguagePicker active={prefs.locale} />
               </div>
@@ -129,7 +132,7 @@ export default async function RootLayout({
 
         {user && <TabBar locale={prefs.locale} unread={unread} />}
         {needsSportsOnboarding && <BuddySportsOnboarding locale={prefs.locale} />}
-      </body>
+      </InternationalProvider></body>
     </html>
   );
 }

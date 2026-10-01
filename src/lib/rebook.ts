@@ -1,3 +1,4 @@
+import {wallParts,dayKey,addCalendarDays,wallTime} from "./international";
 // "Spil igen": find og gentag en tidligere banebooking.
 //
 // Logikken ligger her, ikke i src/lib/actions.ts, fordi den skal bruges to
@@ -21,6 +22,7 @@ export type Repeatable = {
   what: string;
   startsAt: Date;
   courtId: string;
+  timeZone:string;
 };
 
 /** Tidligere banebookinger der er værd at tilbyde igen, nyeste først, højst tre. */
@@ -41,13 +43,15 @@ export async function getRepeatableBookings(userId: string): Promise<Repeatable[
   const out: Repeatable[] = [];
   for (const b of past) {
     if (!b.courtId) continue;
-    const key = `${b.courtId}_${b.startsAt.getDay()}_${b.startsAt.getHours()}`;
+    const part=wallParts(b.startsAt,b.timeZone);
+    const key = `${b.courtId}_${part.weekday}_${part.hour}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push({
       bookingId: b.id,
       what: `${b.court?.club.name} — ${b.court?.name}`,
       startsAt: b.startsAt,
+      timeZone:b.timeZone,
       courtId: b.courtId,
     });
     if (out.length >= 3) break;
@@ -75,10 +79,9 @@ export async function rebookSameSlot(
   });
   if (!previous?.courtId) return { ok: false, reason: "not-found" };
 
-  let startsAt = new Date(previous.startsAt);
-  while (startsAt <= new Date()) {
-    startsAt = addDays(startsAt, 7);
-  }
+  const parts=wallParts(previous.startsAt,previous.timeZone);
+  let key=dayKey(previous.startsAt,previous.timeZone),startsAt:Date|null=previous.startsAt;
+  do {key=addCalendarDays(key,7);startsAt=wallTime(key,parts.hour,parts.minute,previous.timeZone);} while(!startsAt||startsAt<=new Date());
   const endsAt = addHours(startsAt, 1);
 
   await releaseExpiredHolds();
@@ -144,6 +147,7 @@ export type RepeatableLesson = {
   coachProfileId: string;
   startsAt: Date;
   minutes: number;
+  timeZone:string;
 };
 
 /** Tidligere trænertimer det er værd at tilbyde igen. Nyeste først, højst tre. */
@@ -166,7 +170,8 @@ export async function getRepeatableLessons(userId: string): Promise<RepeatableLe
   const out: RepeatableLesson[] = [];
   for (const b of past) {
     if (!b.coachProfileId || !b.coachProfile) continue;
-    const key = `${b.coachProfileId}_${b.startsAt.getDay()}_${b.startsAt.getHours()}`;
+    const part=wallParts(b.startsAt,b.timeZone);
+    const key = `${b.coachProfileId}_${part.weekday}_${part.hour}`;
     if (seen.has(key)) continue;
     seen.add(key);
     out.push({
@@ -174,6 +179,7 @@ export async function getRepeatableLessons(userId: string): Promise<RepeatableLe
       coachName: b.coachProfile.user.name,
       coachProfileId: b.coachProfileId,
       startsAt: b.startsAt,
+      timeZone:b.timeZone,
       minutes: Math.round((b.endsAt.getTime() - b.startsAt.getTime()) / 60000),
     });
     if (out.length >= 3) break;
@@ -208,10 +214,9 @@ export async function rebookLesson(
   });
   if (!coach) return { ok: false, reason: "not-found" };
 
-  let startsAt = new Date(previous.startsAt);
-  while (startsAt <= new Date()) {
-    startsAt = addDays(startsAt, 7);
-  }
+  const parts=wallParts(previous.startsAt,previous.timeZone);
+  let key=dayKey(previous.startsAt,previous.timeZone),startsAt:Date|null=previous.startsAt;
+  do {key=addCalendarDays(key,7);startsAt=wallTime(key,parts.hour,parts.minute,previous.timeZone);} while(!startsAt||startsAt<=new Date());
   const endsAt = lessonEnd(startsAt, coach.lessonMinutes);
 
   // Tilbyder træneren stadig den tid, og er den fri? isOffered er ren og
@@ -231,6 +236,8 @@ export async function rebookLesson(
     data: {
       kind: "COACH",
       status: "REQUESTED",
+      currency: coach.currency,
+      timeZone: coach.timeZone,
       startsAt,
       endsAt,
       priceKr: price,
@@ -247,7 +254,7 @@ export async function rebookLesson(
         playerName: player.name,
         playerLevel: player.level,
         startsAt,
-        priceKr: price,
+        priceKr: price,currency:coach.currency,timeZone:coach.timeZone,locale:coach.user.locale,
         withCredit: credits.length > 0,
       })
     );

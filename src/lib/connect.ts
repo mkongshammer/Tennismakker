@@ -49,7 +49,7 @@ async function loadRecipient(kind: RecipientKind, id: string): Promise<Recipient
     id: coach.id,
     email: coach.user.email,
     name: coach.user.name,
-    country: coach.user.country,
+    country: coach.country,
     stripeAccountId: coach.stripeAccountId,
   };
 }

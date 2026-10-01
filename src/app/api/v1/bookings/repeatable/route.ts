@@ -14,6 +14,7 @@ export async function GET(req: Request) {
     items: items.map((r) => ({
       bookingId: r.bookingId,
       what: r.what,
+      timeZone:r.timeZone,
       startsAt: r.startsAt.toISOString(),
     })),
   });

@@ -13,6 +13,8 @@
 //    OpenStreetMap er fulde af farve og tekst, og så forsvinder boblerne i
 //    støjen. Et roligt underlag lader indholdet træde frem.
 
+import {formatMoney,marketFor} from "../lib/international";
+import type {Locale} from "../lib/sports";
 import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -21,11 +23,12 @@ import type { MapClub } from "./clubTypes";
 
 type Props = {
   clubs: MapClub[];
+  country?:string;locale?:Locale;
   activeId: string | null;
   onSelect: (id: string | null) => void;
 };
 
-function pill(club: MapClub, active: boolean) {
+function pill(club: MapClub, active: boolean,locale:Locale) {
   const bg = active ? "#B4491E" : "#1E3D2F";
   const scale = active ? 1.12 : 1;
   return L.divIcon({
@@ -34,26 +37,30 @@ function pill(club: MapClub, active: boolean) {
       <span class="tm-pill" style="
         background:${bg};
         transform:scale(${scale});
-      ">${club.priceHour} kr</span>
+      ">${formatMoney(club.priceHour,club.currency,locale)}</span>
     `,
-    iconSize: [64, 30],
-    iconAnchor: [32, 30],
+    iconSize: [96, 30],
+    iconAnchor: [48, 30],
   });
 }
 
 /** Holder alle klubber i billedet, og zoomer ind på den valgte. */
-function Viewport({ clubs, activeId }: { clubs: MapClub[]; activeId: string | null }) {
+function Viewport({ clubs, activeId,country }: { clubs: MapClub[]; activeId: string | null;country:string }) {
   const map = useMap();
 
   useEffect(() => {
-    if (clubs.length === 0) return;
+    if (clubs.length === 0) {
+      const center=marketFor(country)?.center??[56,10.6];
+      map.setView(center as [number,number],country==='US'||country==='CA'?4:6);
+      return;
+    }
     map.fitBounds(
       L.latLngBounds(
         clubs.map((c) => [c.latitude as number, c.longitude as number] as [number, number])
       ),
       { padding: [56, 56], maxZoom: 14 }
     );
-  }, [clubs, map]);
+  }, [clubs, map,country]);
 
   useEffect(() => {
     if (!activeId) return;
@@ -67,16 +74,16 @@ function Viewport({ clubs, activeId }: { clubs: MapClub[]; activeId: string | nu
   return null;
 }
 
-export default function ClubMapView({ clubs, activeId, onSelect }: Props) {
+export default function ClubMapView({ clubs, activeId, onSelect,country="DK",locale="da" }: Props) {
   const center = useMemo<[number, number]>(() => {
-    if (clubs.length === 0) return [56.0, 10.6];
+    if (clubs.length === 0) return (marketFor(country)?.center??[56.0,10.6]) as [number,number];
     return [clubs[0].latitude as number, clubs[0].longitude as number];
-  }, [clubs]);
+  }, [clubs,country]);
 
   return (
     <MapContainer
       center={center}
-      zoom={11}
+      zoom={clubs.length?11:country==='US'||country==='CA'?4:6}
       scrollWheelZoom
       zoomControl={false}
       style={{ height: "100%", width: "100%", background: "#EDEBE5" }}
@@ -90,13 +97,13 @@ export default function ClubMapView({ clubs, activeId, onSelect }: Props) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Viewport clubs={clubs} activeId={activeId} />
+      <Viewport clubs={clubs} activeId={activeId} country={country} />
 
       {clubs.map((club) => (
         <Marker
           key={club.id}
           position={[club.latitude as number, club.longitude as number]}
-          icon={pill(club, club.id === activeId)}
+          icon={pill(club, club.id === activeId,locale)}
           zIndexOffset={club.id === activeId ? 1000 : 0}
           eventHandlers={{
             click: () => onSelect(club.id),

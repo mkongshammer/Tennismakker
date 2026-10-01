@@ -1,3 +1,6 @@
+import * as international from "../international";
+import * as location from "../profile-location";
+import * as phrases from "../phrases";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
@@ -12,6 +15,9 @@ export function loadIsolatedModule(relative: string, mocks: Record<string, unkno
   });
   const module = { exports: {} as any };
   new Function("require", "module", "exports", outputText)((name: string) => {
+    if (name in mocks) return mocks[name];
+    const pure:Record<string,unknown>={"international":international,"profile-location":location,"phrases":phrases};
+    const moduleName=name.split("/").at(-1)!;if(moduleName in pure)return pure[moduleName];
     if (!(name in mocks)) throw new Error(`Unmocked dependency: ${name}`);
     return mocks[name];
   }, module, module.exports);
