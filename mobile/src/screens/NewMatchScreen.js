@@ -3,8 +3,8 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
-import { Button } from "../lib/ui";
-import { colors, LEVELS, MATCH_TYPES } from "../lib/theme";
+import { AppHeading, Button } from "../lib/ui";
+import { colors, pageContent, LEVELS, MATCH_TYPES } from "../lib/theme";
 import { DK_REGIONS } from "../lib/regions";
 
 export default function NewMatchScreen({ navigation }) {
@@ -41,7 +41,8 @@ export default function NewMatchScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={headerHeight}>
-    <ScrollView keyboardShouldPersistTaps="handled" style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 36 }}>
+    <ScrollView keyboardShouldPersistTaps="handled" style={{ backgroundColor: colors.mist }} contentContainerStyle={[pageContent, { maxWidth: 600 }]}>
+      <AppHeading eyebrow="INVITÉR PÅ BANEN" title="Hvem skal du spille med?" subtitle="Fortæl lidt om din spilleaftale, så andre kan finde dig." />
       <Text style={styles.label}>Hvad søger du?</Text>
       <TextInput
         style={[styles.input, { height: 90, textAlignVertical: "top" }]}
@@ -121,9 +122,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 13,
     fontSize: 16,
+    color: colors.ink,
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {

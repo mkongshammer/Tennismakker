@@ -3,7 +3,7 @@
 // banefliserne bruger, så valget og resultatet hænger visuelt sammen.
 import React, { useCallback, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ScrollView, Pressable, Text, View, StyleSheet, Platform, useWindowDimensions } from "react-native";
+import { Pressable, Text, View, StyleSheet } from "react-native";
 import { colors, SPORTS, SPORT_LABELS, sportColor } from "./theme";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -15,20 +15,13 @@ export async function getSavedSport() {
 }
 
 export function SportPicker({ value, onChange }) {
-  const { width } = useWindowDimensions();
-  const desktop = Platform.OS === "web" && width >= 900;
   const select = (sport) => {
     onChange(sport);
     AsyncStorage.setItem(KEY, sport).catch(() => {});
   };
 
   return (
-    <ScrollView
-      horizontal={!desktop}
-      showsHorizontalScrollIndicator={false}
-      style={styles.row}
-      contentContainerStyle={{ gap: 8, paddingHorizontal: desktop ? 28 : 16, ...(desktop ? { flexDirection: "row", flexWrap: "wrap" } : {}) }}
-    >
+    <View style={styles.row}>
       {SPORTS.map((s) => {
         const active = value === s;
         return (
@@ -46,7 +39,7 @@ export function SportPicker({ value, onChange }) {
           </Pressable>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -63,14 +56,14 @@ export function useSport() {
 }
 
 const styles = StyleSheet.create({
-  row: { marginBottom: 12, flexGrow: 0 },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 },
   chip: {
     minHeight: 48,
     minWidth: 48,
     flexDirection: "row",
     alignItems: "center",
     gap: 7,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 9,
     borderRadius: 999,
     borderWidth: 1,

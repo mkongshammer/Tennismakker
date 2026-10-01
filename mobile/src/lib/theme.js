@@ -14,7 +14,14 @@ export const colors = {
   slate: "#54677E",
   slateLight: "#8496AB",
   border: "#E2E8F0", // tynd kant, ligesom border-slate/10 på websitet
+  courtTint: "#EAF1FF",
+  success: "#187052",
+  successTint: "#EAF6EF",
+  danger: "#9B2525",
 };
+
+// Shared reading width keeps forms and cards comfortable on larger screens.
+export const pageContent = { padding: 20, paddingBottom: 32, width: "100%", maxWidth: 960, alignSelf: "center" };
 
 export const LEVELS = {
   1: "Nybegynder",

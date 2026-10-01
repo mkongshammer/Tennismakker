@@ -5,7 +5,7 @@ import { openProfile } from "./navigationRef";
 
 export function DesktopNavigation({ state, descriptors, navigation }) {
   return <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 232, backgroundColor: colors.ink, padding: 20 }}>
-    <Text style={{ color: colors.chalk, fontSize: 25, fontWeight: "800", marginTop: 12, marginBottom: 8 }}>RacketBuddy</Text>
+    <Text style={{ color: colors.chalk, fontSize: 25, fontWeight: "800", marginTop: 12, marginBottom: 8 }}>RacketBuddy<Text style={{ color: colors.optic }}>.</Text></Text>
     <Text style={{ color: "#BCCBDD", fontSize: 14, marginBottom: 36 }}>Mere tid på banen.</Text>
     <View style={{ gap: 8 }}>
       {state.routes.map((route, index) => {

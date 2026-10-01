@@ -2,8 +2,8 @@ import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { api } from "../lib/api";
-import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors } from "../lib/theme";
+import { AppHeading, Avatar, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { colors, pageContent } from "../lib/theme";
 import { dayShort, time } from "../lib/dates";
 
 export default function ThreadsScreen({ navigation }) {
@@ -21,9 +21,9 @@ export default function ThreadsScreen({ navigation }) {
   return (
     <FlatList
       style={{ backgroundColor: colors.mist }}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={pageContent}
       data={state.data.threads}
-      ListHeaderComponent={state.error ? <ErrorMessage message={state.error} onRetry={load} /> : null}
+      ListHeaderComponent={<><AppHeading eyebrow="SPILLET STARTER MED ET HEJ" title="Dine samtaler." subtitle="Aftal næste kamp og hold kontakten med dine medspillere." />{state.error && <ErrorMessage message={state.error} onRetry={load} />}</>}
       keyExtractor={(t) => t.id}
       refreshControl={
         <RefreshControl
@@ -32,8 +32,8 @@ export default function ThreadsScreen({ navigation }) {
         />
       }
       ListEmptyComponent={
-        <Empty>
-          Ingen samtaler endnu. Slå til på et makker-opslag, så åbner der en samtale her.
+        <Empty title="Sig hej til din næste medspiller" icon="↗" action="Find en medspiller" onAction={() => navigation.navigate("MakkereTab")}>
+          Find en spiller eller svar på et opslag. Jeres samtale vises her.
         </Empty>
       }
       renderItem={({ item }) => (
@@ -45,7 +45,9 @@ export default function ThreadsScreen({ navigation }) {
             navigation.navigate("Samtale", { id: item.id, name: item.otherName })
           }
         >
-          <Card>
+          <Card style={{ flexDirection: "row", gap: 14, alignItems: "center", borderColor: item.unread ? "#B8CFFA" : colors.border }}>
+            <Avatar name={item.otherName} />
+            <View style={{ flex: 1 }}>
             <View style={styles.row}>
               <Text style={styles.name}>
                 {item.otherName}
@@ -56,6 +58,7 @@ export default function ThreadsScreen({ navigation }) {
             <Text style={styles.preview} numberOfLines={1}>
               {item.lastBody ?? `Om: ${item.subject}`}
             </Text>
+            </View>
           </Card>
         </Pressable>
       )}
@@ -65,7 +68,7 @@ export default function ThreadsScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
-  name: { fontWeight: "800", fontSize: 16, flexShrink: 1 },
+  name: { color: colors.ink, fontWeight: "800", fontSize: 16, flexShrink: 1 },
   badge: { color: colors.court, fontSize: 12, fontWeight: "800" },
   time: { color: colors.slate, fontSize: 12 },
   preview: { color: colors.slate, marginTop: 4 },

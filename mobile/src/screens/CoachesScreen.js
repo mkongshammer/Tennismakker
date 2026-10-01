@@ -1,8 +1,8 @@
 import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { api } from "../lib/api";
-import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors, SPORT_LABELS } from "../lib/theme";
+import { AppHeading, Avatar, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { colors, pageContent, SPORT_LABELS } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
 import { useScreenData } from "../lib/useScreenData";
 
@@ -13,31 +13,20 @@ export default function CoachesScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
-      <View style={{ paddingTop: 12 }}>
-        <SportPicker value={sport} onChange={setSport} />
-      </View>
-
-      {state.loading ? (
-        <Loading />
-      ) : state.error && !data ? (
-        <ErrorMessage message={state.error} onRetry={refresh} />
-      ) : (
         <FlatList
-          contentContainerStyle={{ padding: 24, paddingTop: 8, width: "100%", maxWidth: 1000, alignSelf: "center" }}
-          data={state.coaches}
+          contentContainerStyle={pageContent}
+          data={loading ? [] : state.coaches}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-          ListHeaderComponent={error ? <ErrorMessage message={error} onRetry={refresh} /> : null}
+          ListHeaderComponent={<><AppHeading eyebrow="LØFT DIT SPIL" title="Et skridt videre." subtitle="Find en træner, der passer til din sport og dit niveau." /><SportPicker value={sport} onChange={setSport} />{error && <ErrorMessage message={error} onRetry={refresh} />}</>}
           keyExtractor={(c) => c.id}
-          ListEmptyComponent={<Card style={{ marginTop: 12, padding: 28 }}>
-            <Text style={{ color: colors.ink, fontSize: 22, fontWeight: "700", marginBottom: 10 }}>Ingen trænere i {SPORT_LABELS[sport]?.toLowerCase()} endnu</Text>
-            <Text style={{ color: colors.slate, fontSize: 16, lineHeight: 25 }}>Der er ingen profiler at vise for dit valg. Vælg en anden sportsgren ovenfor for at se de trænere, der er tilmeldt.</Text>
-          </Card>}
+          ListEmptyComponent={loading ? <Loading label="Finder trænere…" /> : error && !data ? null : <Empty title="Dit næste trænerteam er på vej" icon="↗">Ingen trænere i {SPORT_LABELS[sport]?.toLowerCase()} endnu. Vælg en anden sportsgren for at se de tilmeldte trænere.</Empty>}
           renderItem={({ item }) => (
             <Pressable accessibilityRole="button" accessibilityLabel={`Se ${item.name}`} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} onPress={() => navigation.navigate("Traener", { id: item.id, name: item.name })}>
               <Card>
-                <View style={styles.row}>
+                <View style={styles.coachTop}><Avatar name={item.name} size={56} /><View style={{ flex: 1 }}>
                   <Text style={styles.name}>{item.name}</Text>
-                  <Text style={styles.price}>{item.priceHour} kr/t</Text>
+                  <Text style={styles.meta}>{item.area}</Text>
+                  </View>
                 </View>
                 {item.rating?.count > 0 && (
                   <Text style={styles.rating}>
@@ -46,8 +35,7 @@ export default function CoachesScreen({ navigation }) {
                   </Text>
                 )}
                 <Text style={styles.headline}>{item.headline}</Text>
-                <Text style={styles.meta}>{item.area}</Text>
-                {item.specialties.length > 0 && (
+                {item.specialties?.length > 0 && (
                   <View style={styles.tags}>
                     {item.specialties.map((s) => (
                       <View key={s} style={styles.tag}>
@@ -61,11 +49,11 @@ export default function CoachesScreen({ navigation }) {
                     {item.packageCount === 1 ? "Tilbyder også en pakke" : `Tilbyder også ${item.packageCount} pakker`}
                   </Text>
                 )}
+                <View style={styles.footer}><Text style={styles.price}>{item.priceHour} kr. <Text style={styles.meta}>/ time</Text></Text><Text style={styles.action}>Se træner ↗</Text></View>
               </Card>
             </Pressable>
           )}
         />
-      )}
     </View>
   );
 }
@@ -81,4 +69,7 @@ const styles = StyleSheet.create({
   tag: { backgroundColor: colors.mist, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
   tagText: { fontSize: 12, fontWeight: "600", color: colors.ink },
   packages: { marginTop: 8, fontSize: 13, fontWeight: "700", color: colors.court },
+  coachTop: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 8 },
+  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, borderTopWidth: 1, borderColor: colors.border, marginTop: 20, paddingTop: 16 },
+  action: { color: colors.court, fontWeight: "700", fontSize: 14 },
 });

@@ -3,8 +3,8 @@ import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { feedback as Alert } from "../lib/feedback";
 import { api } from "../lib/api";
-import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors, LEVELS, MATCH_TYPES } from "../lib/theme";
+import { AppHeading, Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { colors, pageContent, LEVELS, MATCH_TYPES } from "../lib/theme";
 
 export default function MatchesScreen({ navigation }) {
   const state = useScreenData(useCallback(() => api.matches(), []));
@@ -38,7 +38,7 @@ export default function MatchesScreen({ navigation }) {
   return (
     <FlatList
       style={{ backgroundColor: colors.mist }}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={pageContent}
       data={state.data.matches}
       keyExtractor={(m) => m.id}
       refreshControl={
@@ -49,6 +49,7 @@ export default function MatchesScreen({ navigation }) {
       }
       ListHeaderComponent={
         <View style={{ marginBottom: 12 }}>
+          <AppHeading eyebrow="SKAL VI SPILLE?" title="Find din næste kamp." subtitle="Svar på en spilleaftale, eller invitér selv andre med på banen." />
           {state.error && <ErrorMessage message={state.error} onRetry={load} />}
           <Button
             title="Opret opslag"
@@ -56,7 +57,7 @@ export default function MatchesScreen({ navigation }) {
           />
         </View>
       }
-      ListEmptyComponent={<Empty>Ingen åbne opslag lige nu. Opret det første.</Empty>}
+      ListEmptyComponent={<Empty title="Vær den første på banen" icon="↗">Ingen åbne spilleaftaler lige nu. Opret et opslag og invitér andre med.</Empty>}
       renderItem={({ item }) => (
         <Card>
           <View style={styles.row}>
@@ -80,8 +81,8 @@ export default function MatchesScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  name: { fontWeight: "800", fontSize: 16, flexShrink: 1 },
+  row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  name: { color: colors.ink, fontWeight: "800", fontSize: 18, flexShrink: 1 },
   type: { color: colors.court, fontWeight: "700", fontSize: 12, marginTop: 6 },
   message: { marginTop: 6, lineHeight: 20 },
   meta: { color: colors.slate, marginTop: 6, fontSize: 13 },

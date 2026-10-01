@@ -4,7 +4,7 @@ import { feedback as Alert } from "../lib/feedback";
 import { useScreenData } from "../lib/useScreenData";
 import { api, checkoutUrl } from "../lib/api";
 import { Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors } from "../lib/theme";
+import { colors, pageContent } from "../lib/theme";
 import { dayLong, groupByDay, time } from "../lib/dates";
 import { BookingReview } from "../lib/BookingReview";
 
@@ -55,7 +55,7 @@ export default function CoachScreen({ route }) {
 
   return (
     <>
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16 }}
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {notice && <Card><Text accessibilityLiveRegion="polite">{notice}</Text></Card>}
@@ -99,7 +99,7 @@ export default function CoachScreen({ route }) {
       <Text style={styles.section}>Ledige tider</Text>
       <Text style={styles.sectionHint}>Send en anmodning. Betaling sker efter trænerens godkendelse.</Text>
       {days.length === 0 ? (
-        <Empty>Ingen ledige tider de næste 7 dage.</Empty>
+        <Empty title="Nye træningstider på vej" action="Opdatér tider" onAction={load}>Ingen ledige tider de næste 7 dage. Kig igen senere eller vælg en anden træner.</Empty>
       ) : (
         days.map((d) => (
           <View key={d.date.toISOString()} style={{ marginBottom: 18 }}>

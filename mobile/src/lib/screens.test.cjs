@@ -146,7 +146,7 @@ function doorProfile(booking, openDoor, alerts) {
     '../lib/api': { api: { openDoor }, checkoutUrl: value => value },
     '../lib/auth': { useAuth: () => ({ user: { id: 'member', name: 'Test', level: 3 } }) },
     '../lib/PlayAgain': { PlayAgain: 'PlayAgain' },
-    '../lib/ui': Object.fromEntries(['Badge','Button','Card','ErrorMessage','Loading'].map(x => [x,x])),
+    '../lib/ui': Object.fromEntries(['Avatar','Badge','Button','Card','ErrorMessage','Loading'].map(x => [x,x])),
     '../lib/theme': { colors: {}, LEVELS: {} },
     '../lib/dates': { dateTimeLong: d => d.toISOString() },
     '../lib/NotificationSettings': { NotificationSettings: 'NotificationSettings' },
@@ -193,9 +193,9 @@ test('door button is absent before/after access window and for unconfirmed booki
 test('club login is a separate choice below login and submits in club-only mode', async () => {
   const logins=[];let tree;
   const {default:Login}=loadSource('../screens/LoginScreen.js',{
-    'react-native':{KeyboardAvoidingView:'KeyboardAvoidingView',Platform:{OS:'ios'},ScrollView:'ScrollView',StyleSheet:{create:x=>x},Text:'Text',TextInput:'TextInput',View:'View',Pressable:'Pressable',Linking:{}},
+    'react-native':{KeyboardAvoidingView:'KeyboardAvoidingView',Platform:{OS:'ios'},useWindowDimensions:()=>({width:390}),ScrollView:'ScrollView',StyleSheet:{create:x=>x},Text:'Text',TextInput:'TextInput',View:'View',Pressable:'Pressable',Linking:{}},
     '../lib/auth':{useAuth:()=>({login:async(...args)=>logins.push(args),signup:async()=>{throw Error('Must not sign up a player');}})},
-    '../lib/ui':{Button:'Button'},'../lib/theme':{colors:{}},'../lib/regions':{DK_REGIONS:[]},
+    '../lib/ui':{Button:'Button'},'../lib/theme':{colors:{}},'../lib/regions':{DK_REGIONS:[]},'../lib/CourtScene':{CourtScene:'CourtScene'},
     'react-native-safe-area-context':{useSafeAreaInsets:()=>({top:0,bottom:0})},
   });
   await act(async()=>{tree=create(React.createElement(Login));});
@@ -207,5 +207,40 @@ test('club login is a separate choice below login and submits in club-only mode'
     await act(()=>tree.root.findAllByType('Button')[0].props.onPress());
     assert.deepEqual(logins,[['admin@example.invalid','test-password',true]]);
     await act(async()=>tree.root.findAllByType('Button')[1].props.onPress());assert.equal(tree.root.findAllByType('Button')[0].props.title,'Log ind');
+  }finally{await act(()=>tree.unmount());}
+});
+
+test('club search filters real names and cities, can clear, and preserves selected-club navigation', async () => {
+  const navigations = []; let tree;
+  const clubs = [
+    { id: 'c1', slug: 'lyngby', name: 'Lyngby Tennis', city: 'Lyngby', courtCount: 4, priceHour: 100 },
+    { id: 'c2', slug: 'valby', name: 'Valby Klub', city: 'København', courtCount: 3, priceHour: 120 },
+  ];
+  const {default:Clubs} = loadSource('../screens/ClubsScreen.js', {
+    'react-native': { FlatList:'FlatList', Pressable:'Pressable', RefreshControl:'RefreshControl', StyleSheet:{create:x=>x}, Text:'Text', TextInput:'TextInput', View:'View' },
+    '../lib/api': {api:{}},
+    '../lib/ui': Object.fromEntries(['AppHeading','Card','Empty','ErrorMessage','Loading'].map(x=>[x,x])),
+    '../lib/theme': {colors:{}, pageContent:{}, SPORT_LABELS:{TENNIS:'Tennis'},sportColor:()=> '#1B62C4'},
+    '../lib/SportPicker': {SportPicker:'SportPicker',useSport:()=>['TENNIS',()=>{}]},
+    '../lib/CourtGraphic': {CourtGraphic:'CourtGraphic'}, '../lib/CourtScene': {CourtScene:'CourtScene'},
+    '../lib/useScreenData': {useScreenData:()=>({data:{clubs},loading:false,refreshing:false,refresh(){}})},
+  });
+  await act(async()=>{tree=create(React.createElement(Clubs,{navigation:{navigate:(...a)=>navigations.push(a)}}));});
+  try {
+    const list=()=>tree.root.findByType('FlatList');
+    // FlatList renders its header; host mocks explicitly mount that supplied header.
+    function ViewList() {return React.createElement(React.Fragment,null, list().props.ListHeaderComponent);}
+    let header; await act(async()=>{header=create(React.createElement(ViewList));});
+    const search=()=>header.root.findByType('TextInput');
+    await act(async()=>search().props.onChangeText('KØBENHAVN'));
+    assert.deepEqual(list().props.data.map(x=>x.id),['c2']);
+    await act(async()=>header.update(React.createElement(ViewList)));
+    const result=list().props.renderItem({item:list().props.data[0]});
+    result.props.onPress();assert.deepEqual(navigations,[['Klub',{slug:'valby',name:'Valby Klub'}]]);
+    await act(async()=>search().props.onChangeText('No match'));
+    assert.deepEqual(list().props.data,[]);assert.equal(list().props.ListEmptyComponent.props.title,'Ingen klubber matcher');
+    await act(async()=>list().props.ListEmptyComponent.props.onAction());
+    assert.equal(list().props.data.length,2);
+    await act(()=>header.unmount());
   }finally{await act(()=>tree.unmount());}
 });

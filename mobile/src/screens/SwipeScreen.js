@@ -3,8 +3,8 @@ import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { feedback as Alert } from "../lib/feedback";
 import { api } from "../lib/api";
-import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors, LEVELS } from "../lib/theme";
+import { AppHeading, Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { colors, pageContent, LEVELS, SPORT_LABELS } from "../lib/theme";
 
 export default function SwipeScreen({ navigation }) {
   const state = useScreenData(useCallback(() => api.players(), []));
@@ -36,7 +36,7 @@ export default function SwipeScreen({ navigation }) {
   return (
     <FlatList
       style={{ backgroundColor: colors.mist }}
-      contentContainerStyle={{ padding: 16 }}
+      contentContainerStyle={pageContent}
       data={state.data.players}
       keyExtractor={(p) => p.id}
       refreshControl={
@@ -48,14 +48,11 @@ export default function SwipeScreen({ navigation }) {
       ListHeaderComponent={
         <View style={styles.header}>
           {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-          <Text style={styles.title}>Find en medspiller</Text>
-          <Text style={styles.subtitle}>
-            Se spillere på RacketBuddy og skriv direkte til dem. Ingen likes eller matches først.
-          </Text>
-          <Button title="Se opslag" variant="ink" onPress={() => navigation.navigate("Makkere")} />
+          <AppHeading eyebrow="BEDRE SAMMEN" title="Find din makker." subtitle="Samme sport. Nyt bekendtskab. Skriv til en spiller og aftal jeres næste kamp." />
+          <Button title="Se åbne spilleaftaler ↗" variant="ink" onPress={() => navigation.navigate("Makkere")} />
         </View>
       }
-      ListEmptyComponent={<Empty>Der er ingen andre spillere at vise endnu.</Empty>}
+      ListEmptyComponent={<Empty title="Gør plads til en ny makker" icon="↗" action="Se spilleaftaler" onAction={() => navigation.navigate("Makkere")}>Der er ingen andre spillerprofiler at vise endnu. Prøv de åbne opslag.</Empty>}
       renderItem={({ item }) => {
         const initials = item.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
         return (
@@ -73,7 +70,7 @@ export default function SwipeScreen({ navigation }) {
                   Niveau {item.level} · {LEVELS[item.level] ?? ""}
                 </Text>
                 {item.area ? <Text style={styles.meta}>{item.area}</Text> : null}
-                {item.sports?.length ? <Text style={styles.sports}>{item.sports.join(" · ")}</Text> : null}
+                {item.sports?.length ? <Text style={styles.sports}>{item.sports.map(s => SPORT_LABELS[s] ?? s).join(" · ")}</Text> : null}
               </View>
             </View>
             {item.bio ? <Text style={styles.bio}>{item.bio}</Text> : null}
@@ -101,14 +98,14 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: colors.ink,
+    backgroundColor: colors.courtTint,
     alignItems: "center",
     justifyContent: "center",
   },
-  initials: { color: colors.chalk, fontWeight: "900", fontSize: 17 },
+  initials: { color: colors.court, fontWeight: "800", fontSize: 17 },
   info: { flex: 1 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  name: { fontWeight: "900", fontSize: 17 },
+  name: { color: colors.ink, fontWeight: "800", fontSize: 19 },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   sports: { color: colors.court, fontWeight: "700", marginTop: 4, fontSize: 12 },
   bio: { marginTop: 12, lineHeight: 20 },

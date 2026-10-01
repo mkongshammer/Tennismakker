@@ -38,9 +38,10 @@ const ChatStack = createNativeStackNavigator();
 // Fælles udseende for hver fanes eget navigationshoved. Profil-knappen
 // sidder i hjørnet på alle skærme, ligesom på websitet.
 const screenOptions = {
-  headerStyle: { backgroundColor: colors.ink },
-  headerTintColor: colors.chalk,
-  headerTitleStyle: { fontWeight: "800" },
+  headerStyle: { backgroundColor: colors.chalk },
+  headerTintColor: colors.ink,
+  headerTitleStyle: { fontWeight: "700", fontSize: 17 },
+  headerShadowVisible: false,
   headerRight: () => <ProfileButton />,
 };
 
@@ -108,7 +109,9 @@ function MainTabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.court,
         tabBarInactiveTintColor: colors.slate,
-        tabBarStyle: { borderTopColor: colors.border },
+        tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.chalk, paddingTop: 6 },
+        tabBarItemStyle: { borderRadius: 16, marginHorizontal: 4, marginBottom: 4 },
+        tabBarActiveBackgroundColor: colors.courtTint,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
       }}
@@ -167,10 +170,11 @@ function Root() {
         options={{
           title: "Min profil",
           presentation: "modal",
-          headerStyle: { backgroundColor: colors.ink },
-          headerTintColor: colors.chalk,
-          headerTitleStyle: { fontWeight: "800" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.chalk, fontWeight: "700" }}>Luk</Text></Pressable>,
+          headerStyle: { backgroundColor: colors.chalk },
+          headerTintColor: colors.ink,
+          headerShadowVisible: false,
+          headerTitleStyle: { fontWeight: "700" },
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel="Luk min profil" style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.court, fontWeight: "700" }}>Luk</Text></Pressable>,
         }}
       />
     </RootStack.Navigator>
@@ -195,4 +199,4 @@ export default function App() {
   );
 }
 
-function SessionStatusBar() { const { user } = useAuth(); return <StatusBar style={user ? "light" : "dark"} />; }
+function SessionStatusBar() { return <StatusBar style="dark" />; }

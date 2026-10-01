@@ -1,11 +1,12 @@
-import React, { useCallback } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { api } from "../lib/api";
-import { Card, Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors } from "../lib/theme";
+import { AppHeading, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { colors, pageContent, SPORT_LABELS, sportColor } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
 import { CourtGraphic } from "../lib/CourtGraphic";
 import { useScreenData } from "../lib/useScreenData";
+import { CourtScene } from "../lib/CourtScene";
 
 function Stars({ average, count }) {
   if (!count) return <Text style={styles.newBadge}>Ny på RacketBuddy</Text>;
@@ -19,24 +20,29 @@ function Stars({ average, count }) {
 
 export default function ClubsScreen({ navigation }) {
   const [sport, setSport] = useSport();
+  const [query, setQuery] = useState("");
   const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport), [sport]));
   const state = { loading, error, clubs: data?.clubs ?? [] };
+  const needle = query.trim().toLocaleLowerCase("da-DK");
+  const clubs = state.clubs.filter(c => `${c.name} ${c.city}`.toLocaleLowerCase("da-DK").includes(needle));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
-      <View style={{ paddingTop: 12 }}>
-        <SportPicker value={sport} onChange={setSport} />
-      </View>
-
-      {state.loading ? (
-        <Loading />
-      ) : state.error && !data ? (
-        <ErrorMessage message={state.error} onRetry={refresh} />
-      ) : (
         <FlatList
-          contentContainerStyle={{ padding: 16, paddingTop: 4 }}
-          data={state.clubs}
-          ListHeaderComponent={error ? <ErrorMessage message={error} onRetry={refresh} /> : null}
+          contentContainerStyle={pageContent}
+          data={state.loading ? [] : clubs}
+          ListHeaderComponent={<>
+            <AppHeading eyebrow="DIT NÆSTE SPIL" title="Mere tid på banen." subtitle="Find en klub, vælg en tid, og kom ud at spille." />
+            <View style={styles.hero}>
+              <View style={styles.heroCopy}><Text style={styles.heroEyebrow}>BANEN ER DIN</Text><Text style={styles.heroTitle}>Klar til næste\nserve?</Text><Text style={styles.heroHint}>Dit næste spil starter med en ledig bane.</Text></View>
+              <View style={styles.heroArt}><CourtScene height={180} /></View>
+            </View>
+            <Text style={styles.label}>Hvad spiller du?</Text>
+            <SportPicker value={sport} onChange={setSport} />
+            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel="Søg klub eller by" placeholder="Søg klub eller by" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel="Ryd søgning" onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
+            <View style={styles.resultRow}><Text style={styles.resultTitle}>{SPORT_LABELS[sport]}klubber</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? "klub" : "klubber"}</Text>}</View>
+            {error && <ErrorMessage message={error} onRetry={refresh} />}
+          </>}
           keyExtractor={(c) => c.id}
           refreshControl={
             <RefreshControl
@@ -45,7 +51,7 @@ export default function ClubsScreen({ navigation }) {
             />
           }
           ListEmptyComponent={
-            <Empty>Ingen klubber for den sportsgren i dit land endnu.</Empty>
+            state.loading ? <Loading label="Finder klubber…" /> : error && !data ? null : <Empty title={needle ? "Ingen klubber matcher" : "Flere baner på vej"} icon="⌕" action={needle ? "Ryd søgning" : undefined} onAction={() => setQuery("")}>{needle ? "Prøv et andet klubnavn eller en anden by." : "Der er ingen klubber for denne sportsgren endnu. Prøv en anden sportsgren ovenfor."}</Empty>
           }
           renderItem={({ item }) => (
             <Pressable
@@ -54,9 +60,10 @@ export default function ClubsScreen({ navigation }) {
               style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
               onPress={() => navigation.navigate("Klub", { slug: item.slug, name: item.name })}
             >
-              <Card style={{ flexDirection: "row", gap: 14 }}>
+              <Card style={{ padding: 0, overflow: "hidden" }}>
+                <View style={styles.clubBody}>
                 <View style={styles.thumb}>
-                  <CourtGraphic color={item.color} />
+                  <CourtGraphic color={item.color || sportColor(sport)} width={84} height={84} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.row}>
@@ -67,23 +74,41 @@ export default function ClubsScreen({ navigation }) {
                   <Text style={styles.meta}>
                     {item.courtCount} baner
                   </Text>
-                  <Text style={styles.price}>fra {item.priceHour} kr/time</Text>
                 </View>
+                </View>
+                <View style={styles.cardFoot}><Text style={styles.price}>Fra {item.priceHour} kr. <Text style={styles.meta}>/ time</Text></Text><View style={styles.cardAction}><Text style={styles.actionText}>Se tider</Text><Text style={styles.arrow}>↗</Text></View></View>
               </Card>
             </Pressable>
           )}
         />
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  thumb: { width: 96, height: 64, borderRadius: 12, overflow: "hidden" },
+  thumb: { width: 84, height: 84, borderRadius: 18, overflow: "hidden" },
   row: { gap: 4 },
-  name: { fontWeight: "800", fontSize: 16, flexShrink: 1, color: colors.ink },
+  name: { fontWeight: "800", fontSize: 19, lineHeight: 24, flexShrink: 1, color: colors.ink },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   price: { fontWeight: "800", marginTop: 4, color: colors.ink },
   rating: { fontSize: 12, color: colors.ink, fontWeight: "700" },
   newBadge: { fontSize: 13, color: colors.slate },
+  hero: { backgroundColor: colors.ink, borderRadius: 24, marginBottom: 24, flexDirection: "row", overflow: "hidden", alignItems: "center" },
+  heroCopy: { flex: 1, padding: 22, paddingRight: 0, zIndex: 1 },
+  heroEyebrow: { fontSize: 10, color: colors.optic, fontWeight: "800", letterSpacing: 1.5, marginBottom: 10 },
+  heroTitle: { color: colors.chalk, fontSize: 29, fontWeight: "800", lineHeight: 32, letterSpacing: -0.8 },
+  heroHint: { color: "#CCD8E8", fontSize: 13, lineHeight: 19, marginTop: 10 },
+  heroArt: { width: "43%", maxWidth: 270 },
+  label: { fontSize: 14, color: colors.ink, fontWeight: "700", marginBottom: 12 },
+  search: { backgroundColor: colors.chalk, borderColor: colors.border, borderWidth: 1, borderRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 14, minHeight: 54 },
+  searchIcon: { color: colors.slate, fontSize: 26, marginRight: 10 },
+  searchInput: { flex: 1, minWidth: 0, color: colors.ink, fontSize: 15, paddingVertical: 16 },
+  clear: { minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center" },
+  resultRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 24, marginBottom: 14 },
+  resultTitle: { fontSize: 19, fontWeight: "800", color: colors.ink, flexShrink: 1 },
+  clubBody: { flexDirection: "row", gap: 16, padding: 20, alignItems: "center" },
+  cardFoot: { flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderColor: colors.border },
+  cardAction: { flexDirection: "row", alignItems: "center", gap: 10 },
+  actionText: { color: colors.court, fontWeight: "700", fontSize: 14 },
+  arrow: { color: colors.court, fontSize: 22 },
 });

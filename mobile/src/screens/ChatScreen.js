@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { api } from "../lib/api";
 import { Button, ErrorMessage, Loading } from "../lib/ui";
-import { colors } from "../lib/theme";
+import { colors, pageContent } from "../lib/theme";
 import { time } from "../lib/dates";
 import { useScreenData } from "../lib/useScreenData";
 import { mergeMessages } from "../lib/messages.mjs";
@@ -68,7 +68,7 @@ export default function ChatScreen({ route }) {
         ref={listRef}
         data={mergeMessages(state.data.messages, sent)}
         keyExtractor={(m) => m.id}
-        contentContainerStyle={{ padding: 16, gap: 8 }}
+        contentContainerStyle={[pageContent, { gap: 10 }]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
         onScroll={({ nativeEvent: { contentOffset, contentSize, layoutMeasurement } }) => {
@@ -93,7 +93,7 @@ export default function ChatScreen({ route }) {
         )}
       />
 
-      <View style={[styles.composer, { paddingBottom: Math.max(12, insets.bottom) }]}>
+      <View style={{ backgroundColor: colors.chalk, paddingBottom: Math.max(12, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border }}><View style={styles.composer}>
         <TextInput
           style={styles.input}
           value={draft}
@@ -105,7 +105,7 @@ export default function ChatScreen({ route }) {
           maxLength={2000}
         />
         <Button title="Send" onPress={send} loading={sending} disabled={!draft.trim()} />
-      </View>
+      </View></View>
     </KeyboardAvoidingView>
   );
 }
@@ -121,31 +121,32 @@ const styles = StyleSheet.create({
   },
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
-  bubble: { maxWidth: "80%", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 },
-  mine: { backgroundColor: colors.ink },
+  bubble: { maxWidth: "85%", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 12 },
+  mine: { backgroundColor: colors.court, borderBottomRightRadius: 6 },
   theirs: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border },
-  textMine: { color: colors.chalk, lineHeight: 20 },
-  textTheirs: { color: colors.ink, lineHeight: 20 },
-  timeMine: { color: "rgba(250,247,240,0.6)", fontSize: 11, marginTop: 3 },
+  textMine: { color: colors.chalk, lineHeight: 23, fontSize: 15 },
+  textTheirs: { color: colors.ink, lineHeight: 23, fontSize: 15 },
+  timeMine: { color: "#E1ECFF", fontSize: 11, marginTop: 6, alignSelf: "flex-end" },
   timeTheirs: { color: colors.slate, fontSize: 11, marginTop: 3 },
   empty: { textAlign: "center", color: colors.slate, marginTop: 32 },
   composer: {
     flexDirection: "row",
     gap: 8,
     padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
     backgroundColor: "#fff",
     alignItems: "flex-end",
+    width: "100%", maxWidth: 960, alignSelf: "center",
   },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: 18,
     paddingHorizontal: 12,
     paddingVertical: 10,
     maxHeight: 100,
     fontSize: 16,
+    color: colors.ink,
+    minHeight: 48,
   },
 });

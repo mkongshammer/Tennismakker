@@ -22,7 +22,7 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
+        { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] },
       ]}
     >
       {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={foreground} />}
@@ -67,17 +67,33 @@ export function ErrorMessage({ message, onRetry }) {
   );
 }
 
-export function Empty({ children }) {
+export function Empty({ children, title = "Her er lidt stille endnu", icon = "○", action, onAction }) {
   return (
-    <View style={styles.center}>
+    <View style={styles.empty}>
+      <View style={styles.emptyIcon}><Text accessible={false} style={styles.emptySymbol}>{icon}</Text></View>
+      <Text accessibilityRole="header" style={styles.emptyTitle}>{title}</Text>
       <Text style={styles.muted}>{children}</Text>
+      {action && onAction && <Button title={action} variant="quiet" onPress={onAction} />}
     </View>
   );
 }
 
+export function Avatar({ name = "", size = 48, tone = "light" }) {
+  const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase();
+  return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? colors.inkSoft : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.court, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
+}
+
+export function AppHeading({ eyebrow, title, subtitle, trailing }) {
+  return <View style={styles.headingWrap}><View style={{ flex: 1 }}>
+    {!!eyebrow && <Text style={styles.eyebrow}>{eyebrow}</Text>}
+    <Text accessibilityRole="header" style={styles.heading}>{title}</Text>
+    {!!subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+  </View>{trailing}</View>;
+}
+
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 40,
     alignItems: "center",
@@ -90,14 +106,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.chalk,
     borderRadius: 20,
-    padding: 16,
+    padding: 20,
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: 12,
     // Samme bløde skygge som websitets .card
     shadowColor: colors.ink,
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
+    shadowOpacity: 0.035,
+    shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
     elevation: 1,
   },
@@ -109,6 +125,14 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: colors.chalk, fontSize: 12, fontWeight: "700" },
   center: { padding: 32, alignItems: "center", gap: 12 },
-  muted: { color: colors.slate, textAlign: "center" },
+  muted: { color: colors.slate, textAlign: "center", fontSize: 15, lineHeight: 23, maxWidth: 420 },
   error: { color: colors.court, fontWeight: "600", textAlign: "center" },
+  empty: { padding: 28, marginVertical: 12, alignItems: "center", gap: 12, borderRadius: 24, backgroundColor: colors.chalk, borderColor: colors.border, borderWidth: 1 },
+  emptyIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: colors.courtTint, alignItems: "center", justifyContent: "center" },
+  emptySymbol: { color: colors.court, fontSize: 28 },
+  emptyTitle: { color: colors.ink, fontSize: 20, fontWeight: "700", textAlign: "center" },
+  headingWrap: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
+  eyebrow: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 },
+  heading: { color: colors.ink, fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
+  subtitle: { color: colors.slate, fontSize: 15, lineHeight: 23, marginTop: 8, maxWidth: 560 },
 });

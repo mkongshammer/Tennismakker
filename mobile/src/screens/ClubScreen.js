@@ -12,7 +12,7 @@ import { api, checkoutUrl } from "../lib/api";
 import { feedback as Alert } from "../lib/feedback";
 import { useScreenData } from "../lib/useScreenData";
 import { Empty, ErrorMessage, Loading } from "../lib/ui";
-import { colors, SURFACES, sportColor } from "../lib/theme";
+import { colors, pageContent, SURFACES, sportColor } from "../lib/theme";
 import { dayLong, dayShort, groupByDay, time } from "../lib/dates";
 import { BookingReview } from "../lib/BookingReview";
 import { readableSurface } from "../lib/contrast.mjs";
@@ -99,7 +99,7 @@ export default function ClubScreen({ route }) {
 
   return (
     <>
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.chalk, lineHeight: 21 }} accessibilityLiveRegion="polite">{notice}</Text>}
@@ -118,7 +118,7 @@ export default function ClubScreen({ route }) {
       <Text style={{ color: colors.slate, marginBottom: 14, lineHeight: 22 }}>Vælg en tid for at se detaljerne inden betaling.</Text>
 
       {days.length === 0 ? (
-        <Empty>Ingen ledige tider de næste 7 dage.</Empty>
+        <Empty title="Banen er optaget lige nu" action="Opdatér tider" onAction={load}>Ingen ledige tider de næste 7 dage. Prøv igen senere eller se en anden klub.</Empty>
       ) : (
         <>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
@@ -178,8 +178,8 @@ export default function ClubScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-  hero: { borderRadius: 20, padding: 20, marginBottom: 20 },
-  heroTitle: { color: colors.chalk, fontSize: 24, fontWeight: "900" },
+  hero: { borderRadius: 24, padding: 24, marginBottom: 24 },
+  heroTitle: { color: colors.chalk, fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
   heroCity: { color: colors.chalk, marginTop: 2 },
   heroText: { color: colors.chalk, marginTop: 10, lineHeight: 22 },
   heroMeta: { color: colors.chalk, fontWeight: "700", marginTop: 12, fontSize: 13 },
@@ -200,10 +200,10 @@ const styles = StyleSheet.create({
   dayChipTextActive: { color: colors.chalk },
   dayLabel: { fontWeight: "800", marginBottom: 4, textTransform: "capitalize", color: colors.ink },
   tile: {
-    borderRadius: 14,
+    borderRadius: 18,
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 18,
+    paddingTop: 18,
+    paddingBottom: 22,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,

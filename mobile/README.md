@@ -52,13 +52,13 @@ Når du booker, oprettes en reservation gennem API'et, og appen åbner betalings
 - **Ikoner og splash screen** er inkluderet i `assets/` og konfigureret i `app.json`.
 - **Apple Developer Program** koster 99 USD/år, **Google Play** 25 USD én gang.
 - **Build** laves med EAS: `npx eas build --platform all`. Kræver et tilknyttet Expo/EAS-projekt og signeringsoplysninger, men ikke en Mac. EAS-projekt-ID er endnu ikke tilføjet; eksport af JavaScript er ikke et signeret store-build.
-- **Push-beskeder** er ikke bygget. Det er nok den vigtigste manglende funktion — en besked når nogen slår til på dit opslag er hele pointen med matching.
+- **Push-beskeder** er implementeret. Levering kræver et EAS project ID, APNs- og FCM-nøgler og en ny signeret app-build. Se `docs/mobile-push.md`.
 - **Privatlivspolitik** skal ligge på et offentligt link, før begge butikker godkender.
 
 ## Kendte begrænsninger
 
 - Ingen offline-tilstand. Uden netværk viser appen en fejl.
-- Faneikoner er emojis, ikke rigtige ikoner.
+- Faneikoner er SVG-ikoner. Webappen har side-navigation fra 900 pixels og en bundlinje på mindre skærme.
 - Første kald kan tage op mod et minut, hvis serveren kører på Renders gratis plan og er gået i dvale.
 
 ## Web-forhåndsvisning

@@ -5,7 +5,7 @@ import { feedback as Alert } from "../lib/feedback";
 import { api, checkoutUrl } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { PlayAgain } from "../lib/PlayAgain";
-import { Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
+import { Avatar, Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
 
@@ -104,13 +104,13 @@ export default function ProfileScreen({ navigation }) {
   return (
     <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 20, paddingBottom: 36, width: "100%", maxWidth: 600, alignSelf: "center" }}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
-      <Card>
-        <Text style={styles.name}>{user?.name}</Text>
+      <Card style={styles.profileCard}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 16 }}><Avatar name={user?.name} size={60} tone="dark" /><View style={{ flex: 1 }}><Text style={styles.profileEyebrow}>DIN RACKETBUDDY</Text><Text style={styles.name}>{user?.name}</Text></View></View>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8, alignItems: "center" }}>
           <Badge>{`${user?.level} · ${LEVELS[user?.level] ?? ""}`}</Badge>
-          {user?.area ? <Text style={styles.meta}>{user.area}</Text> : null}
+          {user?.area ? <Text style={styles.profileMeta}>{user.area}</Text> : null}
         </View>
-        <Text style={styles.meta}>{user?.email}</Text>
+        <Text style={styles.profileMeta}>{user?.email}</Text>
       </Card>
 
       {repeatable.length > 0 && <View style={{ marginTop: 16 }}>
@@ -160,7 +160,7 @@ export default function ProfileScreen({ navigation }) {
               )}
               {access && b.status === "CONFIRMED" && (
                 <View style={styles.accessBox}>
-                  <Text style={styles.accessTitle}>Digital adgang</Text>
+                  <Text style={styles.accessTitle}>↗ Digital adgang</Text>
                   {doorAvailable ? (
                     <Button
                       title={`Åbn ${access.label ?? "døren"}`}
@@ -213,16 +213,19 @@ export default function ProfileScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  name: { fontSize: 22, fontWeight: "700", color: colors.ink },
+  profileCard: { backgroundColor: colors.ink, borderColor: colors.ink, padding: 24, borderRadius: 24 },
+  profileEyebrow: { fontSize: 10, letterSpacing: 1.6, fontWeight: "800", color: colors.optic, marginBottom: 6 },
+  profileMeta: { color: "#CCD8E8", fontSize: 14, lineHeight: 22, marginTop: 4 },
+  name: { fontSize: 25, fontWeight: "800", color: colors.chalk, letterSpacing: -0.6 },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
   section: { fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12, color: colors.ink },
-  bookingTitle: { fontWeight: "800" },
+  bookingTitle: { color: colors.ink, fontWeight: "800", fontSize: 18 },
   warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
   accessBox: {
     marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: colors.courtTint,
     gap: 8,
   },
   accessTitle: { color: colors.ink, fontWeight: "800", fontSize: 14 },
