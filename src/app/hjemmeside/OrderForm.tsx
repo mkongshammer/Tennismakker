@@ -1,63 +1,11 @@
-"use client";
-
-import { useFormState } from "react-dom";
-import { orderWebsite } from "../../lib/actions";
-
-export function OrderForm() {
-  const [state, action] = useFormState(orderWebsite, null);
-
-  if (state?.ok) {
-    return (
-      <div className="card">
-        <p className="display text-xl">Tak — vi har den</p>
-        <p className="mt-2 text-sm text-slate">{state.ok}</p>
-      </div>
-    );
-  }
-
-  return (
-    <form action={action} className="card space-y-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="clubName">Klubbens navn</label>
-          <input className="input" id="clubName" name="clubName" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="contactName">Dit navn</label>
-          <input className="input" id="contactName" name="contactName" required />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="email">E-mail</label>
-          <input className="input" id="email" name="email" type="email" required />
-        </div>
-        <div>
-          <label className="label" htmlFor="phone">Telefon</label>
-          <input className="input" id="phone" name="phone" type="tel" />
-        </div>
-      </div>
-
-      <div>
-        <label className="label" htmlFor="domain">Domæne, hvis I har et</label>
-        <input className="input" id="domain" name="domain" placeholder="fx soendermarktennis.dk" />
-        <p className="mt-1 text-xs text-slate">
-          Har I ikke et, hjælper vi med at købe et. Det koster typisk under
-          100 kr om året.
-        </p>
-      </div>
-
-      <div>
-        <label className="label" htmlFor="notes">Noget vi skal vide?</label>
-        <textarea className="input" id="notes" name="notes" rows={3} />
-      </div>
-
-      {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-      <button className="btn-court w-full sm:w-auto">Send bestilling</button>
-      <p className="text-xs text-slate">
-        Vi opkræver først, når I har set et udkast og sagt ja.
-      </p>
-    </form>
-  );
+ 'use client';
+import {useFormState} from 'react-dom';
+import {orderWebsite} from '../../lib/actions';
+import {phrase} from '../../lib/phrases';
+import type {Locale} from '../../lib/sports';
+import {SubmitButton} from '../../components/SubmitButton';
+export function OrderForm({locale,country}:{locale:Locale;country:string}){
+ const [state,action]=useFormState(orderWebsite,null),tr=(s:string)=>phrase(s,locale);
+ if(state?.ok)return <div className="card" role="status">{tr(state.ok)}</div>;
+ return <form action={action} className="card space-y-4"><input type="hidden" name="country" value={country}/><input type="hidden" name="locale" value={locale}/><div className="grid gap-4 sm:grid-cols-2">{[['clubName','Klubbens navn'],['contactName','Dit navn'],['email','E-mail'],['phone','Telefon'],['domain','Domæne, hvis I har et']].map(([name,label])=><label className="label" key={name}>{tr(label)}<input className="input" name={name} type={name==='email'?'email':name==='phone'?'tel':'text'} required={['clubName','contactName','email'].includes(name)} maxLength={254}/></label>)}</div><label className="label block">{tr('Noget vi skal vide?')}<textarea className="input" name="notes" rows={3} maxLength={4000}/></label><p className="text-sm text-slate">{tr('Domæneregistrering betales separat. Vi aftaler den konkrete pris med jer.')}</p>{state?.error&&<p role="alert">{tr(state.error)}</p>}<SubmitButton className="btn-court" pendingText={tr('Sender…')}>{tr('Send forespørgsel')}</SubmitButton><p className="text-sm text-slate">{tr('Vi opkræver først, når I har set et udkast og sagt ja.')}</p></form>;
 }

@@ -5078,5 +5078,334 @@
     "de": "Wählt euren Tarif, erstellt einen Zugang und bezahlt das Abonnement. Anschließend prüfen und aktivieren wir euren Club.",
     "sv": "Välj lösning, skapa inloggning och betala abonnemanget. Därefter granskar och aktiverar vi klubben.",
     "no": "Velg løsning, opprett innlogging og betal abonnementet. Deretter gjennomgår og aktiverer vi klubben."
+  },
+  "Betalingsstatus kunne ikke opdateres. Prøv igen om lidt.": {
+    "da": "Betalingsstatus kunne ikke opdateres. Prøv igen om lidt.",
+    "en": "Payment status could not be refreshed. Try again shortly.",
+    "de": "Der Zahlungsstatus konnte nicht aktualisiert werden. Bitte versuche es später erneut.",
+    "sv": "Betalningsstatus kunde inte uppdateras. Försök snart igen.",
+    "no": "Betalingsstatus kunne ikke oppdateres. Prøv igjen snart."
+  },
+  "Jeres klub er godkendt og live": {
+    "da": "Jeres klub er godkendt og live",
+    "en": "Your club is approved and live",
+    "de": "Euer Verein ist freigegeben und online",
+    "sv": "Er klubb är godkänd och publicerad",
+    "no": "Klubben er godkjent og publisert"
+  },
+  "Kontakt RacketBuddy om jeres tilmelding": {
+    "da": "Kontakt RacketBuddy om jeres tilmelding",
+    "en": "Contact RacketBuddy about your signup",
+    "de": "Kontaktiert RacketBuddy wegen eurer Anmeldung",
+    "sv": "Kontakta RacketBuddy om er registrering",
+    "no": "Kontakt RacketBuddy om registreringen"
+  },
+  "Betalt – afventer godkendelse": {
+    "da": "Betalt – afventer godkendelse",
+    "en": "Paid – awaiting approval",
+    "de": "Bezahlt – wartet auf Freigabe",
+    "sv": "Betalt – väntar på godkännande",
+    "no": "Betalt – venter på godkjenning"
+  },
+  "Jeres klublogin er oprettet": {
+    "da": "Jeres klublogin er oprettet",
+    "en": "Your club login is ready",
+    "de": "Euer Vereinszugang ist erstellt",
+    "sv": "Er klubbinloggning är skapad",
+    "no": "Klubbinnloggingen er opprettet"
+  },
+  " (betalt)": {
+    "da": " (betalt)",
+    "en": " (paid)",
+    "de": " (bezahlt)",
+    "sv": " (betalt)",
+    "no": " (betalt)"
+  },
+  "Klub og login: oprettet": {
+    "da": "Klub og login: oprettet",
+    "en": "Club and login: created",
+    "de": "Verein und Zugang: erstellt",
+    "sv": "Klubb och inloggning: skapade",
+    "no": "Klubb og innlogging: opprettet"
+  },
+  "betaling bekræftet": {
+    "da": "betaling bekræftet",
+    "en": "payment confirmed",
+    "de": "Zahlung bestätigt",
+    "sv": "betalning bekräftad",
+    "no": "betaling bekreftet"
+  },
+  "afventer betaling": {
+    "da": "afventer betaling",
+    "en": "awaiting payment",
+    "de": "wartet auf Zahlung",
+    "sv": "väntar på betalning",
+    "no": "venter på betaling"
+  },
+  "Offentliggørelse": {
+    "da": "Offentliggørelse",
+    "en": "Publication",
+    "de": "Veröffentlichung",
+    "sv": "Publicering",
+    "no": "Publisering"
+  },
+  "godkendt": {
+    "da": "godkendt",
+    "en": "approved",
+    "de": "freigegeben",
+    "sv": "godkänd",
+    "no": "godkjent"
+  },
+  "afventer RacketBuddy": {
+    "da": "afventer RacketBuddy",
+    "en": "awaiting RacketBuddy",
+    "de": "wartet auf RacketBuddy",
+    "sv": "väntar på RacketBuddy",
+    "no": "venter på RacketBuddy"
+  },
+  "Administrér abonnement og betaling": {
+    "da": "Administrér abonnement og betaling",
+    "en": "Manage subscription and billing",
+    "de": "Abonnement und Zahlung verwalten",
+    "sv": "Hantera abonnemang och betalning",
+    "no": "Administrer abonnement og betaling"
+  },
+  "Opdatér betalingsstatus": {
+    "da": "Opdatér betalingsstatus",
+    "en": "Refresh payment status",
+    "de": "Zahlungsstatus aktualisieren",
+    "sv": "Uppdatera betalningsstatus",
+    "no": "Oppdater betalingsstatus"
+  },
+  "Åbn klubadministrationen": {
+    "da": "Åbn klubadministrationen",
+    "en": "Open club administration",
+    "de": "Vereinsverwaltung öffnen",
+    "sv": "Öppna klubbadministrationen",
+    "no": "Åpne klubbadministrasjonen"
+  },
+  "Log ind her eller via Klublogin i appen for at se status. Lys og dør kræver tilslutning og test af jeres udstyr. Modtagelse af betaling fra spillere kræver særskilt opsætning af udbetalinger.": {
+    "da": "Log ind her eller via Klublogin i appen for at se status. Lys og dør kræver tilslutning og test af jeres udstyr. Modtagelse af betaling fra spillere kræver særskilt opsætning af udbetalinger.",
+    "en": "Check your status here or through Club login in the app. Lights and door access require connecting and testing your equipment. Receiving player payments requires completing payout setup.",
+    "de": "Seht euren Status hier oder über den Vereinslogin in der App. Licht und Zugang erfordern den Anschluss und Test eurer Geräte. Für Spielerzahlungen muss die Auszahlung separat eingerichtet werden.",
+    "sv": "Se er status här eller via Klubbinloggning i appen. Belysning och dörrar kräver anslutning och test av er utrustning. Spelarbetalningar kräver separat inställning av utbetalningar.",
+    "no": "Se status her eller via Klubbinnlogging i appen. Lys og dør krever tilkobling og testing av utstyret. Spillerbetalinger krever eget oppsett av utbetalinger."
+  },
+  "Bookingpriser, kontingenter og wallet bruger klubbens valuta. Bookinger og lys følger klubbens lokale tid.": {
+    "da": "Bookingpriser, kontingenter og wallet bruger klubbens valuta. Bookinger og lys følger klubbens lokale tid.",
+    "en": "Booking prices, membership fees and wallets use the club currency. Bookings and lights follow the club’s local time.",
+    "de": "Buchungspreise, Mitgliedsbeiträge und Guthaben verwenden die Vereinswährung. Buchungen und Licht folgen der Ortszeit des Vereins.",
+    "sv": "Bokningspriser, medlemsavgifter och plånböcker använder klubbens valuta. Bokningar och belysning följer klubbens lokala tid.",
+    "no": "Bookingpriser, medlemsavgifter og lommebøker bruker klubbens valuta. Bookinger og lys følger klubbens lokale tid."
+  },
+  "Klubpriser er ekskl. eventuel moms eller sales tax. Det samlede beløb vises før betaling.": {
+    "da": "Klubpriser er ekskl. eventuel moms eller sales tax. Det samlede beløb vises før betaling.",
+    "en": "Club prices exclude applicable VAT or sales tax. The total is shown before payment.",
+    "de": "Vereinspreise verstehen sich zuzüglich anfallender MwSt. oder Sales Tax. Der Gesamtbetrag wird vor der Zahlung angezeigt.",
+    "sv": "Klubbpriser är exklusive eventuell moms eller sales tax. Totalbeloppet visas före betalning.",
+    "no": "Klubbpriser er ekskl. eventuell mva. eller sales tax. Totalbeløpet vises før betaling."
+  },
+  "Choose EUR or USD.": {
+    "da": "Vælg EUR eller USD.",
+    "en": "Choose EUR or USD.",
+    "de": "Wähle EUR oder USD.",
+    "sv": "Välj EUR eller USD.",
+    "no": "Velg EUR eller USD."
+  },
+  "Abonnement": {
+    "da": "Abonnement",
+    "en": "Subscription",
+    "de": "Abonnement",
+    "sv": "Abonnemang",
+    "no": "Abonnement"
+  },
+  "Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.": {
+    "da": "Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.",
+    "en": "Yes, send me inspiration for matches, courts, new racket sports and coaching.",
+    "de": "Ja, sendet mir Inspiration für Spiele, Plätze, neue Schlägersportarten und Training.",
+    "sv": "Ja tack, skicka inspiration om matcher, banor, nya racketsporter och träning.",
+    "no": "Ja takk, send meg inspirasjon til kamper, baner, nye racketsporter og trening."
+  },
+  "By / område": {
+    "da": "By / område",
+    "en": "City / area",
+    "de": "Stadt / Gebiet",
+    "sv": "Stad / område",
+    "no": "By / område"
+  },
+  "Vælg region": {
+    "da": "Vælg region",
+    "en": "Choose region",
+    "de": "Region wählen",
+    "sv": "Välj region",
+    "no": "Velg region"
+  },
+  "Hvilke sportsgrene er du træner i og vil tilbyde træning i?": {
+    "da": "Hvilke sportsgrene er du træner i og vil tilbyde træning i?",
+    "en": "Which sports do you coach and want to offer lessons in?",
+    "de": "In welchen Sportarten trainierst du und möchtest Training anbieten?",
+    "sv": "Vilka sporter tränar du andra i och vill erbjuda träning inom?",
+    "no": "Hvilke idretter trener du andre i og vil tilby trening i?"
+  },
+  "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?": {
+    "da": "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?",
+    "en": "Which sports do you play and want to find partners for?",
+    "de": "Welche Sportarten spielst du und für welche suchst du Mitspieler?",
+    "sv": "Vilka sporter spelar du och vill hitta medspelare till?",
+    "no": "Hvilke idretter spiller du og ønsker å finne medspillere til?"
+  },
+  "Du kan vælge flere.": {
+    "da": "Du kan vælge flere.",
+    "en": "You can choose more than one.",
+    "de": "Du kannst mehrere auswählen.",
+    "sv": "Du kan välja flera.",
+    "no": "Du kan velge flere."
+  },
+  "Trænerpris pr. time": {
+    "da": "Trænerpris pr. time",
+    "en": "Coaching price per hour",
+    "de": "Trainingspreis pro Stunde",
+    "sv": "Tränarpris per timme",
+    "no": "Trenerpris per time"
+  },
+  "Tidszone": {
+    "da": "Tidszone",
+    "en": "Time zone",
+    "de": "Zeitzone",
+    "sv": "Tidszon",
+    "no": "Tidssone"
+  },
+  "Tax setup is not ready. Please contact RacketBuddy.": {
+    "da": "Skatteopsætningen er ikke klar. Kontakt RacketBuddy.",
+    "en": "Tax setup is not ready. Please contact RacketBuddy.",
+    "de": "Die Steuereinrichtung ist noch nicht abgeschlossen. Bitte kontaktiert RacketBuddy.",
+    "sv": "Skatteinställningarna är inte klara. Kontakta RacketBuddy.",
+    "no": "Skatteoppsettet er ikke klart. Kontakt RacketBuddy."
+  },
+  "Jeres klub. Jeres egen hjemmeside.": {
+    "da": "Jeres klub. Jeres egen hjemmeside.",
+    "en": "Your club. Your own website.",
+    "de": "Euer Verein. Eure eigene Website.",
+    "sv": "Er klubb. Er egen webbplats.",
+    "no": "Deres klubb. Deres egen nettside."
+  },
+  "Vi bygger hjemmesiden med jeres farver, indhold, booking og betaling på jeres eget domæne.": {
+    "da": "Vi bygger hjemmesiden med jeres farver, indhold, booking og betaling på jeres eget domæne.",
+    "en": "We build your website with your colours, content, booking and payments on your own domain.",
+    "de": "Wir erstellen eure Website mit euren Farben, Inhalten, Buchungen und Zahlungen auf eurer eigenen Domain.",
+    "sv": "Vi bygger webbplatsen med era färger, innehåll, bokning och betalning på er egen domän.",
+    "no": "Vi bygger nettsiden med deres farger, innhold, booking og betaling på eget domene."
+  },
+  "Engangspris for opsætning. Jeres klubabonnement fortsætter separat.": {
+    "da": "Engangspris for opsætning. Jeres klubabonnement fortsætter separat.",
+    "en": "One-time setup price. Your club subscription continues separately.",
+    "de": "Einmaliger Einrichtungspreis. Euer Vereinsabonnement läuft separat weiter.",
+    "sv": "Engångspris för installation. Ert klubbabonnemang fortsätter separat.",
+    "no": "Engangspris for oppsett. Klubbabonnementet fortsetter separat."
+  },
+  "Eget domæne og klubdesign": {
+    "da": "Eget domæne og klubdesign",
+    "en": "Your own domain and club design",
+    "de": "Eigene Domain und Vereinsdesign",
+    "sv": "Egen domän och klubbdesign",
+    "no": "Eget domene og klubbdesign"
+  },
+  "Banebooking og betaling": {
+    "da": "Banebooking og betaling",
+    "en": "Court booking and payments",
+    "de": "Platzbuchung und Zahlung",
+    "sv": "Banbokning och betalning",
+    "no": "Banebooking og betaling"
+  },
+  "Nyheder, kontakt og praktisk information": {
+    "da": "Nyheder, kontakt og praktisk information",
+    "en": "News, contact and practical information",
+    "de": "Neuigkeiten, Kontakt und praktische Informationen",
+    "sv": "Nyheter, kontakt och praktisk information",
+    "no": "Nyheter, kontakt og praktisk informasjon"
+  },
+  "Tilpasset mobil, tablet og computer": {
+    "da": "Tilpasset mobil, tablet og computer",
+    "en": "Works on mobile, tablet and desktop",
+    "de": "Für Smartphone, Tablet und Computer",
+    "sv": "Anpassad för mobil, surfplatta och dator",
+    "no": "Tilpasset mobil, nettbrett og datamaskin"
+  },
+  "Send os logo, tekster, banepriser og adgang til domænet. I godkender et udkast, før vi opkræver betaling.": {
+    "da": "Send os logo, tekster, banepriser og adgang til domænet. I godkender et udkast, før vi opkræver betaling.",
+    "en": "Send us your logo, text, court prices and domain access. You approve a draft before we charge you.",
+    "de": "Sendet uns Logo, Texte, Platzpreise und Domainzugang. Ihr genehmigt einen Entwurf, bevor wir eine Zahlung verlangen.",
+    "sv": "Skicka logotyp, texter, banpriser och domänåtkomst. Ni godkänner ett utkast innan vi tar betalt.",
+    "no": "Send oss logo, tekster, banepriser og domenetilgang. Dere godkjenner et utkast før vi tar betalt."
+  },
+  "Få et uforpligtende oplæg": {
+    "da": "Få et uforpligtende oplæg",
+    "en": "Request a no-obligation proposal",
+    "de": "Unverbindlichen Vorschlag anfordern",
+    "sv": "Få ett förslag utan förpliktelser",
+    "no": "Få et uforpliktende forslag"
+  },
+  "Domæne, hvis I har et": {
+    "da": "Domæne, hvis I har et",
+    "en": "Domain, if you have one",
+    "de": "Domain, falls vorhanden",
+    "sv": "Domän, om ni har en",
+    "no": "Domene, hvis dere har et"
+  },
+  "Noget vi skal vide?": {
+    "da": "Noget vi skal vide?",
+    "en": "Anything we should know?",
+    "de": "Was sollten wir wissen?",
+    "sv": "Något vi bör veta?",
+    "no": "Noe vi bør vite?"
+  },
+  "Domæneregistrering betales separat. Vi aftaler den konkrete pris med jer.": {
+    "da": "Domæneregistrering betales separat. Vi aftaler den konkrete pris med jer.",
+    "en": "Domain registration is charged separately. We agree the exact price with you.",
+    "de": "Die Domainregistrierung wird separat berechnet. Den genauen Preis vereinbaren wir mit euch.",
+    "sv": "Domänregistrering betalas separat. Vi kommer överens om priset med er.",
+    "no": "Domeneregistrering betales separat. Vi avtaler den konkrete prisen med dere."
+  },
+  "Vi opkræver først, når I har set et udkast og sagt ja.": {
+    "da": "Vi opkræver først, når I har set et udkast og sagt ja.",
+    "en": "We only charge after you have seen and approved a draft.",
+    "de": "Wir berechnen erst etwas, wenn ihr einen Entwurf gesehen und genehmigt habt.",
+    "sv": "Vi tar betalt först när ni har sett och godkänt ett utkast.",
+    "no": "Vi tar først betalt når dere har sett og godkjent et utkast."
+  },
+  "Tak for din forespørgsel. Vi kontakter dig om klubbens hjemmeside.": {
+    "da": "Tak for din forespørgsel. Vi kontakter dig om klubbens hjemmeside.",
+    "en": "Thank you for your enquiry. We will contact you about the club website.",
+    "de": "Danke für deine Anfrage. Wir kontaktieren dich wegen der Vereinswebsite.",
+    "sv": "Tack för din förfrågan. Vi kontaktar dig om klubbens webbplats.",
+    "no": "Takk for henvendelsen. Vi kontakter deg om klubbens nettside."
+  },
+  "Beskriv jeres medlemstyper, priser i klubbens valuta og tilmelding.": {
+    "da": "Beskriv jeres medlemstyper, priser i klubbens valuta og tilmelding.",
+    "en": "Describe membership types, prices in the club currency and how to join.",
+    "de": "Beschreibt Mitgliedschaftstypen, Preise in der Vereinswährung und die Anmeldung.",
+    "sv": "Beskriv medlemstyper, priser i klubbens valuta och anmälan.",
+    "no": "Beskriv medlemstyper, priser i klubbens valuta og påmelding."
+  },
+  "Vi ringer til {contactName} inden for et par hverdage. Bestillingsnummer {orderId}.": {
+    "da": "Vi ringer til {contactName} inden for et par hverdage. Bestillingsnummer {orderId}.",
+    "en": "We will call {contactName} within a few working days. Reference {orderId}.",
+    "de": "Wir rufen {contactName} innerhalb weniger Werktage an. Referenz {orderId}.",
+    "sv": "Vi ringer {contactName} inom några arbetsdagar. Referens {orderId}.",
+    "no": "Vi ringer {contactName} innen noen virkedager. Referanse {orderId}."
+  },
+  "Det får I": {
+    "da": "Det får I",
+    "en": "What is included",
+    "de": "Das bekommt ihr",
+    "sv": "Det här ingår",
+    "no": "Dette får dere"
+  },
+  "Send forespørgsel": {
+    "da": "Send forespørgsel",
+    "en": "Send enquiry",
+    "de": "Anfrage senden",
+    "sv": "Skicka förfrågan",
+    "no": "Send forespørsel"
   }
 }

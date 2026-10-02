@@ -1,3 +1,4 @@
+import {formatMoney} from "./international";
 // Reglerne for, hvad en klub betaler. Ingen database, ingen Stripe.
 //
 // Det er med vilje: funktionen herunder afgør, om vi tager 10% eller 0% af
@@ -32,11 +33,12 @@ export function subscriptionIsActive(club: ClubBilling): boolean {
 export function describeSubscription(club: {
   subscriptionStatus: string | null;
   subscriptionKr: number;
+  billingCurrency?: string;
 }): string {
   switch (club.subscriptionStatus) {
     case "active":
     case "trialing":
-      return `Betaler ${club.subscriptionKr} kr/md.`;
+      return `Betaler ${club.billingCurrency ? formatMoney(club.subscriptionKr,club.billingCurrency,"da") : `${club.subscriptionKr} kr`}/md.`;
     case "past_due":
     case "unpaid":
       return "Betalingen fejlede. Kortet skal fornys.";

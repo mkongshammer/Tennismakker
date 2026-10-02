@@ -1,27 +1,31 @@
 // Shared by the website and Expo app. Country controls discovery, never conversion of stored prices.
 export const MARKETS = [
-  ['DK', 'Denmark', 'DKK', 'da', 'Europe/Copenhagen', 56, 10.6],
-  ['SE', 'Sweden', 'SEK', 'sv', 'Europe/Stockholm', 62, 15],
-  ['NO', 'Norway', 'NOK', 'no', 'Europe/Oslo', 62, 10],
+  ['DK', 'Denmark', 'EUR', 'da', 'Europe/Copenhagen', 56, 10.6],
+  ['SE', 'Sweden', 'EUR', 'sv', 'Europe/Stockholm', 62, 15],
+  ['NO', 'Norway', 'EUR', 'no', 'Europe/Oslo', 62, 10],
   ['DE', 'Germany', 'EUR', 'de', 'Europe/Berlin', 51, 10],
-  ['GB', 'United Kingdom', 'GBP', 'en', 'Europe/London', 54, -2],
+  ['GB', 'United Kingdom', 'EUR', 'en', 'Europe/London', 54, -2],
   ['US', 'United States', 'USD', 'en-US', 'America/New_York', 39, -98],
-  ['CA', 'Canada', 'CAD', 'en', 'America/Toronto', 56, -106],
+  ['CA', 'Canada', 'USD', 'en', 'America/Toronto', 56, -106],
   ['FR', 'France', 'EUR', 'en', 'Europe/Paris', 47, 2],
   ['ES', 'Spain', 'EUR', 'en', 'Europe/Madrid', 40, -4],
   ['IT', 'Italy', 'EUR', 'en', 'Europe/Rome', 43, 12],
   ['NL', 'Netherlands', 'EUR', 'en', 'Europe/Amsterdam', 52, 5],
   ['BE', 'Belgium', 'EUR', 'en', 'Europe/Brussels', 50.5, 4.5],
   ['AT', 'Austria', 'EUR', 'de', 'Europe/Vienna', 47.5, 14],
-  ['CH', 'Switzerland', 'CHF', 'de', 'Europe/Zurich', 47, 8],
+  ['CH', 'Switzerland', 'EUR', 'de', 'Europe/Zurich', 47, 8],
   ['FI', 'Finland', 'EUR', 'en', 'Europe/Helsinki', 64, 26],
   ['IE', 'Ireland', 'EUR', 'en', 'Europe/Dublin', 53, -8],
   ['PT', 'Portugal', 'EUR', 'en', 'Europe/Lisbon', 39.5, -8],
-  ['PL', 'Poland', 'PLN', 'en', 'Europe/Warsaw', 52, 19],
-  ['CZ', 'Czechia', 'CZK', 'en', 'Europe/Prague', 50, 15],
+  ['PL', 'Poland', 'EUR', 'en', 'Europe/Warsaw', 52, 19],
+  ['CZ', 'Czechia', 'EUR', 'en', 'Europe/Prague', 50, 15],
 ].map(([code, name, currency, defaultLocale, timeZone, latitude, longitude]) => ({ code, name, currency, defaultLocale, timeZone, center: [latitude, longitude], live: true, flag: String.fromCodePoint(...String(code).split('').map(c => c.charCodeAt(0) + 127397)) }));
 
-export const CURRENCIES = ['DKK', 'EUR', 'GBP', 'SEK', 'NOK', 'USD', 'CAD', 'CHF', 'PLN', 'CZK'];
+export const SALES_CURRENCIES = ['EUR', 'USD'];
+export function salesCurrency(country) { return ['US', 'CA'].includes(String(country).toUpperCase()) ? 'USD' : 'EUR'; }
+export function validSalesCurrency(currency) { return SALES_CURRENCIES.includes(currency); }
+// Retained for truthful historical receipts and existing contracts.
+export const CURRENCIES = ['DKK', 'EUR', 'EUR', 'EUR', 'EUR', 'USD', 'CAD', 'EUR', 'EUR', 'CZK'];
 export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no'];
 export const LANGUAGE_NAMES = { da: 'Dansk', en: 'English', 'en-US': 'American English', de: 'Deutsch', sv: 'Svenska', no: 'Norsk' };
 export const TIME_ZONES = [...new Set([...MARKETS.map(c => c.timeZone), 'America/Chicago', 'America/Denver', 'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu', 'America/Halifax', 'America/St_Johns', 'America/Winnipeg', 'America/Edmonton', 'America/Vancouver', 'Atlantic/Canary', 'Atlantic/Azores', 'UTC'])];

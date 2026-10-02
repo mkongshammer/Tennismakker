@@ -21,7 +21,7 @@ export async function provisionPrivateClub(db: PrismaClient, raw?: string) {
     if (await tx.club.findUnique({ where: { slug } })) return "existing-club-unchanged";
     const club = await tx.club.create({ data: {
       slug, name: clubName, city, status: "PENDING", approvedAt: null,
-      priceHour: 0, integrationType: "MANUAL", billingModel: "SUBSCRIPTION", country: "DK",
+      priceHour: 0, integrationType: "MANUAL", billingModel: "SUBSCRIPTION", country: "DK",currency:"EUR",billingCurrency:"EUR",subscriptionKr:27,
     } });
     await tx.user.create({ data: {
       email, passwordHash, name: adminName, role: "CLUB_ADMIN", clubId: club.id,

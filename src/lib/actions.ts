@@ -1,6 +1,9 @@
 "use server";
 import { profileLocation } from "./profile-location";
-import { marketFor, validCurrency, validTimeZone,wallTime,formatDate } from "./international";
+import {websitePrice} from "./platform-pricing";
+import {phrase} from "./phrases";
+import {clubSignupPrices} from "./club-onboarding";
+import { marketFor, validSalesCurrency, validCurrency, validTimeZone,wallTime,formatDate,formatMoney } from "./international";
 import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
 import {createCourtReservation} from "./court-reservation";
 import { requireCustomClub } from "./club-management-actions";
@@ -111,8 +114,8 @@ export async function signup(_prev: unknown, formData: FormData) {
   const {area,country,locale}=location;
   const market=marketFor(country)!;
   const currency=String(formData.get('currency')??market.currency),timeZone=String(formData.get('timeZone')??market.timeZone);
-  const coachPrice=Number(formData.get('priceHour')??350);
-  if(role==='COACH' && (!validCurrency(currency)||!validTimeZone(timeZone)||!Number.isSafeInteger(coachPrice)||coachPrice<1||coachPrice>10000)) return {error:locale==='da'?'Vælg gyldig valuta, tidszone og trænerpris.':'Choose a valid currency, time zone and coaching price.'};
+  const coachPrice=Number(formData.get('priceHour')??(currency==='USD'?53:47));
+  if(role==='COACH' && (!validSalesCurrency(currency)||!validTimeZone(timeZone)||!Number.isSafeInteger(coachPrice)||coachPrice<1||coachPrice>10000)) return {error:locale==='da'?'Vælg gyldig valuta, tidszone og trænerpris.':'Choose a valid currency, time zone and coaching price.'};
 
   if (!email.includes("@") || password.length < 8 || Buffer.byteLength(password)>72 || !name || !Number.isFinite(level)) {
     return { error: "Udfyld navn, gyldig e-mail og en adgangskode på mindst 8 tegn." };
@@ -851,12 +854,12 @@ async function requireBlockedFirst(clubId: string, formData: FormData): Promise<
 async function requireActiveSubscription(clubId: string): Promise<string | null> {
   const club = await db.club.findUnique({
     where: { id: clubId },
-    select: { billingModel: true, subscriptionStatus: true, subscriptionKr: true },
+    select: { billingModel: true, subscriptionStatus: true, subscriptionKr: true, billingCurrency:true },
   });
   if (!club) return "Klubben findes ikke.";
   if (subscriptionIsActive(club)) return null;
 
-  return `Abonnementet er ikke aktivt. Start det under "Jeres aftale" (${club.subscriptionKr} kr/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.`;
+  return `Abonnementet er ikke aktivt. Start det under "Jeres aftale" (${formatMoney(club.subscriptionKr,club.billingCurrency,"da")}/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.`;
 }
 
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
@@ -1071,7 +1074,7 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
         priceHour: 0,
         integrationType: "MANUAL",
         billingModel: "SUBSCRIPTION",
-        country: "DK",
+        country: "DK",currency:"EUR",billingCurrency:"EUR",subscriptionKr:(await clubSignupPrices()).standard,
         status: privateSetup ? "PENDING" : "APPROVED",
         approvedAt: privateSetup ? null : new Date(),
       },
@@ -2218,9 +2221,12 @@ export async function orderWebsite(_prev: unknown, formData: FormData) {
   if (!clubName || !contactName) return { error: "Udfyld klubbens navn og dit navn." };
   if (!email.includes("@")) return { error: "Skriv en gyldig e-mail." };
 
+  const country=String(formData.get("country")??"DK");if(!marketFor(country))return{error:"Choose a valid country."};
+  const locale=(await getPreferences()).locale,quote=websitePrice(country);
   const order = await db.websiteOrder.create({
     data: {
       clubName,
+      priceKr:quote.amount,currency:quote.currency,
       contactName,
       email,
       phone: phone || null,
@@ -2232,18 +2238,8 @@ export async function orderWebsite(_prev: unknown, formData: FormData) {
   // Kvittering til klubben, så de ved at den er landet
   await sendMail({
     to: email,
-    subject: `Vi har jeres bestilling — ${clubName}`,
-    body: [
-      `Hej ${contactName}`,
-      ``,
-      `Tak for bestillingen. Vi ringer inden for et par hverdage og taler om,`,
-      `hvad klubben har brug for.`,
-      ``,
-      `Opsætningen koster 5.000 kr, og vi opkræver først, når I har set et`,
-      `udkast og sagt ja.`,
-      ``,
-      `RacketBuddy`,
-    ].join("\n"),
+    subject: `${phrase('Hjemmeside til klubben',locale)} — ${clubName}`,
+    body: `${contactName}\n\n${phrase('Tak for din forespørgsel. Vi kontakter dig om klubbens hjemmeside.',locale)}\n\n${formatMoney(quote.amount,quote.currency,locale)}\n${phrase('Klubpriser er ekskl. eventuel moms eller sales tax. Det samlede beløb vises før betaling.',locale)}\n${phrase('Vi opkræver først, når I har set et udkast og sagt ja.',locale)}\n\nRacketBuddy`,
   });
 
   // Besked til os

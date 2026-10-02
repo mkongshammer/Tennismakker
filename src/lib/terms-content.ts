@@ -2,11 +2,11 @@ import { formatMoney } from './international';
 import type { TermsRegion } from './legal-market';
 
 export type TermsSection = { id: string; title: string; paragraphs: string[]; link?: { href: string; label: string } };
-export function termsContent(region: TermsRegion, language: 'da' | 'en', prices: {standard: number; custom: number | null}): TermsSection[] {
+export function termsContent(region: TermsRegion, language: 'da' | 'en', prices: {standard: number; custom: number | null; currency?: string}): TermsSection[] {
   const danish = region === 'eu' && language === 'da';
   const choose = (da: string, en: string) => danish ? da : en;
-  const monthly = formatMoney(prices.standard, 'DKK', danish ? 'da' : 'en');
-  const setup = prices.custom == null ? choose('den engangspris, der vises før bestilling', 'the one-time price disclosed before ordering') : formatMoney(prices.custom, 'DKK', danish ? 'da' : 'en');
+  const monthly = formatMoney(prices.standard, prices.currency??'DKK', danish ? 'da' : 'en');
+  const setup = prices.custom == null ? choose('den engangspris, der vises før bestilling', 'the one-time price disclosed before ordering') : formatMoney(prices.custom, prices.currency??'DKK', danish ? 'da' : 'en');
   const section = (id: string, daTitle: string, enTitle: string, pairs: [string, string][]): TermsSection => ({ id, title: choose(daTitle, enTitle), paragraphs: pairs.map(([da,en]) => choose(da,en)) });
   const sections: TermsSection[] = [
     section('platform', 'Platformen og din aftalepart', 'The platform and your contracting party', [
@@ -19,6 +19,7 @@ export function termsContent(region: TermsRegion, language: 'da' | 'en', prices:
       ['Angiv korrekte oplysninger, beskyt dit login, og kontakt os ved mistanke om misbrug. Du må ikke give uvedkommende adgang til medlemsoplysninger, betalingsoplysninger eller klubbens adgangsstyring.', 'Provide accurate information, protect your login and contact us if you suspect misuse. Do not give unauthorised people access to member data, payment information or facility access controls.'],
     ]),
     section('price-payment', 'Priser, valuta og betaling', 'Prices, currency and payment', [
+      ['Nye klubabonnementer afregnes i EUR i Europa, inklusive Danmark, og USD i USA og Canada. De annoncerede klubpriser er ekskl. eventuel moms eller sales tax. Det samlede beløb beregnes i checkout før betaling. Eksisterende aftaler og kvitteringer beholder deres aftalte valuta.', 'New club subscriptions are billed in EUR in Europe, including Denmark, and USD in the US and Canada. Advertised club prices exclude applicable VAT or sales tax. The total is calculated at checkout before payment. Existing contracts and receipts retain their agreed currency.'],
       ['Pris, valuta, leverandør, indhold og eventuelle skatter eller gebyrer skal fremgå før køb. Baner og træning kan prissættes i klubbens eller trænerens valuta. Dit sprogvalg omregner ikke prisen. Din bank kan opkræve egne valuta- eller kortgebyrer.', 'The price, currency, provider, service and any taxes or fees must be disclosed before purchase. Courts and coaching can be priced in the provider’s currency. Changing the interface language does not convert the price. Your bank may charge its own currency-conversion or card fees.'],
       ['En bookingbetaling opkræves, når betalingen gennemføres; det er ikke en garanti for, at beløbet kun reserveres på kortet. De tilgængelige betalingsmetoder vises på betalingssiden. Kortdata håndteres af betalingsudbyderen. En gratis booking eller booking betalt med klubkredit kan bekræftes uden kortbetaling.', 'A booking payment is collected when payment completes; it is not a promise that funds will only be authorised on your card. Available payment methods are shown at checkout. Card details are handled by the payment provider. A free booking or a booking covered by club credit can be confirmed without a card payment.'],
       ['Klubber og trænere skal færdiggøre betalingsudbyderens identitets- og bankopsætning for at modtage relevante onlinebetalinger. Betalingsudbyderens egne vilkår, gebyrer og krav gælder sideløbende. Der tilføjes ikke et skjult RacketBuddy-annulleringsgebyr til spillerens refundering.', 'Clubs and coaches must complete the payment provider’s identity and banking setup to receive the relevant online payments. The provider’s own terms, fees and requirements also apply. RacketBuddy does not add a hidden cancellation fee to a player’s refund.'],

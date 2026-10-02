@@ -12,7 +12,7 @@ import {PayForm} from './PayForm';
 export const dynamic='force-dynamic';
 export default async function Page({searchParams}:{searchParams:Promise<{betaling?:string}>}){
  const u=await getCurrentUser();if(u?.role!=='CLUB_ADMIN'||!u.clubId)redirect('/login');
- const {locale}=await getPreferences(),da=locale==='da',f=(d:string,e:string)=>da?d:e,money=(n:number)=>formatMoney(n,'DKK',locale);
+ const {locale}=await getPreferences(),f=(d:string,_e:string)=>phrase(d,locale),money=(n:number)=>formatMoney(n,club.billingCurrency,locale);
  let club=await db.club.findUniqueOrThrow({where:{id:u.clubId}});if(!club.signupManaged)redirect('/admin');let error='';
  if((await searchParams).betaling==='kontroller'){try{club=await refreshClubSignup(club.id);}catch{error=f('Betalingsstatus kunne ikke opdateres. Prøv igen om lidt.','Payment status could not be refreshed. Try again in a moment.');}}
  const paid=Boolean(club.signupPaidAt),approved=club.status==='APPROVED';

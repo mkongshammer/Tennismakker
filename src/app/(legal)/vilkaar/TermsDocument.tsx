@@ -5,7 +5,7 @@ import { TERMS_VERSION, type TermsRegion } from '../../../lib/legal-market';
 import { termsContent } from '../../../lib/terms-content';
 
 export async function TermsDocument({region, language}: {region: TermsRegion; language: 'da' | 'en'}) {
-  const da = region === 'eu' && language === 'da', sections = termsContent(region, language, await clubSignupPrices());
+  const da = region === 'eu' && language === 'da', sections = termsContent(region, language, await clubSignupPrices(region==='usa'?'US':'DK'));
   const title = region === 'usa' ? 'United States Terms of Service' : da ? 'Handelsbetingelser for EU og EØS' : 'EU and EEA Terms of Service';
   return <article lang={da?'da':region==='usa'?'en-US':'en'}>
     <header className="max-w-3xl">

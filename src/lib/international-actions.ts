@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { db } from './db';
 import { getCurrentUser } from './session';
-import { marketFor, validCurrency, validTimeZone } from './international';
+import { marketFor, validSalesCurrency, validCurrency, validTimeZone } from './international';
 
 export async function saveClubInternational(_prev: unknown, form: FormData): Promise<{ok?: string; error?: string}> {
   try {
@@ -16,6 +16,7 @@ export async function saveClubInternational(_prev: unknown, form: FormData): Pro
       const club = await tx.club.findUniqueOrThrow({where:{id:user.clubId!}});
       if (country !== club.country && club.stripeAccountId) throw Error('Landet på en tilknyttet Stripe-konto kan ikke ændres her. Kontakt RacketBuddy.');
       if (currency !== club.currency) {
+        if(!validSalesCurrency(currency))throw Error('Choose EUR or USD.');
         if (form.get('reviewedPrices') !== 'on') throw Error('Bekræft den nye pris i den valgte valuta.');
         const used = await Promise.all([
           tx.booking.count({where:{court:{clubId:club.id}}}), tx.clubWallet.count({where:{clubId:club.id}}), tx.walletTopup.count({where:{clubId:club.id}}),

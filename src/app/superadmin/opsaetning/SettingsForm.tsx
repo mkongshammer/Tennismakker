@@ -73,10 +73,9 @@ export function SettingsForm({ values, secrets, source, anyFromDatabase }: Props
   const [provider, setProvider] = useState(values.paymentProvider);
 
   const rate = Number(pct.replace(",", ".")) / 100;
-  const examples = [100, 150, 250].map((price) => {
+  const examples = [20, 30, 50].map((price) => {
     const fee = Number.isFinite(rate) ? Math.round(price * rate) : 0;
-    const stripeFee = Math.round((price * 0.015 + 1.8) * 100) / 100;
-    return { price, fee, club: price - fee, net: Math.round((fee - stripeFee) * 100) / 100 };
+    return { price, fee, club: price - fee, net: fee };
   });
 
   return (
@@ -171,13 +170,11 @@ export function SettingsForm({ values, secrets, source, anyFromDatabase }: Props
           <ul className="mt-2 space-y-1 text-sm">
             {examples.map((e) => (
               <li key={e.price} className="flex flex-wrap items-baseline gap-x-2">
-                <span className="font-bold">{e.price} kr</span>
+                <span className="font-bold">{e.price} EUR</span>
                 <span className="text-slate">
-                  klub {e.club} kr · os {e.fee} kr
+                  klub {e.club} EUR · os {e.fee} EUR
                 </span>
-                <span className={e.net > 0 ? "ml-auto text-court" : "ml-auto text-court-dark"}>
-                  {e.net > 0 ? `+${e.net}` : e.net} kr til os efter Stripes gebyr
-                </span>
+                <span className="text-xs text-slate">Før betalingsudbyderens faktiske gebyrer</span>
               </li>
             ))}
           </ul>

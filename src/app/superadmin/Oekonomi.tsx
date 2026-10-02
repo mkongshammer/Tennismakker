@@ -53,7 +53,7 @@ export async function Oekonomi() {
 
       <div className="mt-4 rounded-xl bg-mist p-3 text-sm">
         <span className="font-bold">
-          {subscriptionMonthly.toLocaleString("da-DK")} kr/md i abonnementer
+          {subscriptionMonthly}/md i abonnementer
         </span>{" "}
         <span className="text-slate">
           fra {subscriptionClubs}{" "}
