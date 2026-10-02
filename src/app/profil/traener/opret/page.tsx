@@ -1,7 +1,7 @@
 "use client";
 
 import {useWebsiteInternational} from "../../../../components/InternationalProvider";
-import {CURRENCIES,TIME_ZONES,marketFor} from "../../../../lib/international";
+import {SALES_CURRENCIES,TIME_ZONES,marketFor} from "../../../../lib/international";
 import { useFormState } from "react-dom";
 import { SPORTS, sportLabel } from "../../../../lib/sports";
 import { DK_REGIONS } from "../../../../lib/regions";
@@ -48,7 +48,7 @@ export default function OpretTraenerprofilPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="priceHour">Pris / time</label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={350} required />
+            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={market.currency==='USD'?53:47} required />
           </div>
           <div>
             <label className="label" htmlFor="area">Region</label>
@@ -61,7 +61,7 @@ export default function OpretTraenerprofilPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+        <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
         {state?.error ? <p className="text-sm font-semibold text-court">{state.error}</p> : null}
 
         <SubmitButton className="btn-court w-full" pendingText="Opretter…">

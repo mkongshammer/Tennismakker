@@ -27,8 +27,8 @@ function Icon({ kind }: { kind: IconKind }) {
   return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[kind]}</svg>;
 }
 export default async function Home() {
-  const prefs = await getPreferences(), c = landingCopy(prefs.locale), prices = await clubSignupPrices();
-  const monthly = formatMoney(prices.standard, 'DKK', prefs.locale), setup = prices.custom == null ? null : formatMoney(prices.custom, 'DKK', prefs.locale);
+  const prefs = await getPreferences(), c = landingCopy(prefs.locale), prices = await clubSignupPrices(prefs.country);
+  const monthly = formatMoney(prices.standard, prices.currency, prefs.locale), setup = prices.custom == null ? null : formatMoney(prices.custom, prices.currency, prefs.locale);
   return <div className="landing space-y-16 md:space-y-24">
     <div className="space-y-8 md:space-y-10">
       <LandingSearch country={prefs.country} sport={prefs.sport} locale={prefs.locale}/>

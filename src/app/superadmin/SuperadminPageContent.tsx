@@ -195,7 +195,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                     <dt className="text-slate/50">Model</dt>
                     <dd>
                       {club.billingModel === "SUBSCRIPTION"
-                        ? `Abonnement ${club.subscriptionKr} kr/md`
+                        ? `Abonnement ${formatMoney(club.subscriptionKr,club.billingCurrency,"da")}/md`
                         : `${pct}% provision`}
                     </dd>
                   </div>

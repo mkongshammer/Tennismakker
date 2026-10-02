@@ -615,7 +615,7 @@ export default async function AdminPageContent({
         <>
           <>
             <p className="mt-2">
-              <span className="font-bold">{club.subscriptionKr}{" " + tr("kr/md.")}</span>{" "}{tr("I beholder hele bel\xF8bet for hver g\xE6stebooking.")}
+              <span className="font-bold">{formatMoney(club.subscriptionKr,club.billingCurrency,prefs.locale)}/{tr("måned")}</span>{" "}{tr("I beholder hele bel\xF8bet for hver g\xE6stebooking.")}
 
                     </p>
             <p className="mt-1 text-sm text-slate">{tr("Tider kan kun frigives, mens abonnementet er aktivt. Bookinger, en g\xE6st har betalt for, st\xE5r ved magt uanset hvad.")}

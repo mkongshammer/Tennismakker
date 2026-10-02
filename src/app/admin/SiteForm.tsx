@@ -44,7 +44,7 @@ export function SiteForm({ club }: {club: any;}) {const { tr, money, currency, t
           rows={4}
           maxLength={2000}
           defaultValue={club.membershipInfo ?? ""}
-          placeholder={tr("fx Voksne 1.200 kr/\xE5r, juniorer 600 kr, familie 2.400 kr. Indmeldelse ved at skrive til kassereren.")} />
+          placeholder={tr("Beskriv jeres medlemstyper, priser i klubbens valuta og tilmelding.")} />
 
         <p className="mt-1 text-xs text-slate">{tr("Vises under \"Bliv medlem\".")}</p>
       </div>

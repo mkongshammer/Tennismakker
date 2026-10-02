@@ -1,6 +1,7 @@
 "use client";
 
-import { MARKETS,CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
+import { MARKETS,SALES_CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
+import {phrase} from "../../lib/phrases";
 import Link from "next/link";
 import { termsHref } from "../../lib/legal-market";
 import { useState } from "react";
@@ -44,16 +45,14 @@ export function SignupForm({
 }) {
   const [state, action] = useFormState(signup, null);
   const [role, setRole] = useState("PLAYER");
-  const da = locale === "da";
-  const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(marketFor(initialCountry)?.currency??"DKK"),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??"Europe/Copenhagen");
+  const tr=(value:string)=>phrase(value,locale);
+  const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(marketFor(initialCountry)?.currency??"EUR"),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??"Europe/Copenhagen");
 
-  const engagementLabel = da
-    ? "Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning."
-    : "Yes, send me occasional inspiration for matches, courts, racket sports and coaching.";
+  const engagementLabel = tr("Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.");
 
   return (
     <form action={action} className="card space-y-4"><input type="hidden" name="locale" value={locale}/>
-      <label className="label block">{da?'Land':'Country'}<select className="input" name="country" value={country} onChange={e=>{setCountry(e.target.value);const m=marketFor(e.target.value)!;setCurrency(m.currency);setTimeZone(m.timeZone);}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
+      <label className="label block">{tr("Land")}<select className="input" name="country" value={country} onChange={e=>{setCountry(e.target.value);const m=marketFor(e.target.value)!;setCurrency(m.currency);setTimeZone(m.timeZone);}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
       <div>
         <label className="label" htmlFor="name">{labels.name}</label>
         <input className="input" id="name" name="name" required />
@@ -78,14 +77,14 @@ export function SignupForm({
           <label className="label" htmlFor="level">{labels.level}</label>
           <select className="input" id="level" name="level" defaultValue="3">
             {Object.entries(LEVELS).map(([num, l]) => (
-              <option key={num} value={num}>{num} — {l.label}</option>
+              <option key={num} value={num}>{num} — {tr(l.label)}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="area">{country==="DK"?"Region":da?"By / område":"City / area"}</label>
+          <label className="label" htmlFor="area">{country==="DK"?"Region":tr("By / område")}</label>
           {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
-            <option value="" disabled>{da ? "Vælg region" : "Choose region"}</option>
+            <option value="" disabled>{tr("Vælg region")}</option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
@@ -96,15 +95,11 @@ export function SignupForm({
       <div className="rounded-xl border border-court/25 bg-court/5 p-4">
         <span className="label">
           {role === "COACH"
-            ? (da
-                ? "Hvilke sportsgrene er du træner i og vil tilbyde træning i?"
-                : "Which sports do you coach and want to offer training in?")
-            : (da
-                ? "Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"
-                : "Which sports do you play and want to find partners for?")}
+            ? (tr("Hvilke sportsgrene er du træner i og vil tilbyde træning i?"))
+            : (tr("Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"))}
         </span>
         <p className="mb-3 mt-1 text-xs text-slate">
-          {da ? "Du kan vælge flere." : "You can choose more than one."}
+          {tr("Du kan vælge flere.")}
         </p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {SPORTS.map((s) => (
@@ -124,10 +119,10 @@ export function SignupForm({
             <input className="input" id="headline" name="headline" placeholder={labels.coachHeadlinePlaceholder} maxLength={120} />
           </div>
           <div>
-            <label className="label" htmlFor="priceHour">{da?"Trænerpris pr. time":"Coaching price per hour"} ({currency})</label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={350} />
+            <label className="label" htmlFor="priceHour">{tr("Trænerpris pr. time")} ({currency})</label>
+            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={currency==='USD'?53:47} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{da?'Valuta':'Currency'}<select className="input" name="currency" value={currency} onChange={e=>setCurrency(e.target.value)}>{CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{da?'Tidszone':'Time zone'}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select className="input" name="currency" value={currency} onChange={e=>setCurrency(e.target.value)}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Tidszone")}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
           <p className="text-xs text-slate">{labels.coachRest}</p>
         </div>
       )}

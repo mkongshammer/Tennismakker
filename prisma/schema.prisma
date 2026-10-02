@@ -96,7 +96,8 @@ model Club {
   // Klubben vælger: COMMISSION (vi tager 10% af hver gæstebooking) eller
   // SUBSCRIPTION (fast beløb pr. måned, klubben beholder hele bookingen).
   billingModel   String @default("COMMISSION")
-  subscriptionKr Int    @default(199)
+  subscriptionKr Int    @default(199) // major units in billingCurrency
+  billingCurrency String @default("DKK") // preserve existing contracts; new sales explicitly use EUR/USD
 
   // Abonnementet, klubben betaler TIL os. Ikke det samme som
   // stripeAccountId nedenfor, som er den konto, vi betaler penge UD til:
@@ -671,6 +672,7 @@ model WebsiteOrder {
   // "NEW" | "CONTACTED" | "BUILDING" | "LIVE" | "CANCELLED"
   status       String   @default("NEW")
   priceKr      Int      @default(5000)
+  currency     String   @default("DKK") // historical orders; new inquiries use EUR/USD
   internalNote String?
   clubId       String?
   createdAt    DateTime @default(now())

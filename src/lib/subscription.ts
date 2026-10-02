@@ -55,16 +55,21 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
   const settings = await getSettings();
   const customerId = await ensureCustomer(clubId);
 
-  const session = await (await stripe()).checkout.sessions.create({
+  const taxEnabled=["EUR","USD"].includes(club.billingCurrency);
+  const client=await stripe();
+  if(taxEnabled&&(await client.tax.settings.retrieve()).status!=="active")throw Error("Tax setup is not ready. Please contact RacketBuddy.");
+  const session = await client.checkout.sessions.create({
+    automatic_tax:{enabled:taxEnabled},billing_address_collection:"required",tax_id_collection:{enabled:true},customer_update:{name:"auto",address:"auto"},
     mode: "subscription",
     customer: customerId,
     line_items: [
       {
         price_data: {
-          currency: "dkk",
+          tax_behavior:taxEnabled?"exclusive":undefined,
+          currency: club.billingCurrency.toLowerCase(),
           unit_amount: club.subscriptionKr * 100,
           recurring: { interval: "month" },
-          product_data: { name: `RacketBuddy — abonnement for ${club.name}` },
+          product_data: { name: `RacketBuddy Standard — ${club.name}` },
         },
         quantity: 1,
       },

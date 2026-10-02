@@ -8,4 +8,4 @@ export function termsHref(country?: string | null): string {
   const region = termsRegionForCountry(country);
   return region ? `/vilkaar/${region}` : '/vilkaar';
 }
-export const TERMS_VERSION = '2026-10-01';
+export const TERMS_VERSION = '2026-10-02';

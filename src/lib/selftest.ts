@@ -266,7 +266,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
         stripeAccountId: true,
         stripeChargesEnabled: true,
         billingModel: true,
-        subscriptionKr: true,
+        subscriptionKr: true,billingCurrency:true,
         subscriptionStatus: true,
       },
       orderBy: { name: "asc" },
@@ -317,7 +317,7 @@ export async function recipientStatuses(): Promise<RecipientStatus[]> {
       // frem for at ligne en indtægt, der ikke findes.
       billing:
         c.billingModel === "SUBSCRIPTION"
-          ? `Abonnement ${c.subscriptionKr} kr/md — ${describeSubscription(c)}`
+          ? `Abonnement ${c.subscriptionKr} ${c.billingCurrency}/md — ${describeSubscription(c)}`
           : `${pct}% provision`,
     })),
     ...coaches.map((c: any) => ({
@@ -375,7 +375,7 @@ export async function testCheckoutSession(): Promise<Check> {
       line_items: [
         {
           price_data: {
-            currency: "dkk",
+            currency: "eur",
             product_data: { name: `SELVTEST — ${club.name}` },
             unit_amount: priceKr * 100,
           },

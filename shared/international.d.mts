@@ -1,5 +1,8 @@
 export type Market = { code: string; name: string; currency: string; defaultLocale: string; timeZone: string; center: number[]; live: boolean; flag: string };
 export const MARKETS: Market[];
+export const SALES_CURRENCIES: ('EUR' | 'USD')[];
+export function salesCurrency(country: unknown): 'EUR' | 'USD';
+export function validSalesCurrency(currency: unknown): boolean;
 export const CURRENCIES: string[];
 export const LANGUAGES: string[];
 export const LANGUAGE_NAMES: Record<string,string>;

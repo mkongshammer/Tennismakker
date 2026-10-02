@@ -15,6 +15,7 @@ function fixture(role: string | null = 'SUPERADMIN', dbOverrides: any = {}) {
     bcryptjs: { hash: async () => 'test-only-hash' },
     'next/cache': { revalidatePath() {} },
     'next/navigation': { redirect: (url: string) => { throw new Error(`redirect ${url}`); } },
+    './club-onboarding':{clubSignupPrices:async()=>({standard:27,custom:1999,currency:'EUR'})},
     './session': { getCurrentUser: async () => role ? { id: 'owner', role, clubId: 'club-test' } : null },
     './settings': { getSettings: async () => ({ appUrl: 'https://example.invalid' }) },
     './email': { sendMail: async () => { mails++; } },

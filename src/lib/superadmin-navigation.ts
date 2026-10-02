@@ -11,6 +11,7 @@ export const SUPERADMIN_PAGES = [
   { id: 'automatisering', label: 'Bookingsystemer', description: 'Forbind klubbernes eksisterende bookingsystemer.', group: 'Opsætning' },
   { id: 'adgang', label: 'Administratoradgang', description: 'Administrer adgang til superadmin.', group: 'Opsætning' },
   { id: 'opsaetning', label: 'Platformindstillinger', description: 'Nøgler, provision og platformens indstillinger.', group: 'Opsætning' },
+  { id: 'salg', label: 'International salgsstatus', description: 'Kontrollér valuta, livebetaling og skatteopsætning.', group: 'Opsætning' },
   { id: 'selvtest', label: 'Selvtest', description: 'Kontrollér platformens integrationer.', group: 'Opsætning' },
 ] as const;
 export type SuperadminSection = typeof SUPERADMIN_PAGES[number]['id'];

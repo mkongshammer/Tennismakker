@@ -132,7 +132,7 @@ const kr = (n: number) => `${n.toLocaleString("da-DK")} kr`;
 export async function economy(): Promise<{
   periods: Period[];
   rows: MoneyRow[];
-  subscriptionMonthly: number;
+  subscriptionMonthly: string;
   subscriptionClubs: number;
 }> {
   const ps = periods();
@@ -150,7 +150,7 @@ export async function economy(): Promise<{
 
   const subscribers = await db.club.findMany({
     where: { billingModel: "SUBSCRIPTION", subscriptionStatus: { in: ["active", "trialing"] } },
-    select: { subscriptionKr: true },
+    select: { subscriptionKr: true, billingCurrency:true },
   });
 
   return {
@@ -172,7 +172,7 @@ export async function economy(): Promise<{
         values: sums.map((s) => s.length?s.map(row=>formatMoney(row._sum.platformFee??0,row.currency,"da")).join(" · "):formatMoney(0,"DKK","da")),
       },
     ],
-    subscriptionMonthly: subscribers.reduce((sum, c) => sum + c.subscriptionKr, 0),
+    subscriptionMonthly: Object.entries(subscribers.reduce((s,c)=>({...s,[c.billingCurrency]:(s[c.billingCurrency]??0)+c.subscriptionKr}),{} as Record<string,number>)).map(([currency,total])=>formatMoney(total,currency,"da")).join(" · ") || formatMoney(0,"EUR","da"),
     subscriptionClubs: subscribers.length,
   };
 }
