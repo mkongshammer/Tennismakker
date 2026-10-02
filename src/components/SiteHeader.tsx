@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { LanguagePicker } from "./LanguagePicker";
 import { translator } from "../lib/i18n";
 import {phrase} from '../lib/phrases';
+import {isPublicPage} from '../lib/public-pages';
 import type { Locale } from "../lib/sports";
 
 type Props = {
@@ -21,7 +22,7 @@ type Props = {
 export function SiteHeader({ user, locale }: Props) {
   const pathname = usePathname();
   const t = translator(locale);
-  const marketingPage = ['/', '/opret-klub'].includes(pathname);
+  const marketingPage = isPublicPage(pathname);
 
   useEffect(() => {
     if (user?.role !== "COACH" || pathname === "/onboarding-sports") return;
@@ -41,10 +42,7 @@ export function SiteHeader({ user, locale }: Props) {
     };
   }, [pathname, user?.role]);
 
-  const links = marketingPage ? [
-    { href: '/opret-klub', label: phrase('Til klubber', locale) },
-    ...(user?.role === 'CLUB_ADMIN' ? [{ href: '/admin', label: t('nav.admin') }] : []),
-  ] : [
+  const links = marketingPage ? [] : [
     { href: "/book", label: t("nav.book") },
     { href: "/traenere", label: t("nav.coaches") },
     { href: "/spillere", label: t("nav.players") },

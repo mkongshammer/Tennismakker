@@ -13,6 +13,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { translator } from "../lib/i18n";
+import {isPublicPage} from '../lib/public-pages';
 import type { Locale } from "../lib/sports";
 
 function IconCourt({ active }: { active: boolean }) {
@@ -88,6 +89,7 @@ export function TabBar({
 }) {
   const pathname = usePathname();
   const t = translator(locale);
+  if (isPublicPage(pathname)) return null;
 
   // Tre punkter, ikke fire. Profilen ligger i hjørnet: den er noget man
   // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det
