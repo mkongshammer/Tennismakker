@@ -16,11 +16,12 @@ type Props = {
   onChange: (value: string) => void;
   searchPlaceholder?: string;
   emptyText?: string;
+  disabled?: boolean;
 };
 
 const normalise = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
-export function DiscoveryPicker({ name, label, title, hint, value, options, open, onOpen, onClose, onChange, searchPlaceholder, emptyText }: Props) {
+export function DiscoveryPicker({ name, label, title, hint, value, options, open, onOpen, onClose, onChange, searchPlaceholder, emptyText, disabled=false }: Props) {
   const id = useId();
   const root = useRef<HTMLDivElement>(null), trigger = useRef<HTMLButtonElement>(null), search = useRef<HTMLInputElement>(null);
   const optionRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -63,7 +64,7 @@ export function DiscoveryPicker({ name, label, title, hint, value, options, open
 
   return <div ref={root} className="discovery-field" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) onClose(); }}>
     <input type="hidden" name={name} value={value}/>
-    <button ref={trigger} type="button" className={`discovery-trigger ${open ? 'is-open' : ''}`} aria-label={`${label}: ${selected.label}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? `${id}-panel` : undefined} onClick={() => open ? onClose() : onOpen()} onKeyDown={event => { if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); onOpen(); } }}>
+    <button ref={trigger} type="button" disabled={disabled} className={`discovery-trigger ${open ? 'is-open' : ''}`} aria-label={`${label}: ${selected.label}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? `${id}-panel` : undefined} onClick={() => open ? onClose() : onOpen()} onKeyDown={event => { if (['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); onOpen(); } }}>
       <span className="flex min-w-0 items-center gap-3"><span className="discovery-trigger-icon">{selected.icon}</span><span className="min-w-0 text-left"><span className="block text-xs font-bold text-slate">{label}</span><span className="mt-1 block truncate text-base font-semibold text-ink">{selected.label}</span></span></span>
       <svg className={`shrink-0 text-slate transition-transform ${open ? 'rotate-180' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
     </button>
