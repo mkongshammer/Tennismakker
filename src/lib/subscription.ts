@@ -58,7 +58,7 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
   const taxEnabled=["EUR","USD"].includes(club.billingCurrency);
   const client=await stripe();
   if(taxEnabled&&(await client.tax.settings.retrieve()).status!=="active")throw Error("Tax setup is not ready. Please contact RacketBuddy.");
-  const session = await client.checkout.sessions.create({
+  const session = await client.checkout.sessions.create({adaptive_pricing:{enabled:false},
     automatic_tax:{enabled:taxEnabled},billing_address_collection:"required",tax_id_collection:{enabled:true},customer_update:{name:"auto",address:"auto"},
     mode: "subscription",
     customer: customerId,

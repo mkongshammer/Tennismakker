@@ -5407,5 +5407,54 @@
     "de": "Anfrage senden",
     "sv": "Skicka förfrågan",
     "no": "Send forespørsel"
+  },
+  "Stripe beder om klubbens virksomhedsform, registreringsoplysninger, identitet og bankkonto. Kravene afhænger af jeres land.": {
+    "da": "Stripe beder om klubbens virksomhedsform, registreringsoplysninger, identitet og bankkonto. Kravene afhænger af jeres land.",
+    "en": "Stripe asks for your club’s legal business type, registration details, identity and bank account. Requirements depend on your country.",
+    "de": "Stripe fragt nach der Rechtsform, den Registrierungsdaten, der Identität und dem Bankkonto Ihres Clubs. Die Anforderungen hängen von Ihrem Land ab.",
+    "sv": "Stripe ber om klubbens organisationsform, registreringsuppgifter, identitet och bankkonto. Kraven beror på ert land.",
+    "no": "Stripe ber om klubbens organisasjonsform, registreringsopplysninger, identitet og bankkonto. Kravene avhenger av landet deres."
+  },
+  "Opdatér betalingskortet i betalingsportalen. Klubben vises igen, når betalingen er bekræftet.": {
+    "da": "Opdatér betalingskortet i betalingsportalen. Klubben vises igen, når betalingen er bekræftet.",
+    "en": "Update your payment card in the billing portal. Your club will be listed again when payment is confirmed.",
+    "de": "Aktualisieren Sie Ihre Zahlungskarte im Abrechnungsportal. Ihr Club wird nach bestätigter Zahlung wieder angezeigt.",
+    "sv": "Uppdatera betalkortet i betalningsportalen. Klubben visas igen när betalningen är bekräftad.",
+    "no": "Oppdater betalingskortet i betalingsportalen. Klubben vises igjen når betalingen er bekreftet."
+  },
+  "Fakturaer og kvitteringer": {
+    "da": "Fakturaer og kvitteringer",
+    "en": "Invoices and receipts",
+    "de": "Rechnungen und Belege",
+    "sv": "Fakturor och kvitton",
+    "no": "Fakturaer og kvitteringer"
+  },
+  "Fakturaerne kunne ikke hentes. Prøv igen, eller åbn betalingsportalen.": {
+    "da": "Fakturaerne kunne ikke hentes. Prøv igen, eller åbn betalingsportalen.",
+    "en": "Invoices could not be loaded. Try again or open the billing portal.",
+    "de": "Die Rechnungen konnten nicht geladen werden. Versuchen Sie es erneut oder öffnen Sie das Abrechnungsportal.",
+    "sv": "Fakturorna kunde inte hämtas. Försök igen eller öppna betalningsportalen.",
+    "no": "Fakturaene kunne ikke hentes. Prøv igjen eller åpne betalingsportalen."
+  },
+  "Betalt faktura": {
+    "da": "Betalt faktura",
+    "en": "Paid invoice",
+    "de": "Bezahlte Rechnung",
+    "sv": "Betald faktura",
+    "no": "Betalt faktura"
+  },
+  "Se faktura": {
+    "da": "Se faktura",
+    "en": "View invoice",
+    "de": "Rechnung ansehen",
+    "sv": "Visa faktura",
+    "no": "Se faktura"
+  },
+  "Betalte abonnementsfakturaer vises her, når betalingen er registreret.": {
+    "da": "Betalte abonnementsfakturaer vises her, når betalingen er registreret.",
+    "en": "Paid subscription invoices appear here once payment has been recorded.",
+    "de": "Bezahlte Abonnementrechnungen werden hier angezeigt, sobald die Zahlung erfasst wurde.",
+    "sv": "Betalda abonnemangsfakturor visas här när betalningen har registrerats.",
+    "no": "Betalte abonnementsfakturaer vises her når betalingen er registrert."
   }
 }

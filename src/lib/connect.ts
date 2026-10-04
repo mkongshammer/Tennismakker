@@ -75,13 +75,15 @@ export async function ensureConnectAccount(
     type: "express",
     country: recipient.country,
     email: recipient.email || undefined,
-    business_type: kind === "CLUB" ? "non_profit" : "individual",
+    // Clubs can be companies, associations or nonprofits. Stripe onboarding
+    // collects the actual legal form; we must not declare one on their behalf.
+    ...(kind === "COACH" ? { business_type: "individual" as const } : {}),
     capabilities: {
       card_payments: { requested: true },
       transfers: { requested: true },
     },
     metadata: { kind, recipientId: id },
-  });
+  }, { idempotencyKey: `connect-account:${kind}:${id}` });
 
   await saveAccountId(kind, id, account.id);
   return account.id;

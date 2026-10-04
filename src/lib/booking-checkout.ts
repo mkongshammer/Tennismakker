@@ -38,7 +38,7 @@ export async function prepareBookingCheckout(bookingId: string, params: Stripe.C
   await db.booking.updateMany({
     where: { id: bookingId, status: "HOLD", checkoutParams: null,
       OR: [{ holdExpiresAt: null }, { holdExpiresAt: { gt: now } }] },
-    data: { checkoutParams: JSON.stringify(params), holdExpiresAt: new Date(params.expires_at * 1000) },
+    data: { checkoutParams: JSON.stringify({...params, adaptive_pricing: {enabled: false}}), holdExpiresAt: new Date(params.expires_at * 1000) },
   });
   const current = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
   if (current.status !== "HOLD" || !current.checkoutParams) throw new Error("Reservationen er ikke længere aktiv.");

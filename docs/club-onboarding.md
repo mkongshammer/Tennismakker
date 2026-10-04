@@ -11,9 +11,7 @@ button and use the existing authenticated administration portal.
 In `/superadmin/opsaetning`, save the monthly subscription and Custom setup price with
 “Gem priser og klargør Stripe”. This also configures the required Stripe webhook
 events. Stripe credentials must already be configured. Owner-confirmed pricing:
-all new clubs pay 199 DKK/month; Custom additionally costs 14,995 DKK once,
-regardless of module count. First Custom checkout totals 15,194 DKK. Later invoices
-are 199 DKK/month. Existing agreements retain their stored price rather than being
+new European clubs pay EUR 27/month, with EUR 1,999 once for Custom; US and Canadian clubs pay USD 30/month, with USD 2,249 once for Custom. First Custom checkout is EUR 2,026 or USD 2,279 before applicable tax. Later invoices contain the monthly subscription only. Existing agreements retain their stored price rather than being
 silently repriced. Previously paid setup is not charged again upon restarting.
 Pricing uses the V2 settings key to avoid interpreting legacy monthly Custom
 prices as setup fees. Approval also verifies initial setup payment.
@@ -32,12 +30,14 @@ prices as setup fees. Approval also verifies initial setup payment.
   clubs with no module selection retain their existing full access.
 - Hardware pairing/testing and player-payment payout setup remain separate.
 
-## Verification (27 September 2026)
+## Verification and acceptance
 
-- 16 isolated database-backed onboarding scenarios passed (`test:onboarding`).
-- 179 server tests and 22 mobile tests passed.
-- Production Next build and Expo web export passed.
-- Stripe calls in onboarding tests are simulated. No real charge, email, door
-  command or light command was sent. Live payment acceptance remains required.
-- Web export does not publish a signed iOS/Android build to the stores. The native
-  code changes must be included in the next signed app release.
+- Isolated database-backed onboarding tests cover all 19 markets and payment failure/recovery, including preventing tax from substituting for the Custom setup fee.
+- Server regression tests cover invoice access control, signed live webhook evidence, fixed checkout currency and market-specific terms.
+- Production Next build and isolated database/HTTP tests must pass before release.
+- Stripe calls in tests are simulated. No real charge, email, door or light command is sent. Live payment acceptance remains required.
+- `/superadmin/salg` reports provider configuration separately from live evidence and outstanding owner information.
+- Club administrators can open paid invoices directly and update their card through the billing portal even while payment is overdue.
+- Each club must supply its actual entity, identity and bank details in Stripe Connect. Business type is not assumed to be nonprofit.
+- Tax registrations must match the business's actual registrations; never invent registrations to make a status check green.
+- Web export does not publish signed iOS/Android builds. Store configuration and native releases remain separate.

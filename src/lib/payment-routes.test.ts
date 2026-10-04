@@ -10,10 +10,10 @@ const paid = { id: "cs_test", mode: "payment", payment_status: "paid", amount_to
 
 function webhookFixture(t: any) {
   const client = new Stripe("sk_test_offline_only");
-  let bookings = 0; let packages = 0;
+  let bookings = 0; let packages = 0; const evidence:any[]=[];
   t.mock.method(client.events, "retrieve", () => { throw new Error("Unexpected network call"); });
   const { POST } = loadIsolatedModule("src/app/api/webhooks/stripe/route.ts", {
-    "../../../../lib/wallet":{}, "../../../../lib/db":{}, "../../../../lib/club-onboarding":{},
+    "../../../../lib/wallet":{}, "../../../../lib/db":{db:{platformSetting:{upsert:async(data:any)=>{evidence.push(data);}}}}, "../../../../lib/club-onboarding":{},
     "../../../../lib/stripe": { stripe: async () => client },
     "../../../../lib/settings": { getSettings: async () => ({ stripeWebhookSecret: secret }) },
     "../../../../lib/payments": { confirmBookingPayment: async (id: string, proof: validation.BookingPaymentProof) => {
@@ -26,8 +26,9 @@ function webhookFixture(t: any) {
   });
   return {
     counts: () => ({ bookings, packages }),
-    send: (session = paid, type = "checkout.session.completed", valid = true) => {
-      const raw = JSON.stringify({ id: "evt_test_signed", object: "event", type, data: { object: session } });
+    evidence:()=>evidence,
+    send: (session = paid, type = "checkout.session.completed", valid = true, livemode=false) => {
+      const raw = JSON.stringify({ id: "evt_test_signed", object: "event", type, livemode, data: { object: session } });
       const signature = valid ? client.webhooks.generateTestHeaderString({ payload: raw, secret }) : "invalid";
       return POST(new Request("https://example.test/api/webhooks/stripe", { method: "POST", headers: { "stripe-signature": signature }, body: raw }));
     },
@@ -36,6 +37,13 @@ function webhookFixture(t: any) {
 test("webhook-ruten afviser ugyldig signatur uden at behandle kendt test-id", async t => {
   const f = webhookFixture(t); assert.equal((await f.send(paid, undefined, false)).status, 400);
   assert.deepEqual(f.counts(), { bookings: 0, packages: 0 });
+});
+test('webhook verification evidence requires a valid signed live event handled successfully',async t=>{
+ const f=webhookFixture(t);
+ await f.send(paid,undefined,false,true);assert.equal(f.evidence().length,0);
+ await f.send(paid,undefined,true,false);assert.equal(f.evidence().length,0);
+ await f.send(paid,undefined,true,true);assert.equal(f.evidence().length,1);
+ const stored=JSON.parse(f.evidence()[0].create.value);assert.equal(stored.type,'checkout.session.completed');assert.ok(stored.receivedAt);assert.equal('object' in stored,false);
 });
 test("ubetalt checkout bekræfter hverken booking eller pakkekøb", async t => {
   const f = webhookFixture(t);

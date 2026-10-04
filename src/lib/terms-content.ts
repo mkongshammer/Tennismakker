@@ -84,7 +84,7 @@ export function termsContent(region: TermsRegion, language: 'da' | 'en', prices:
     sections.push(section('law', 'Lovvalg og domstole', 'Applicable law and courts', [
       ['Platformaftalen er underlagt dansk ret, men det fratager ikke en forbruger ufravigelig beskyttelse efter den ret, som ellers ville gælde. Lovbestemte rettigheder til at anlægge sag ved domstolene i forbrugerens hjemland bevares. Disse vilkår pålægger ikke tvungen voldgift eller afkald på kollektive rettigheder.', 'The platform agreement is governed by Danish law, without depriving consumers of mandatory protections under the law that would otherwise apply. Statutory rights to bring proceedings in a consumer’s home courts are preserved. These terms impose no mandatory arbitration or waiver of collective rights.'],
     ]));
-  } else {
+  } else if (region === 'usa') {
     sections.splice(5, 0, section('us-rights', '', 'United States consumer and state-law rights', [
       ['', 'This version is intended for United States customers. Federal, state and local consumer laws remain applicable. The 24-hour booking cancellation policy does not restrict a statutory refund, cancellation, warranty or other non-waivable remedy. There is no general promise of a federal 14-day cooling-off period for every online purchase.'],
       ['', 'Any automatic renewal must be clearly disclosed and affirmatively accepted before charging. You may cancel future RacketBuddy club renewals online through the billing portal, or contact us by email if the portal cannot be used. Consumer recurring products must also provide the cancellation information and notices required by applicable law. Merely reading these terms is not separate consent to a recurring charge.'],
@@ -95,6 +95,22 @@ export function termsContent(region: TermsRegion, language: 'da' | 'en', prices:
     ]));
     sections.push(section('law', '', 'Applicable law and courts', [
       ['', 'The platform agreement is governed by Delaware law, to the extent lawful, without overriding mandatory federal or state consumer protections. Business disputes may be brought before competent courts in Delaware. Consumers retain any non-waivable rights to a different law or forum. There is no mandatory arbitration clause, jury-trial waiver or class-action waiver in these terms.'],
+    ]));
+  }
+  if(region==='international'){
+    sections.splice(5,0,section('local-rights','','Local rights and international customers',[
+      ['', 'This version covers customers in the United Kingdom, Switzerland and Canada. It applies alongside mandatory national, provincial and territorial rules. Selecting a language or country does not waive any right or determine which laws apply to a transaction.'],
+      ['', 'Club platform subscriptions are purchased by an authorised representative for the club’s operations. Player purchases and coaching services remain separate transactions with the named provider. A consumer does not lose consumer status merely because a transaction is described as a business purchase.'],
+      ['', 'Any mandatory rights concerning cancellation, withdrawal, refunds, service quality, prepaid balances, language or contract disclosure remain in force. The ordinary booking cancellation policy does not override those rights. Where a statutory withdrawal period applies, contact us or the named provider with your name, order details and a clear statement that you wish to cancel.'],
+      ['', 'These terms do not themselves consent to starting a service during a statutory withdrawal period or waive that period. Any separate consent and disclosures required for early performance must be obtained for the particular purchase.'],
+      ['', 'For club subscriptions, the selected plan, billing currency, monthly renewal and any one-time Custom fee are disclosed before payment. Canadian club subscriptions use USD; United Kingdom and Swiss club subscriptions use EUR. Your bank may charge conversion fees. Any applicable tax is shown before payment. Future club renewals can be cancelled in the billing portal; contact us if the portal is unavailable.'],
+    ]));
+    sections.push(section('complaints','','Contact, records and complaints',[
+      ['', 'Contact RacketBuddy or the named provider using the contact details on your order. Include the order or invoice number and the outcome you request. You may save these terms and download available invoices from your account. We can provide a copy of the applicable agreement on request.'],
+      ['', 'You retain the right to contact a competent consumer authority, dispute-resolution body, regulator or court, and to make a valid payment dispute. No term requires you to waive mandatory local remedies.'],
+    ]));
+    sections.push(section('law','','Applicable law and courts',[
+      ['', 'Subject to mandatory applicable law, the agreement for the platform service is governed by Delaware law. This choice does not remove protections that cannot legally be excluded in the customer’s country, province or territory. Consumers retain any mandatory rights to bring proceedings before their local courts. These terms impose no mandatory arbitration, jury-trial waiver or class-action waiver.'],
     ]));
   }
   return sections;

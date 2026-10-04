@@ -159,11 +159,15 @@ export async function POST(req: Request) {
 
   let type: string;
   let object: any;
+  let eventId: string | undefined;
+  let live = false;
 
   try {
     const verified = await verifiedStripeEvent(await stripe(), rawBody, signature, secret);
     type = verified.type;
     object = verified.object;
+    eventId = verified.id;
+    live = verified.livemode === true;
   } catch (err) {
     if (err instanceof InvalidStripeSignature) return new Response("Ugyldig signatur", { status: 400 });
     console.error("Stripe-webhook: verificeret event kunne ikke hentes.");
@@ -182,6 +186,14 @@ export async function POST(req: Request) {
     // event, der fejlede pga. noget forbigående (fx databasen var langsom).
     console.error(`Stripe-webhook fejlede ved håndtering af ${type}:`, err);
     return new Response("Intern fejl ved behandling", { status: 500 });
+  }
+
+  // Evidence is written only after SDK signature verification and successful
+  // handling. Test requests and unsigned IDs cannot mark production ready.
+  if (live && eventId) {
+    const key='stripeLastVerifiedWebhookV1',value=JSON.stringify({eventId,type,receivedAt:new Date().toISOString()});
+    try { await db.platformSetting.upsert({where:{key},create:{key,value},update:{value}}); }
+    catch { console.error('Kunne ikke gemme tidspunkt for verificeret Stripe-webhook.'); }
   }
 
   return new Response(JSON.stringify({ received: true }), {
