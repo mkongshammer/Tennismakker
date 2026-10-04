@@ -129,7 +129,7 @@ export async function buyPunchCard(userId: string, cardId: string): Promise<BuyR
     return { ok: false, error: "Klubben kan ikke tage imod betaling endnu." };
   }
 
-  const session = await (await stripe()).checkout.sessions.create({
+  const session = await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},
     mode: "payment",
     payment_intent_data: {
       transfer_data: { destination: card.club.stripeAccountId },

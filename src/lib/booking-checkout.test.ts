@@ -43,6 +43,7 @@ test('concurrent checkout starts share frozen parameters, deadline and idempoten
     f.api.prepareBookingCheckout('b1', { ...f.params, expires_at: f.params.expires_at + 10 }),
   ]);
   assert.equal(f.creates(), 1); assert.equal(urls[0], urls[1]);
+  assert.equal(f.requests[0].params.adaptive_pricing.enabled,false);
   assert.equal(f.row().holdExpiresAt.getTime(), f.params.expires_at * 1000);
   await f.api.resumeBookingCheckout(f.row());
   assert.equal(f.creates(), 1);

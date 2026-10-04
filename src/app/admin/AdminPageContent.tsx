@@ -1,4 +1,5 @@
 import { phrase } from "../../lib/phrases";
+import { ClubInvoices } from "../../components/ClubInvoices";
 import { InternationalProvider } from "../../components/InternationalProvider";
 import { InternationalForm } from "./InternationalForm";
 import { getPreferences } from "../../lib/preferences";
@@ -596,7 +597,7 @@ export default async function AdminPageContent({
 
 
                   </p>
-              <p className="mt-2 text-sm text-slate">{tr("Klubben skal have en Stripe-konto, f\xF8r g\xE6ster kan booke og betale. Det tager typisk 5-10 minutter \u2014 I skal bruge NemID/MitID og klubbens kontonummer.")}
+              <p className="mt-2 text-sm text-slate">{tr("Stripe beder om klubbens virksomhedsform, registreringsoplysninger, identitet og bankkonto. Kravene afhænger af jeres land.")}
 
 
 
@@ -635,11 +636,6 @@ export default async function AdminPageContent({
                         tr("Fornyes {date}.",{date:formatDate(club.subscriptionRenewsAt,prefs.locale,club.timeZone,{day:"numeric",month:"long"})}) :
                         tr("Fornyes automatisk hver måned.")}
                 </p>
-                <form action={openClubBillingPortal} className="mt-3">
-                  <SubmitButton className="btn-ghost" pendingText={tr("\xC5bner Stripe\u2026")}>{tr("Kort, fakturaer og opsigelse")}
-
-                        </SubmitButton>
-                </form>
               </> :
 
                     <>
@@ -650,23 +646,24 @@ export default async function AdminPageContent({
                           club.subscriptionStatus === "canceled" ?
                           tr("Abonnementet er opsagt.") :
                           tr("Abonnementet er ikke startet.")}
-                  </span>{" "}{tr("Indtil det betales, tr\xE6kkes")}
-                        {pct}{tr("% af hver g\xE6stebooking i stedet.")}
+                  </span>{" "}{club.signupManaged ? tr("Opdatér betalingskortet i betalingsportalen. Klubben vises igen, når betalingen er bekræftet.") : <>{tr("Indtil det betales, tr\xE6kkes")}{pct}{tr("% af hver g\xE6stebooking i stedet.")}</>}
                       </p>
-                <form action={startClubSubscription} className="mt-3">
+                {(!club.subscriptionId || ['canceled','incomplete_expired'].includes(club.subscriptionStatus??'')) && <form action={startClubSubscription} className="mt-3">
                   <SubmitButton pendingText={tr("\xC5bner Stripe\u2026")}>
                     {club.stripeCustomerId ? tr("Forny betaling") : tr("Start abonnement")}
                   </SubmitButton>
-                </form>
+                </form>}
               </>
                     }
           </>
         </>
+        {club.stripeCustomerId && <form action={openClubBillingPortal} className="mt-3"><SubmitButton className="btn-ghost" pendingText={tr("Åbner Stripe…")}>{tr("Kort, fakturaer og opsigelse")}</SubmitButton></form>}
         <p className="mt-3 text-sm text-slate/60">{tr("Vil I skifte model, s\xE5 skriv til os.")}
 
                 </p>
       </section>
 </>}
+{section === 'betaling' && <ClubInvoices clubId={club.id} locale={prefs.locale} timeZone={club.timeZone}/>}
 {section === 'integrationer' && <>
 {clubHasFeature(club.solutionMode, club.customFeatures, 'import') && <><ResasportsForm courts={club.courts.map((c) => ({ id: c.id, name: c.name }))} /><ImportForm /></>}
 <section>

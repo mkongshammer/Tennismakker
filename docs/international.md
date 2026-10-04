@@ -4,11 +4,11 @@ The website and Expo app share `shared/international.mjs`. Supported discovery a
 
 ## Prices and payments
 
-Clubs choose DKK, EUR, GBP, SEK, NOK, USD, CAD, CHF, PLN or CZK. Coaches choose their currency when creating a profile. These currencies all use two decimal places in Stripe. Existing integer `priceKr` fields represent whole major currency units; wallet balances and Stripe amounts represent minor units. Changing the customer's language does not convert a venue's price.
+New club and coach prices use EUR or USD: European markets, including Denmark, use EUR; the US and Canada use USD. Historical currencies remain readable for existing agreements and receipts. These currencies use two decimal places in Stripe. Existing integer `priceKr` fields represent whole major currency units; wallet balances and Stripe amounts represent minor units. Changing the customer's language does not convert a venue's price.
 
 Bookings, payments, memberships, team purchases, passes, packages and wallet deposits store currency snapshots. Payment confirmation checks amount, currency and order identity. A club with bookings, credit or catalog prices cannot change currency through the settings form. Receipts retain purchase currency and financial reports show a separate total for each currency.
 
-The RacketBuddy tariff remains **199 DKK per month**, plus **14,995 DKK once** for Custom, independent of selected features. These platform charges are not converted to the club's booking currency.
+New RacketBuddy subscriptions cost **EUR 27/month** with **EUR 1,999 once** for Custom, or **USD 30/month** with **USD 2,249 once** for Custom. Module count does not change the tariff. Stripe Adaptive Pricing is disabled on new checkout sessions to preserve the quoted currency. Existing agreements retain their stored price.
 
 Stripe Connect onboarding uses the club or coach account country, independently of the customer's discovery preference. A configured destination account with active capabilities is still required. Exporting the app does not verify country-specific Stripe account eligibility or execute an international payment.
 
@@ -32,9 +32,11 @@ Discovery preferences never change club or coach Stripe country, prices, booking
 
 - `npm test`: offline server regression tests, including currency proof, local pricing, DST and availability.
 - `npm run test:database`: real SQL against an isolated PGlite database; tests foreign-currency wallet debits, currency locks, receipts and separate totals.
-- `npm run test:onboarding`: isolated club signup and simulated Stripe subscription/approval scenarios, including US club defaults and fixed DKK tariffs.
+- `npm run test:onboarding`: isolated club signup and simulated Stripe subscription/approval scenarios, including all 19 market defaults, EUR/USD tariffs, setup fees and recovery from failed payment.
 - `npm run test:app`: actual local Next server with the isolated database; tests all 13 club pages and custom modules across six language choices, superadmin pages, saved-choice precedence, location API, foreign-country filtering and signup API.
 - `cd mobile && npm test`: isolated app regressions, including live language updates and venue-day grouping.
 - Expo exports validate bundling for iOS, Android and web; they are not signed TestFlight or store releases. EAS project configuration, signing and APNs/FCM credentials remain required as described in `mobile/README.md`.
 
 Tests do not send email, contact real payment providers, execute hardware commands or create production customer records. PGlite tests do not establish multi-session PostgreSQL concurrency guarantees.
+
+The owner-only `/superadmin/salg` page distinguishes configured services from verified live payment evidence. Tax settings alone do not establish tax registrations or compliance. A real payment, signed webhook, approval and invoice remain a separate acceptance exercise. UK, Switzerland and Canada use `/vilkaar/international`; EU/EEA and US markets retain their respective terms.

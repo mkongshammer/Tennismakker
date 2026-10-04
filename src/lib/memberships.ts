@@ -174,7 +174,7 @@ export async function joinMembership(userId: string, typeId: string): Promise<Jo
     };
   }
 
-  const session = await (await stripe()).checkout.sessions.create({
+  const session = await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},
     mode: "payment",
     payment_intent_data: {
       // Ingen provision. Kontingentet går ubeskåret til klubben; vi lever

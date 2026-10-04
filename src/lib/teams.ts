@@ -130,7 +130,7 @@ export async function signUpForTeam(userId: string, teamId: string): Promise<Sig
     };
   }
 
-  const session = await (await stripe()).checkout.sessions.create({
+  const session = await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},
     mode: "payment",
     payment_intent_data: {
       transfer_data: { destination: team.club.stripeAccountId },

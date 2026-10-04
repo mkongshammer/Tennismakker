@@ -143,7 +143,7 @@ export async function startPackageCheckout(
     platformCountry && account.country && platformCountry === account.country
   );
 
-  const session = await (await stripe()).checkout.sessions.create({
+  const session = await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},
     mode: "payment",
     // Ingen payment_method_types: så bruger Stripe de metoder, der er slået
     // til i panelet. Var den låst til ["card"], ville MobilePay aldrig dukke

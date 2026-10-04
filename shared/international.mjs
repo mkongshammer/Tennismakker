@@ -25,7 +25,7 @@ export const SALES_CURRENCIES = ['EUR', 'USD'];
 export function salesCurrency(country) { return ['US', 'CA'].includes(String(country).toUpperCase()) ? 'USD' : 'EUR'; }
 export function validSalesCurrency(currency) { return SALES_CURRENCIES.includes(currency); }
 // Retained for truthful historical receipts and existing contracts.
-export const CURRENCIES = ['DKK', 'EUR', 'EUR', 'EUR', 'EUR', 'USD', 'CAD', 'EUR', 'EUR', 'CZK'];
+export const CURRENCIES = ['DKK', 'EUR', 'GBP', 'SEK', 'NOK', 'USD', 'CAD', 'CHF', 'PLN', 'CZK'];
 export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no'];
 export const LANGUAGE_NAMES = { da: 'Dansk', en: 'English', 'en-US': 'American English', de: 'Deutsch', sv: 'Svenska', no: 'Norsk' };
 export const TIME_ZONES = [...new Set([...MARKETS.map(c => c.timeZone), 'America/Chicago', 'America/Denver', 'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu', 'America/Halifax', 'America/St_Johns', 'America/Winnipeg', 'America/Edmonton', 'America/Vancouver', 'Atlantic/Canary', 'Atlantic/Azores', 'UTC'])];

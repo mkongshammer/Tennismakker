@@ -116,6 +116,7 @@ export default async function RootLayout({
                 <Link href="/app" className="hover:text-ink">App</Link>
                 <Link href="/vilkaar/eu" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · EU / EEA</Link>
                 <Link href="/vilkaar/usa" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · USA</Link>
+                <Link href="/vilkaar/international" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · UK / CH / CA</Link>
                 <Link href="/privatliv" className="hover:text-ink">{phrase('Privatliv',prefs.locale)}</Link>
                 <Link href="/databehandleraftale" className="hover:text-ink">{phrase('Databehandleraftale',prefs.locale)}</Link>
               </div>
