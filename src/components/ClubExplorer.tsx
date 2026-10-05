@@ -1,4 +1,6 @@
-"use client";import { useWebsiteInternational } from "./InternationalProvider";
+"use client";
+import {UiText} from "./InternationalProvider";
+import { useWebsiteInternational } from "./InternationalProvider";
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -10,9 +12,7 @@ import { SURFACES } from "../lib/levels";
 const ClubMapView = dynamic(() => import("./ClubMapView"), {
   ssr: false,
   loading: () =>
-  <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-slate/50">Loading map…
-
-  </div>
+  <div className="flex h-full items-center justify-center bg-[#EDEBE5] text-sm text-slate/50"><UiText text="Loading map…"/></div>
 
 });
 
@@ -155,7 +155,7 @@ export function ClubExplorer({ clubs, country = "DK", locale = "da" }: {clubs: M
             onClick={() => setShowMap((v) => !v)}
             className="min-h-[44px] rounded-full bg-ink px-6 py-3 font-semibold text-chalk shadow-lg">
 
-            {showMap ? "Vis liste" : "Vis kort"}
+            {showMap ? <UiText text="Vis liste"/> : <UiText text="Vis kort"/>}
           </button>
         </div>
       </div>

@@ -1,8 +1,9 @@
+import {phrase} from './phrases';
 import { formatMoney } from './international';
 import type { TermsRegion } from './legal-market';
 
 export type TermsSection = { id: string; title: string; paragraphs: string[]; link?: { href: string; label: string } };
-export function termsContent(region: TermsRegion, language: 'da' | 'en', prices: {standard: number; custom: number | null; currency?: string}): TermsSection[] {
+export function termsContent(region: TermsRegion, language: 'da' | 'en' | 'fr' | 'es', prices: {standard: number; custom: number | null; currency?: string}): TermsSection[] {
   const danish = region === 'eu' && language === 'da';
   const choose = (da: string, en: string) => danish ? da : en;
   const monthly = formatMoney(prices.standard, prices.currency??'DKK', danish ? 'da' : 'en');
@@ -113,5 +114,5 @@ export function termsContent(region: TermsRegion, language: 'da' | 'en', prices:
       ['', 'Subject to mandatory applicable law, the agreement for the platform service is governed by Delaware law. This choice does not remove protections that cannot legally be excluded in the customer’s country, province or territory. Consumers retain any mandatory rights to bring proceedings before their local courts. These terms impose no mandatory arbitration, jury-trial waiver or class-action waiver.'],
     ]));
   }
-  return sections;
+  return language==='fr'||language==='es'?sections.map(s=>({...s,title:phrase(s.title,language),paragraphs:s.paragraphs.map(p=>phrase(p,language,{monthly:formatMoney(prices.standard,prices.currency??'DKK',language),setup:prices.custom==null?phrase('the one-time price disclosed before ordering',language):formatMoney(prices.custom,prices.currency??'DKK',language)})),...(s.link?{link:{...s.link,label:phrase(s.link.label,language)}}:{})})):sections;
 }

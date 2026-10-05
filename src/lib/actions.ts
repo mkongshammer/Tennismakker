@@ -398,6 +398,7 @@ export async function acceptMatchRequest(formData: FormData) {
   if (owner) {
     await sendMail(
       matchAcceptedNotice({
+      locale: owner.locale,
         to: owner.email,
         requesterName: owner.name,
         accepterName: user.name,

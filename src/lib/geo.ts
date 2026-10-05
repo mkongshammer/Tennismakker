@@ -8,7 +8,7 @@ export function countryFromLanguage(value:string|null):string|null {
  const tag=value?.split(',')[0]?.split(';')[0]?.trim()??'';
  const region=tag.split('-').slice(1).find(part=>/^[A-Z]{2}$/i.test(part));
  if(marketFor(region))return region!.toUpperCase();
- return ({da:'DK',de:'DE',sv:'SE',no:'NO',nb:'NO',nn:'NO'} as Record<string,string>)[tag.toLowerCase().split('-')[0]]??null;
+ return ({da:'DK',de:'DE',sv:'SE',no:'NO',nb:'NO',nn:'NO',fr:'FR',es:'ES'} as Record<string,string>)[tag.toLowerCase().split('-')[0]]??null;
 }
 /** Discovery only: never use country hints for access, taxes or payment eligibility. */
 export function detectCountryFromHeaders(h:Pick<Headers,'get'>,lookup=lookupIpCountry):CountryDetection {

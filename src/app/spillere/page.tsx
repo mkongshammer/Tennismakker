@@ -1,3 +1,6 @@
+import {phrase} from "../../lib/phrases";
+
+import {UiText} from "../../components/InternationalProvider";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/session";
@@ -37,7 +40,8 @@ export default async function SpillerePage({ searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const t = translator((await getPreferences()).locale);
+  const prefs=await getPreferences(),tr=(text:string)=>phrase(text,prefs.locale);
+  const t = translator(prefs.locale);
   const resolvedSearchParams = await searchParams;
   const selectedSport = (resolvedSearchParams.sport ?? "").trim();
   const selectedRegion = (resolvedSearchParams.region ?? "").trim();
@@ -94,22 +98,18 @@ export default async function SpillerePage({ searchParams }: Props) {
     <div className="mx-auto max-w-2xl">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <h1 className="display text-3xl">{t("players.findTitle")}</h1>
-        <Link href="/makkere" className="btn-ghost px-4 py-2">
-          Se opslag
-        </Link>
+        <Link href="/makkere" className="btn-ghost px-4 py-2"><UiText text="Se opslag"/></Link>
       </div>
 
       <ShareRacketBuddy />
 
       <form method="get" className="card mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="min-w-0 text-sm font-semibold">
-          Sportsgren
-          <select
+        <label className="min-w-0 text-sm font-semibold"><UiText text="Sportsgren"/><select
             name="sport"
             defaultValue={selectedSport}
             className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
           >
-            <option value="">Alle sportsgrene</option>
+            <option value=""><UiText text="Alle sportsgrene"/></option>
             {sportOptions.map((sport) => (
               <option key={sport} value={sport}>
                 {sport}
@@ -118,14 +118,12 @@ export default async function SpillerePage({ searchParams }: Props) {
           </select>
         </label>
 
-        <label className="min-w-0 text-sm font-semibold">
-          Region
-          <select
+        <label className="min-w-0 text-sm font-semibold"><UiText text="Region"/><select
             name="region"
             defaultValue={selectedRegion}
             className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
           >
-            <option value="">Hele Danmark</option>
+            <option value=""><UiText text="Hele Danmark"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
@@ -133,27 +131,19 @@ export default async function SpillerePage({ searchParams }: Props) {
         </label>
 
         <div className="flex flex-wrap gap-2 sm:col-span-2">
-          <button type="submit" className="btn-court px-4 py-2.5">
-            Filtrér
-          </button>
+          <button type="submit" className="btn-court px-4 py-2.5"><UiText text="Filtrér"/></button>
           {selectedSport || selectedRegion ? (
-            <Link href="/spillere" className="btn-ghost px-4 py-2.5">
-              Nulstil
-            </Link>
+            <Link href="/spillere" className="btn-ghost px-4 py-2.5"><UiText text="Nulstil"/></Link>
           ) : null}
         </div>
       </form>
 
       {players.length === 0 ? (
         <div className="card text-center">
-          <p className="font-bold">Ingen spillere matcher dine filtre endnu.</p>
-          <p className="mt-2 text-sm text-slate/60">
-            Prøv en anden region eller en anden sportsgren, eller opret et opslag.
-          </p>
+          <p className="font-bold"><UiText text="Ingen spillere matcher dine filtre endnu."/></p>
+          <p className="mt-2 text-sm text-slate/60"><UiText text="Prøv en anden region eller en anden sportsgren, eller opret et opslag."/></p>
           <div className="mt-4">
-            <Link href="/makkere/ny" className="btn-court inline-block px-5 py-3">
-              Opret opslag
-            </Link>
+            <Link href="/makkere/ny" className="btn-court inline-block px-5 py-3"><UiText text="Opret opslag"/></Link>
           </div>
         </div>
       ) : (
@@ -182,9 +172,7 @@ export default async function SpillerePage({ searchParams }: Props) {
                           <div className="mt-1 flex flex-wrap items-center gap-2">
                             <LevelBadge level={player.level} />
                             {player.role === "COACH" && (
-                              <span className="rounded-full bg-court/10 px-2 py-1 text-xs font-semibold text-court">
-                                Træner
-                              </span>
+                              <span className="rounded-full bg-court/10 px-2 py-1 text-xs font-semibold text-court"><UiText text="Træner"/></span>
                             )}
                           </div>
                         </div>
@@ -202,7 +190,7 @@ export default async function SpillerePage({ searchParams }: Props) {
 
                       <form action={contactPlayer} className="mt-4">
                         <input type="hidden" name="playerId" value={player.id} />
-                        <button className="btn-court px-4 py-2">Send besked</button>
+                        <button className="btn-court px-4 py-2"><UiText text="Send besked"/></button>
                       </form>
                     </div>
                   </div>
@@ -212,11 +200,9 @@ export default async function SpillerePage({ searchParams }: Props) {
           </div>
 
           {totalPages > 1 ? (
-            <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Sider">
+            <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label={tr("Sider")}>
               {currentPage > 1 ? (
-                <Link href={pageHref(currentPage - 1, selectedSport, selectedRegion)} className="btn-ghost px-4 py-2">
-                  Forrige
-                </Link>
+                <Link href={pageHref(currentPage - 1, selectedSport, selectedRegion)} className="btn-ghost px-4 py-2"><UiText text="Forrige"/></Link>
               ) : null}
 
               {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
@@ -235,9 +221,7 @@ export default async function SpillerePage({ searchParams }: Props) {
               ))}
 
               {currentPage < totalPages ? (
-                <Link href={pageHref(currentPage + 1, selectedSport, selectedRegion)} className="btn-ghost px-4 py-2">
-                  Næste
-                </Link>
+                <Link href={pageHref(currentPage + 1, selectedSport, selectedRegion)} className="btn-ghost px-4 py-2"><UiText text="Næste"/></Link>
               ) : null}
             </nav>
           ) : null}

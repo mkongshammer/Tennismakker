@@ -1,3 +1,5 @@
+
+import {UiText} from "../../../../components/InternationalProvider";
 // Trænerens profilbillede.
 //
 // Billedet vises først på profilen, når superadmin har set det. Det står
@@ -23,11 +25,8 @@ export default async function BilledePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="display text-3xl">Dit billede</h1>
-        <p className="text-slate">
-          Et billede gør, at folk tør skrive til dig. Det ses igennem, før det
-          vises — vi vil ikke have noget upassende på siden.
-        </p>
+        <h1 className="display text-3xl"><UiText text="Dit billede"/></h1>
+        <p className="text-slate"><UiText text="Et billede gør, at folk tør skrive til dig. Det ses igennem, før det vises — vi vil ikke have noget upassende på siden."/></p>
       </div>
 
       {image && (
@@ -39,12 +38,12 @@ export default async function BilledePage() {
           />
           <div>
             <p className="font-bold">
-              {image.approved ? "Vises på din profil" : "Venter på gennemsyn"}
+              {image.approved ? <UiText text="Vises på din profil"/> : <UiText text="Venter på gennemsyn"/>}
             </p>
             <p className="text-sm text-slate">
               {image.approved
-                ? "Send et nyt, hvis du vil skifte det ud. Det nye ses igennem igen."
-                : "Typisk inden for en dag. Du kan sende et andet imens."}
+                ? <UiText text="Send et nyt, hvis du vil skifte det ud. Det nye ses igennem igen."/>
+                : <UiText text="Typisk inden for en dag. Du kan sende et andet imens."/>}
             </p>
           </div>
         </div>
@@ -52,9 +51,7 @@ export default async function BilledePage() {
 
       <PhotoForm />
 
-      <Link href="/profil/traener" className="btn-ghost inline-block">
-        Tilbage til profilen
-      </Link>
+      <Link href="/profil/traener" className="btn-ghost inline-block"><UiText text="Tilbage til profilen"/></Link>
     </div>
   );
 }

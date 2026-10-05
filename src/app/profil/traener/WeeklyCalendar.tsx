@@ -1,4 +1,6 @@
 "use client";
+import {UiText,useWebsiteInternational} from "../../../components/InternationalProvider";
+
 
 // Ugekalenderen på trænerprofilen.
 //
@@ -43,6 +45,8 @@ export function WeeklyCalendar({
   defaultValue: string;
   lessonMinutes: number;
 }) {
+  const {locale,tr}=useWebsiteInternational();
+  const dayName=(day:number,weekday:"long"|"short"="long")=>new Intl.DateTimeFormat(locale,{weekday,timeZone:"UTC"}).format(new Date(Date.UTC(2026,9,4+day)));
   const initial = useMemo(() => {
     let parsed: unknown = [];
     try {
@@ -109,10 +113,10 @@ export function WeeklyCalendar({
               key={day}
               type="button"
               onClick={() => toggleDay(day)}
-              title={`Marker eller ryd hele ${DAY_NAMES[day].toLowerCase()}`}
+              title={tr("Marker eller ryd hele {day}",{day:dayName(day)})}
               className="rounded-md py-1 text-[11px] font-bold text-slate hover:bg-mist"
             >
-              {SHORT[day]}
+              {dayName(day,"short")}
             </button>
           ))}
 
@@ -129,7 +133,7 @@ export function WeeklyCalendar({
                     key={key}
                     type="button"
                     aria-pressed={on}
-                    aria-label={`${DAY_NAMES[day]} ${hour}–${hour + 1}`}
+                    aria-label={`${dayName(day)} ${hour}–${hour + 1}`}
                     onPointerDown={() => {
                       painting.current = !on;
                       set(key, !on);
@@ -153,14 +157,14 @@ export function WeeklyCalendar({
       <div className="mt-3 flex items-start justify-between gap-3">
         <p className="text-xs text-slate">
           {pattern.length === 0 ? (
-            "Ingen tider valgt endnu. Tryk på timerne, du kan tage elever — eller på en dag for hele dagen."
+            <UiText text="Ingen tider valgt endnu. Tryk på timerne, du kan tage elever — eller på en dag for hele dagen."/>
           ) : (
             <>
               <span className="font-bold">
-                {lessonCount(pattern, lessonMinutes)} lektioner om ugen à{" "}
-                {describeLength(lessonMinutes)}.
+                {lessonCount(pattern, lessonMinutes)}{" "}<UiText text="lektioner om ugen à"/>{" "}
+                {describeLength(lessonMinutes,locale)}.
               </span>{" "}
-              {describeWeeklySlots(pattern)}
+              {describeWeeklySlots(pattern,locale)}
             </>
           )}
         </p>
@@ -169,9 +173,7 @@ export function WeeklyCalendar({
             type="button"
             onClick={() => setHours(new Set())}
             className="shrink-0 text-xs font-bold text-slate underline"
-          >
-            Ryd alle
-          </button>
+          ><UiText text="Ryd alle"/></button>
         ) : null}
       </div>
     </div>

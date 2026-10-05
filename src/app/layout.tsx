@@ -1,3 +1,5 @@
+
+import {UiText} from "../components/InternationalProvider";
 import {InternationalProvider} from "../components/InternationalProvider";
 import { CountryPicker } from "../components/CountryPicker";
 import type { Metadata, Viewport } from "next";
@@ -94,8 +96,7 @@ export default async function RootLayout({
         </main>
 
         {onOwnDomain ? (
-          <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light">
-            Booking og betaling leveret af{" "}
+          <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light"><UiText text="Booking og betaling leveret af"/>{" "}
             <a href="https://racketbuddy.app" className="underline">
               RacketBuddy
             </a>

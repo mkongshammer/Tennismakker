@@ -1,3 +1,5 @@
+
+import {UiText} from "../../../components/InternationalProvider";
 import {formatMoney,formatDate} from "../../../lib/international";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -50,7 +52,7 @@ export default async function TraenerPage({
   const credits = user ? await creditsWith(user.id, coach.id) : [];
   const photoId = await approvedCoachPhotoId(coach.id);
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
-  const length = describeLength(coach.lessonMinutes);
+  const length = describeLength(coach.lessonMinutes,prefs.locale);
 
   // Gruppér pr. dag
   const byDay = new Map<string, Date[]>();
@@ -77,7 +79,7 @@ export default async function TraenerPage({
         </p>
       )}
 
-      <p className="mb-3 text-sm text-slate">{prefs.locale==="da"?"Lokal tid":"Venue time"}: {coach.timeZone}</p>
+      <p className="mb-3 text-sm text-slate">{prefs.locale==="da"?<UiText text="Lokal tid"/>:<UiText text="Venue time"/>}: {coach.timeZone}</p>
       <div className="card">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -101,20 +103,16 @@ export default async function TraenerPage({
         {user && user.id !== coach.user.id ? (
           <form action={contactPlayer} className="mt-4">
             <input type="hidden" name="playerId" value={coach.user.id} />
-            <button type="submit" className="btn-court px-5 py-3">
-              Skriv til træneren
-            </button>
+            <button type="submit" className="btn-court px-5 py-3"><UiText text="Skriv til træneren"/></button>
           </form>
         ) : !user ? (
-          <Link href="/login" className="btn-court mt-4 inline-block px-5 py-3">
-            Log ind for at skrive
-          </Link>
+          <Link href="/login" className="btn-court mt-4 inline-block px-5 py-3"><UiText text="Log ind for at skrive"/></Link>
         ) : null}
       </div>
 
       {reviews.length > 0 && (
         <div className="mt-6">
-          <h2 className="display mb-3 text-xl">Hvad elever siger</h2>
+          <h2 className="display mb-3 text-xl"><UiText text="Hvad elever siger"/></h2>
           <ul className="space-y-3">
             {reviews.map((r: any) => (
               <li key={r.id} className="card">
@@ -147,12 +145,11 @@ export default async function TraenerPage({
                   <p className="display text-xl text-court">{money(p.priceKr)}</p>
                 </div>
                 <p className="text-sm text-slate/60">
-                  {p.sessions} timer · {money(Math.round(p.priceKr/p.sessions))}/h
+                  {p.sessions}{" "}<UiText text="timer ·"/>{" "}{money(Math.round(p.priceKr/p.sessions))}/h
                   {p.priceKr < coach.priceHour * p.sessions && (
                     <>
                       {" · "}
-                      <span className="font-bold text-court">
-                        spar {money(coach.priceHour*p.sessions-p.priceKr)}
+                      <span className="font-bold text-court"><UiText text="spar"/>{" "}{money(coach.priceHour*p.sessions-p.priceKr)}
                       </span>
                     </>
                   )}

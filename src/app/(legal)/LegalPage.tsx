@@ -1,3 +1,5 @@
+import {getPreferences} from '../../lib/preferences';
+import {phrase} from '../../lib/phrases';
 import React from "react";
 
 /**
@@ -7,7 +9,7 @@ import React from "react";
  * skrevet som udgangspunkt for en advokatgennemgang — ikke færdig jura.
  * Fjern <Draft /> når en advokat har godkendt teksten.
  */
-export function LegalPage({
+export async function LegalPage({
   title,
   updated,
   draft = true,
@@ -18,19 +20,16 @@ export function LegalPage({
   draft?: boolean;
   children: React.ReactNode;
 }) {
+  const {locale}=await getPreferences(); const tr=(s:string)=>phrase(s,locale);
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="display text-3xl">{title}</h1>
-      <p className="mt-1 text-sm text-slate/50">Senest opdateret: {updated}</p>
+      <p className="mt-1 text-sm text-slate/50">{tr("Senest opdateret:")}{updated}</p>
 
       {draft && (
         <div className="mt-5 rounded-md border-2 border-court bg-court/5 p-4">
-          <p className="font-bold text-court-dark">Udkast — ikke juridisk gennemgået</p>
-          <p className="mt-1 text-sm">
-            Dette dokument er et udgangspunkt, som skal gennemgås og tilpasses af
-            en advokat, før platformen tages i brug med rigtige kunder og
-            betalinger. Det er ikke juridisk rådgivning.
-          </p>
+          <p className="font-bold text-court-dark">{tr("Udkast — ikke juridisk gennemgået")}</p>
+          <p className="mt-1 text-sm">{tr("Dette dokument er et udgangspunkt, som skal gennemgås og tilpasses af en advokat, før platformen tages i brug med rigtige kunder og betalinger. Det er ikke juridisk rådgivning.")}</p>
         </div>
       )}
 

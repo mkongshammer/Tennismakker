@@ -218,6 +218,7 @@ async function chargeRenewal(membershipId: string, destination: string | null): 
 async function notifyFailure(membership: any, reason: string) {
   await sendMail(
     renewalFailed({
+      locale: membership.user.locale,
       to: membership.user.email,
       name: membership.user.name,
       clubName: membership.type.club.name,

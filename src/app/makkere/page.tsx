@@ -1,3 +1,6 @@
+import {phrase} from "../../lib/phrases";
+
+import {UiText} from "../../components/InternationalProvider";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { da } from "date-fns/locale";
@@ -33,6 +36,7 @@ export default async function MakkerePage({
   const query = await searchParams;
   const user = await getCurrentUser();
   const prefs = await getPreferences();
+  const tr=(text:string)=>phrase(text,prefs.locale);
   const t = translator(prefs.locale);
   const hasUserFilters = query.filtrer === "1";
   const selectedRegion = hasUserFilters ? query.region?.trim() ?? "" : "";
@@ -94,18 +98,18 @@ export default async function MakkerePage({
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <input type="hidden" name="filtrer" value="1" />
         <div>
-          <label className="label" htmlFor="region">Region</label>
+          <label className="label" htmlFor="region"><UiText text="Region"/></label>
           {prefs.country==="DK"?<select className="input" id="region" name="region" defaultValue={selectedRegion}>
-            <option value="">Alle regioner</option>
+            <option value=""><UiText text="Alle regioner"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
           </select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
         </div>
         <div>
-          <label className="label" htmlFor="niveau">Niveau</label>
+          <label className="label" htmlFor="niveau"><UiText text="Niveau"/></label>
           <select className="input" id="niveau" name="niveau" defaultValue={selectedLevel}>
-            <option value="">Alle niveauer</option>
+            <option value=""><UiText text="Alle niveauer"/></option>
             {Object.entries(LEVELS).map(([num, item]) => (
               <option key={num} value={num}>{num} — {item.label}</option>
             ))}
@@ -113,7 +117,7 @@ export default async function MakkerePage({
         </div>
         <button className="btn-ink">{t("common.filter")}</button>
         {(selectedRegion || selectedLevel) && (
-          <Link href="/makkere" className="btn-ghost">Nulstil</Link>
+          <Link href="/makkere" className="btn-ghost"><UiText text="Nulstil"/></Link>
         )}
       </form>
 
@@ -155,11 +159,9 @@ export default async function MakkerePage({
       </ul>
 
       {totalPages > 1 && (
-        <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Sider">
+        <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label={tr("Sider")}>
           {currentPage > 1 && (
-            <Link href={pageHref(currentPage - 1, selectedRegion, selectedLevel)} className="btn-ghost px-4 py-2">
-              Forrige
-            </Link>
+            <Link href={pageHref(currentPage - 1, selectedRegion, selectedLevel)} className="btn-ghost px-4 py-2"><UiText text="Forrige"/></Link>
           )}
           {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
             <Link
@@ -174,9 +176,7 @@ export default async function MakkerePage({
             </Link>
           ))}
           {currentPage < totalPages && (
-            <Link href={pageHref(currentPage + 1, selectedRegion, selectedLevel)} className="btn-ghost px-4 py-2">
-              Næste
-            </Link>
+            <Link href={pageHref(currentPage + 1, selectedRegion, selectedLevel)} className="btn-ghost px-4 py-2"><UiText text="Næste"/></Link>
           )}
         </nav>
       )}

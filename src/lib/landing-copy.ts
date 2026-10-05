@@ -1,3 +1,4 @@
+import {phrase} from './phrases';
 import { baseLocale, type Locale } from './sports';
 
 // Every new landing-page label is covered in the five base languages; en-US inherits English.
@@ -65,7 +66,7 @@ const rows = {
 export type LandingCopy = { [K in keyof typeof rows]: string };
 export function landingCopy(locale: Locale): LandingCopy {
   const index = ['da', 'en', 'de', 'sv', 'no'].indexOf(baseLocale(locale));
-  const copy = Object.fromEntries(Object.entries(rows).map(([key, values]) => [key, values[index]])) as LandingCopy;
+  const copy = Object.fromEntries(Object.entries(rows).map(([key, values]) => [key, index<0?phrase(values[1],locale):values[index]])) as LandingCopy;
   if (locale === 'en-US') copy.clubEyebrow = 'For clubs and centers';
   return copy;
 }

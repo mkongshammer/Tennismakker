@@ -1,4 +1,6 @@
 "use client";
+import {UiText,useWebsiteInternational} from "../../components/InternationalProvider";
+
 
 // Første skridt i klubopsætningen.
 //
@@ -12,29 +14,27 @@ import { detectClubSystem } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
 
 export function DetectStep() {
+  const {tr}=useWebsiteInternational();
   const [state, action] = useFormState(detectClubSystem, null);
   const d = state?.detection;
 
   return (
     <div className="card">
-      <h2 className="display text-xl">Hvilket system bruger I?</h2>
-      <p className="mt-1 text-sm text-slate">
-        Skriv jeres hjemmeside, så finder vi ud af det. I behøver ikke vide
-        noget teknisk.
-      </p>
+      <h2 className="display text-xl"><UiText text="Hvilket system bruger I?"/></h2>
+      <p className="mt-1 text-sm text-slate"><UiText text="Skriv jeres hjemmeside, så finder vi ud af det. I behøver ikke vide noget teknisk."/></p>
 
       <form action={action} className="mt-4 flex flex-col gap-2 sm:flex-row">
         <input
           className="input flex-1"
           name="website"
-          placeholder="fx soendermarktennis.dk"
-          aria-label="Jeres hjemmeside"
+          placeholder={tr("fx soendermarktennis.dk")}
+          aria-label={tr("Jeres hjemmeside")}
         />
-        <SubmitButton className="btn-ghost" pendingText="Kigger…">Find systemet</SubmitButton>
+        <SubmitButton className="btn-ghost" pendingText="Kigger…"><UiText text="Find systemet"/></SubmitButton>
       </form>
 
       {state?.error && (
-        <p className="mt-3 text-sm font-semibold text-court">{state.error}</p>
+        <p className="mt-3 text-sm font-semibold text-court">{<UiText text={state.error}/>}</p>
       )}
 
       {d && (
@@ -44,20 +44,14 @@ export function DetectStep() {
 
           {d.icalUrl && (
             <div className="mt-3">
-              <p className="text-sm font-semibold">Kalender fundet</p>
+              <p className="text-sm font-semibold"><UiText text="Kalender fundet"/></p>
               <p className="data mt-1 break-all text-xs text-slate">{d.icalUrl}</p>
-              <p className="mt-2 text-xs text-slate">
-                Gem den — I kan sætte den ind under opsætning, når klubben er
-                godkendt.
-              </p>
+              <p className="mt-2 text-xs text-slate"><UiText text="Gem den — I kan sætte den ind under opsætning, når klubben er godkendt."/></p>
             </div>
           )}
 
           {d.clubName && (
-            <p className="mt-3 text-sm text-slate">
-              Klubnavn fundet: <span className="font-semibold">{d.clubName}</span>{" "}
-              — skriv det ind nedenfor.
-            </p>
+            <p className="mt-3 text-sm text-slate"><UiText text="Klubnavn fundet:"/>{" "}<span className="font-semibold">{d.clubName}</span>{" "}<UiText text="— skriv det ind nedenfor."/></p>
           )}
         </div>
       )}

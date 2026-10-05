@@ -1,3 +1,5 @@
+
+import {UiText} from "../../components/InternationalProvider";
 import {formatMoney} from "../../lib/international";
 import Link from "next/link";
 import { imageUrl } from "../../lib/imageUrl";
@@ -51,16 +53,16 @@ export default async function TraenerePage({
 
       <form className="card mb-6 flex flex-wrap items-end gap-4">
         <div>
-          <label className="label" htmlFor="region">Region</label>
+          <label className="label" htmlFor="region"><UiText text="Region"/></label>
           {prefs.country==="DK"?<select className="input" id="region" name="region" defaultValue={selectedRegion}>
-            <option value="">Hele Danmark</option>
+            <option value=""><UiText text="Hele Danmark"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
           </select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
         </div>
         <button className="btn-ink">{t("common.search")}</button>
-        {selectedRegion && <Link href="/traenere" className="btn-ghost">Nulstil</Link>}
+        {selectedRegion && <Link href="/traenere" className="btn-ghost"><UiText text="Nulstil"/></Link>}
       </form>
 
       {coaches.length === 0 && (

@@ -7,8 +7,8 @@ export const MARKETS = [
   ['GB', 'United Kingdom', 'EUR', 'en', 'Europe/London', 54, -2],
   ['US', 'United States', 'USD', 'en-US', 'America/New_York', 39, -98],
   ['CA', 'Canada', 'USD', 'en', 'America/Toronto', 56, -106],
-  ['FR', 'France', 'EUR', 'en', 'Europe/Paris', 47, 2],
-  ['ES', 'Spain', 'EUR', 'en', 'Europe/Madrid', 40, -4],
+  ['FR', 'France', 'EUR', 'fr', 'Europe/Paris', 47, 2],
+  ['ES', 'Spain', 'EUR', 'es', 'Europe/Madrid', 40, -4],
   ['IT', 'Italy', 'EUR', 'en', 'Europe/Rome', 43, 12],
   ['NL', 'Netherlands', 'EUR', 'en', 'Europe/Amsterdam', 52, 5],
   ['BE', 'Belgium', 'EUR', 'en', 'Europe/Brussels', 50.5, 4.5],
@@ -26,8 +26,8 @@ export function salesCurrency(country) { return ['US', 'CA'].includes(String(cou
 export function validSalesCurrency(currency) { return SALES_CURRENCIES.includes(currency); }
 // Retained for truthful historical receipts and existing contracts.
 export const CURRENCIES = ['DKK', 'EUR', 'GBP', 'SEK', 'NOK', 'USD', 'CAD', 'CHF', 'PLN', 'CZK'];
-export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no'];
-export const LANGUAGE_NAMES = { da: 'Dansk', en: 'English', 'en-US': 'American English', de: 'Deutsch', sv: 'Svenska', no: 'Norsk' };
+export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no', 'fr', 'es'];
+export const LANGUAGE_NAMES = { da: 'Dansk', en: 'English', 'en-US': 'American English', de: 'Deutsch', sv: 'Svenska', no: 'Norsk', fr: 'Français', es: 'Español' };
 export const TIME_ZONES = [...new Set([...MARKETS.map(c => c.timeZone), 'America/Chicago', 'America/Denver', 'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu', 'America/Halifax', 'America/St_Johns', 'America/Winnipeg', 'America/Edmonton', 'America/Vancouver', 'Atlantic/Canary', 'Atlantic/Azores', 'UTC'])];
 
 export function marketFor(code) { return MARKETS.find(c => c.code === String(code).toUpperCase()) ?? null; }
