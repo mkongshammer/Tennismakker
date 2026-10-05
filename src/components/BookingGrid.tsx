@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "./InternationalProvider";
+
 
 // Ledige banetider.
 //
@@ -192,7 +194,7 @@ export function BookingGrid({
                         <span className="relative z-10 block font-semibold">{court.name}</span>
                         <span className="relative z-10 block text-xs text-chalk/80">
                           {surfaceLabel(court.surface, locale)}
-                          {court.indoor ? " · indendørs" : ""}
+                          {court.indoor ? <UiText text=" · indendørs"/> : ""}
                         </span>
                         <span className="data relative z-10 mt-1 block font-bold">
                           {money(slot.priceKr)}
@@ -219,7 +221,7 @@ export function BookingGrid({
                     <span className="block font-bold text-ink">{c.name}</span>
                     <span className="block text-xs font-normal text-slate">
                       {surfaceLabel(c.surface, locale)}
-                      {c.indoor ? " · indendørs" : ""}
+                      {c.indoor ? <UiText text=" · indendørs"/> : ""}
                     </span>
                   </th>
                 )}

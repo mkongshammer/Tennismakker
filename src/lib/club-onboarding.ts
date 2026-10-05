@@ -21,7 +21,7 @@ export async function startOnboardingCheckout(clubId:string,preferredLocale?:str
   if(c.subscriptionId&&!['canceled','incomplete_expired'].includes(c.subscriptionStatus??''))throw Error('Klubben har allerede et abonnement. Administrér det under Betaling.');
   const currency=c.billingCurrency.toLowerCase();
   if(!validCurrency(c.billingCurrency))throw Error('Invalid billing currency.');
-  const language=preferredLocale??marketFor(c.country)?.defaultLocale??'en',locale=language==='en-US'?'en':language==='no'?'nb':language as 'da'|'en'|'de'|'sv';
+  const language=preferredLocale??marketFor(c.country)?.defaultLocale??'en',locale=language==='en-US'?'en':language==='no'?'nb':language as 'da'|'en'|'de'|'sv'|'fr'|'es';
   let attempt=c.signupCheckoutAttempt;
   if(c.signupCheckoutId){const old=await client.checkout.sessions.retrieve(c.signupCheckoutId);if(old.status==='open'&&old.url)return old.url;if(old.status==='complete'&&!['canceled','incomplete_expired'].includes(c.subscriptionStatus??''))return `${settings.appUrl}/club-start?betaling=kontroller`;attempt++;}
   const taxEnabled=['EUR','USD'].includes(c.billingCurrency);

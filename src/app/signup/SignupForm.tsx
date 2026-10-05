@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "../../components/InternationalProvider";
+
 
 import { MARKETS,SALES_CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
 import {phrase} from "../../lib/phrases";
@@ -82,7 +84,7 @@ export function SignupForm({
           </select>
         </div>
         <div>
-          <label className="label" htmlFor="area">{country==="DK"?"Region":tr("By / område")}</label>
+          <label className="label" htmlFor="area">{country==="DK"?<UiText text="Region"/>:tr("By / område")}</label>
           {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
             <option value="" disabled>{tr("Vælg region")}</option>
             {DK_REGIONS.map((region) => (
@@ -127,7 +129,7 @@ export function SignupForm({
         </div>
       )}
 
-      {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court-dark">{<UiText text={state.error}/>}</p>}
 
       <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate">
         <input type="checkbox" name="engagementEmails" className="mt-1" />

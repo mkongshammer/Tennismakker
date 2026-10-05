@@ -8,8 +8,9 @@
 // Derfor står knappen dér, hvor eleven i forvejen står med telefonen i
 // hånden: på profilen, lige efter timen er overstået. Ét tryk mod at finde
 // trænerens nummer, skrive, aftale og overføre.
-import { format } from "date-fns";
-import { da } from "date-fns/locale";
+import {getPreferences} from "../lib/preferences";
+import {formatDate,marketFor} from "../lib/international";
+
 import { rebookLessonNextWeek } from "../lib/actions";
 import { SubmitButton } from "./SubmitButton";
 import { describeLength } from "../lib/slots";
@@ -21,13 +22,14 @@ type Lesson = {
   minutes: number;
 };
 
-export function RepeatLessons({
+export async function RepeatLessons({
   lessons,
   labels,
 }: {
   lessons: Lesson[];
   labels: { title: string; button: string; note: string };
 }) {
+  const {locale,country}=await getPreferences();
   if (lessons.length === 0) return null;
 
   return (
@@ -41,8 +43,8 @@ export function RepeatLessons({
             <div>
               <p className="font-bold">{l.coachName}</p>
               <p className="text-sm text-slate">
-                {format(l.startsAt, "EEEE 'kl.' HH:mm", { locale: da })} ·{" "}
-                {describeLength(l.minutes)}
+                {formatDate(l.startsAt,locale,marketFor(country)!.timeZone,{weekday:"long",hour:"2-digit",minute:"2-digit"})} ·{" "}
+                {describeLength(l.minutes,locale)}
               </p>
             </div>
             <form action={rebookLessonNextWeek}>

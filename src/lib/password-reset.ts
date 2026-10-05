@@ -48,6 +48,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const { appUrl } = await getSettings();
   await sendMail(
     passwordResetLink({
+      locale: user.locale,
       to: user.email,
       name: user.name,
       url: `${appUrl}/login/nulstil?token=${token}`,

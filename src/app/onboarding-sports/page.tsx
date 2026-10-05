@@ -1,3 +1,5 @@
+
+import {UiText} from "../../components/InternationalProvider";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "../../lib/session";
 import { SPORTS, sportLabel } from "../../lib/sports";
@@ -29,12 +31,12 @@ export default async function OnboardingSportsPage({
     <div className="mx-auto max-w-lg">
       <div className="card">
         <h1 className="display text-3xl">
-          {coach ? "Hvilke sportsgrene træner du i?" : "Hvilke sportsgrene spiller du?"}
+          {coach ? <UiText text="Hvilke sportsgrene træner du i?"/> : <UiText text="Hvilke sportsgrene spiller du?"/>}
         </h1>
         <p className="mt-2 text-slate">
           {coach
-            ? "Vælg alle de sportsgrene, du vil tilbyde træning i på RacketBuddy. Du kan vælge flere."
-            : "Vælg de sportsgrene, du gerne vil finde medspillere til. Du kan vælge flere."}
+            ? <UiText text="Vælg alle de sportsgrene, du vil tilbyde træning i på RacketBuddy. Du kan vælge flere."/>
+            : <UiText text="Vælg de sportsgrene, du gerne vil finde medspillere til. Du kan vælge flere."/>}
         </p>
 
         {query.fejl && (
@@ -57,7 +59,7 @@ export default async function OnboardingSportsPage({
               </label>
             ))}
           </div>
-          <button className="btn-court w-full">Gem sportsgrene</button>
+          <button className="btn-court w-full"><UiText text="Gem sportsgrene"/></button>
         </form>
       </div>
     </div>

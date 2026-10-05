@@ -3,6 +3,6 @@ import { TermsDocument } from '../TermsDocument';
 export const metadata = {title:'EU / EEA Terms of Service — RacketBuddy'};
 export default async function Page({searchParams}: {searchParams: Promise<{lang?:string}>}) {
   const [{locale},params] = await Promise.all([getPreferences(),searchParams]);
-  const language = params.lang==='da'?'da':params.lang==='en'?'en':locale==='da'?'da':'en';
+  const language = (['da','en','fr','es'].includes(params.lang??'')?params.lang:['da','fr','es'].includes(locale)?locale:'en') as 'da'|'en'|'fr'|'es';
   return <TermsDocument region="eu" language={language}/>;
 }

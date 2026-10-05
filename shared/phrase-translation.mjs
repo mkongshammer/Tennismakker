@@ -1,3 +1,4 @@
+import romance from './romance-translations.json' with {type:'json'};
 import localized from './localized-phrases.json' with {type:'json'};
 import english from './phrases.json' with {type:'json'};
 import translations from './translations.json' with {type:'json'};
@@ -15,5 +16,6 @@ export function translatePhrase(value,locale='da',params={}) {
  let entry=localized[value]??byDanish.get(value);
  if(!entry&&locale!=='da')for(const template of templates){const match=template.pattern.exec(value);if(match){entry=template.entry;params={...Object.fromEntries(template.names.map((name,index)=>[name,match[index+1]])),...params};break;}}
  const translated=locale==='da'?entry?.da??value:entry?.[locale]??entry?.[base]??english[value]??value;
- return translated.replace(/\{(\w+)\}/g,(match,key)=>params[key]===undefined?match:String(params[key]));
+ const result=(base==='fr'||base==='es')?(romance[translated]?.[base]??romance[value]?.[base]??translated):translated;
+ return result.replace(/\{(\w+)\}/g,(match,key)=>params[key]===undefined?match:String(params[key]));
 }

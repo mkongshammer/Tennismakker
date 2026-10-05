@@ -42,6 +42,7 @@ export function needsEmailCode(user: { role: string }): boolean {
  * på udfordringen. Id'et er ikke en hemmelighed — koden er.
  */
 export async function startEmailChallenge(user: {
+  locale?: string;
   id: string;
   email: string;
   name: string;
@@ -60,7 +61,7 @@ export async function startEmailChallenge(user: {
   });
 
   await sendMail(
-    loginCode({ to: user.email, name: user.name, code, minutes: LIFETIME_MINUTES })
+    loginCode({ locale:user.locale, to: user.email, name: user.name, code, minutes: LIFETIME_MINUTES })
   );
 
   return challenge.id;

@@ -62,10 +62,10 @@ export function SubmitButton({
       {pending ? (
         <span className="inline-flex items-center gap-2">
           <Spinner />
-          {pendingText ?? tr("Vent venligst…")}
+          {tr(pendingText ?? "Vent venligst…")}
         </span>
       ) : (
-        children
+        typeof children === "string" ? tr(children) : children
       )}
     </button>
   );

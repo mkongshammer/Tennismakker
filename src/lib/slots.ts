@@ -1,4 +1,6 @@
 // Hjælpere til at generere bookbare timeslots.
+import {phrase} from "./phrases";
+import type {Locale} from "./sports";
 import { addDays, addMinutes, setHours, setMinutes, setSeconds, setMilliseconds } from "date-fns";
 import { addCalendarDays, dayKey, wallTime } from "./international";
 
@@ -136,10 +138,10 @@ export function hoursToSlots(hours: Set<string>): WeeklySlot[] {
 }
 
 /** "Tirsdag 16–20 · Lørdag 9–13" — mønsteret sagt højt. */
-export function describeWeeklySlots(pattern: WeeklySlot[]): string {
+export function describeWeeklySlots(pattern: WeeklySlot[], locale: Locale = "da"): string {
   if (pattern.length === 0) return "";
   return pattern
-    .map((p) => `${DAY_NAMES[p.day]} ${p.from}–${p.to}`)
+    .map((p) => `${phrase(DAY_NAMES[p.day],locale)} ${p.from}–${p.to}`)
     .join(" · ");
 }
 
@@ -154,10 +156,10 @@ export function lessonCount(pattern: WeeklySlot[], lessonMinutes: number): numbe
 }
 
 /** "45 min" — længden sagt kort. Hele timer skrives som timer. */
-export function describeLength(lessonMinutes: number): string {
+export function describeLength(lessonMinutes: number, locale: Locale = "da"): string {
   if (lessonMinutes % 60 === 0) {
     const hours = lessonMinutes / 60;
-    return hours === 1 ? "1 time" : `${hours} timer`;
+    return phrase(hours === 1 ? "1 time" : "{count} timer", locale, {count:hours});
   }
   return `${lessonMinutes} min`;
 }

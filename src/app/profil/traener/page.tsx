@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "../../../components/InternationalProvider";
+
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
@@ -38,29 +40,24 @@ export default function TraenerProfilPage() {
     load();
   }, [searchParams]);
 
-  if (!profile) return <p className="text-slate/60">Henter…</p>;
+  if (!profile) return <p className="text-slate/60"><UiText text="Henter…"/></p>;
   if (profile.error) return <p className="text-court font-semibold">{profile.error}</p>;
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="display mb-6 text-3xl">Trænerprofil</h1>
+      <h1 className="display mb-6 text-3xl"><UiText text="Trænerprofil"/></h1>
 
       <div className="card mb-4">
-        <p className="font-bold">Udbetalinger</p>
+        <p className="font-bold"><UiText text="Udbetalinger"/></p>
         {profile.stripeChargesEnabled ? (
           <p className="mt-2 text-sm">
-            <span className="font-bold text-court">Aktivt.</span> Elever kan betale
-            direkte til dig, minus vores andel.
-          </p>
+            <span className="font-bold text-court"><UiText text="Aktivt."/></span>{" "}<UiText text="Elever kan betale direkte til dig, minus vores andel."/></p>
         ) : (
           <>
-            <p className="mt-2 text-sm text-slate">
-              Du skal have en Stripe-konto, før elever kan booke og betale.
-              Tager typisk 5-10 minutter.
-            </p>
+            <p className="mt-2 text-sm text-slate"><UiText text="Du skal have en Stripe-konto, før elever kan booke og betale. Tager typisk 5-10 minutter."/></p>
             <form action={startCoachPayoutSetup} className="mt-3">
               <SubmitButton pendingText="Åbner Stripe…">
-                {profile.stripeAccountId ? "Fortsæt opsætning" : "Sæt udbetalinger op"}
+                {profile.stripeAccountId ? <UiText text="Fortsæt opsætning"/> : <UiText text="Sæt udbetalinger op"/>}
               </SubmitButton>
             </form>
           </>
@@ -69,12 +66,12 @@ export default function TraenerProfilPage() {
 
       <form action={action} className="card space-y-4">
         <div>
-          <label className="label" htmlFor="headline">Overskrift</label>
+          <label className="label" htmlFor="headline"><UiText text="Overskrift"/></label>
           <input className="input" id="headline" name="headline" defaultValue={profile.headline} required />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="label" htmlFor="priceHour">Pris / time ({profile.currency})</label>
+            <label className="label" htmlFor="priceHour"><UiText text="Pris / time ("/>{profile.currency})</label>
             <input
               className="input"
               id="priceHour"
@@ -87,7 +84,7 @@ export default function TraenerProfilPage() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="area">Region</label>
+            <label className="label" htmlFor="area"><UiText text="Region"/></label>
             {profile.country==="DK"?<select
               className="input"
               id="area"
@@ -95,7 +92,7 @@ export default function TraenerProfilPage() {
               defaultValue={regionForArea(profile.area) ?? ""}
               required
             >
-              <option value="" disabled>Vælg region</option>
+              <option value="" disabled><UiText text="Vælg region"/></option>
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
@@ -104,7 +101,7 @@ export default function TraenerProfilPage() {
         </div>
         <label className="label block">{tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
         <div>
-          <label className="label" htmlFor="lessonMinutes">Længden på én lektion</label>
+          <label className="label" htmlFor="lessonMinutes"><UiText text="Længden på én lektion"/></label>
           <select
             className="input"
             id="lessonMinutes"
@@ -113,32 +110,22 @@ export default function TraenerProfilPage() {
             onChange={(e) => setLessonMinutes(Number(e.target.value))}
           >
             {LESSON_LENGTHS.map((m) => (
-              <option key={m} value={m}>{describeLength(m)}</option>
+              <option key={m} value={m}>{describeLength(m,locale)}</option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-slate">
-            Eleven betaler {formatMoney(lessonPriceKr(priceHour,lessonMinutes),profile.currency,locale)} for én lektion.
-            Timeprisen er stadig den, du sammenlignes på i oversigten.
-          </p>
+          <p className="mt-1 text-xs text-slate"><UiText text="Eleven betaler"/>{" "}{formatMoney(lessonPriceKr(priceHour,lessonMinutes),profile.currency,locale)}{" "}<UiText text="for én lektion. Timeprisen er stadig den, du sammenlignes på i oversigten."/></p>
         </div>
         <div>
-          <label className="label" htmlFor="specialties">Specialer (kommasepareret)</label>
-          <input className="input" id="specialties" name="specialties" defaultValue={profile.specialties} placeholder="Serv, Baghånd, Junior" />
+          <label className="label" htmlFor="specialties"><UiText text="Specialer (kommasepareret)"/></label>
+          <input className="input" id="specialties" name="specialties" defaultValue={profile.specialties} placeholder={tr("Serv, Baghånd, Junior")} />
         </div>
         <div>
-          <span className="label">Hvornår kan du tage elever?</span>
-          <p className="mb-2 text-xs text-slate">
-            Tiderne gentages hver uge. Eleverne kan kun booke de timer, du
-            markerer her — og kun dem, der ikke allerede er booket.
-          </p>
+          <span className="label"><UiText text="Hvornår kan du tage elever?"/></span>
+          <p className="mb-2 text-xs text-slate"><UiText text="Tiderne gentages hver uge. Eleverne kan kun booke de timer, du markerer her — og kun dem, der ikke allerede er booket."/></p>
           <p className="mb-3 text-sm">
-            <a href="/profil/traener/billede" className="font-semibold text-court underline">
-              Sæt et billede på
-            </a>
+            <a href="/profil/traener/billede" className="font-semibold text-court underline"><UiText text="Sæt et billede på"/></a>
             <span className="text-slate"> · </span>
-            <a href="/profil/traener/pakker" className="font-semibold text-court underline">
-              Opret pakkeforløb
-            </a>
+            <a href="/profil/traener/pakker" className="font-semibold text-court underline"><UiText text="Opret pakkeforløb"/></a>
           </p>
           <WeeklyCalendar
             name="weeklySlots"
@@ -146,8 +133,8 @@ export default function TraenerProfilPage() {
             lessonMinutes={lessonMinutes}
           />
         </div>
-        {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}
-        <SubmitButton className="btn-court w-full" pendingText="Gemmer…">Gem profil</SubmitButton>
+        {state?.error && <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p>}
+        <SubmitButton className="btn-court w-full" pendingText="Gemmer…"><UiText text="Gem profil"/></SubmitButton>
       </form>
     </div>
   );

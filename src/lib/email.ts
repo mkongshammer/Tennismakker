@@ -1,3 +1,4 @@
+import {translatePhrase as phrase} from "../../shared/phrase-translation.mjs";
 import {formatMoney,formatDate} from "./international";
 // E-mail-lag for RacketBuddy.
 //
@@ -96,29 +97,29 @@ export function bookingReceipt(opts: {
 }): Mail {
   const accessLines: string[] = [];
   if (opts.access?.hasLock) {
-    accessLines.push(``, `Adgang til anlægget:`);
-    if (opts.access.code) accessLines.push(`Kode: ${opts.access.code}`);
+    accessLines.push(``, phrase("Adgang til anlægget:",opts.locale??'da'));
+    if (opts.access.code) accessLines.push(phrase("Kode: {p0}",opts.locale??'da',{p0:opts.access.code}));
     if (opts.access.instructions) accessLines.push(opts.access.instructions);
   }
 
   return {
     to: opts.to,
-    subject: `Kvittering: ${opts.what}`,
+    subject: phrase("Kvittering: {p0}",opts.locale??'da',{p0:opts.what}),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       ``,
-      `Din booking er bekræftet.`,
+      phrase("Din booking er bekræftet.",opts.locale??'da'),
       ``,
       `${opts.what}`,
       `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
-      `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
+      phrase("Betalt: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
       ...accessLines,
       ``,
-      `Se dine bookinger: ${baseUrl()}/profil`,
+      phrase("Se dine bookinger: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
       ``,
-      `Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.`,
+      phrase("Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.",opts.locale??'da'),
       ``,
-      `Venlig hilsen`,
+      phrase("Venlig hilsen",opts.locale??'da'),
       `RacketBuddy`,
     ].join("\n"),
   };
@@ -138,11 +139,11 @@ export function clubBookingNotice(opts: {
   externalSystem: string | null;
 }): Mail {
   const lines = [
-    `Ny gæstebooking i ${opts.clubName}`,
+    phrase("Ny gæstebooking i {p0}",opts.locale??'da',{p0:opts.clubName}),
     ``,
     `${opts.courtName} — ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
-    `Spiller: ${opts.playerName} (${opts.playerEmail})`,
-    `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
+    phrase("Spiller: {p0} ({p1})",opts.locale??'da',{p0:opts.playerName,p1:opts.playerEmail}),
+    phrase("Betalt: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
     ``,
   ];
 
@@ -151,17 +152,17 @@ export function clubBookingNotice(opts: {
     // den blev frigivet. Så det her handler om, at klubben kan se, hvem
     // der kommer, ikke om at forhindre en dobbeltbooking.
     lines.push(
-      `Skriv ${opts.playerName} på tiden i ${opts.externalSystem ?? "jeres eget bookingsystem"},`,
-      `så I kan se hvem der kommer. Tiden er spærret dér i forvejen.`,
+      phrase("Skriv {p0} på tiden i {p1},",opts.locale??'da',{p0:opts.playerName,p1:opts.externalSystem ?? "jeres eget bookingsystem"}),
+      phrase("så I kan se hvem der kommer. Tiden er spærret dér i forvejen.",opts.locale??'da'),
       ``
     );
   }
 
-  lines.push(`Overblik: ${baseUrl()}/admin`, ``, `RacketBuddy`);
+  lines.push(phrase("Overblik: {p0}/admin",opts.locale??'da',{p0:baseUrl()}), ``, `RacketBuddy`);
 
   return {
     to: opts.to,
-    subject: `Ny booking: ${opts.courtName}, ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
+    subject: phrase("Ny booking: {p0}, {p1}",opts.locale??'da',{p0:opts.courtName,p1:formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}),
     body: lines.join("\n"),
   };
 }
@@ -179,24 +180,24 @@ export function coachBookingNotice(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `Ny elev: ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
+    subject: phrase("Ny elev: {p0}",opts.locale??'da',{p0:formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}),
     body: [
-      `Hej ${opts.coachName}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.coachName}),
       ``,
-      `Du har fået en ny booking.`,
+      phrase("Du har fået en ny booking.",opts.locale??'da'),
       ``,
       `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})} · ${opts.length}`,
-      `Elev: ${opts.playerName} (${opts.playerEmail})`,
-      `Beløb: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")} — din andel udbetales automatisk`,
+      phrase("Elev: {p0} ({p1})",opts.locale??'da',{p0:opts.playerName,p1:opts.playerEmail}),
+      phrase("Beløb: {p0} — din andel udbetales automatisk",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
       ``,
-      `Din kalender: ${baseUrl()}/profil`,
+      phrase("Din kalender: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
       ``,
       `RacketBuddy`,
     ].join("\n"),
   };
 }
 
-export function matchAcceptedNotice(opts: {
+export function matchAcceptedNotice(opts: {locale?:string;
   to: string;
   requesterName: string;
   accepterName: string;
@@ -205,14 +206,14 @@ export function matchAcceptedNotice(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `${opts.accepterName} vil spille med dig`,
+    subject: phrase("{p0} vil spille med dig",opts.locale??'da',{p0:opts.accepterName}),
     body: [
-      `Hej ${opts.requesterName}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.requesterName}),
       ``,
-      `${opts.accepterName} har slået til på dit opslag:`,
+      phrase("{p0} har slået til på dit opslag:",opts.locale??'da',{p0:opts.accepterName}),
       `"${opts.message}"`,
       ``,
-      `Skriv sammen og aftal tid og sted her:`,
+      phrase("Skriv sammen og aftal tid og sted her:",opts.locale??'da'),
       `${baseUrl()}/beskeder/${opts.threadId}`,
       ``,
       `RacketBuddy`,
@@ -230,18 +231,18 @@ export function cancellationNotice(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `Aflyst: ${opts.what}`,
+    subject: phrase("Aflyst: {p0}",opts.locale??'da',{p0:opts.what}),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       ``,
-      `Din booking er aflyst.`,
+      phrase("Din booking er aflyst.",opts.locale??'da'),
       ``,
       `${opts.what}`,
       `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
       ``,
       opts.refundKr !== null
-        ? `Du får ${opts.refundKr} kr retur. Beløbet er typisk på din konto inden for 5-10 hverdage.`
-        : `Aflysningen skete mindre end 24 timer før spilletidspunktet, så beløbet refunderes ikke.`,
+        ? phrase("Du får {p0} retur. Beløbet er typisk på din konto inden for 5-10 hverdage.",opts.locale??'da',{p0:formatMoney(opts.refundKr,opts.currency??"DKK",opts.locale??"da")})
+        : phrase("Aflysningen skete mindre end 24 timer før spilletidspunktet, så beløbet refunderes ikke.",opts.locale??'da'),
       ``,
       `RacketBuddy`,
     ].join("\n"),
@@ -256,7 +257,7 @@ export function cancellationNotice(opts: {
  * ikke selv har bedt om, er det tidligste tegn på, at nogen kender
  * adgangskoden.
  */
-export function loginCode(opts: {
+export function loginCode(opts: {locale?:string;
   to: string;
   name: string;
   code: string;
@@ -264,17 +265,17 @@ export function loginCode(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: "Din kode til RacketBuddy",
+    subject: phrase("Din kode til RacketBuddy",opts.locale??'da'),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       "",
-      "Kode til login:",
+      phrase("Kode til login:",opts.locale??'da'),
       opts.code,
       "",
-      `Koden gælder i ${opts.minutes} minutter og kan kun bruges én gang.`,
+      phrase("Koden gælder i {p0} minutter og kan kun bruges én gang.",opts.locale??'da',{p0:opts.minutes}),
       "",
-      "Har du ikke selv forsøgt at logge ind, kender nogen din adgangskode.",
-      "Skift den med det samme.",
+      phrase("Har du ikke selv forsøgt at logge ind, kender nogen din adgangskode.",opts.locale??'da'),
+      phrase("Skift den med det samme.",opts.locale??'da'),
     ].join("\n"),
   };
 }
@@ -285,7 +286,7 @@ export function loginCode(opts: {
  * Advarslen nederst er der, fordi en mail, man ikke selv har bedt om, er
  * det tidligste tegn på, at nogen forsøger sig med kontoen.
  */
-export function passwordResetLink(opts: {
+export function passwordResetLink(opts: {locale?:string;
   to: string;
   name: string;
   url: string;
@@ -293,17 +294,17 @@ export function passwordResetLink(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: "Ny adgangskode til RacketBuddy",
+    subject: phrase("Ny adgangskode til RacketBuddy",opts.locale??'da'),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       "",
-      "Åbn linket her for at sætte en ny adgangskode:",
+      phrase("Åbn linket her for at sætte en ny adgangskode:",opts.locale??'da'),
       opts.url,
       "",
-      `Linket virker i ${opts.minutes} minutter og kan kun bruges én gang.`,
+      phrase("Linket virker i {p0} minutter og kan kun bruges én gang.",opts.locale??'da',{p0:opts.minutes}),
       "",
-      "Har du ikke selv bedt om det, kan du se bort fra mailen.",
-      "Din nuværende adgangskode virker stadig.",
+      phrase("Har du ikke selv bedt om det, kan du se bort fra mailen.",opts.locale??'da'),
+      phrase("Din nuværende adgangskode virker stadig.",opts.locale??'da'),
     ].join("\n"),
   };
 }
@@ -330,15 +331,15 @@ export function coachDecision(opts: {
   if (!opts.approved) {
     return {
       to: opts.to,
-      subject: `${opts.coachName} kan ikke tage timen ${when}`,
+      subject: phrase("{p0} kan ikke tage timen {p1}",opts.locale??'da',{p0:opts.coachName,p1:when}),
       body: [
-        `Hej ${opts.playerName}`,
+        phrase("Hej {p0}",opts.locale??'da',{p0:opts.playerName}),
         "",
-        `${opts.coachName} kan desværre ikke tage timen ${when}.`,
+        phrase("{p0} kan desværre ikke tage timen {p1}.",opts.locale??'da',{p0:opts.coachName,p1:when}),
         "",
-        "Der er ikke trukket penge, og der er ikke brugt et klip.",
+        phrase("Der er ikke trukket penge, og der er ikke brugt et klip.",opts.locale??'da'),
         "",
-        `Find en anden tid: ${baseUrl()}/traenere`,
+        phrase("Find en anden tid: {p0}/traenere",opts.locale??'da',{p0:baseUrl()}),
       ].join("\n"),
     };
   }
@@ -346,28 +347,28 @@ export function coachDecision(opts: {
   if (opts.paidWithCredit) {
     return {
       to: opts.to,
-      subject: `Timen ${when} er bekræftet`,
+      subject: phrase("Timen {p0} er bekræftet",opts.locale??'da',{p0:when}),
       body: [
-        `Hej ${opts.playerName}`,
+        phrase("Hej {p0}",opts.locale??'da',{p0:opts.playerName}),
         "",
-        `${opts.coachName} har sagt ja til timen ${when}.`,
+        phrase("{p0} har sagt ja til timen {p1}.",opts.locale??'da',{p0:opts.coachName,p1:when}),
         "",
-        "Der er brugt et klip fra dit pakkeforløb, så der er ingenting at betale.",
+        phrase("Der er brugt et klip fra dit pakkeforløb, så der er ingenting at betale.",opts.locale??'da'),
         "",
-        `Se den her: ${baseUrl()}/profil`,
+        phrase("Se den her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
       ].join("\n"),
     };
   }
 
   return {
     to: opts.to,
-    subject: `${opts.coachName} har sagt ja — betal for timen ${when}`,
+    subject: phrase("{p0} har sagt ja — betal for timen {p1}",opts.locale??'da',{p0:opts.coachName,p1:when}),
     body: [
-      `Hej ${opts.playerName}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.playerName}),
       "",
-      `${opts.coachName} har sagt ja til timen ${when}.`,
+      phrase("{p0} har sagt ja til timen {p1}.",opts.locale??'da',{p0:opts.coachName,p1:when}),
       "",
-      "Timen er din, når den er betalt. Du har et døgn, derefter frigives tiden igen:",
+      phrase("Timen er din, når den er betalt. Du har et døgn, derefter frigives tiden igen:",opts.locale??'da'),
       `${baseUrl()}/checkout/${opts.bookingId}/start`,
     ].join("\n"),
   };
@@ -394,17 +395,17 @@ export function coachRequestNotice(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `Ny anmodning: ${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
+    subject: phrase("Ny anmodning: {p0}",opts.locale??'da',{p0:formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}),
     body: [
-      `Hej ${opts.coachName}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.coachName}),
       "",
-      `${opts.playerName} (niveau ${opts.playerLevel}) vil booke en time hos dig:`,
+      phrase("{p0} (niveau {p1}) vil booke en time hos dig:",opts.locale??'da',{p0:opts.playerName,p1:opts.playerLevel}),
       formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"}),
-      opts.withCredit ? "Betales med klip fra et pakkeforløb." : `${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
+      opts.withCredit ? phrase("Betales med klip fra et pakkeforløb.",opts.locale??'da') : `${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
       "",
-      "Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",
+      phrase("Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",opts.locale??'da'),
       "",
-      `Godkend eller afvis her: ${baseUrl()}/profil`,
+      phrase("Godkend eller afvis her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
     ].join("\n"),
   };
 }
@@ -428,25 +429,25 @@ export function membershipReceipt(opts: {
   currency?:string;
   locale?:string;timeZone?:string;
 }): Mail {
-  const period = `${danishDate(opts.fromDate)} – ${danishDate(opts.toDate)}`;
+  const period = `${formatDate(opts.fromDate,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long"})} – ${formatDate(opts.toDate,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long"})}`;
 
   return {
     to: opts.to,
-    subject: `Kontingent i ${opts.clubName} — ${opts.seasonName}`,
+    subject: phrase("Kontingent i {p0} — {p1}",opts.locale??'da',{p0:opts.clubName,p1:opts.seasonName}),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       "",
-      `Dit medlemskab i ${opts.clubName} er registreret.`,
+      phrase("Dit medlemskab i {p0} er registreret.",opts.locale??'da',{p0:opts.clubName}),
       "",
-      `Type: ${opts.typeName}`,
-      `Sæson: ${opts.seasonName}`,
-      `Gælder: ${period}`,
-      opts.priceKr > 0 ? `Betalt: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}` : "Pris: gratis",
+      phrase("Type: {p0}",opts.locale??'da',{p0:opts.typeName}),
+      phrase("Sæson: {p0}",opts.locale??'da',{p0:opts.seasonName}),
+      phrase("Gælder: {p0}",opts.locale??'da',{p0:period}),
+      opts.priceKr > 0 ? phrase("Betalt: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}) : phrase("Pris: gratis",opts.locale??'da'),
       "",
-      "Du kan nu booke klubbens baner til medlemspris. Se dine bookinger",
-      `her: ${baseUrl()}/profil`,
+      phrase("Du kan nu booke klubbens baner til medlemspris. Se dine bookinger",opts.locale??'da'),
+      phrase("her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
       "",
-      "Denne mail er din kvittering. Gem den til dit eget regnskab.",
+      phrase("Denne mail er din kvittering. Gem den til dit eget regnskab.",opts.locale??'da'),
     ].join("\n"),
   };
 }
@@ -473,26 +474,26 @@ export function renewalNotice(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `${opts.clubName}: dit kontingent fornyes ${danishDate(opts.chargeDate)}`,
+    subject: phrase("{p0}: dit kontingent fornyes {p1}",opts.locale??'da',{p0:opts.clubName,p1:formatDate(opts.chargeDate,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long"})}),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       "",
-      `Dit medlemskab i ${opts.clubName} fornyes automatisk til den nye sæson.`,
+      phrase("Dit medlemskab i {p0} fornyes automatisk til den nye sæson.",opts.locale??'da',{p0:opts.clubName}),
       "",
-      `Sæson: ${opts.seasonName} (${opts.typeName})`,
-      `Beløb: ${formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}`,
-      `Trækkes: ${danishDate(opts.chargeDate)}`,
+      phrase("Sæson: {p0} ({p1})",opts.locale??'da',{p0:opts.seasonName,p1:opts.typeName}),
+      phrase("Beløb: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
+      phrase("Trækkes: {p0}",opts.locale??'da',{p0:formatDate(opts.chargeDate,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long"})}),
       "",
-      "Skal det ikke fornyes, kan du slå det fra her — så sker der ingenting:",
+      phrase("Skal det ikke fornyes, kan du slå det fra her — så sker der ingenting:",opts.locale??'da'),
       `${baseUrl()}/profil`,
       "",
-      "Du kan slå det fra indtil dagen før.",
+      phrase("Du kan slå det fra indtil dagen før.",opts.locale??'da'),
     ].join("\n"),
   };
 }
 
 /** Fornyelsen kunne ikke gennemføres. */
-export function renewalFailed(opts: {
+export function renewalFailed(opts: {locale?:string;
   to: string;
   name: string;
   clubName: string;
@@ -502,16 +503,16 @@ export function renewalFailed(opts: {
 }): Mail {
   return {
     to: opts.to,
-    subject: `${opts.clubName}: kontingentet blev ikke fornyet`,
+    subject: phrase("{p0}: kontingentet blev ikke fornyet",opts.locale??'da',{p0:opts.clubName}),
     body: [
-      `Hej ${opts.name}`,
+      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
       "",
-      `Vi kunne ikke fornye dit medlemskab til ${opts.seasonName}.`,
+      phrase("Vi kunne ikke fornye dit medlemskab til {p0}.",opts.locale??'da',{p0:opts.seasonName}),
       "",
-      `Årsag: ${opts.reason}`,
+      phrase("Årsag: {p0}",opts.locale??'da',{p0:opts.reason}),
       "",
-      "Der er ikke trukket noget. Vil du stadig være medlem, kan du tilmelde",
-      `dig her: ${baseUrl()}/klub/${opts.clubSlug}`,
+      phrase("Der er ikke trukket noget. Vil du stadig være medlem, kan du tilmelde",opts.locale??'da'),
+      phrase("dig her: {p0}/klub/{p1}",opts.locale??'da',{p0:baseUrl(),p1:opts.clubSlug}),
     ].join("\n"),
   };
 }

@@ -52,6 +52,7 @@ export async function respondToMatchPost(formData: FormData) {
 
   await sendMail(
     matchAcceptedNotice({
+      locale: post.requester.locale,
       to: post.requester.email,
       requesterName: post.requester.name,
       accepterName: user.name,

@@ -1,3 +1,5 @@
+
+import {UiText} from "../../../components/InternationalProvider";
 // Betalingsside.
 //
 // I mock-tilstand simulerer den selv et betalingsflow. I Stripe-tilstand
@@ -32,8 +34,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
   if (booking.status === "CANCELLED" || (booking.status === "HOLD" && !bookingCanBePaid(booking))) {
     return (
       <div className="mx-auto max-w-sm card text-center">
-        <p className="font-bold">Reservationen er udløbet</p>
-        <p className="mt-1 text-sm text-slate/60">Betalingsfristen er passeret — vælg en ny ledig tid. Har du allerede betalt, så kontakt os, før du betaler igen.</p>
+        <p className="font-bold"><UiText text="Reservationen er udløbet"/></p>
+        <p className="mt-1 text-sm text-slate/60"><UiText text="Betalingsfristen er passeret — vælg en ny ledig tid. Har du allerede betalt, så kontakt os, før du betaler igen."/></p>
       </div>
     );
   }
@@ -65,12 +67,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
             color: "#0F2138",
           }}
         >
-          <p style={{ fontWeight: 700 }}>Sender dig til betaling…</p>
-          <p style={{ marginTop: "0.75rem", fontSize: 14, color: "#54677E" }}>
-            Sker der ikke noget?{" "}
-            <a href={url} style={{ color: "#1B62C4", fontWeight: 600 }}>
-              Klik her for at fortsætte
-            </a>
+          <p style={{ fontWeight: 700 }}><UiText text="Sender dig til betaling…"/></p>
+          <p style={{ marginTop: "0.75rem", fontSize: 14, color: "#54677E" }}><UiText text="Sker der ikke noget?"/>{" "}
+            <a href={url} style={{ color: "#1B62C4", fontWeight: 600 }}><UiText text="Klik her for at fortsætte"/></a>
           </p>
         </body>
       </html>
@@ -95,7 +94,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="display mb-6 text-3xl">Betaling</h1>
+      <h1 className="display mb-6 text-3xl"><UiText text="Betaling"/></h1>
       <div className="card space-y-3">
         <p className="font-bold">{what}</p>
         <p className="text-sm capitalize">
@@ -103,7 +102,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
         </p>
         <div className="chalk-line !bg-none border-t border-dashed border-slate/20" />
         <div className="flex justify-between text-sm">
-          <span>Pris</span>
+          <span><UiText text="Pris"/></span>
           <span className="font-bold">{formatMoney(booking.priceKr,booking.currency,locale)}</span>
         </div>
         <p className="text-xs text-slate/50">
@@ -112,10 +111,9 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
             : `Hele beløbet udbetales til klubben.`}
         </p>
         <form action={pay}>
-          <button className="btn-court w-full">{tr("Betal")} {formatMoney(booking.priceKr,booking.currency,locale)} (demo)</button>
+          <button className="btn-court w-full">{tr("Betal")} {formatMoney(booking.priceKr,booking.currency,locale)}{" "}<UiText text="(demo)"/></button>
         </form>
-        <p className="text-center text-xs text-slate/50">
-          Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til{" "}
+        <p className="text-center text-xs text-slate/50"><UiText text="Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til"/>{" "}
           {booking.holdExpiresAt ? formatDate(booking.holdExpiresAt,locale,booking.timeZone,{hour:"2-digit",minute:"2-digit"}) : "—"}.
         </p>
       </div>

@@ -1,3 +1,7 @@
+
+import {getPreferences} from "../lib/preferences";
+import {formatDate,marketFor} from "../lib/international";
+import {UiText} from "./InternationalProvider";
 import { rebookNextWeek } from "../lib/actions";
 import { getCurrentUser } from "../lib/session";
 import { userProfilePhotoId } from "../lib/profile-images";
@@ -20,6 +24,8 @@ export type Repeatable = {
 };
 
 export async function PlayAgain({ items }: { items: Repeatable[] }) {
+  const {locale,country}=await getPreferences();
+  const zone=marketFor(country)!.timeZone;
   const user = await getCurrentUser();
   const photoId = user ? await userProfilePhotoId(user.id) : null;
   const initials = user?.name
@@ -32,7 +38,7 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
     <>
       {user && (
         <section>
-          <h2 className="display mb-3 text-2xl">Profilbillede</h2>
+          <h2 className="display mb-3 text-2xl"><UiText text="Profilbillede"/></h2>
           <div className="card flex flex-wrap items-center gap-5">
             {photoId ? (
               <img
@@ -47,10 +53,8 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
             )}
 
             <div className="min-w-0 flex-1">
-              <p className="font-bold">Dit profilbillede</p>
-              <p className="mt-1 text-sm text-slate/60">
-                Billedet bruges på din RacketBuddy-profil. Både spillere og trænere kan vælge et.
-              </p>
+              <p className="font-bold"><UiText text="Dit profilbillede"/></p>
+              <p className="mt-1 text-sm text-slate/60"><UiText text="Billedet bruges på din RacketBuddy-profil. Både spillere og trænere kan vælge et."/></p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <form action={uploadProfilePhoto} className="flex flex-wrap items-center gap-2">
                   <input
@@ -61,12 +65,12 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
                     required
                   />
                   <button className="btn-court text-sm">
-                    {photoId ? "Skift billede" : "Tilføj billede"}
+                    {photoId ? <UiText text="Skift billede"/> : <UiText text="Tilføj billede"/>}
                   </button>
                 </form>
                 {photoId && (
                   <form action={deleteProfilePhoto}>
-                    <button className="btn-ghost text-sm">Fjern billede</button>
+                    <button className="btn-ghost text-sm"><UiText text="Fjern billede"/></button>
                   </form>
                 )}
               </div>
@@ -77,17 +81,13 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
 
       {items.length > 0 && (
         <section>
-          <h2 className="display mb-1 text-2xl">Spil igen</h2>
-          <p className="mb-4 text-sm text-slate">
-            Samme bane, samme tid, næste uge.
-          </p>
+          <h2 className="display mb-1 text-2xl"><UiText text="Spil igen"/></h2>
+          <p className="mb-4 text-sm text-slate"><UiText text="Samme bane, samme tid, næste uge."/></p>
 
           <ul className="space-y-3">
             {items.map((item) => {
-              const day = DAYS[item.startsAt.getDay()];
-              const time = `${String(item.startsAt.getHours()).padStart(2, "0")}:${String(
-                item.startsAt.getMinutes()
-              ).padStart(2, "0")}`;
+              const day = formatDate(item.startsAt,locale,zone,{weekday:"long"});
+              const time = formatDate(item.startsAt,locale,zone,{hour:"2-digit",minute:"2-digit"});
 
               return (
                 <li
@@ -100,12 +100,12 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
                       {day} {time}
                     </p>
                     {item.withName && (
-                      <p className="mt-1 text-sm text-slate">Sidst med {item.withName}</p>
+                      <p className="mt-1 text-sm text-slate"><UiText text="Sidst med"/>{" "}{item.withName}</p>
                     )}
                   </div>
                   <form action={rebookNextWeek}>
                     <input type="hidden" name="bookingId" value={item.bookingId} />
-                    <SubmitButton pendingText="Åbner betaling…">Book næste {day}</SubmitButton>
+                    <SubmitButton pendingText="Åbner betaling…"><UiText text="Book næste"/>{" "}{day}</SubmitButton>
                   </form>
                 </li>
               );

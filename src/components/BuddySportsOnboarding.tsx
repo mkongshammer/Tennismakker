@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "./InternationalProvider";
+
 
 import { useFormState } from "react-dom";
 import { SPORTS, sportLabel, type Locale } from "../lib/sports";
@@ -14,15 +16,15 @@ export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
       <form action={action} className="card w-full max-w-lg space-y-5 shadow-2xl">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-court">
-            {da ? "Find din næste buddy" : "Find your next buddy"}
+            {da ? <UiText text="Find din næste buddy"/> : <UiText text="Find your next buddy"/>}
           </p>
           <h2 className="display mt-2 text-2xl">
-            {da ? "Hvilke sportsgrene spiller du?" : "Which sports do you play?"}
+            {da ? <UiText text="Hvilke sportsgrene spiller du?"/> : <UiText text="Which sports do you play?"/>}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate">
             {da
-              ? "Vælg den eller de sportsgrene, du spiller og gerne vil finde medspillere til. Så viser vi dig de mest relevante buddies og opslag."
-              : "Choose the sports you play and want to find partners for. We’ll use them to show you the most relevant buddies and posts."}
+              ? <UiText text="Vælg den eller de sportsgrene, du spiller og gerne vil finde medspillere til. Så viser vi dig de mest relevante buddies og opslag."/>
+              : <UiText text="Choose the sports you play and want to find partners for. We’ll use them to show you the most relevant buddies and posts."/>}
           </p>
         </div>
 
@@ -39,11 +41,11 @@ export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
         </div>
 
         {state?.error ? (
-          <p className="text-sm font-semibold text-court-dark">{state.error}</p>
+          <p className="text-sm font-semibold text-court-dark">{<UiText text={state.error}/>}</p>
         ) : null}
 
         <SubmitButton className="btn-court w-full" pendingText={da ? "Gemmer…" : "Saving…"}>
-          {da ? "Gem mine sportsgrene" : "Save my sports"}
+          {da ? <UiText text="Gem mine sportsgrene"/> : <UiText text="Save my sports"/>}
         </SubmitButton>
       </form>
     </div>

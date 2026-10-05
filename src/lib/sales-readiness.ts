@@ -13,7 +13,7 @@ export async function salesReadiness():Promise<SalesCheck[]>{
  const settings=await getSettings(),checks:SalesCheck[]=[];
  const prices=await clubSignupPriceBook();
  checks.push({id:'prices',name:'Nye klubpriser',status:'verified',detail:`EUR ${prices.EUR.standard}/måned + ${prices.EUR.custom??'lukket'} Custom. USD ${prices.USD.standard}/måned + ${prices.USD.custom??'lukket'} Custom. Checkout fastholder den aftalte valuta.`});
- checks.push({id:'markets',name:'Lande og sprog',status:'configured',detail:`${MARKETS.length} lande er åbne for oprettelse. ${LANGUAGES.length} sprogvalg: dansk, britisk og amerikansk engelsk, tysk, svensk og norsk. De øvrige lande bruger engelsk eller tysk; landet ændrer ikke en eksisterende aftale.`});
+ checks.push({id:'markets',name:'Lande og sprog',status:'configured',detail:`${MARKETS.length} lande er åbne for oprettelse. ${LANGUAGES.length} sprogvalg: dansk, britisk og amerikansk engelsk, tysk, svensk, norsk, fransk og spansk. De øvrige lande bruger engelsk eller tysk; landet ændrer ikke en eksisterende aftale.`});
  const [legacyClubs,legacyCoaches,legacyContracts,paidClub,webhookEvidence]=await Promise.all([
   db.club.count({where:{currency:{notIn:['EUR','USD']},status:'APPROVED'}}),
   db.coachProfile.count({where:{currency:{notIn:['EUR','USD']}}}),

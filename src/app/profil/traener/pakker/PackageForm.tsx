@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "../../../../components/InternationalProvider";
+
 
 import { useState } from "react";
 import {useWebsiteInternational} from '../../../../components/InternationalProvider';
@@ -25,16 +27,16 @@ export function PackageForm({ priceHour,currency='DKK' }: { priceHour: number;cu
 
   return (
     <form action={action} className="card space-y-4">
-      <h2 className="display text-2xl">Nyt pakkeforløb</h2>
+      <h2 className="display text-2xl"><UiText text="Nyt pakkeforløb"/></h2>
 
       <div>
-        <label className="label" htmlFor="name">Navn</label>
-        <input className="input" id="name" name="name" placeholder="fx 10-turskort" required />
+        <label className="label" htmlFor="name"><UiText text="Navn"/></label>
+        <input className="input" id="name" name="name" placeholder={tr("fx 10-turskort")} required />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="label" htmlFor="sessions">Antal timer</label>
+          <label className="label" htmlFor="sessions"><UiText text="Antal timer"/></label>
           <input
             className="input"
             id="sessions"
@@ -46,7 +48,7 @@ export function PackageForm({ priceHour,currency='DKK' }: { priceHour: number;cu
             onChange={(e) => setSessions(Number(e.target.value))}
             required
           />
-          <p className="mt-1 text-xs text-slate">Maks. {MAX_PACKAGE_SESSIONS} timer pr. pakkeforløb.</p>
+          <p className="mt-1 text-xs text-slate"><UiText text="Maks."/>{" "}{MAX_PACKAGE_SESSIONS}{" "}<UiText text="timer pr. pakkeforløb."/></p>
         </div>
         <div>
           <label className="label" htmlFor="priceKr">{tr('Samlet pris')} ({currency})</label>
@@ -65,7 +67,7 @@ export function PackageForm({ priceHour,currency='DKK' }: { priceHour: number;cu
       </div>
 
       <div>
-        <label className="label" htmlFor="description">Beskrivelse</label>
+        <label className="label" htmlFor="description"><UiText text="Beskrivelse"/></label>
         <textarea className="input" id="description" name="description" rows={2} maxLength={300} />
       </div>
 
@@ -76,18 +78,15 @@ export function PackageForm({ priceHour,currency='DKK' }: { priceHour: number;cu
           {saving > 0 ? (
             <span className="font-semibold text-court">{tr('Eleven sparer')} {money(saving,currency)}.</span>
           ) : (
-            <span className="font-semibold text-court-dark">
-              Pakken er ikke billigere end at betale pr. gang — så er der ingen grund
-              til at købe den.
-            </span>
+            <span className="font-semibold text-court-dark"><UiText text="Pakken er ikke billigere end at betale pr. gang — så er der ingen grund til at købe den."/></span>
           )}
         </div>
       )}
 
-      {state?.error && <p className="text-sm font-semibold text-court-dark">{state.error}</p>}
-      {state?.ok && <p className="text-sm font-semibold text-court">{state.ok}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court-dark">{<UiText text={state.error}/>}</p>}
+      {state?.ok && <p className="text-sm font-semibold text-court">{<UiText text={state.ok}/>}</p>}
 
-      <SubmitButton pendingText="Opretter…">Opret pakken</SubmitButton>
+      <SubmitButton pendingText="Opretter…"><UiText text="Opret pakken"/></SubmitButton>
     </form>
   );
 }

@@ -1,4 +1,6 @@
 "use client";
+import {UiText} from "./InternationalProvider";
+
 
 // Sletning af egen konto.
 //
@@ -31,21 +33,13 @@ export function DeleteAccount({
 
   return (
     <details className="card">
-      <summary className="cursor-pointer text-sm font-bold text-slate">
-        Slet min konto
-      </summary>
+      <summary className="cursor-pointer text-sm font-bold text-slate"><UiText text="Slet min konto"/></summary>
 
-      <p className="mt-3 text-sm text-slate">
-        Dit navn, din e-mail og alt du har skrevet bliver fjernet. Bookinger,
-        du har betalt for, bliver stående som bogføring, men uden noget der
-        peger på dig. Det kan ikke fortrydes.
-      </p>
+      <p className="mt-3 text-sm text-slate"><UiText text="Dit navn, din e-mail og alt du har skrevet bliver fjernet. Bookinger, du har betalt for, bliver stående som bogføring, men uden noget der peger på dig. Det kan ikke fortrydes."/></p>
 
       {hard.length > 0 && (
         <div className="mt-4 rounded-xl border-2 border-court-dark/30 bg-court-dark/5 p-4">
-          <p className="font-bold text-court-dark">
-            Kontoen kan ikke slettes endnu
-          </p>
+          <p className="font-bold text-court-dark"><UiText text="Kontoen kan ikke slettes endnu"/></p>
           <ul className="mt-2 space-y-2 text-sm">
             {hard.map((b, i) => (
               <li key={i}>{b.message}</li>
@@ -56,7 +50,7 @@ export function DeleteAccount({
 
       {soft.length > 0 && (
         <div className="mt-4 rounded-xl bg-mist p-4 text-sm">
-          <p className="font-bold">Det her mister du</p>
+          <p className="font-bold"><UiText text="Det her mister du"/></p>
           <ul className="mt-2 space-y-2">
             {soft.map((b, i) => (
               <li key={i}>{b.message}</li>
@@ -68,11 +62,11 @@ export function DeleteAccount({
       {canDelete && (
         <form action={action} className="mt-4 space-y-3">
           <div>
-            <label className="label" htmlFor="confirm">Skriv SLET for at bekræfte</label>
+            <label className="label" htmlFor="confirm"><UiText text="Skriv SLET for at bekræfte"/></label>
             <input className="input" id="confirm" name="confirm" autoComplete="off" required />
           </div>
           <div>
-            <label className="label" htmlFor="deletePassword">Din adgangskode</label>
+            <label className="label" htmlFor="deletePassword"><UiText text="Din adgangskode"/></label>
             <input
               className="input"
               id="deletePassword"
@@ -83,11 +77,9 @@ export function DeleteAccount({
             />
           </div>
           {state?.error && (
-            <p className="text-sm font-semibold text-court-dark">{state.error}</p>
+            <p className="text-sm font-semibold text-court-dark">{<UiText text={state.error}/>}</p>
           )}
-          <SubmitButton className="btn-ghost" pendingText="Sletter…">
-            Slet kontoen permanent
-          </SubmitButton>
+          <SubmitButton className="btn-ghost" pendingText="Sletter…"><UiText text="Slet kontoen permanent"/></SubmitButton>
         </form>
       )}
     </details>

@@ -1,3 +1,5 @@
+
+import {UiText} from "../../components/InternationalProvider";
 import {formatMoney,formatDate} from "../../lib/international";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -107,7 +109,7 @@ export default async function ProfilPage({
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
-      {user.clubId && <Link href="/wallet" className="btn-ghost">Min klubwallet</Link>}
+      {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
       {query.betalt && hasConfirmedBooking && (
         <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
           <p className="display text-xl">{t("profile.paidTitle")}</p>
@@ -123,7 +125,7 @@ export default async function ProfilPage({
           <p className="mt-1 text-sm text-slate">
             {t("profile.pendingBody")}
           </p>
-          <p className="mt-2 text-sm text-slate">Er beløbet allerede trukket, så kontakt os, før du betaler igen.</p>
+          <p className="mt-2 text-sm text-slate"><UiText text="Er beløbet allerede trukket, så kontakt os, før du betaler igen."/></p>
         </div>
       )}
 
@@ -136,35 +138,29 @@ export default async function ProfilPage({
         <div className="flex max-w-full flex-wrap items-center gap-3">
           <ChangePasswordForm />
           <form action={logout}>
-            <button className="btn-ghost">Log ud</button>
+            <button className="btn-ghost"><UiText text="Log ud"/></button>
           </form>
         </div>
       </div>
 
       <section className="min-w-0">
-        <h2 className="display mb-3 text-2xl">Dine profiler</h2>
+        <h2 className="display mb-3 text-2xl"><UiText text="Dine profiler"/></h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="card min-w-0">
-            <p className="font-bold">Spillerprofil</p>
-            <p className="mt-1 text-sm text-slate/60">Aktiv — find medspillere og book baner.</p>
+            <p className="font-bold"><UiText text="Spillerprofil"/></p>
+            <p className="mt-1 text-sm text-slate/60"><UiText text="Aktiv — find medspillere og book baner."/></p>
           </div>
           <div className="card min-w-0">
-            <p className="font-bold">Trænerprofil</p>
+            <p className="font-bold"><UiText text="Trænerprofil"/></p>
             {user.coachProfile ? (
               <>
-                <p className="mt-1 text-sm text-slate/60">Aktiv — tilbyd træning og modtag bookinger.</p>
-                <Link href="/profil/traener" className="btn-ghost mt-4 inline-block text-sm">
-                  Administrér trænerprofil
-                </Link>
+                <p className="mt-1 text-sm text-slate/60"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
+                <Link href="/profil/traener" className="btn-ghost mt-4 inline-block text-sm"><UiText text="Administrér trænerprofil"/></Link>
               </>
             ) : (
               <>
-                <p className="mt-1 text-sm text-slate/60">
-                  Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående.
-                </p>
-                <Link href="/profil/traener/opret" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm">
-                  Opret trænerprofil
-                </Link>
+                <p className="mt-1 text-sm text-slate/60"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
+                <Link href="/profil/traener/opret" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm"><UiText text="Opret trænerprofil"/></Link>
               </>
             )}
           </div>
@@ -175,13 +171,13 @@ export default async function ProfilPage({
 
       {toReview.length > 0 && (
         <section className="min-w-0">
-          <h2 className="display mb-3 text-2xl">Hvordan gik det?</h2>
+          <h2 className="display mb-3 text-2xl"><UiText text="Hvordan gik det?"/></h2>
           <ul className="space-y-3">
             {toReview.map((r: any) => (
               <li key={r.bookingId} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{r.what}</p>
                 <p className="text-sm text-slate/60">
-                  {format(r.startsAt, "d. MMMM", { locale: da })}
+                  {formatDate(r.startsAt,prefs.locale,r.timeZone,{day:"numeric",month:"long"})}
                 </p>
                 <ReviewForm bookingId={r.bookingId} what={r.what} />
               </li>
@@ -193,7 +189,7 @@ export default async function ProfilPage({
       {(user.role === "CLUB_ADMIN" || user.role === "SUPERADMIN") && (
         <section className="flex max-w-full flex-wrap gap-3">
           {user.role === "CLUB_ADMIN" && (
-            <Link href="/admin" className="btn-ghost">Klub-administration</Link>
+            <Link href="/admin" className="btn-ghost"><UiText text="Klub-administration"/></Link>
           )}
           {user.role === "SUPERADMIN" && (
             <Link href="/superadmin" className="btn-ghost">Superadmin</Link>
@@ -204,7 +200,7 @@ export default async function ProfilPage({
       <CoachRequests requests={coachRequests as any} credits={requestCredits} />
 
       <section className="min-w-0">
-        <h2 className="display mb-3 text-2xl">Kommende bookinger</h2>
+        <h2 className="display mb-3 text-2xl"><UiText text="Kommende bookinger"/></h2>
         {bookings.length === 0 && (
           <p className="max-w-full break-words text-slate/60">
             {t("profile.noBookings")}{" "}
@@ -234,7 +230,7 @@ export default async function ProfilPage({
                 </p>
                 {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
                   <div className="mt-2 max-w-full break-words rounded-lg bg-court/5 p-2.5 text-sm">
-                    <span className="font-semibold">Adgang: </span>
+                    <span className="font-semibold"><UiText text="Adgang:"/>{" "}</span>
                     {b.court.club.accessCode && (
                       <span className="data">{b.court.club.accessCode}</span>
                     )}
@@ -249,11 +245,11 @@ export default async function ProfilPage({
               </div>
               <div className="flex max-w-full flex-wrap gap-2">
                 {b.status === "HOLD" && (
-                  <a href={`/checkout/${b.id}/start`} className="btn-court text-sm">Betal nu</a>
+                  <a href={`/checkout/${b.id}/start`} className="btn-court text-sm"><UiText text="Betal nu"/></a>
                 )}
                 <form action={cancelBooking}>
                   <input type="hidden" name="id" value={b.id} />
-                  <button className="btn-ghost text-sm">Aflys</button>
+                  <button className="btn-ghost text-sm"><UiText text="Aflys"/></button>
                 </form>
               </div>
             </li>
@@ -262,7 +258,7 @@ export default async function ProfilPage({
       </section>
 
       <section className="min-w-0">
-        <h2 className="display mb-3 text-2xl">Dine makker-opslag</h2>
+        <h2 className="display mb-3 text-2xl"><UiText text="Dine makker-opslag"/></h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
           <p className="max-w-full break-words text-slate/60">
             {t("profile.noPosts")}{" "}
@@ -278,30 +274,26 @@ export default async function ProfilPage({
                   {r.status === "MATCHED" && r.acceptedBy ? (
                     <>
                       {t("profile.matchedWith", { name: r.acceptedBy.name })} —{" "}
-                      <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
-                        skriv til {r.acceptedBy.name.split(" ")[0]}
+                      <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline"><UiText text="skriv til"/>{" "}{r.acceptedBy.name.split(" ")[0]}
                       </Link>
                     </>
                   ) : (
-                    "Åbent — venter på svar"
+                    <UiText text="Åbent — venter på svar"/>
                   )}
                 </p>
               </div>
               <form action={closeMatchRequest}>
                 <input type="hidden" name="id" value={r.id} />
-                <button className="btn-ghost text-sm">Luk opslag</button>
+                <button className="btn-ghost text-sm"><UiText text="Luk opslag"/></button>
               </form>
             </li>
           ))}
           {myMatches.map((r) => (
             <li key={r.id} className="card min-w-0 max-w-full">
-              <p className="break-words">Du slog til på: “{r.message}”</p>
+              <p className="break-words"><UiText text="Du slog til på: “"/>{r.message}”</p>
               <p className="break-words text-sm text-slate/60">
-                <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline">
-                  Skriv til {r.requester.name.split(" ")[0]}
-                </Link>{" "}
-                og aftal kampen.
-              </p>
+                <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline"><UiText text="Skriv til"/>{" "}{r.requester.name.split(" ")[0]}
+                </Link>{" "}<UiText text="og aftal kampen."/></p>
             </li>
           ))}
         </ul>
@@ -310,17 +302,16 @@ export default async function ProfilPage({
       {user.coachProfile && (
         <section className="min-w-0">
           <div className="mb-3 flex max-w-full flex-wrap items-center justify-between gap-2">
-            <h2 className="display text-2xl">Din trænerkalender</h2>
-            <Link href="/profil/traener" className="btn-ghost text-sm">Redigér trænerprofil</Link>
+            <h2 className="display text-2xl"><UiText text="Din trænerkalender"/></h2>
+            <Link href="/profil/traener" className="btn-ghost text-sm"><UiText text="Redigér trænerprofil"/></Link>
           </div>
-          {coachBookings.length === 0 && <p className="text-slate/60">Ingen bookede elever endnu.</p>}
+          {coachBookings.length === 0 && <p className="text-slate/60"><UiText text="Ingen bookede elever endnu."/></p>}
           <ul className="space-y-3">
             {coachBookings.map((b) => (
               <li key={b.id} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{b.user.name}</p>
                 <p className="break-words text-sm capitalize text-slate/60">
-                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} (din andel udbetales automatisk)
-                </p>
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{" "}<UiText text="(din andel udbetales automatisk)"/></p>
               </li>
             ))}
           </ul>
@@ -337,10 +328,8 @@ export default async function ProfilPage({
       />
 
       <p className="max-w-full break-words text-sm">
-        <a href="/profil/kvitteringer" className="font-semibold text-court underline">
-          Se dine kvitteringer
-        </a>
-        <span className="text-slate"> — alt du har betalt, til dit eget regnskab.</span>
+        <a href="/profil/kvitteringer" className="font-semibold text-court underline"><UiText text="Se dine kvitteringer"/></a>
+        <span className="text-slate">{" "}<UiText text="— alt du har betalt, til dit eget regnskab."/></span>
       </p>
 
       <DeleteAccount blockers={deletion.blockers} canDelete={deletion.canDelete} />

@@ -1,3 +1,5 @@
+
+import {UiText} from "./InternationalProvider";
 // Anmodninger, træneren skal svare på.
 //
 // Ligger på trænerens egen profilside, fordi det er den side, de alligevel
@@ -6,8 +8,10 @@
 //
 // Der er ingen "senere"-knap. Et ja eller et nej er begge et svar; en
 // anmodning, der bare ligger, spærrer tiden for alle andre.
-import { format } from "date-fns";
-import { da } from "date-fns/locale";
+import {getPreferences} from "../lib/preferences";
+import {formatDate,formatMoney,marketFor} from "../lib/international";
+import {phrase} from "../lib/phrases";
+
 import { approveCoachBooking, declineCoachBooking } from "../lib/actions";
 import { SubmitButton } from "./SubmitButton";
 import { describeLength } from "../lib/slots";
@@ -17,29 +21,29 @@ type Request = {
   startsAt: Date;
   endsAt: Date;
   priceKr: number;
+  currency: string;
+  timeZone: string;
   user: { name: string; level: number; area: string | null };
 };
 
-export function CoachRequests({
+export async function CoachRequests({
   requests,
   credits,
 }: {
   requests: Request[];
   credits: Map<string, number>;
 }) {
+  const {locale}=await getPreferences();
   if (requests.length === 0) return null;
 
   return (
     <section className="card border-2 border-court/30">
       <h2 className="display text-2xl">
         {requests.length === 1
-          ? "1 anmodning venter på dig"
-          : `${requests.length} anmodninger venter på dig`}
+          ? <UiText text="1 anmodning venter på dig"/>
+          : phrase("{count} anmodninger venter på dig",locale,{count:requests.length})}
       </h2>
-      <p className="mt-1 text-sm text-slate">
-        Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu —
-        siger du nej, sker der ingenting.
-      </p>
+      <p className="mt-1 text-sm text-slate"><UiText text="Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu — siger du nej, sker der ingenting."/></p>
 
       <ul className="mt-4 space-y-3">
         {requests.map((r) => {
@@ -49,32 +53,28 @@ export function CoachRequests({
           return (
             <li key={r.id} className="rounded-xl border border-slate/15 p-4">
               <p className="font-bold">
-                {format(r.startsAt, "EEEE d. MMMM 'kl.' HH:mm", { locale: da })}
+                {formatDate(r.startsAt,locale,r.timeZone,{dateStyle:"long",timeStyle:"short"})}
               </p>
               <p className="mt-0.5 text-sm text-slate">
-                {r.user.name} · niveau {r.user.level}
-                {r.user.area ? ` · ${r.user.area}` : ""} · {describeLength(minutes)}
+                {r.user.name}{" "}<UiText text="· niveau"/>{" "}{r.user.level}
+                {r.user.area ? ` · ${r.user.area}` : ""} · {describeLength(minutes,locale)}
               </p>
               <p className="mt-1 text-sm">
                 {credit > 0 ? (
-                  <span className="font-semibold text-court">
-                    Betales med klip fra pakkeforløb ({credit} tilbage)
-                  </span>
+                  <span className="font-semibold text-court"><UiText text="Betales med klip fra pakkeforløb ("/>{credit}{" "}<UiText text="tilbage)"/></span>
                 ) : (
-                  <span className="font-semibold">{r.priceKr} kr</span>
+                  <span className="font-semibold">{formatMoney(r.priceKr,r.currency,locale)}</span>
                 )}
               </p>
 
               <div className="mt-3 flex flex-wrap gap-3">
                 <form action={approveCoachBooking}>
                   <input type="hidden" name="bookingId" value={r.id} />
-                  <SubmitButton pendingText="Godkender…">Godkend</SubmitButton>
+                  <SubmitButton pendingText="Godkender…"><UiText text="Godkend"/></SubmitButton>
                 </form>
                 <form action={declineCoachBooking}>
                   <input type="hidden" name="bookingId" value={r.id} />
-                  <SubmitButton className="btn-ghost" pendingText="Afviser…">
-                    Kan ikke
-                  </SubmitButton>
+                  <SubmitButton className="btn-ghost" pendingText="Afviser…"><UiText text="Kan ikke"/></SubmitButton>
                 </form>
               </div>
             </li>

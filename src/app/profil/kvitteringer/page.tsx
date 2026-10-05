@@ -1,3 +1,5 @@
+
+import {UiText} from "../../../components/InternationalProvider";
 import {formatMoney,formatDate} from "../../../lib/international";
 import {getPreferences} from "../../../lib/preferences";
 // Kvitteringer.
@@ -23,26 +25,23 @@ export default async function KvitteringerPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="display text-3xl">Kvitteringer</h1>
-        <p className="text-slate">
-          Alt du har betalt gennem RacketBuddy. Gem siden som PDF med
-          udskriv, hvis du skal bruge den til dit regnskab.
-        </p>
+        <h1 className="display text-3xl"><UiText text="Kvitteringer"/></h1>
+        <p className="text-slate"><UiText text="Alt du har betalt gennem RacketBuddy. Gem siden som PDF med udskriv, hvis du skal bruge den til dit regnskab."/></p>
       </div>
 
       {receipts.length === 0 ? (
-        <p className="card text-slate">Du har ikke betalt for noget endnu.</p>
+        <p className="card text-slate"><UiText text="Du har ikke betalt for noget endnu."/></p>
       ) : (
         <>
           <div className="-mx-2 overflow-x-auto px-2">
             <table className="w-full min-w-[36rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-slate/15 text-left">
-                  <th className="py-2 pr-3 font-bold">Dato</th>
-                  <th className="py-2 pr-3 font-bold">Type</th>
-                  <th className="py-2 pr-3 font-bold">Hvad</th>
-                  <th className="py-2 pr-3 font-bold">Hos</th>
-                  <th className="py-2 text-right font-bold">Beløb</th>
+                  <th className="py-2 pr-3 font-bold"><UiText text="Dato"/></th>
+                  <th className="py-2 pr-3 font-bold"><UiText text="Type"/></th>
+                  <th className="py-2 pr-3 font-bold"><UiText text="Hvad"/></th>
+                  <th className="py-2 pr-3 font-bold"><UiText text="Hos"/></th>
+                  <th className="py-2 text-right font-bold"><UiText text="Beløb"/></th>
                 </tr>
               </thead>
               <tbody>
@@ -62,9 +61,7 @@ export default async function KvitteringerPage() {
               </tbody>
               <tfoot>
                 <tr>
-                  <td className="py-3 font-bold" colSpan={4}>
-                    I alt
-                  </td>
+                  <td className="py-3 font-bold" colSpan={4}><UiText text="I alt"/></td>
                   <td className="py-3 text-right font-data font-bold tabular-nums">
                     {Array.from(totals,([currency,total])=><p key={currency}>{formatMoney(total,currency,prefs.locale)}</p>)}
                   </td>
@@ -73,17 +70,11 @@ export default async function KvitteringerPage() {
             </table>
           </div>
 
-          <p className="text-sm text-slate">
-            Beløbene er dem, du har betalt. Betaler du med klip fra et
-            klippekort, står timen ikke her — den blev betalt, da kortet blev
-            købt.
-          </p>
+          <p className="text-sm text-slate"><UiText text="Beløbene er dem, du har betalt. Betaler du med klip fra et klippekort, står timen ikke her — den blev betalt, da kortet blev købt."/></p>
         </>
       )}
 
-      <Link href="/profil" className="btn-ghost inline-block">
-        Tilbage til profilen
-      </Link>
+      <Link href="/profil" className="btn-ghost inline-block"><UiText text="Tilbage til profilen"/></Link>
     </div>
   );
 }

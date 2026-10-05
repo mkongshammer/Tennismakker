@@ -1,3 +1,5 @@
+
+import {UiText} from "./InternationalProvider";
 import { dayKey, wallTime, addCalendarDays, formatMoney, formatDate } from "../lib/international";
 import { phrase } from "../lib/phrases";
 // Klubbens side.
@@ -216,10 +218,10 @@ export async function ClubPage({
       {(searchParams.optaget || searchParams.fejl) &&
       <p className="rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
           {searchParams.fejl === "betaling" ?
-        "Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked." :
+        <UiText text="Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked."/> :
         searchParams.fejl === "passeret" ?
-        "Det tidspunkt er passeret. Vælg en anden tid." :
-        "Den tid var lige taget. Her er resten af dagen — vælg en anden."}
+        <UiText text="Det tidspunkt er passeret. Vælg en anden tid."/> :
+        <UiText text="Den tid var lige taget. Her er resten af dagen — vælg en anden."/>}
         </p>
       }
 
@@ -261,7 +263,7 @@ export async function ClubPage({
         <p className="mb-4 text-sm text-slate">
           {club.memberPriceHour != null && !isMember ?
           `${tr("Gæstepris")} ${money(club.priceHour)}. ${tr("Medlemspris")} ${money(club.memberPriceHour)}.` :
-          "Tiden holdes i 10 minutter, mens du betaler."}
+          <UiText text="Tiden holdes i 10 minutter, mens du betaler."/>}
         </p>
 
         <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
@@ -446,7 +448,7 @@ export async function ClubPage({
           <p className="mt-2 max-w-xl text-chalk/80">
             {club.memberPriceHour != null ?
           `${tr("Medlemspris")} ${money(club.memberPriceHour)} / ${tr("time")}. ${tr("Gæstepris")} ${money(club.priceHour)}.` :
-          "Medlemmer har adgang til klubbens aktiviteter og hold."}{" "}{tr("Har du f\xE5et en kode af klubben, kan du tilmelde dig her.")}
+          <UiText text="Medlemmer har adgang til klubbens aktiviteter og hold."/>}{" "}{tr("Har du f\xE5et en kode af klubben, kan du tilmelde dig her.")}
 
         </p>
           {memberships.length > 0 &&

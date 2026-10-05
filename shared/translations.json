@@ -5,14 +5,18 @@
     "de": "Platz buchen",
     "sv": "Boka bana",
     "no": "Book bane",
-    "en-US": "Reserve a court"
+    "en-US": "Reserve a court",
+    "fr": "Réserver un terrain",
+    "es": "Reservar pista"
   },
   "nav.coaches": {
     "da": "Find træner",
     "en": "Find coach",
     "de": "Trainer finden",
     "sv": "Hitta tränare",
-    "no": "Finn trener"
+    "no": "Finn trener",
+    "fr": "Trouver un entraîneur",
+    "es": "Encontrar entrenador"
   },
   "nav.players": {
     "da": "Find medspiller",
@@ -20,21 +24,27 @@
     "de": "Mitspieler finden",
     "sv": "Hitta medspelare",
     "no": "Finn medspiller",
-    "en-US": "Find a hitting partner"
+    "en-US": "Find a hitting partner",
+    "fr": "Trouver un partenaire",
+    "es": "Encontrar compañero"
   },
   "nav.profile": {
     "da": "Min profil",
     "en": "My profile",
     "de": "Mein Profil",
     "sv": "Min profil",
-    "no": "Min profil"
+    "no": "Min profil",
+    "fr": "Mon profil",
+    "es": "Mi perfil"
   },
   "nav.messages": {
     "da": "Beskeder",
     "en": "Messages",
     "de": "Nachrichten",
     "sv": "Meddelanden",
-    "no": "Meldinger"
+    "no": "Meldinger",
+    "fr": "Messages",
+    "es": "Mensajes"
   },
   "tab.book": {
     "da": "Book bane",
@@ -42,91 +52,117 @@
     "de": "Buchen",
     "sv": "Boka",
     "no": "Book",
-    "en-US": "Reserve"
+    "en-US": "Reserve",
+    "fr": "Réserver",
+    "es": "Reservar"
   },
   "tab.coaches": {
     "da": "Trænere",
     "en": "Coaches",
     "de": "Trainer",
     "sv": "Tränare",
-    "no": "Trenere"
+    "no": "Trenere",
+    "fr": "Entraîneurs",
+    "es": "Entrenadores"
   },
   "tab.players": {
     "da": "Medspillere",
     "en": "Players",
     "de": "Spieler",
     "sv": "Medspelare",
-    "no": "Medspillere"
+    "no": "Medspillere",
+    "fr": "Joueurs",
+    "es": "Jugadores"
   },
   "tab.messages": {
     "da": "Beskeder",
     "en": "Messages",
     "de": "Nachrichten",
     "sv": "Meddelanden",
-    "no": "Meldinger"
+    "no": "Meldinger",
+    "fr": "Messages",
+    "es": "Mensajes"
   },
   "nav.admin": {
     "da": "Klub-admin",
     "en": "Club admin",
     "de": "Club-Admin",
     "sv": "Klubbadmin",
-    "no": "Klubbadmin"
+    "no": "Klubbadmin",
+    "fr": "Administration du club",
+    "es": "Administración del club"
   },
   "nav.login": {
     "da": "Log ind",
     "en": "Log in",
     "de": "Anmelden",
     "sv": "Logga in",
-    "no": "Logg inn"
+    "no": "Logg inn",
+    "fr": "Se connecter",
+    "es": "Iniciar sesión"
   },
   "nav.signup": {
     "da": "Opret profil",
     "en": "Sign up",
     "de": "Registrieren",
     "sv": "Skapa konto",
-    "no": "Opprett profil"
+    "no": "Opprett profil",
+    "fr": "S’inscrire",
+    "es": "Registrarse"
   },
   "nav.logout": {
     "da": "Log ud",
     "en": "Log out",
     "de": "Abmelden",
     "sv": "Logga ut",
-    "no": "Logg ut"
+    "no": "Logg ut",
+    "fr": "Se déconnecter",
+    "es": "Cerrar sesión"
   },
   "nav.menuOpen": {
     "da": "Åbn menu",
     "en": "Open menu",
     "de": "Menü öffnen",
     "sv": "Öppna meny",
-    "no": "Åpne meny"
+    "no": "Åpne meny",
+    "fr": "Ouvrir le menu",
+    "es": "Abrir menú"
   },
   "nav.menuClose": {
     "da": "Luk menu",
     "en": "Close menu",
     "de": "Menü schließen",
     "sv": "Stäng meny",
-    "no": "Lukk meny"
+    "no": "Lukk meny",
+    "fr": "Fermer le menu",
+    "es": "Cerrar menú"
   },
   "common.perHour": {
     "da": "pr. time",
     "en": "per hour",
     "de": "pro Stunde",
     "sv": "per timme",
-    "no": "per time"
+    "no": "per time",
+    "fr": "par heure",
+    "es": "por hora"
   },
   "common.from": {
     "da": "fra",
     "en": "from",
     "de": "ab",
     "sv": "från",
-    "no": "fra"
+    "no": "fra",
+    "fr": "à partir de",
+    "es": "desde"
   },
   "common.courts": {
     "da": "baner",
     "en": "courts",
     "de": "Plätze",
     "sv": "banor",
-    "no": "baner"
+    "no": "baner",
+    "fr": "terrains",
+    "es": "pistas"
   },
   "common.book": {
     "da": "Book",
@@ -134,98 +170,126 @@
     "de": "Buchen",
     "sv": "Boka",
     "no": "Book",
-    "en-US": "Reserve"
+    "en-US": "Reserve",
+    "fr": "Réserver",
+    "es": "Reservar"
   },
   "common.save": {
     "da": "Gem",
     "en": "Save",
     "de": "Speichern",
     "sv": "Spara",
-    "no": "Lagre"
+    "no": "Lagre",
+    "fr": "Enregistrer",
+    "es": "Guardar"
   },
   "common.cancel": {
     "da": "Annullér",
     "en": "Cancel",
     "de": "Abbrechen",
     "sv": "Avbryt",
-    "no": "Avbryt"
+    "no": "Avbryt",
+    "fr": "Annuler",
+    "es": "Cancelar"
   },
   "common.loading": {
     "da": "Henter…",
     "en": "Loading…",
     "de": "Wird geladen…",
     "sv": "Hämtar…",
-    "no": "Henter…"
+    "no": "Henter…",
+    "fr": "Chargement…",
+    "es": "Cargando…"
   },
   "common.back": {
     "da": "Tilbage",
     "en": "Back",
     "de": "Zurück",
     "sv": "Tillbaka",
-    "no": "Tilbake"
+    "no": "Tilbake",
+    "fr": "Retour",
+    "es": "Volver"
   },
   "common.all": {
     "da": "Alle",
     "en": "All",
     "de": "Alle",
     "sv": "Alla",
-    "no": "Alle"
+    "no": "Alle",
+    "fr": "Tous",
+    "es": "Todos"
   },
   "common.sport": {
     "da": "Sportsgren",
     "en": "Sport",
     "de": "Sportart",
     "sv": "Sport",
-    "no": "Sport"
+    "no": "Sport",
+    "fr": "Sport",
+    "es": "Deporte"
   },
   "common.country": {
     "da": "Land",
     "en": "Country",
     "de": "Land",
     "sv": "Land",
-    "no": "Land"
+    "no": "Land",
+    "fr": "Pays",
+    "es": "País"
   },
   "common.language": {
     "da": "Sprog",
     "en": "Language",
     "de": "Sprache",
     "sv": "Språk",
-    "no": "Språk"
+    "no": "Språk",
+    "fr": "Langue",
+    "es": "Idioma"
   },
   "common.area": {
     "da": "Område",
     "en": "Area",
     "de": "Gebiet",
     "sv": "Område",
-    "no": "Område"
+    "no": "Område",
+    "fr": "Secteur",
+    "es": "Zona"
   },
   "common.level": {
     "da": "Niveau",
     "en": "Level",
     "de": "Niveau",
     "sv": "Nivå",
-    "no": "Nivå"
+    "no": "Nivå",
+    "fr": "Niveau",
+    "es": "Nivel"
   },
   "common.price": {
     "da": "Pris",
     "en": "Price",
     "de": "Preis",
     "sv": "Pris",
-    "no": "Pris"
+    "no": "Pris",
+    "fr": "Prix",
+    "es": "Precio"
   },
   "availability.now": {
     "da": "Klubber i Europa og Nordamerika",
     "en": "Clubs in Europe and North America",
     "de": "Clubs in Europa und Nordamerika",
     "sv": "Klubbar i Europa och Nordamerika",
-    "no": "Klubber i Europa og Nord-Amerika"
+    "no": "Klubber i Europa og Nord-Amerika",
+    "fr": "Clubs en Europe et en Amérique du Nord",
+    "es": "Clubes de Europa y Norteamérica"
   },
   "availability.soon": {
     "da": "Spil på tværs af Europa og Nordamerika",
     "en": "Play across Europe and North America",
     "de": "Spiele in Europa und Nordamerika",
     "sv": "Spela i Europa och Nordamerika",
-    "no": "Spill i Europa og Nord-Amerika"
+    "no": "Spill i Europa og Nord-Amerika",
+    "fr": "Jouez en Europe et en Amérique du Nord",
+    "es": "Juega en Europa y Norteamérica"
   },
   "book.title": {
     "da": "Book bane",
@@ -233,7 +297,9 @@
     "de": "Platz buchen",
     "sv": "Boka bana",
     "no": "Book bane",
-    "en-US": "Reserve a court"
+    "en-US": "Reserve a court",
+    "fr": "Réserver un terrain",
+    "es": "Reservar una pista"
   },
   "book.intro": {
     "da": "Find en ledig bane i en klub nær dig.",
@@ -241,98 +307,126 @@
     "de": "Finde einen freien Platz in einem Club in deiner Nähe.",
     "sv": "Hitta en ledig bana i en klubb nära dig.",
     "no": "Finn en ledig bane i en klubb nær deg.",
-    "en-US": "Find an open court at a club near you."
+    "en-US": "Find an open court at a club near you.",
+    "fr": "Trouvez un terrain disponible près de chez vous.",
+    "es": "Encuentra una pista disponible en un club cercano."
   },
   "book.noClubs": {
     "da": "Ingen klubber i dit land med den sportsgren endnu.",
     "en": "No clubs in your country for that sport yet.",
     "de": "Noch keine Clubs für diese Sportart in deinem Land.",
     "sv": "Inga klubbar i ditt land med den sporten än.",
-    "no": "Ingen klubber i landet ditt med den sporten ennå."
+    "no": "Ingen klubber i landet ditt med den sporten ennå.",
+    "fr": "Aucun club dans votre pays pour ce sport pour le moment.",
+    "es": "Todavía no hay clubes de este deporte en tu país."
   },
   "book.available": {
     "da": "Ledige tider",
     "en": "Available times",
     "de": "Freie Zeiten",
     "sv": "Lediga tider",
-    "no": "Ledige tider"
+    "no": "Ledige tider",
+    "fr": "Créneaux disponibles",
+    "es": "Horarios disponibles"
   },
   "book.noneToday": {
     "da": "Ingen ledige tider denne dag. Prøv en anden dag ovenfor.",
     "en": "No available times this day. Try another day above.",
     "de": "An diesem Tag ist nichts frei. Probiere oben einen anderen Tag.",
     "sv": "Inga lediga tider den här dagen. Prova en annan dag ovan.",
-    "no": "Ingen ledige tider denne dagen. Prøv en annen dag ovenfor."
+    "no": "Ingen ledige tider denne dagen. Prøv en annen dag ovenfor.",
+    "fr": "Aucun créneau ce jour-là. Choisissez un autre jour ci-dessus.",
+    "es": "No hay horarios disponibles ese día. Elige otro día arriba."
   },
   "book.holdNote": {
     "da": "Tiden holdes i 10 minutter, mens du betaler.",
     "en": "The slot is held for 10 minutes while you pay.",
     "de": "Die Zeit wird 10 Minuten reserviert, während du bezahlst.",
     "sv": "Tiden hålls i 10 minuter medan du betalar.",
-    "no": "Tiden holdes i 10 minutter mens du betaler."
+    "no": "Tiden holdes i 10 minutter mens du betaler.",
+    "fr": "Le créneau est bloqué 10 minutes pendant votre paiement.",
+    "es": "El horario se reserva durante 10 minutos mientras pagas."
   },
   "coach.title": {
     "da": "Find træner",
     "en": "Find a coach",
     "de": "Trainer finden",
     "sv": "Hitta tränare",
-    "no": "Finn trener"
+    "no": "Finn trener",
+    "fr": "Trouver un entraîneur",
+    "es": "Encontrar un entrenador"
   },
   "coach.intro": {
     "da": "Book en enkelt time eller et helt forløb.",
     "en": "Book a single session or a full package.",
     "de": "Buche eine einzelne Stunde oder ein ganzes Paket.",
     "sv": "Boka en enstaka timme eller ett helt paket.",
-    "no": "Book en enkelttime eller et helt forløp."
+    "no": "Book en enkelttime eller et helt forløp.",
+    "fr": "Réservez une séance ou un forfait complet.",
+    "es": "Reserva una sesión o un paquete completo."
   },
   "coach.none": {
     "da": "Ingen trænere fundet.",
     "en": "No coaches found.",
     "de": "Keine Trainer gefunden.",
     "sv": "Inga tränare hittades.",
-    "no": "Ingen trenere funnet."
+    "no": "Ingen trenere funnet.",
+    "fr": "Aucun entraîneur trouvé.",
+    "es": "No se han encontrado entrenadores."
   },
   "coach.singleSession": {
     "da": "Enkelt time",
     "en": "Single session",
     "de": "Einzelstunde",
     "sv": "Enstaka timme",
-    "no": "Enkelttime"
+    "no": "Enkelttime",
+    "fr": "Séance individuelle",
+    "es": "Sesión individual"
   },
   "coach.packages": {
     "da": "Pakker",
     "en": "Packages",
     "de": "Pakete",
     "sv": "Paket",
-    "no": "Pakker"
+    "no": "Pakker",
+    "fr": "Forfaits",
+    "es": "Paquetes"
   },
   "coach.sessions": {
     "da": "timer",
     "en": "sessions",
     "de": "Stunden",
     "sv": "timmar",
-    "no": "timer"
+    "no": "timer",
+    "fr": "séances",
+    "es": "sesiones"
   },
   "coach.perSession": {
     "da": "pr. time",
     "en": "per session",
     "de": "pro Stunde",
     "sv": "per timme",
-    "no": "per time"
+    "no": "per time",
+    "fr": "par séance",
+    "es": "por sesión"
   },
   "coach.availableTimes": {
     "da": "Ledige tider",
     "en": "Available times",
     "de": "Freie Zeiten",
     "sv": "Lediga tider",
-    "no": "Ledige tider"
+    "no": "Ledige tider",
+    "fr": "Créneaux disponibles",
+    "es": "Horarios disponibles"
   },
   "coach.editProfile": {
     "da": "Redigér trænerprofil",
     "en": "Edit coach profile",
     "de": "Trainerprofil bearbeiten",
     "sv": "Redigera tränarprofil",
-    "no": "Rediger trenerprofil"
+    "no": "Rediger trenerprofil",
+    "fr": "Modifier le profil entraîneur",
+    "es": "Editar perfil de entrenador"
   },
   "players.title": {
     "da": "Find medspiller",
@@ -340,336 +434,432 @@
     "de": "Mitspieler finden",
     "sv": "Hitta medspelare",
     "no": "Finn medspiller",
-    "en-US": "Find a hitting partner"
+    "en-US": "Find a hitting partner",
+    "fr": "Trouver un partenaire de jeu",
+    "es": "Encontrar un compañero de juego"
   },
   "players.intro": {
     "da": "Se spillere på dit niveau i dit område, én ad gangen.",
     "en": "See players at your level nearby, one at a time.",
     "de": "Sieh dir Spieler auf deinem Niveau in deiner Nähe an, einen nach dem anderen.",
     "sv": "Se spelare på din nivå i ditt område, en i taget.",
-    "no": "Se spillere på ditt nivå i ditt område, én om gangen."
+    "no": "Se spillere på ditt nivå i ditt område, én om gangen.",
+    "fr": "Découvrez les joueurs de votre niveau à proximité, un par un.",
+    "es": "Descubre jugadores de tu nivel cerca de ti, uno a uno."
   },
   "players.skip": {
     "da": "Spring over",
     "en": "Skip",
     "de": "Überspringen",
     "sv": "Hoppa över",
-    "no": "Hopp over"
+    "no": "Hopp over",
+    "fr": "Passer",
+    "es": "Pasar"
   },
   "players.interested": {
     "da": "Vil spille",
     "en": "Want to play",
     "de": "Will spielen",
     "sv": "Vill spela",
-    "no": "Vil spille"
+    "no": "Vil spille",
+    "fr": "Envie de jouer",
+    "es": "Quiero jugar"
   },
   "players.matchNote": {
     "da": "Siger I begge ja, åbner der en samtale. Den anden får ikke besked, hvis du springer over.",
     "en": "If you both say yes, a conversation opens. They are not told if you skip.",
     "de": "Sagt ihr beide ja, öffnet sich ein Gespräch. Überspringst du, erfährt die andere Person nichts.",
     "sv": "Säger ni båda ja öppnas en konversation. Den andra får inte veta om du hoppar över.",
-    "no": "Sier dere begge ja, åpnes en samtale. Den andre får ikke beskjed hvis du hopper over."
+    "no": "Sier dere begge ja, åpnes en samtale. Den andre får ikke beskjed hvis du hopper over.",
+    "fr": "Si vous acceptez tous les deux, une conversation s’ouvre. L’autre personne n’est pas informée si vous passez.",
+    "es": "Si ambos aceptáis, se abre una conversación. Si pasas, la otra persona no recibe aviso."
   },
   "players.empty": {
     "da": "Ikke flere lige nu. Kig forbi igen om et par dage.",
     "en": "No more right now. Check back in a couple of days.",
     "de": "Gerade niemand mehr. Schau in ein paar Tagen wieder vorbei.",
     "sv": "Inga fler just nu. Kom tillbaka om ett par dagar.",
-    "no": "Ikke flere akkurat nå. Stikk innom igjen om et par dager."
+    "no": "Ikke flere akkurat nå. Stikk innom igjen om et par dager.",
+    "fr": "Plus personne pour le moment. Revenez dans quelques jours.",
+    "es": "No hay más por ahora. Vuelve en unos días."
   },
   "profile.title": {
     "da": "Min profil",
     "en": "My profile",
     "de": "Mein Profil",
     "sv": "Min profil",
-    "no": "Min profil"
+    "no": "Min profil",
+    "fr": "Mon profil",
+    "es": "Mi perfil"
   },
   "profile.bookings": {
     "da": "Kommende bookinger",
     "en": "Upcoming bookings",
     "de": "Kommende Buchungen",
     "sv": "Kommande bokningar",
-    "no": "Kommende bookinger"
+    "no": "Kommende bookinger",
+    "fr": "Prochaines réservations",
+    "es": "Próximas reservas"
   },
   "profile.settings": {
     "da": "Indstillinger",
     "en": "Settings",
     "de": "Einstellungen",
     "sv": "Inställningar",
-    "no": "Innstillinger"
+    "no": "Innstillinger",
+    "fr": "Paramètres",
+    "es": "Ajustes"
   },
   "profile.mySports": {
     "da": "Mine sportsgrene",
     "en": "My sports",
     "de": "Meine Sportarten",
     "sv": "Mina sporter",
-    "no": "Mine sporter"
+    "no": "Mine sporter",
+    "fr": "Mes sports",
+    "es": "Mis deportes"
   },
   "country.title": {
     "da": "Hvor spiller du?",
     "en": "Where do you play?",
     "de": "Wo spielst du?",
     "sv": "Var spelar du?",
-    "no": "Hvor spiller du?"
+    "no": "Hvor spiller du?",
+    "fr": "Où jouez-vous ?",
+    "es": "¿Dónde juegas?"
   },
   "country.intro": {
     "da": "Så viser vi klubber, priser og sprog for dit land. Du kan skifte det nederst på siden.",
     "en": "We will show clubs, prices and language for that country. You can change it at the bottom of the page.",
     "de": "Dann zeigen wir Clubs, Preise und Sprache für dein Land. Ganz unten auf der Seite kannst du es ändern.",
     "sv": "Då visar vi klubbar, priser och språk för ditt land. Du kan ändra det längst ned på sidan.",
-    "no": "Da viser vi klubber, priser og språk for landet ditt. Du kan endre det nederst på siden."
+    "no": "Da viser vi klubber, priser og språk for landet ditt. Du kan endre det nederst på siden.",
+    "fr": "Nous afficherons les clubs, tarifs et langue de ce pays. Vous pouvez modifier ce choix en bas de page.",
+    "es": "Mostraremos clubes, precios e idioma de ese país. Puedes cambiarlo al pie de la página."
   },
   "country.skip": {
     "da": "Ikke nu",
     "en": "Not now",
     "de": "Nicht jetzt",
     "sv": "Inte nu",
-    "no": "Ikke nå"
+    "no": "Ikke nå",
+    "fr": "Pas maintenant",
+    "es": "Ahora no"
   },
   "home.slotOne": {
     "da": "ledig banetime nær dig",
     "en": "free court hour near you",
     "de": "freie Platzstunde in deiner Nähe",
     "sv": "ledig bantimme nära dig",
-    "no": "ledig banetime nær deg"
+    "no": "ledig banetime nær deg",
+    "fr": "heure de terrain disponible près de vous",
+    "es": "hora de pista disponible cerca de ti"
   },
   "home.slotMany": {
     "da": "ledige banetimer nær dig",
     "en": "free court hours near you",
     "de": "freie Platzstunden in deiner Nähe",
     "sv": "lediga bantimmar nära dig",
-    "no": "ledige banetimer nær deg"
+    "no": "ledige banetimer nær deg",
+    "fr": "heures de terrain disponibles près de vous",
+    "es": "horas de pista disponibles cerca de ti"
   },
   "home.lede": {
     "da": "Book uden medlemskab. Find en træner, når du vil blive bedre. Find en medspiller, når du mangler en at spille imod.",
     "en": "Book without a membership. Find a coach when you want to improve. Find a co-player when you need someone to play against.",
     "de": "Buchen ohne Mitgliedschaft. Finde einen Trainer, wenn du besser werden willst. Finde einen Mitspieler, wenn dir jemand zum Spielen fehlt.",
     "sv": "Boka utan medlemskap. Hitta en tränare när du vill bli bättre. Hitta en medspelare när du saknar någon att spela mot.",
-    "no": "Book uten medlemskap. Finn en trener når du vil bli bedre. Finn en medspiller når du mangler noen å spille mot."
+    "no": "Book uten medlemskap. Finn en trener når du vil bli bedre. Finn en medspiller når du mangler noen å spille mot.",
+    "fr": "Réservez sans adhésion. Trouvez un entraîneur pour progresser et un partenaire pour jouer.",
+    "es": "Reserva sin ser socio. Encuentra un entrenador para mejorar y un compañero para jugar."
   },
   "home.cardBook": {
     "da": "Se ledige tider i klubber nær dig, og betal online. Du behøver ikke være medlem.",
     "en": "See available times at clubs near you and pay online. No membership needed.",
     "de": "Sieh freie Zeiten in Clubs in deiner Nähe und zahle online. Eine Mitgliedschaft brauchst du nicht.",
     "sv": "Se lediga tider i klubbar nära dig och betala online. Du behöver inte vara medlem.",
-    "no": "Se ledige tider i klubber nær deg, og betal på nett. Du trenger ikke være medlem."
+    "no": "Se ledige tider i klubber nær deg, og betal på nett. Du trenger ikke være medlem.",
+    "fr": "Consultez les créneaux près de chez vous et payez en ligne. Aucune adhésion nécessaire.",
+    "es": "Consulta horarios en clubes cercanos y paga en línea. No necesitas ser socio."
   },
   "home.cardCoaches": {
     "da": "Enkelttimer eller hele forløb. Priser og ledige tider står på profilen.",
     "en": "Single sessions or full packages. Prices and available times are on the profile.",
     "de": "Einzelstunden oder ganze Pakete. Preise und freie Zeiten stehen im Profil.",
     "sv": "Enstaka timmar eller hela paket. Priser och lediga tider står på profilen.",
-    "no": "Enkelttimer eller hele forløp. Priser og ledige tider står på profilen."
+    "no": "Enkelttimer eller hele forløp. Priser og ledige tider står på profilen.",
+    "fr": "Séances individuelles ou forfaits. Tarifs et disponibilités sur le profil.",
+    "es": "Sesiones individuales o paquetes. Precios y horarios en el perfil."
   },
   "home.cardPlayers": {
     "da": "Se spillere på dit niveau. Siger I begge ja, åbner der en samtale.",
     "en": "See players at your level. If you both say yes, a conversation opens.",
     "de": "Sieh Spieler auf deinem Niveau. Sagt ihr beide ja, öffnet sich ein Gespräch.",
     "sv": "Se spelare på din nivå. Säger ni båda ja öppnas en konversation.",
-    "no": "Se spillere på ditt nivå. Sier dere begge ja, åpnes en samtale."
+    "no": "Se spillere på ditt nivå. Sier dere begge ja, åpnes en samtale.",
+    "fr": "Découvrez des joueurs de votre niveau. Si vous acceptez tous les deux, une conversation s’ouvre.",
+    "es": "Descubre jugadores de tu nivel. Si ambos aceptáis, se abre una conversación."
   },
   "unit.club": {
     "da": "klub",
     "en": "club",
     "de": "Club",
     "sv": "klubb",
-    "no": "klubb"
+    "no": "klubb",
+    "fr": "club",
+    "es": "club"
   },
   "unit.clubs": {
     "da": "klubber",
     "en": "clubs",
     "de": "Clubs",
     "sv": "klubbar",
-    "no": "klubber"
+    "no": "klubber",
+    "fr": "clubs",
+    "es": "clubes"
   },
   "unit.coach": {
     "da": "træner",
     "en": "coach",
     "de": "Trainer",
     "sv": "tränare",
-    "no": "trener"
+    "no": "trener",
+    "fr": "entraîneur",
+    "es": "entrenador"
   },
   "unit.coaches": {
     "da": "trænere",
     "en": "coaches",
     "de": "Trainer",
     "sv": "tränare",
-    "no": "trenere"
+    "no": "trenere",
+    "fr": "entraîneurs",
+    "es": "entrenadores"
   },
   "unit.player": {
     "da": "spiller",
     "en": "player",
     "de": "Spieler",
     "sv": "spelare",
-    "no": "spiller"
+    "no": "spiller",
+    "fr": "joueur",
+    "es": "jugador"
   },
   "unit.players": {
     "da": "spillere",
     "en": "players",
     "de": "Spieler",
     "sv": "spelare",
-    "no": "spillere"
+    "no": "spillere",
+    "fr": "joueurs",
+    "es": "jugadores"
   },
   "club.missing": {
     "da": "Mangler din klub?",
     "en": "Is your club missing?",
     "de": "Fehlt dein Club?",
     "sv": "Saknas din klubb?",
-    "no": "Mangler klubben din?"
+    "no": "Mangler klubben din?",
+    "fr": "Votre club manque à l’appel ?",
+    "es": "¿Falta tu club?"
   },
   "club.pitch": {
     "da": "I beholder jeres eget bookingsystem. Vi viser kun de tider, I selv frigiver, til spillere udefra — og sender betalingen videre til jer.",
     "en": "You keep your own booking system. We only show the times you release yourselves, to players from outside — and pass the payment on to you.",
     "de": "Ihr behaltet euer eigenes Buchungssystem. Wir zeigen nur die Zeiten, die ihr selbst freigebt, an Spieler von außerhalb — und leiten die Zahlung an euch weiter.",
     "sv": "Ni behåller ert eget bokningssystem. Vi visar bara de tider ni själva släpper, till spelare utifrån — och skickar betalningen vidare till er.",
-    "no": "Dere beholder deres eget bookingsystem. Vi viser bare tidene dere selv frigir, til spillere utenfra — og sender betalingen videre til dere."
+    "no": "Dere beholder deres eget bookingsystem. Vi viser bare tidene dere selv frigir, til spillere utenfra — og sender betalingen videre til dere.",
+    "fr": "Conservez votre système de réservation. Nous montrons seulement les créneaux que vous ouvrez aux joueurs extérieurs et vous reversons le paiement.",
+    "es": "Conserva tu sistema de reservas. Solo mostramos los horarios que abres a jugadores externos y te transferimos el pago."
   },
   "club.pitchPricing": {
     "da": "199 kr om måneden. Ingen provision — hele gæstens betaling går til klubben.",
     "en": "199 kr a month. No commission — the guest's full payment goes to the club.",
     "de": "199 kr im Monat. Keine Provision — die gesamte Zahlung des Gastes geht an den Club.",
     "sv": "199 kr i månaden. Ingen provision — hela gästens betalning går till klubben.",
-    "no": "199 kr i måneden. Ingen provisjon — hele gjestens betaling går til klubben."
+    "no": "199 kr i måneden. Ingen provisjon — hele gjestens betaling går til klubben.",
+    "fr": "199 kr par mois. Aucune commission — le paiement complet du visiteur revient au club.",
+    "es": "199 kr al mes. Sin comisión: el pago completo del visitante va al club."
   },
   "common.search": {
     "da": "Søg",
     "en": "Search",
     "de": "Suchen",
     "sv": "Sök",
-    "no": "Søk"
+    "no": "Søk",
+    "fr": "Rechercher",
+    "es": "Buscar"
   },
   "coach.noneInArea": {
     "da": "Ingen trænere i det område endnu.",
     "en": "No coaches in that area yet.",
     "de": "Noch keine Trainer in diesem Gebiet.",
     "sv": "Inga tränare i det området än.",
-    "no": "Ingen trenere i det området ennå."
+    "no": "Ingen trenere i det området ennå.",
+    "fr": "Aucun entraîneur dans ce secteur pour le moment.",
+    "es": "Todavía no hay entrenadores en esta zona."
   },
   "coach.alsoOffersOne": {
     "da": "Tilbyder også {name}",
     "en": "Also offers {name}",
     "de": "Bietet außerdem {name}",
     "sv": "Erbjuder även {name}",
-    "no": "Tilbyr også {name}"
+    "no": "Tilbyr også {name}",
+    "fr": "Propose aussi {name}",
+    "es": "También ofrece {name}"
   },
   "coach.alsoOffersMany": {
     "da": "Tilbyder også {n} pakkeforløb",
     "en": "Also offers {n} packages",
     "de": "Bietet außerdem {n} Pakete",
     "sv": "Erbjuder även {n} paket",
-    "no": "Tilbyr også {n} pakkeforløp"
+    "no": "Tilbyr også {n} pakkeforløp",
+    "fr": "Propose aussi {n} forfaits",
+    "es": "También ofrece {n} paquetes"
   },
   "coach.seeTimes": {
     "da": "Se ledige tider",
     "en": "See available times",
     "de": "Freie Zeiten ansehen",
     "sv": "Se lediga tider",
-    "no": "Se ledige tider"
+    "no": "Se ledige tider",
+    "fr": "Voir les disponibilités",
+    "es": "Ver horarios disponibles"
   },
   "coach.packagesNote": {
     "da": "Aftales direkte med træneren — skriv eller book en enkelt time først.",
     "en": "Arranged directly with the coach — write to them or book a single session first.",
     "de": "Wird direkt mit dem Trainer vereinbart — schreib ihm oder buche zuerst eine Einzelstunde.",
     "sv": "Bestäms direkt med tränaren — skriv eller boka en enstaka timme först.",
-    "no": "Avtales direkte med treneren — skriv eller book en enkelttime først."
+    "no": "Avtales direkte med treneren — skriv eller book en enkelttime først.",
+    "fr": "À convenir avec l’entraîneur — écrivez-lui ou réservez d’abord une séance.",
+    "es": "Se acuerda con el entrenador: escríbele o reserva primero una sesión."
   },
   "coach.lessonLine": {
     "da": "Én lektion er {length} og koster {price} kr.",
     "en": "One session is {length} and costs {price} kr.",
     "de": "Eine Stunde dauert {length} und kostet {price} kr.",
     "sv": "En lektion är {length} och kostar {price} kr.",
-    "no": "Én leksjon er {length} og koster {price} kr."
+    "no": "Én leksjon er {length} og koster {price} kr.",
+    "fr": "Une séance dure {length} et coûte {price} kr.",
+    "es": "Una sesión dura {length} y cuesta {price} kr."
   },
   "coach.timesTitle": {
     "da": "Ledige tider (næste {days} dage)",
     "en": "Available times (next {days} days)",
     "de": "Freie Zeiten (nächste {days} Tage)",
     "sv": "Lediga tider (nästa {days} dagar)",
-    "no": "Ledige tider (neste {days} dager)"
+    "no": "Ledige tider (neste {days} dager)",
+    "fr": "Créneaux disponibles ({days} prochains jours)",
+    "es": "Horarios disponibles (próximos {days} días)"
   },
   "coach.noTimes": {
     "da": "Ingen ledige tider lige nu — træneren har ikke åbnet flere tider denne uge.",
     "en": "No available times right now — the coach has not opened more times this week.",
     "de": "Gerade keine freien Zeiten — der Trainer hat diese Woche keine weiteren geöffnet.",
     "sv": "Inga lediga tider just nu — tränaren har inte öppnat fler tider den här veckan.",
-    "no": "Ingen ledige tider akkurat nå — treneren har ikke åpnet flere tider denne uken."
+    "no": "Ingen ledige tider akkurat nå — treneren har ikke åpnet flere tider denne uken.",
+    "fr": "Aucun créneau actuellement — l’entraîneur n’en a pas ouvert d’autres cette semaine.",
+    "es": "No hay horarios ahora: el entrenador no ha abierto más esta semana."
   },
   "coach.noTimesNote": {
     "da": "Skriv til træneren, hvis du vil aftale noget uden for de faste tider.",
     "en": "Write to the coach if you want to arrange something outside the fixed times.",
     "de": "Schreib dem Trainer, wenn du etwas außerhalb der festen Zeiten vereinbaren willst.",
     "sv": "Skriv till tränaren om du vill komma överens om något utanför de fasta tiderna.",
-    "no": "Skriv til treneren hvis du vil avtale noe utenfor de faste tidene."
+    "no": "Skriv til treneren hvis du vil avtale noe utenfor de faste tidene.",
+    "fr": "Écrivez à l’entraîneur pour convenir d’un autre horaire.",
+    "es": "Escribe al entrenador para acordar otro horario."
   },
   "coach.loginToBook": {
     "da": "Log ind for at booke en tid",
     "en": "Log in to book a session",
     "de": "Melde dich an, um eine Stunde zu buchen",
     "sv": "Logga in för att boka en tid",
-    "no": "Logg inn for å booke en time"
+    "no": "Logg inn for å booke en time",
+    "fr": "Connectez-vous pour réserver une séance",
+    "es": "Inicia sesión para reservar una sesión"
   },
   "coach.errNoPayout": {
     "da": "Træneren kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført.",
     "en": "The coach cannot receive payment yet, so the booking did not go through.",
     "de": "Der Trainer kann noch keine Zahlungen empfangen, deshalb kam die Buchung nicht zustande.",
     "sv": "Tränaren kan inte ta emot betalning än, så bokningen gick inte igenom.",
-    "no": "Treneren kan ikke ta imot betaling ennå, så bookingen ble ikke gjennomført."
+    "no": "Treneren kan ikke ta imot betaling ennå, så bookingen ble ikke gjennomført.",
+    "fr": "L’entraîneur ne peut pas encore recevoir de paiement ; la réservation n’a pas abouti.",
+    "es": "El entrenador aún no puede recibir pagos, por lo que no se ha realizado la reserva."
   },
   "coach.errSelf": {
     "da": "Du kan ikke booke en tid hos dig selv.",
     "en": "You cannot book a session with yourself.",
     "de": "Du kannst keine Stunde bei dir selbst buchen.",
     "sv": "Du kan inte boka en tid hos dig själv.",
-    "no": "Du kan ikke booke en time hos deg selv."
+    "no": "Du kan ikke booke en time hos deg selv.",
+    "fr": "Vous ne pouvez pas réserver une séance avec vous-même.",
+    "es": "No puedes reservar una sesión contigo mismo."
   },
   "coach.errPast": {
     "da": "Det tidspunkt er passeret. Vælg en anden tid.",
     "en": "That time has passed. Choose another one.",
     "de": "Dieser Zeitpunkt ist vorbei. Wähle einen anderen.",
     "sv": "Den tiden har passerat. Välj en annan tid.",
-    "no": "Det tidspunktet er passert. Velg en annen tid."
+    "no": "Det tidspunktet er passert. Velg en annen tid.",
+    "fr": "Ce créneau est passé. Choisissez-en un autre.",
+    "es": "Ese horario ya ha pasado. Elige otro."
   },
   "coach.errNotOffered": {
     "da": "Træneren tilbyder ikke den tid. Vælg en af tiderne herunder.",
     "en": "The coach does not offer that time. Choose one of the times below.",
     "de": "Der Trainer bietet diese Zeit nicht an. Wähle eine der Zeiten unten.",
     "sv": "Tränaren erbjuder inte den tiden. Välj en av tiderna nedan.",
-    "no": "Treneren tilbyr ikke den tiden. Velg en av tidene nedenfor."
+    "no": "Treneren tilbyr ikke den tiden. Velg en av tidene nedenfor.",
+    "fr": "L’entraîneur ne propose pas ce créneau. Choisissez-en un ci-dessous.",
+    "es": "El entrenador no ofrece ese horario. Elige uno de los siguientes."
   },
   "coach.errTaken": {
     "da": "Den tid var lige taget. Vælg en anden.",
     "en": "That time was just taken. Choose another.",
     "de": "Diese Zeit war gerade vergeben. Wähle eine andere.",
     "sv": "Den tiden blev precis tagen. Välj en annan.",
-    "no": "Den tiden ble nettopp tatt. Velg en annen."
+    "no": "Den tiden ble nettopp tatt. Velg en annen.",
+    "fr": "Ce créneau vient d’être réservé. Choisissez-en un autre.",
+    "es": "Acaban de reservar ese horario. Elige otro."
   },
   "players.findTitle": {
     "da": "Find spillere",
     "en": "Find players",
     "de": "Spieler finden",
     "sv": "Hitta spelare",
-    "no": "Finn spillere"
+    "no": "Finn spillere",
+    "fr": "Trouver des joueurs",
+    "es": "Encontrar jugadores"
   },
   "players.waiting": {
     "da": "{n} venter på dig",
     "en": "{n} waiting for you",
     "de": "{n} warten auf dich",
     "sv": "{n} väntar på dig",
-    "no": "{n} venter på deg"
+    "no": "{n} venter på deg",
+    "fr": "{n} vous attendent",
+    "es": "{n} te esperan"
   },
   "players.seenAll": {
     "da": "Du har set alle spillere på dit niveau i dit område. Kig forbi igen om et par dage.",
     "en": "You have seen every player at your level nearby. Check back in a couple of days.",
     "de": "Du hast alle Spieler auf deinem Niveau in deiner Nähe gesehen. Schau in ein paar Tagen wieder vorbei.",
     "sv": "Du har sett alla spelare på din nivå i ditt område. Kom tillbaka om ett par dagar.",
-    "no": "Du har sett alle spillere på ditt nivå i området ditt. Stikk innom igjen om et par dager."
+    "no": "Du har sett alle spillere på ditt nivå i området ditt. Stikk innom igjen om et par dager.",
+    "fr": "Vous avez vu tous les joueurs de votre niveau à proximité. Revenez dans quelques jours.",
+    "es": "Has visto a todos los jugadores de tu nivel cercanos. Vuelve en unos días."
   },
   "players.alsoCoach": {
     "da": "Er også træner på platformen",
     "en": "Also a coach on the platform",
     "de": "Ist auch Trainer auf der Plattform",
     "sv": "Är även tränare på plattformen",
-    "no": "Er også trener på plattformen"
+    "no": "Er også trener på plattformen",
+    "fr": "Également entraîneur sur la plateforme",
+    "es": "También es entrenador en la plataforma"
   },
   "partners.title": {
     "da": "Find en makker",
@@ -677,7 +867,9 @@
     "de": "Partner finden",
     "sv": "Hitta en partner",
     "no": "Finn en makker",
-    "en-US": "Find a hitting partner"
+    "en-US": "Find a hitting partner",
+    "fr": "Trouver un partenaire",
+    "es": "Encontrar un compañero"
   },
   "partners.intro": {
     "da": "Åbne opslag fra spillere der søger modstander, doublemakker eller træningspartner.",
@@ -685,916 +877,1178 @@
     "de": "Offene Gesuche von Spielern, die einen Gegner, Doppelpartner oder Trainingspartner suchen.",
     "sv": "Öppna inlägg från spelare som söker motståndare, dubbelpartner eller träningspartner.",
     "no": "Åpne oppslag fra spillere som søker motstander, doublemakker eller treningspartner.",
-    "en-US": "Open posts from players looking for an opponent, a doubles partner or someone to hit with."
+    "en-US": "Open posts from players looking for an opponent, a doubles partner or someone to hit with.",
+    "fr": "Annonces de joueurs cherchant un adversaire, un partenaire de double ou d’entraînement.",
+    "es": "Anuncios de jugadores que buscan rival, compañero de dobles o de entrenamiento."
   },
   "partners.none": {
     "da": "Ingen åbne opslag matcher din søgning endnu.",
     "en": "No open posts match your search yet.",
     "de": "Noch passt kein offenes Gesuch zu deiner Suche.",
     "sv": "Inga öppna inlägg matchar din sökning än.",
-    "no": "Ingen åpne oppslag matcher søket ditt ennå."
+    "no": "Ingen åpne oppslag matcher søket ditt ennå.",
+    "fr": "Aucune annonce ne correspond encore à votre recherche.",
+    "es": "Todavía no hay anuncios que coincidan."
   },
   "partners.createFirst": {
     "da": "Opret det første",
     "en": "Create the first one",
     "de": "Erstelle das erste",
     "sv": "Skapa det första",
-    "no": "Opprett det første"
+    "no": "Opprett det første",
+    "fr": "Créez la première",
+    "es": "Crea el primero"
   },
   "partners.respond": {
     "da": "Slå til",
     "en": "Take it",
     "de": "Zusagen",
     "sv": "Nappa",
-    "no": "Slå til"
+    "no": "Slå til",
+    "fr": "Accepter",
+    "es": "Aceptar"
   },
   "partners.loginToRespond": {
     "da": "Log ind for at svare",
     "en": "Log in to reply",
     "de": "Zum Antworten anmelden",
     "sv": "Logga in för att svara",
-    "no": "Logg inn for å svare"
+    "no": "Logg inn for å svare",
+    "fr": "Connectez-vous pour répondre",
+    "es": "Inicia sesión para responder"
   },
   "profile.paidTitle": {
     "da": "Tiden er din",
     "en": "The time is yours",
     "de": "Die Zeit gehört dir",
     "sv": "Tiden är din",
-    "no": "Tiden er din"
+    "no": "Tiden er din",
+    "fr": "Le créneau est à vous",
+    "es": "El horario es tuyo"
   },
   "profile.paidBody": {
     "da": "Kvittering er sendt til {email}. Spiller du fast? Book den samme tid næste uge nedenfor, så er den ikke væk.",
     "en": "A receipt has been sent to {email}. Play regularly? Book the same time next week below, so it is not gone.",
     "de": "Eine Quittung ging an {email}. Spielst du regelmäßig? Buche unten dieselbe Zeit nächste Woche, dann ist sie dir sicher.",
     "sv": "Ett kvitto har skickats till {email}. Spelar du regelbundet? Boka samma tid nästa vecka nedan, så är den inte borta.",
-    "no": "Kvittering er sendt til {email}. Spiller du fast? Book den samme tiden neste uke nedenfor, så er den ikke borte."
+    "no": "Kvittering er sendt til {email}. Spiller du fast? Book den samme tiden neste uke nedenfor, så er den ikke borte.",
+    "fr": "Un reçu a été envoyé à {email}. Vous jouez régulièrement ? Réservez le même créneau la semaine prochaine ci-dessous avant qu’il ne soit pris.",
+    "es": "Se ha enviado un recibo a {email}. ¿Juegas habitualmente? Reserva abajo el mismo horario para la próxima semana antes de que se ocupe."
   },
   "profile.pendingTitle": {
     "da": "Betalingen er ikke registreret endnu",
     "en": "The payment is not registered yet",
     "de": "Die Zahlung ist noch nicht erfasst",
     "sv": "Betalningen är inte registrerad än",
-    "no": "Betalingen er ikke registrert ennå"
+    "no": "Betalingen er ikke registrert ennå",
+    "fr": "Le paiement n’est pas encore enregistré",
+    "es": "El pago aún no está registrado"
   },
   "profile.pendingBody": {
     "da": "Det tager nogle gange et øjeblik. Genindlæs siden om lidt. Står der stadig Afventer betaling nedenfor, er beløbet ikke trukket, og du kan trygt prøve igen.",
     "en": "It sometimes takes a moment. Reload the page shortly. If it still says Awaiting payment below, nothing has been charged and you can safely try again.",
     "de": "Das dauert manchmal einen Moment. Lade die Seite gleich neu. Steht unten weiterhin Zahlung ausstehend, wurde nichts abgebucht und du kannst es bedenkenlos erneut versuchen.",
     "sv": "Det tar ibland ett ögonblick. Ladda om sidan strax. Står det fortfarande Väntar på betalning nedan har inget dragits, och du kan tryggt försöka igen.",
-    "no": "Det tar noen ganger et øyeblikk. Last inn siden på nytt om litt. Står det fortsatt Venter på betaling nedenfor, er beløpet ikke trukket, og du kan trygt prøve igjen."
+    "no": "Det tar noen ganger et øyeblikk. Last inn siden på nytt om litt. Står det fortsatt Venter på betaling nedenfor, er beløpet ikke trukket, og du kan trygt prøve igjen.",
+    "fr": "Cela peut prendre un instant. Actualisez bientôt. Si le statut reste En attente de paiement ci-dessous, rien n’a été débité et vous pouvez réessayer.",
+    "es": "Puede tardar un momento. Actualiza en breve. Si sigue indicando Pendiente de pago abajo, no se ha cobrado nada y puedes reintentarlo."
   },
   "profile.noBookings": {
     "da": "Ingen bookinger endnu —",
     "en": "No bookings yet —",
     "de": "Noch keine Buchungen —",
     "sv": "Inga bokningar än —",
-    "no": "Ingen bookinger ennå —"
+    "no": "Ingen bookinger ennå —",
+    "fr": "Aucune réservation —",
+    "es": "Todavía no hay reservas —"
   },
   "profile.noPosts": {
     "da": "Ingen opslag —",
     "en": "No posts —",
     "de": "Keine Gesuche —",
     "sv": "Inga inlägg —",
-    "no": "Ingen oppslag —"
+    "no": "Ingen oppslag —",
+    "fr": "Aucune annonce —",
+    "es": "No hay anuncios —"
   },
   "profile.createOne": {
     "da": "opret et",
     "en": "create one",
     "de": "erstelle eines",
     "sv": "skapa ett",
-    "no": "opprett et"
+    "no": "opprett et",
+    "fr": "en créer une",
+    "es": "crear uno"
   },
   "profile.awaitingPayment": {
     "da": "Afventer betaling",
     "en": "Awaiting payment",
     "de": "Zahlung ausstehend",
     "sv": "Väntar på betalning",
-    "no": "Venter på betaling"
+    "no": "Venter på betaling",
+    "fr": "En attente de paiement",
+    "es": "Pendiente de pago"
   },
   "profile.confirmed": {
     "da": "Bekræftet",
     "en": "Confirmed",
     "de": "Bestätigt",
     "sv": "Bekräftad",
-    "no": "Bekreftet"
+    "no": "Bekreftet",
+    "fr": "Confirmé",
+    "es": "Confirmado"
   },
   "profile.coachSession": {
     "da": "Trænertime: {name}",
     "en": "Coach session: {name}",
     "de": "Trainerstunde: {name}",
     "sv": "Tränartimme: {name}",
-    "no": "Trenertime: {name}"
+    "no": "Trenertime: {name}",
+    "fr": "Séance avec l’entraîneur : {name}",
+    "es": "Sesión con entrenador: {name}"
   },
   "profile.matchedWith": {
     "da": "Matchet med {name}",
     "en": "Matched with {name}",
     "de": "Verbunden mit {name}",
     "sv": "Matchad med {name}",
-    "no": "Matchet med {name}"
+    "no": "Matchet med {name}",
+    "fr": "Partenaire trouvé : {name}",
+    "es": "Emparejado con {name}"
   },
   "common.or": {
     "da": "eller",
     "en": "or",
     "de": "oder",
     "sv": "eller",
-    "no": "eller"
+    "no": "eller",
+    "fr": "ou",
+    "es": "o"
   },
   "club.boardQuestion": {
     "da": "Sidder du i en klubbestyrelse?",
     "en": "On a club board?",
     "de": "Sitzt du im Vorstand eines Clubs?",
     "sv": "Sitter du i en klubbstyrelse?",
-    "no": "Sitter du i et klubbstyre?"
+    "no": "Sitter du i et klubbstyre?",
+    "fr": "Vous faites partie du comité d’un club ?",
+    "es": "¿Formas parte de la junta de un club?"
   },
   "partners.createPost": {
     "da": "Opret opslag",
     "en": "New post",
     "de": "Gesuch erstellen",
     "sv": "Skapa inlägg",
-    "no": "Opprett oppslag"
+    "no": "Opprett oppslag",
+    "fr": "Nouvelle annonce",
+    "es": "Nuevo anuncio"
   },
   "partners.yourLevel": {
     "da": "Dit niveau (viser ±1)",
     "en": "Your level (shows ±1)",
     "de": "Dein Niveau (zeigt ±1)",
     "sv": "Din nivå (visar ±1)",
-    "no": "Ditt nivå (viser ±1)"
+    "no": "Ditt nivå (viser ±1)",
+    "fr": "Votre niveau (affiche ±1)",
+    "es": "Tu nivel (muestra ±1)"
   },
   "common.filter": {
     "da": "Filtrér",
     "en": "Filter",
     "de": "Filtern",
     "sv": "Filtrera",
-    "no": "Filtrer"
+    "no": "Filtrer",
+    "fr": "Filtrer",
+    "es": "Filtrar"
   },
   "partners.yours": {
     "da": "Dit opslag",
     "en": "Your post",
     "de": "Dein Gesuch",
     "sv": "Ditt inlägg",
-    "no": "Ditt oppslag"
+    "no": "Ditt oppslag",
+    "fr": "Votre annonce",
+    "es": "Tu anuncio"
   },
   "geo.suspect": {
     "da": "Det ser ud til, at du er i {country}.",
     "en": "It looks like you are in {country}.",
     "de": "Es sieht so aus, als wärst du in {country}.",
     "sv": "Det ser ut som att du är i {country}.",
-    "no": "Det ser ut som du er i {country}."
+    "no": "Det ser ut som du er i {country}.",
+    "fr": "Vous semblez être en {country}.",
+    "es": "Parece que estás en {country}."
   },
   "geo.ask": {
     "da": "Skal vi vise klubber og priser derfra?",
     "en": "Shall we show clubs and prices from there?",
     "de": "Sollen wir Clubs und Preise von dort zeigen?",
     "sv": "Ska vi visa klubbar och priser därifrån?",
-    "no": "Skal vi vise klubber og priser derfra?"
+    "no": "Skal vi vise klubber og priser derfra?",
+    "fr": "Afficher les clubs et tarifs de ce pays ?",
+    "es": "¿Mostramos clubes y precios de allí?"
   },
   "geo.yes": {
     "da": "Ja tak",
     "en": "Yes please",
     "de": "Ja, gerne",
     "sv": "Ja tack",
-    "no": "Ja takk"
+    "no": "Ja takk",
+    "fr": "Oui, merci",
+    "es": "Sí, por favor"
   },
   "geo.no": {
     "da": "Nej, bliv her",
     "en": "No, stay here",
     "de": "Nein, hier bleiben",
     "sv": "Nej, stanna här",
-    "no": "Nei, bli her"
+    "no": "Nei, bli her",
+    "fr": "Non, rester ici",
+    "es": "No, seguir aquí"
   },
   "msg.title": {
     "da": "Beskeder",
     "en": "Messages",
     "de": "Nachrichten",
     "sv": "Meddelanden",
-    "no": "Meldinger"
+    "no": "Meldinger",
+    "fr": "Messages",
+    "es": "Mensajes"
   },
   "msg.new": {
     "da": "ny",
     "en": "new",
     "de": "neu",
     "sv": "ny",
-    "no": "ny"
+    "no": "ny",
+    "fr": "nouveau",
+    "es": "nuevo"
   },
   "msg.emptyList": {
     "da": "Du har ingen samtaler endnu. Slå til på et",
     "en": "You have no conversations yet. Respond to a",
     "de": "Du hast noch keine Gespräche. Melde dich auf ein",
     "sv": "Du har inga konversationer än. Nappa på ett",
-    "no": "Du har ingen samtaler ennå. Slå til på et"
+    "no": "Du har ingen samtaler ennå. Slå til på et",
+    "fr": "Vous n’avez pas encore de conversations. Répondez à une",
+    "es": "Todavía no tienes conversaciones. Responde a un"
   },
   "msg.emptyListLink": {
     "da": "makker-opslag",
     "en": "partner post",
     "de": "Partnergesuch",
     "sv": "partnerinlägg",
-    "no": "makkeroppslag"
+    "no": "makkeroppslag",
+    "fr": "annonce de partenaire",
+    "es": "anuncio de compañero"
   },
   "msg.emptyListEnd": {
     "da": ", så åbner der en samtale her.",
     "en": ", and a conversation opens here.",
     "de": " — dann öffnet sich hier ein Gespräch.",
     "sv": ", så öppnas en konversation här.",
-    "no": ", så åpnes det en samtale her."
+    "no": ", så åpnes det en samtale her.",
+    "fr": ", et une conversation s’ouvre ici.",
+    "es": " y se abrirá una conversación aquí."
   },
   "msg.back": {
     "da": "Tilbage til beskeder",
     "en": "Back to messages",
     "de": "Zurück zu den Nachrichten",
     "sv": "Tillbaka till meddelanden",
-    "no": "Tilbake til meldinger"
+    "no": "Tilbake til meldinger",
+    "fr": "Retour aux messages",
+    "es": "Volver a mensajes"
   },
   "msg.about": {
     "da": "Om: {subject}",
     "en": "About: {subject}",
     "de": "Betreff: {subject}",
     "sv": "Om: {subject}",
-    "no": "Om: {subject}"
+    "no": "Om: {subject}",
+    "fr": "À propos de : {subject}",
+    "es": "Sobre: {subject}"
   },
   "msg.agreedTitle": {
     "da": "Har I aftalt en tid?",
     "en": "Have you agreed on a time?",
     "de": "Habt ihr eine Zeit vereinbart?",
     "sv": "Har ni kommit överens om en tid?",
-    "no": "Har dere avtalt en tid?"
+    "no": "Har dere avtalt en tid?",
+    "fr": "Avez-vous convenu d’un horaire ?",
+    "es": "¿Habéis acordado una hora?"
   },
   "msg.agreedBody": {
     "da": "Book banen, så er den jeres.",
     "en": "Book the court and it is yours.",
     "de": "Bucht den Platz, dann gehört er euch.",
     "sv": "Boka banan, så är den er.",
-    "no": "Book banen, så er den deres."
+    "no": "Book banen, så er den deres.",
+    "fr": "Réservez le terrain et il est à vous.",
+    "es": "Reserva la pista y será vuestra."
   },
   "msg.emptyThread": {
     "da": "Ingen beskeder endnu — skriv den første og aftal en tid.",
     "en": "No messages yet — write the first one and agree on a time.",
     "de": "Noch keine Nachrichten — schreib die erste und vereinbart eine Zeit.",
     "sv": "Inga meddelanden än — skriv det första och kom överens om en tid.",
-    "no": "Ingen meldinger ennå — skriv den første og avtal en tid."
+    "no": "Ingen meldinger ennå — skriv den første og avtal en tid.",
+    "fr": "Aucun message — écrivez le premier et convenez d’un horaire.",
+    "es": "Todavía no hay mensajes: escribe el primero y acordad una hora."
   },
   "msg.send": {
     "da": "Send",
     "en": "Send",
     "de": "Senden",
     "sv": "Skicka",
-    "no": "Send"
+    "no": "Send",
+    "fr": "Envoyer",
+    "es": "Enviar"
   },
   "msg.placeholder": {
     "da": "Skriv en besked…",
     "en": "Write a message…",
     "de": "Schreib eine Nachricht…",
     "sv": "Skriv ett meddelande…",
-    "no": "Skriv en melding…"
+    "no": "Skriv en melding…",
+    "fr": "Écrire un message…",
+    "es": "Escribe un mensaje…"
   },
   "days.short": {
     "da": "søn,man,tir,ons,tor,fre,lør",
     "en": "Sun,Mon,Tue,Wed,Thu,Fri,Sat",
     "de": "So,Mo,Di,Mi,Do,Fr,Sa",
     "sv": "sön,mån,tis,ons,tor,fre,lör",
-    "no": "søn,man,tir,ons,tor,fre,lør"
+    "no": "søn,man,tir,ons,tor,fre,lør",
+    "fr": "Dim,Lun,Mar,Mer,Jeu,Ven,Sam",
+    "es": "Dom,Lun,Mar,Mié,Jue,Vie,Sáb"
   },
   "msg.errNoThread": {
     "da": "Samtalen findes ikke.",
     "en": "The conversation does not exist.",
     "de": "Das Gespräch gibt es nicht.",
     "sv": "Konversationen finns inte.",
-    "no": "Samtalen finnes ikke."
+    "no": "Samtalen finnes ikke.",
+    "fr": "Cette conversation n’existe pas.",
+    "es": "La conversación no existe."
   },
   "msg.errNotOpen": {
     "da": "Der er ingen samtale, før nogen har slået til på opslaget.",
     "en": "There is no conversation until someone responds to the post.",
     "de": "Es gibt kein Gespräch, bevor jemand auf das Gesuch geantwortet hat.",
     "sv": "Det finns ingen konversation förrän någon nappat på inlägget.",
-    "no": "Det er ingen samtale før noen har slått til på oppslaget."
+    "no": "Det er ingen samtale før noen har slått til på oppslaget.",
+    "fr": "La conversation s’ouvre quand quelqu’un répond à l’annonce.",
+    "es": "La conversación se abre cuando alguien responde al anuncio."
   },
   "msg.errNoAccess": {
     "da": "Du har ikke adgang til denne samtale.",
     "en": "You do not have access to this conversation.",
     "de": "Du hast keinen Zugriff auf dieses Gespräch.",
     "sv": "Du har inte tillgång till den här konversationen.",
-    "no": "Du har ikke tilgang til denne samtalen."
+    "no": "Du har ikke tilgang til denne samtalen.",
+    "fr": "Vous n’avez pas accès à cette conversation.",
+    "es": "No tienes acceso a esta conversación."
   },
   "auth.email": {
     "da": "E-mail",
     "en": "Email",
     "de": "E-Mail",
     "sv": "E-post",
-    "no": "E-post"
+    "no": "E-post",
+    "fr": "E-mail",
+    "es": "Correo electrónico"
   },
   "auth.password": {
     "da": "Adgangskode",
     "en": "Password",
     "de": "Passwort",
     "sv": "Lösenord",
-    "no": "Passord"
+    "no": "Passord",
+    "fr": "Mot de passe",
+    "es": "Contraseña"
   },
   "auth.passwordMin": {
     "da": "Adgangskode (mindst 8 tegn)",
     "en": "Password (at least 8 characters)",
     "de": "Passwort (mindestens 8 Zeichen)",
     "sv": "Lösenord (minst 8 tecken)",
-    "no": "Passord (minst 8 tegn)"
+    "no": "Passord (minst 8 tegn)",
+    "fr": "Mot de passe (8 caractères minimum)",
+    "es": "Contraseña (mínimo 8 caracteres)"
   },
   "auth.loggingIn": {
     "da": "Logger ind…",
     "en": "Logging in…",
     "de": "Anmeldung läuft…",
     "sv": "Loggar in…",
-    "no": "Logger inn…"
+    "no": "Logger inn…",
+    "fr": "Connexion…",
+    "es": "Iniciando sesión…"
   },
   "auth.newHere": {
     "da": "Ny her?",
     "en": "New here?",
     "de": "Neu hier?",
     "sv": "Ny här?",
-    "no": "Ny her?"
+    "no": "Ny her?",
+    "fr": "Nouveau ici ?",
+    "es": "¿Eres nuevo?"
   },
   "auth.haveAccount": {
     "da": "Har du allerede en profil?",
     "en": "Already have an account?",
     "de": "Schon ein Konto?",
     "sv": "Har du redan ett konto?",
-    "no": "Har du allerede en profil?"
+    "no": "Har du allerede en profil?",
+    "fr": "Déjà un compte ?",
+    "es": "¿Ya tienes cuenta?"
   },
   "auth.name": {
     "da": "Navn",
     "en": "Name",
     "de": "Name",
     "sv": "Namn",
-    "no": "Navn"
+    "no": "Navn",
+    "fr": "Nom",
+    "es": "Nombre"
   },
   "auth.iAm": {
     "da": "Jeg er",
     "en": "I am",
     "de": "Ich bin",
     "sv": "Jag är",
-    "no": "Jeg er"
+    "no": "Jeg er",
+    "fr": "Je suis",
+    "es": "Soy"
   },
   "auth.rolePlayer": {
     "da": "Spiller — jeg vil finde makkere og booke baner",
     "en": "Player — I want to find partners and book courts",
     "de": "Spieler — ich will Mitspieler finden und Plätze buchen",
     "sv": "Spelare — jag vill hitta medspelare och boka banor",
-    "no": "Spiller — jeg vil finne makkere og booke baner"
+    "no": "Spiller — jeg vil finne makkere og booke baner",
+    "fr": "Joueur — je cherche des partenaires et souhaite réserver des terrains",
+    "es": "Jugador: quiero encontrar compañeros y reservar pistas"
   },
   "auth.roleCoach": {
     "da": "Træner — jeg vil tage imod bookinger",
     "en": "Coach — I want to receive bookings",
     "de": "Trainer — ich will Buchungen annehmen",
     "sv": "Tränare — jag vill ta emot bokningar",
-    "no": "Trener — jeg vil ta imot bookinger"
+    "no": "Trener — jeg vil ta imot bookinger",
+    "fr": "Entraîneur — je souhaite recevoir des réservations",
+    "es": "Entrenador: quiero recibir reservas"
   },
   "auth.creating": {
     "da": "Opretter…",
     "en": "Creating…",
     "de": "Wird erstellt…",
     "sv": "Skapar…",
-    "no": "Oppretter…"
+    "no": "Oppretter…",
+    "fr": "Création…",
+    "es": "Creando…"
   },
   "auth.errWrong": {
     "da": "Forkert e-mail eller adgangskode.",
     "en": "Wrong email or password.",
     "de": "E-Mail oder Passwort stimmt nicht.",
     "sv": "Fel e-post eller lösenord.",
-    "no": "Feil e-post eller passord."
+    "no": "Feil e-post eller passord.",
+    "fr": "E-mail ou mot de passe incorrect.",
+    "es": "Correo o contraseña incorrectos."
   },
   "auth.errTooMany": {
     "da": "For mange forsøg. Prøv igen om lidt.",
     "en": "Too many attempts. Try again shortly.",
     "de": "Zu viele Versuche. Versuch es gleich noch einmal.",
     "sv": "För många försök. Försök igen om en stund.",
-    "no": "For mange forsøk. Prøv igjen om litt."
+    "no": "For mange forsøk. Prøv igjen om litt.",
+    "fr": "Trop de tentatives. Réessayez dans un instant.",
+    "es": "Demasiados intentos. Inténtalo en un momento."
   },
   "auth.codeTitle": {
     "da": "Tjek din mail",
     "en": "Check your email",
     "de": "Sieh in dein Postfach",
     "sv": "Kolla din e-post",
-    "no": "Sjekk e-posten din"
+    "no": "Sjekk e-posten din",
+    "fr": "Consultez votre e-mail",
+    "es": "Revisa tu correo"
   },
   "auth.codeIntro": {
     "da": "Vi har sendt en kode til den mail, kontoen hører til. Den gælder i 10 minutter og kan kun bruges én gang.",
     "en": "We have sent a code to the account's email. It is valid for 10 minutes and can only be used once.",
     "de": "Wir haben einen Code an die E-Mail des Kontos geschickt. Er gilt 10 Minuten und lässt sich nur einmal verwenden.",
     "sv": "Vi har skickat en kod till kontots e-post. Den gäller i 10 minuter och kan bara användas en gång.",
-    "no": "Vi har sendt en kode til e-posten kontoen hører til. Den gjelder i 10 minutter og kan bare brukes én gang."
+    "no": "Vi har sendt en kode til e-posten kontoen hører til. Den gjelder i 10 minutter og kan bare brukes én gang.",
+    "fr": "Nous avons envoyé un code à l’e-mail du compte. Il est valable 10 minutes et utilisable une seule fois.",
+    "es": "Hemos enviado un código al correo de la cuenta. Es válido durante 10 minutos y solo puede usarse una vez."
   },
   "auth.codeLabel": {
     "da": "Kode fra mailen",
     "en": "Code from the email",
     "de": "Code aus der E-Mail",
     "sv": "Kod från mejlet",
-    "no": "Kode fra e-posten"
+    "no": "Kode fra e-posten",
+    "fr": "Code reçu par e-mail",
+    "es": "Código del correo"
   },
   "auth.codeSubmit": {
     "da": "Bekræft",
     "en": "Confirm",
     "de": "Bestätigen",
     "sv": "Bekräfta",
-    "no": "Bekreft"
+    "no": "Bekreft",
+    "fr": "Confirmer",
+    "es": "Confirmar"
   },
   "auth.codeChecking": {
     "da": "Tjekker…",
     "en": "Checking…",
     "de": "Wird geprüft…",
     "sv": "Kontrollerar…",
-    "no": "Sjekker…"
+    "no": "Sjekker…",
+    "fr": "Vérification…",
+    "es": "Comprobando…"
   },
   "auth.codeBack": {
     "da": "Tilbage til login",
     "en": "Back to login",
     "de": "Zurück zur Anmeldung",
     "sv": "Tillbaka till inloggningen",
-    "no": "Tilbake til innlogging"
+    "no": "Tilbake til innlogging",
+    "fr": "Retour à la connexion",
+    "es": "Volver al inicio de sesión"
   },
   "auth.errExpired": {
     "da": "Login er udløbet. Start forfra.",
     "en": "The login expired. Start again.",
     "de": "Die Anmeldung ist abgelaufen. Fang neu an.",
     "sv": "Inloggningen har gått ut. Börja om.",
-    "no": "Innloggingen er utløpt. Start på nytt."
+    "no": "Innloggingen er utløpt. Start på nytt.",
+    "fr": "La connexion a expiré. Recommencez.",
+    "es": "El inicio de sesión ha caducado. Empieza de nuevo."
   },
   "auth.errCodeWrong": {
     "da": "Koden passer ikke. Tjek mailen igen.",
     "en": "The code does not match. Check the email again.",
     "de": "Der Code stimmt nicht. Sieh noch einmal in die E-Mail.",
     "sv": "Koden stämmer inte. Kolla mejlet igen.",
-    "no": "Koden stemmer ikke. Sjekk e-posten igjen."
+    "no": "Koden stemmer ikke. Sjekk e-posten igjen.",
+    "fr": "Le code ne correspond pas. Vérifiez l’e-mail.",
+    "es": "El código no coincide. Revisa el correo."
   },
   "auth.errCodeUsed": {
     "da": "For mange forsøg. Log ind forfra, så sender vi en ny kode.",
     "en": "Too many attempts. Log in again and we will send a new code.",
     "de": "Zu viele Versuche. Melde dich neu an, dann schicken wir einen neuen Code.",
     "sv": "För många försök. Logga in igen så skickar vi en ny kod.",
-    "no": "For mange forsøk. Logg inn på nytt, så sender vi en ny kode."
+    "no": "For mange forsøk. Logg inn på nytt, så sender vi en ny kode.",
+    "fr": "Trop de tentatives. Reconnectez-vous pour recevoir un nouveau code.",
+    "es": "Demasiados intentos. Inicia sesión de nuevo para recibir otro código."
   },
   "auth.errCodeExpired": {
     "da": "Koden er udløbet. Log ind forfra, så sender vi en ny.",
     "en": "The code expired. Log in again and we will send a new one.",
     "de": "Der Code ist abgelaufen. Melde dich neu an, dann schicken wir einen neuen.",
     "sv": "Koden har gått ut. Logga in igen så skickar vi en ny.",
-    "no": "Koden er utløpt. Logg inn på nytt, så sender vi en ny."
+    "no": "Koden er utløpt. Logg inn på nytt, så sender vi en ny.",
+    "fr": "Le code a expiré. Reconnectez-vous pour en recevoir un nouveau.",
+    "es": "El código ha caducado. Inicia sesión de nuevo para recibir otro."
   },
   "auth.forgot": {
     "da": "Glemt adgangskode?",
     "en": "Forgot your password?",
     "de": "Passwort vergessen?",
     "sv": "Glömt lösenordet?",
-    "no": "Glemt passord?"
+    "no": "Glemt passord?",
+    "fr": "Mot de passe oublié ?",
+    "es": "¿Has olvidado tu contraseña?"
   },
   "auth.forgotTitle": {
     "da": "Ny adgangskode",
     "en": "New password",
     "de": "Neues Passwort",
     "sv": "Nytt lösenord",
-    "no": "Nytt passord"
+    "no": "Nytt passord",
+    "fr": "Nouveau mot de passe",
+    "es": "Nueva contraseña"
   },
   "auth.forgotIntro": {
     "da": "Skriv din e-mail, så sender vi et link til at sætte en ny adgangskode.",
     "en": "Enter your email and we will send a link to set a new password.",
     "de": "Gib deine E-Mail ein, dann schicken wir einen Link für ein neues Passwort.",
     "sv": "Skriv din e-post, så skickar vi en länk för att sätta ett nytt lösenord.",
-    "no": "Skriv e-posten din, så sender vi en lenke til å sette et nytt passord."
+    "no": "Skriv e-posten din, så sender vi en lenke til å sette et nytt passord.",
+    "fr": "Saisissez votre e-mail pour recevoir un lien de réinitialisation.",
+    "es": "Introduce tu correo y te enviaremos un enlace para cambiar la contraseña."
   },
   "auth.forgotSend": {
     "da": "Send link",
     "en": "Send link",
     "de": "Link senden",
     "sv": "Skicka länk",
-    "no": "Send lenke"
+    "no": "Send lenke",
+    "fr": "Envoyer le lien",
+    "es": "Enviar enlace"
   },
   "auth.sending": {
     "da": "Sender…",
     "en": "Sending…",
     "de": "Wird gesendet…",
     "sv": "Skickar…",
-    "no": "Sender…"
+    "no": "Sender…",
+    "fr": "Envoi…",
+    "es": "Enviando…"
   },
   "auth.resetSent": {
     "da": "Findes der en konto med den mail, er linket sendt. Tjek også spam.",
     "en": "If an account exists with that email, the link is on its way. Check spam too.",
     "de": "Gibt es ein Konto mit dieser E-Mail, ist der Link unterwegs. Sieh auch im Spam nach.",
     "sv": "Finns det ett konto med den e-posten är länken på väg. Kolla även skräpposten.",
-    "no": "Finnes det en konto med den e-posten, er lenken sendt. Sjekk også spam."
+    "no": "Finnes det en konto med den e-posten, er lenken sendt. Sjekk også spam.",
+    "fr": "Si un compte existe avec cet e-mail, le lien est en route. Vérifiez aussi les indésirables.",
+    "es": "Si existe una cuenta con ese correo, el enlace está en camino. Revisa también el spam."
   },
   "auth.newPassword": {
     "da": "Ny adgangskode (mindst 10 tegn)",
     "en": "New password (at least 10 characters)",
     "de": "Neues Passwort (mindestens 10 Zeichen)",
     "sv": "Nytt lösenord (minst 10 tecken)",
-    "no": "Nytt passord (minst 10 tegn)"
+    "no": "Nytt passord (minst 10 tegn)",
+    "fr": "Nouveau mot de passe (10 caractères minimum)",
+    "es": "Nueva contraseña (mínimo 10 caracteres)"
   },
   "auth.repeatPassword": {
     "da": "Gentag adgangskoden",
     "en": "Repeat the password",
     "de": "Passwort wiederholen",
     "sv": "Upprepa lösenordet",
-    "no": "Gjenta passordet"
+    "no": "Gjenta passordet",
+    "fr": "Répéter le mot de passe",
+    "es": "Repite la contraseña"
   },
   "auth.savePassword": {
     "da": "Gem adgangskode",
     "en": "Save password",
     "de": "Passwort speichern",
     "sv": "Spara lösenord",
-    "no": "Lagre passord"
+    "no": "Lagre passord",
+    "fr": "Enregistrer le mot de passe",
+    "es": "Guardar contraseña"
   },
   "auth.saving": {
     "da": "Gemmer…",
     "en": "Saving…",
     "de": "Wird gespeichert…",
     "sv": "Sparar…",
-    "no": "Lagrer…"
+    "no": "Lagrer…",
+    "fr": "Enregistrement…",
+    "es": "Guardando…"
   },
   "auth.resetDone": {
     "da": "Adgangskoden er skiftet. Log ind med den nye.",
     "en": "The password has been changed. Log in with the new one.",
     "de": "Das Passwort ist geändert. Melde dich mit dem neuen an.",
     "sv": "Lösenordet är ändrat. Logga in med det nya.",
-    "no": "Passordet er endret. Logg inn med det nye."
+    "no": "Passordet er endret. Logg inn med det nye.",
+    "fr": "Mot de passe modifié. Connectez-vous avec le nouveau.",
+    "es": "La contraseña se ha cambiado. Inicia sesión con la nueva."
   },
   "auth.errBadEmail": {
     "da": "Skriv en gyldig e-mailadresse.",
     "en": "Enter a valid email address.",
     "de": "Gib eine gültige E-Mail-Adresse ein.",
     "sv": "Skriv en giltig e-postadress.",
-    "no": "Skriv en gyldig e-postadresse."
+    "no": "Skriv en gyldig e-postadresse.",
+    "fr": "Saisissez un e-mail valide.",
+    "es": "Introduce un correo válido."
   },
   "auth.errNoMatch": {
     "da": "De to adgangskoder er ikke ens.",
     "en": "The two passwords do not match.",
     "de": "Die beiden Passwörter stimmen nicht überein.",
     "sv": "De två lösenorden är inte lika.",
-    "no": "De to passordene er ikke like."
+    "no": "De to passordene er ikke like.",
+    "fr": "Les deux mots de passe ne correspondent pas.",
+    "es": "Las contraseñas no coinciden."
   },
   "auth.errShort": {
     "da": "Adgangskoden skal være mindst 10 tegn.",
     "en": "The password must be at least 10 characters.",
     "de": "Das Passwort muss mindestens 10 Zeichen haben.",
     "sv": "Lösenordet måste vara minst 10 tecken.",
-    "no": "Passordet må være minst 10 tegn."
+    "no": "Passordet må være minst 10 tegn.",
+    "fr": "Le mot de passe doit contenir au moins 10 caractères.",
+    "es": "La contraseña debe tener al menos 10 caracteres."
   },
   "auth.errBadLink": {
     "da": "Linket er udløbet eller brugt. Bed om et nyt.",
     "en": "The link has expired or been used. Ask for a new one.",
     "de": "Der Link ist abgelaufen oder verbraucht. Fordere einen neuen an.",
     "sv": "Länken har gått ut eller använts. Be om en ny.",
-    "no": "Lenken er utløpt eller brukt. Be om en ny."
+    "no": "Lenken er utløpt eller brukt. Be om en ny.",
+    "fr": "Le lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.",
+    "es": "El enlace ha caducado o ya se ha usado. Solicita uno nuevo."
   },
   "coach.buyPackage": {
     "da": "Køb pakken",
     "en": "Buy the package",
     "de": "Paket kaufen",
     "sv": "Köp paketet",
-    "no": "Kjøp pakken"
+    "no": "Kjøp pakken",
+    "fr": "Acheter le forfait",
+    "es": "Comprar paquete"
   },
   "coach.packagesBuyNote": {
     "da": "Betales på én gang. Timerne bookes bagefter som almindelige tider — de trækkes fra pakken i stedet for at koste noget.",
     "en": "Paid in one go. You book the sessions afterwards like any other time — they come off the package instead of costing anything.",
     "de": "Auf einmal bezahlt. Die Stunden buchst du danach wie jede andere Zeit — sie gehen vom Paket ab, statt etwas zu kosten.",
     "sv": "Betalas på en gång. Timmarna bokar du sedan som vanliga tider — de dras från paketet i stället för att kosta något.",
-    "no": "Betales på én gang. Timene booker du etterpå som vanlige tider — de trekkes fra pakken i stedet for å koste noe."
+    "no": "Betales på én gang. Timene booker du etterpå som vanlige tider — de trekkes fra pakken i stedet for å koste noe.",
+    "fr": "Paiement en une fois. Réservez ensuite vos séances normalement : elles sont déduites du forfait au lieu d’être facturées.",
+    "es": "Se paga de una vez. Después reservas las sesiones normalmente: se descuentan del paquete en lugar de cobrarse."
   },
   "coach.creditsLeft": {
     "da": "Du har {n} timer tilbage på {name}. De bruges automatisk, når du booker.",
     "en": "You have {n} sessions left on {name}. They are used automatically when you book.",
     "de": "Du hast noch {n} Stunden auf {name}. Sie werden beim Buchen automatisch verwendet.",
     "sv": "Du har {n} timmar kvar på {name}. De används automatiskt när du bokar.",
-    "no": "Du har {n} timer igjen på {name}. De brukes automatisk når du booker."
+    "no": "Du har {n} timer igjen på {name}. De brukes automatisk når du booker.",
+    "fr": "Il vous reste {n} séances sur {name}. Elles sont utilisées automatiquement à la réservation.",
+    "es": "Te quedan {n} sesiones de {name}. Se utilizan automáticamente al reservar."
   },
   "coach.loginToBuy": {
     "da": "Log ind for at købe",
     "en": "Log in to buy",
     "de": "Zum Kaufen anmelden",
     "sv": "Logga in för att köpa",
-    "no": "Logg inn for å kjøpe"
+    "no": "Logg inn for å kjøpe",
+    "fr": "Connectez-vous pour acheter",
+    "es": "Inicia sesión para comprar"
   },
   "meta.title": {
     "da": "RacketBuddy — book bane, find træner og medspiller",
     "en": "RacketBuddy — book a court, find a coach and a co-player",
     "de": "RacketBuddy — Platz buchen, Trainer und Mitspieler finden",
     "sv": "RacketBuddy — boka bana, hitta tränare och medspelare",
-    "no": "RacketBuddy — book bane, finn trener og medspiller"
+    "no": "RacketBuddy — book bane, finn trener og medspiller",
+    "fr": "RacketBuddy — réservez un terrain, trouvez un entraîneur et un partenaire",
+    "es": "RacketBuddy: reserva pista, encuentra entrenador y compañero"
   },
   "meta.description": {
     "da": "Book en bane, find en træner, og find en medspiller på dit niveau. Tennis, padel, badminton, squash og mere.",
     "en": "Book a court, find a coach, and find a co-player at your level. Tennis, padel, badminton, squash and more.",
     "de": "Buche einen Platz, finde einen Trainer und einen Mitspieler auf deinem Niveau. Tennis, Padel, Badminton, Squash und mehr.",
     "sv": "Boka en bana, hitta en tränare och en medspelare på din nivå. Tennis, padel, badminton, squash och mer.",
-    "no": "Book en bane, finn en trener, og finn en medspiller på ditt nivå. Tennis, padel, badminton, squash og mer."
+    "no": "Book en bane, finn en trener, og finn en medspiller på ditt nivå. Tennis, padel, badminton, squash og mer.",
+    "fr": "Réservez un terrain, trouvez un entraîneur et un partenaire de votre niveau. Tennis, padel, badminton, squash et plus.",
+    "es": "Reserva pista, encuentra entrenador y compañero de tu nivel. Tenis, pádel, bádminton, squash y más."
   },
   "home.pickSport": {
     "da": "Hvad spiller du?",
     "en": "What do you play?",
     "de": "Was spielst du?",
     "sv": "Vad spelar du?",
-    "no": "Hva spiller du?"
+    "no": "Hva spiller du?",
+    "fr": "À quoi jouez-vous ?",
+    "es": "¿A qué juegas?"
   },
   "home.pickSportNote": {
     "da": "Vælg din sport, så viser vi kun baner, trænere og spillere for den.",
     "en": "Pick your sport and we will only show courts, coaches and players for it.",
     "de": "Wähl deine Sportart, dann zeigen wir nur Plätze, Trainer und Spieler dafür.",
     "sv": "Välj din sport, så visar vi bara banor, tränare och spelare för den.",
-    "no": "Velg sporten din, så viser vi bare baner, trenere og spillere for den."
+    "no": "Velg sporten din, så viser vi bare baner, trenere og spillere for den.",
+    "fr": "Choisissez votre sport pour voir uniquement ses terrains, entraîneurs et joueurs.",
+    "es": "Elige tu deporte para ver solo sus pistas, entrenadores y jugadores."
   },
   "home.howTitle": {
     "da": "Sådan gør du",
     "en": "How it works",
     "de": "So funktioniert es",
     "sv": "Så gör du",
-    "no": "Slik gjør du"
+    "no": "Slik gjør du",
+    "fr": "Comment ça marche",
+    "es": "Cómo funciona"
   },
   "home.step1": {
     "da": "Find en ledig tid",
     "en": "Find a free time",
     "de": "Freie Zeit finden",
     "sv": "Hitta en ledig tid",
-    "no": "Finn en ledig tid"
+    "no": "Finn en ledig tid",
+    "fr": "Trouver un créneau libre",
+    "es": "Encontrar un horario libre"
   },
   "home.step1Body": {
     "da": "Vælg din sport og se, hvad der er ledigt i klubberne omkring dig i dag. Du skal ikke være medlem af noget.",
     "en": "Pick your sport and see what is free at clubs near you today. You do not need to be a member of anything.",
     "de": "Wähl deine Sportart und sieh, was heute in Clubs in deiner Nähe frei ist. Mitglied musst du nirgends sein.",
     "sv": "Välj din sport och se vad som är ledigt i klubbarna omkring dig i dag. Du behöver inte vara medlem någonstans.",
-    "no": "Velg sporten din og se hva som er ledig i klubbene rundt deg i dag. Du trenger ikke være medlem av noe."
+    "no": "Velg sporten din og se hva som er ledig i klubbene rundt deg i dag. Du trenger ikke være medlem av noe.",
+    "fr": "Choisissez votre sport et consultez les disponibilités près de chez vous aujourd’hui. Aucune adhésion nécessaire.",
+    "es": "Elige tu deporte y consulta qué hay libre hoy cerca de ti. No necesitas ser socio."
   },
   "home.step2": {
     "da": "Betal med kort",
     "en": "Pay by card",
     "de": "Mit Karte zahlen",
     "sv": "Betala med kort",
-    "no": "Betal med kort"
+    "no": "Betal med kort",
+    "fr": "Payer par carte",
+    "es": "Pagar con tarjeta"
   },
   "home.step2Body": {
     "da": "Tiden holdes for dig, mens du betaler. Kvitteringen kommer på mail med det samme, sammen med eventuel dørkode.",
     "en": "The slot is held while you pay. The receipt arrives by email right away, along with any door code.",
     "de": "Die Zeit wird reserviert, während du zahlst. Die Quittung kommt sofort per E-Mail, samt Türcode falls nötig.",
     "sv": "Tiden hålls medan du betalar. Kvittot kommer på mejl direkt, tillsammans med eventuell dörrkod.",
-    "no": "Tiden holdes mens du betaler. Kvitteringen kommer på e-post med det samme, sammen med eventuell dørkode."
+    "no": "Tiden holdes mens du betaler. Kvitteringen kommer på e-post med det samme, sammen med eventuell dørkode.",
+    "fr": "Le créneau est bloqué pendant le paiement. Le reçu et tout code d’accès arrivent immédiatement par e-mail.",
+    "es": "El horario se mantiene mientras pagas. El recibo llega por correo junto con el código de acceso, si lo hay."
   },
   "home.step3": {
     "da": "Spil",
     "en": "Play",
     "de": "Spielen",
     "sv": "Spela",
-    "no": "Spill"
+    "no": "Spill",
+    "fr": "Jouer",
+    "es": "Jugar"
   },
   "home.step3Body": {
     "da": "Mangler du en at spille mod, finder du en medspiller på dit niveau. Vil du blive bedre, booker du en træner.",
     "en": "Missing someone to play against? Find a co-player at your level. Want to improve? Book a coach.",
     "de": "Fehlt dir jemand zum Spielen? Finde einen Mitspieler auf deinem Niveau. Besser werden? Buch einen Trainer.",
     "sv": "Saknar du någon att spela mot? Hitta en medspelare på din nivå. Vill du bli bättre? Boka en tränare.",
-    "no": "Mangler du noen å spille mot? Finn en medspiller på ditt nivå. Vil du bli bedre? Book en trener."
+    "no": "Mangler du noen å spille mot? Finn en medspiller på ditt nivå. Vil du bli bedre? Book en trener.",
+    "fr": "Besoin d’un adversaire ? Trouvez un partenaire de votre niveau. Envie de progresser ? Réservez un entraîneur.",
+    "es": "¿Te falta rival? Encuentra un compañero de tu nivel. ¿Quieres mejorar? Reserva un entrenador."
   },
   "home.trustNoMembership": {
     "da": "Intet medlemskab",
     "en": "No membership",
     "de": "Keine Mitgliedschaft",
     "sv": "Inget medlemskap",
-    "no": "Intet medlemskap"
+    "no": "Intet medlemskap",
+    "fr": "Sans adhésion",
+    "es": "Sin ser socio"
   },
   "home.trustNoMembershipBody": {
     "da": "Book en enkelt time i en klub, du aldrig har sat fod i.",
     "en": "Book a single hour at a club you have never set foot in.",
     "de": "Buch eine einzelne Stunde in einem Club, in dem du noch nie warst.",
     "sv": "Boka en enstaka timme i en klubb du aldrig satt din fot i.",
-    "no": "Book en enkelttime i en klubb du aldri har satt fot i."
+    "no": "Book en enkelttime i en klubb du aldri har satt fot i.",
+    "fr": "Réservez une heure dans un club que vous n’avez jamais visité.",
+    "es": "Reserva una hora en un club que aún no conoces."
   },
   "home.trustPrice": {
     "da": "Prisen står der",
     "en": "The price is on the page",
     "de": "Der Preis steht da",
     "sv": "Priset står där",
-    "no": "Prisen står der"
+    "no": "Prisen står der",
+    "fr": "Le prix est affiché",
+    "es": "El precio está en la página"
   },
   "home.trustPriceBody": {
     "da": "Prisen på skærmen er den, du betaler. Ingen gebyrer lagt til ved kassen, og en profil koster ingenting at have.",
     "en": "The price on the screen is what you pay. No fees added at checkout, and having a profile costs nothing.",
     "de": "Der Preis auf dem Bildschirm ist der, den du zahlst. Keine Gebühren an der Kasse, und ein Profil kostet nichts.",
     "sv": "Priset på skärmen är det du betalar. Inga avgifter tillagda i kassan, och ett konto kostar ingenting.",
-    "no": "Prisen på skjermen er den du betaler. Ingen gebyrer lagt til i kassen, og en profil koster ingenting."
+    "no": "Prisen på skjermen er den du betaler. Ingen gebyrer lagt til i kassen, og en profil koster ingenting.",
+    "fr": "Vous payez le prix affiché. Aucun frais ajouté au paiement et le profil est gratuit.",
+    "es": "Pagas el precio mostrado. No se añaden cargos al pagar y crear un perfil es gratis."
   },
   "home.trustCancel": {
     "da": "Aflys op til 24 timer før",
     "en": "Cancel up to 24 hours before",
     "de": "Bis 24 Stunden vorher absagen",
     "sv": "Avboka upp till 24 timmar innan",
-    "no": "Avlys inntil 24 timer før"
+    "no": "Avlys inntil 24 timer før",
+    "fr": "Annuler jusqu’à 24 heures avant",
+    "es": "Cancelar hasta 24 horas antes"
   },
   "home.trustCancelBody": {
     "da": "Aflyser du mere end 24 timer før spilletid, får du hele beløbet tilbage automatisk. Tættere på kan klubben ikke nå at sælge tiden igen.",
     "en": "Cancel more than 24 hours before the slot and you get the full amount back automatically. Any closer and the club cannot resell the time.",
     "de": "Sagst du mehr als 24 Stunden vorher ab, bekommst du alles automatisch zurück. Näher dran kann der Club die Zeit nicht mehr weiterverkaufen.",
     "sv": "Avbokar du mer än 24 timmar före speltid får du hela beloppet tillbaka automatiskt. Närmare än så hinner klubben inte sälja tiden igen.",
-    "no": "Avlyser du mer enn 24 timer før spilletid, får du hele beløpet tilbake automatisk. Nærmere enn det rekker ikke klubben å selge tiden igjen."
+    "no": "Avlyser du mer enn 24 timer før spilletid, får du hele beløpet tilbake automatisk. Nærmere enn det rekker ikke klubben å selge tiden igjen.",
+    "fr": "Annulez plus de 24 heures avant pour être remboursé intégralement et automatiquement. Plus tard, le club ne peut plus revendre le créneau.",
+    "es": "Cancela con más de 24 horas de antelación para recibir el reembolso completo automático. Más tarde, el club no puede revender el horario."
   },
   "home.ctaSignup": {
     "da": "Opret profil — det er gratis",
     "en": "Create a profile — it is free",
     "de": "Profil erstellen — kostenlos",
     "sv": "Skapa profil — det är gratis",
-    "no": "Opprett profil — det er gratis"
+    "no": "Opprett profil — det er gratis",
+    "fr": "Créer un profil — c’est gratuit",
+    "es": "Crear perfil: es gratis"
   },
   "home.faqTitle": {
     "da": "Det folk plejer at spørge om",
     "en": "What people usually ask",
     "de": "Was meistens gefragt wird",
     "sv": "Det folk brukar fråga om",
-    "no": "Det folk pleier å spørre om"
+    "no": "Det folk pleier å spørre om",
+    "fr": "Questions fréquentes",
+    "es": "Preguntas frecuentes"
   },
   "home.faq1Q": {
     "da": "Skal jeg være medlem af klubben?",
     "en": "Do I need to be a member of the club?",
     "de": "Muss ich Mitglied im Club sein?",
     "sv": "Måste jag vara medlem i klubben?",
-    "no": "Må jeg være medlem av klubben?"
+    "no": "Må jeg være medlem av klubben?",
+    "fr": "Dois-je être membre du club ?",
+    "es": "¿Necesito ser socio del club?"
   },
   "home.faq1A": {
     "da": "Nej. Klubberne frigiver selv de tider, de gerne vil sælge til folk udefra. Du booker én time og møder op.",
     "en": "No. The clubs decide which times to release to people from outside. You book a single hour and turn up.",
     "de": "Nein. Die Clubs geben selbst frei, welche Zeiten sie an Auswärtige verkaufen wollen. Du buchst eine Stunde und kommst.",
     "sv": "Nej. Klubbarna släpper själva de tider de vill sälja till utomstående. Du bokar en timme och dyker upp.",
-    "no": "Nei. Klubbene frigir selv tidene de vil selge til folk utenfra. Du booker én time og møter opp."
+    "no": "Nei. Klubbene frigir selv tidene de vil selge til folk utenfra. Du booker én time og møter opp.",
+    "fr": "Non. Les clubs choisissent les créneaux ouverts aux visiteurs. Réservez une heure et venez jouer.",
+    "es": "No. Los clubes deciden qué horarios abren a visitantes. Reserva una hora y ven a jugar."
   },
   "home.faq2Q": {
     "da": "Hvad hvis jeg ikke bliver færdig med at betale?",
     "en": "What if I do not finish paying?",
     "de": "Was, wenn ich die Zahlung nicht abschließe?",
     "sv": "Vad händer om jag inte betalar klart?",
-    "no": "Hva om jeg ikke blir ferdig med å betale?"
+    "no": "Hva om jeg ikke blir ferdig med å betale?",
+    "fr": "Et si je ne termine pas le paiement ?",
+    "es": "¿Qué pasa si no termino de pagar?"
   },
   "home.faq2A": {
     "da": "Tiden holdes for dig i 10 minutter. Bliver betalingen ikke gennemført, frigives tiden igen, og der er ikke trukket noget.",
     "en": "The slot is held for 10 minutes. If the payment is not completed, the time is released again and nothing has been charged.",
     "de": "Die Zeit wird 10 Minuten reserviert. Wird nicht bezahlt, wird sie wieder freigegeben, und es wurde nichts abgebucht.",
     "sv": "Tiden hålls i 10 minuter. Slutförs inte betalningen släpps tiden igen, och inget har dragits.",
-    "no": "Tiden holdes i 10 minutter. Fullføres ikke betalingen, frigis tiden igjen, og ingenting er trukket."
+    "no": "Tiden holdes i 10 minutter. Fullføres ikke betalingen, frigis tiden igjen, og ingenting er trukket.",
+    "fr": "Le créneau est bloqué 10 minutes. Sans paiement terminé, il est libéré et rien n’est débité.",
+    "es": "El horario se mantiene 10 minutos. Si no completas el pago, se libera y no se cobra nada."
   },
   "home.faq3Q": {
     "da": "Hvordan finder jeg en at spille mod?",
     "en": "How do I find someone to play against?",
     "de": "Wie finde ich jemanden zum Spielen?",
     "sv": "Hur hittar jag någon att spela mot?",
-    "no": "Hvordan finner jeg noen å spille mot?"
+    "no": "Hvordan finner jeg noen å spille mot?",
+    "fr": "Comment trouver un adversaire ?",
+    "es": "¿Cómo encuentro a alguien para jugar?"
   },
   "home.faq3A": {
     "da": "Du ser spillere på dit niveau i dit område, én ad gangen. Siger I begge ja, åbner der en samtale — og springer du over, får den anden ikke besked.",
     "en": "You see players at your level nearby, one at a time. If you both say yes, a conversation opens — and if you skip, the other person is not told.",
     "de": "Du siehst Spieler auf deinem Niveau in deiner Nähe, einen nach dem anderen. Sagt ihr beide ja, öffnet sich ein Gespräch — überspringst du, erfährt die andere Person nichts.",
     "sv": "Du ser spelare på din nivå i ditt område, en i taget. Säger ni båda ja öppnas en konversation — och hoppar du över får den andra inte veta det.",
-    "no": "Du ser spillere på ditt nivå i området ditt, én om gangen. Sier dere begge ja, åpnes en samtale — og hopper du over, får den andre ikke beskjed."
+    "no": "Du ser spillere på ditt nivå i området ditt, én om gangen. Sier dere begge ja, åpnes en samtale — og hopper du over, får den andre ikke beskjed.",
+    "fr": "Découvrez les joueurs proches de votre niveau un par un. Si vous acceptez tous les deux, une conversation s’ouvre ; si vous passez, l’autre n’est pas informé.",
+    "es": "Ves jugadores cercanos de tu nivel, uno a uno. Si ambos aceptáis se abre una conversación; si pasas, el otro no recibe aviso."
   },
   "home.faq4Q": {
     "da": "Hvad koster det at bruge RacketBuddy?",
     "en": "What does it cost to use RacketBuddy?",
     "de": "Was kostet RacketBuddy?",
     "sv": "Vad kostar det att använda RacketBuddy?",
-    "no": "Hva koster det å bruke RacketBuddy?"
+    "no": "Hva koster det å bruke RacketBuddy?",
+    "fr": "Combien coûte RacketBuddy ?",
+    "es": "¿Cuánto cuesta usar RacketBuddy?"
   },
   "home.faq4A": {
     "da": "Ingenting for dig. Du betaler kun banen eller trænertimen, og prisen er klubbens egen. Klubben betaler et fast abonnement til os — der lægges intet oveni din pris.",
     "en": "Nothing for you. You only pay for the court or the coaching session, at the club's own price. The club pays us a flat monthly fee — nothing is added on top of your price.",
     "de": "Für dich nichts. Du zahlst nur den Platz oder die Trainerstunde zum Preis des Clubs. Unser Anteil kommt aus der Zahlung des Clubs, nicht obendrauf.",
     "sv": "Ingenting för dig. Du betalar bara banan eller tränartimmen till klubbens eget pris. Vår andel tas från klubbens betalning, inte ovanpå din.",
-    "no": "Ingenting for deg. Du betaler bare banen eller trenertimen til klubbens egen pris. Vår andel tas av klubbens betaling, ikke lagt på toppen av din."
+    "no": "Ingenting for deg. Du betaler bare banen eller trenertimen til klubbens egen pris. Vår andel tas av klubbens betaling, ikke lagt på toppen av din.",
+    "fr": "Rien pour vous. Vous payez uniquement le terrain ou le cours, au tarif du club. Le club nous verse un abonnement mensuel fixe, sans supplément pour vous.",
+    "es": "Nada para ti. Solo pagas la pista o clase al precio del club. El club nos paga una cuota mensual fija, sin recargo para ti."
   },
   "auth.termsNote": {
     "da": "Ved at oprette en profil accepterer du {terms} og {privacy}.",
     "en": "By creating a profile you accept our {terms} and {privacy}.",
     "de": "Mit dem Erstellen eines Profils akzeptierst du {terms} und {privacy}.",
     "sv": "Genom att skapa ett konto godkänner du {terms} och {privacy}.",
-    "no": "Ved å opprette en profil godtar du {terms} og {privacy}."
+    "no": "Ved å opprette en profil godtar du {terms} og {privacy}.",
+    "fr": "En créant un profil, vous acceptez nos {terms} et {privacy}.",
+    "es": "Al crear un perfil aceptas nuestras {terms} y {privacy}."
   },
   "auth.termsLink": {
     "da": "handelsbetingelserne",
     "en": "the terms of sale",
     "de": "die Handelsbedingungen",
     "sv": "köpvillkoren",
-    "no": "salgsbetingelsene"
+    "no": "salgsbetingelsene",
+    "fr": "conditions de vente",
+    "es": "condiciones de venta"
   },
   "auth.privacyLink": {
     "da": "privatlivspolitikken",
     "en": "the privacy policy",
     "de": "die Datenschutzerklärung",
     "sv": "integritetspolicyn",
-    "no": "personvernerklæringen"
+    "no": "personvernerklæringen",
+    "fr": "politique de confidentialité",
+    "es": "política de privacidad"
   },
   "auth.coachHeadline": {
     "da": "Kort om dig",
     "en": "Short about you",
     "de": "Kurz über dich",
     "sv": "Kort om dig",
-    "no": "Kort om deg"
+    "no": "Kort om deg",
+    "fr": "Quelques mots sur vous",
+    "es": "Sobre ti"
   },
   "auth.coachHeadlinePlaceholder": {
     "da": "fx DTF-uddannet træner, speciale i serv",
     "en": "e.g. certified coach, serve specialist",
     "de": "z. B. lizenzierter Trainer, Spezialgebiet Aufschlag",
     "sv": "t.ex. utbildad tränare, specialitet serve",
-    "no": "f.eks. sertifisert trener, spesialitet serv"
+    "no": "f.eks. sertifisert trener, spesialitet serv",
+    "fr": "ex. entraîneur diplômé, spécialiste du service",
+    "es": "p. ej., entrenador titulado, especialista en saque"
   },
   "auth.coachSports": {
     "da": "Hvilke sportsgrene træner du i?",
     "en": "Which sports do you coach?",
     "de": "In welchen Sportarten trainierst du?",
     "sv": "Vilka sporter tränar du i?",
-    "no": "Hvilke sporter trener du i?"
+    "no": "Hvilke sporter trener du i?",
+    "fr": "Quels sports enseignez-vous ?",
+    "es": "¿Qué deportes entrenas?"
   },
   "auth.coachPrice": {
     "da": "Din pris pr. time (kr)",
     "en": "Your price per hour (kr)",
     "de": "Dein Preis pro Stunde (kr)",
     "sv": "Ditt pris per timme (kr)",
-    "no": "Din pris per time (kr)"
+    "no": "Din pris per time (kr)",
+    "fr": "Votre tarif horaire (kr)",
+    "es": "Tu precio por hora (kr)"
   },
   "auth.coachAreaNote": {
     "da": "Skriv hvor du træner — det er dét, spillerne søger på.",
     "en": "Write where you coach — that is what players search by.",
     "de": "Schreib, wo du trainierst — danach suchen die Spieler.",
     "sv": "Skriv var du tränar — det är det spelarna söker på.",
-    "no": "Skriv hvor du trener — det er det spillerne søker på."
+    "no": "Skriv hvor du trener — det er det spillerne søker på.",
+    "fr": "Indiquez où vous enseignez : les joueurs recherchent par lieu.",
+    "es": "Indica dónde entrenas: los jugadores buscan por ubicación."
   },
   "auth.coachRest": {
     "da": "Pakkeforløb, ledige tider og billede sætter du op bagefter.",
     "en": "You set up packages, available times and a photo afterwards.",
     "de": "Pakete, freie Zeiten und ein Foto richtest du danach ein.",
     "sv": "Paket, lediga tider och foto sätter du upp efteråt.",
-    "no": "Pakkeforløp, ledige tider og bilde setter du opp etterpå."
+    "no": "Pakkeforløp, ledige tider og bilde setter du opp etterpå.",
+    "fr": "Vous ajouterez forfaits, créneaux et photo ensuite.",
+    "es": "Configurarás paquetes, horarios y foto después."
   },
   "profile.awaitingCoach": {
     "da": "Afventer trænerens svar",
     "en": "Waiting for the coach",
     "de": "Warte auf den Trainer",
     "sv": "Väntar på tränaren",
-    "no": "Venter på treneren"
+    "no": "Venter på treneren",
+    "fr": "En attente de l’entraîneur",
+    "es": "Esperando al entrenador"
   },
   "coach.requestTime": {
     "da": "Anmod om tid",
     "en": "Request a time",
     "de": "Zeit anfragen",
     "sv": "Begär en tid",
-    "no": "Be om en tid"
+    "no": "Be om en tid",
+    "fr": "Demander un créneau",
+    "es": "Solicitar horario"
   },
   "coach.requestNote": {
     "da": "Træneren skal godkende, før timen er din. Der trækkes ingen penge, før den er godkendt.",
     "en": "The coach must approve before the session is yours. Nothing is charged until then.",
     "de": "Der Trainer muss zustimmen, bevor die Stunde dir gehört. Vorher wird nichts abgebucht.",
     "sv": "Tränaren måste godkänna innan timmen är din. Inget dras innan dess.",
-    "no": "Treneren må godkjenne før timen er din. Ingenting trekkes før den er godkjent."
+    "no": "Treneren må godkjenne før timen er din. Ingenting trekkes før den er godkjent.",
+    "fr": "L’entraîneur doit approuver la séance. Rien n’est débité avant.",
+    "es": "El entrenador debe aprobar la sesión. No se cobra nada hasta entonces."
   },
   "profile.requested": {
     "da": "Anmodning sendt. Du hører fra træneren.",
     "en": "Request sent. You will hear from the coach.",
     "de": "Anfrage gesendet. Du hörst vom Trainer.",
     "sv": "Förfrågan skickad. Du hör från tränaren.",
-    "no": "Forespørsel sendt. Du hører fra treneren."
+    "no": "Forespørsel sendt. Du hører fra treneren.",
+    "fr": "Demande envoyée. L’entraîneur vous répondra.",
+    "es": "Solicitud enviada. El entrenador te responderá."
   },
   "profile.lessonAgain": {
     "da": "Book samme time igen",
     "en": "Book the same session again",
     "de": "Dieselbe Stunde erneut buchen",
     "sv": "Boka samma tid igen",
-    "no": "Book samme time igjen"
+    "no": "Book samme time igjen",
+    "fr": "Réserver à nouveau la même séance",
+    "es": "Reservar otra vez la misma sesión"
   },
   "profile.lessonAgainNote": {
     "da": "Samme træner, samme tid, næste uge. Træneren skal godkende, og der trækkes ingen penge før da.",
     "en": "Same coach, same time, next week. The coach approves first, and nothing is charged until then.",
     "de": "Gleicher Trainer, gleiche Zeit, nächste Woche. Der Trainer bestätigt zuerst, vorher wird nichts abgebucht.",
     "sv": "Samma tränare, samma tid, nästa vecka. Tränaren godkänner först, och inget dras innan dess.",
-    "no": "Samme trener, samme tid, neste uke. Treneren godkjenner først, og ingenting trekkes før da."
+    "no": "Samme trener, samme tid, neste uke. Treneren godkjenner først, og ingenting trekkes før da.",
+    "fr": "Même entraîneur, même horaire la semaine prochaine. L’entraîneur approuve d’abord et rien n’est débité avant.",
+    "es": "Mismo entrenador y horario la próxima semana. El entrenador aprueba primero y no se cobra hasta entonces."
   },
   "profile.lessonsPast": {
     "da": "Dine tidligere trænertimer",
     "en": "Your past coaching sessions",
     "de": "Deine vergangenen Trainerstunden",
     "sv": "Dina tidigare tränartimmar",
-    "no": "Dine tidligere trenertimer"
+    "no": "Dine tidligere trenertimer",
+    "fr": "Vos anciennes séances",
+    "es": "Tus sesiones anteriores"
   },
   "club.pending": {
     "da": "Afventer godkendelse",
     "en": "Awaiting approval",
     "de": "Wartet auf Freigabe",
     "sv": "Väntar på godkännande",
-    "no": "Venter på godkjenning"
+    "no": "Venter på godkjenning",
+    "fr": "En attente d’approbation",
+    "es": "Pendiente de aprobación"
   },
   "club.pendingNote": {
     "da": "Vi gennemgår jeres oplysninger manuelt. I hører fra os inden for et par hverdage.",
     "en": "We review your details manually. You will hear from us within a few working days.",
     "de": "Wir prüfen eure Angaben von Hand. Ihr hört innerhalb weniger Werktage von uns.",
     "sv": "Vi går igenom era uppgifter manuellt. Ni hör från oss inom ett par arbetsdagar.",
-    "no": "Vi går gjennom opplysningene deres manuelt. Dere hører fra oss innen et par virkedager."
+    "no": "Vi går gjennom opplysningene deres manuelt. Dere hører fra oss innen et par virkedager.",
+    "fr": "Nous examinons vos informations manuellement. Vous recevrez une réponse sous quelques jours ouvrés.",
+    "es": "Revisamos tus datos manualmente. Recibirás respuesta en unos días laborables."
   },
   "club.rejected": {
     "da": "Ikke godkendt",
     "en": "Not approved",
     "de": "Nicht freigegeben",
     "sv": "Inte godkänd",
-    "no": "Ikke godkjent"
+    "no": "Ikke godkjent",
+    "fr": "Non approuvé",
+    "es": "No aprobado"
   },
   "club.signup": {
     "da": "Få jeres klub med",
     "en": "List your club",
     "de": "Euren Club aufnehmen",
     "sv": "Få med er klubb",
-    "no": "Få klubben deres med"
+    "no": "Få klubben deres med",
+    "fr": "Inscrire votre club",
+    "es": "Registrar tu club"
   }
 }

@@ -15,7 +15,7 @@ test('every fixed club administration phrase has complete supported-language tra
  files.push('src/components/BlockedFirst.tsx');
  files.push('src/app/admin/custom/page.tsx');
  for(const file of files){const source=ts.createSourceFile(file,readFileSync(file,'utf8'),99,true,ts.ScriptKind.TSX);function visit(n:ts.Node){if(ts.isCallExpression(n)&&['tr','phrase'].includes(n.expression.getText(source))&&ts.isStringLiteral(n.arguments[0]))values.add(n.arguments[0].text);ts.forEachChild(n,visit);}visit(source);}
- for(const value of values)for(const locale of ['en','de','sv','no'])assert.ok(dictionary[value]?.[locale],`${locale}: ${value}`);
+ for(const value of values)for(const locale of ['en','de','sv','no','fr','es'])assert.ok(dictionary[value]?.[locale],`${locale}: ${value}`);
 });
 test('admin navigation, dates and parameterised statuses follow the chosen language',()=>{
  assert.equal(phrase('Lys og adgang','de'),'Licht und Zugang');assert.equal(phrase('Medlemmer','sv'),'Medlemmar');

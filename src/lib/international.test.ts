@@ -15,7 +15,7 @@ test('supported countries have valid local defaults and no implicit conversion',
 });
 test('international profiles accept local cities, keep Danish regions and reject unknown markets',()=>{
  assert.deepEqual(profileLocation({country:'us',locale:'en-US',area:'Boston'}),{country:'US',locale:'en-US',area:'Boston',countryChosen:true});
- assert.throws(()=>profileLocation({country:'DK',locale:'da',area:'Boston'}));assert.throws(()=>profileLocation({country:'ZZ',locale:'en',area:'Test'}));assert.throws(()=>profileLocation({country:'DE',locale:'fr',area:'Berlin'}));
+ assert.throws(()=>profileLocation({country:'DK',locale:'da',area:'Boston'}));assert.throws(()=>profileLocation({country:'ZZ',locale:'en',area:'Test'}));assert.throws(()=>profileLocation({country:'DE',locale:'zz',area:'Berlin'}));
  assert.equal(phrase('Log ind på klubben','en'),'Log in to your club');assert.equal(phrase('Log ind på klubben','da'),'Log ind på klubben');
 });
 test('booking proof rejects a matching numeric amount in the wrong currency',()=>{
