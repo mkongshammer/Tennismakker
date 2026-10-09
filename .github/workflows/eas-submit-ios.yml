@@ -19,22 +19,27 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
       EAS_PROJECT_ID: 620ef3a3-d92c-4241-86bb-511817c9d3cb
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "20.19.4"
-      - name: Verify Expo authentication
+      - name: Verify credentials
         run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo "EXPO_TOKEN secret is missing"
-            exit 2
-          fi
+          test -n "$EXPO_TOKEN" || (echo "EXPO_TOKEN secret is missing" && exit 2)
+          test -n "$ASC_KEY_ID" || (echo "ASC_KEY_ID secret is missing" && exit 2)
+          test -n "$ASC_ISSUER_ID" || (echo "ASC_ISSUER_ID secret is missing" && exit 2)
+          test -n "$ASC_PRIVATE_KEY" || (echo "ASC_PRIVATE_KEY secret is missing" && exit 2)
           npx --yes eas-cli@latest whoami
       - name: Install dependencies
         run: npm ci
-      - name: Configure App Store Connect app ID
+      - name: Configure App Store Connect credentials
         run: |
+          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
           node - <<'NODE'
           const fs = require('fs');
           const p = 'eas.json';
@@ -42,8 +47,13 @@ jobs:
           json.submit ||= {};
           json.submit.production ||= {};
           json.submit.production.ios ||= {};
-          json.submit.production.ios.ascAppId = '6820186123';
+          Object.assign(json.submit.production.ios, {
+            ascAppId: '6820186123',
+            ascApiKeyPath: '/tmp/AuthKey.p8',
+            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
+            ascApiKeyId: process.env.ASC_KEY_ID
+          });
           fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
           NODE
       - name: Submit latest iOS build to App Store Connect
-        run: npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive
+        run: npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
