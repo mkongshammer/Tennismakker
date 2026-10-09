@@ -18,7 +18,7 @@ jobs:
         working-directory: mobile
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+      EAS_PROJECT_ID: 620ef3a3-d92c-4241-86bb-511817c9d3cb
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
