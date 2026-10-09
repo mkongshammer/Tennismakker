@@ -57,3 +57,4 @@ jobs:
           NODE
       - name: Submit latest iOS build to App Store Connect
         run: npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
+      # trigger: app-store-connect-secrets-ready
