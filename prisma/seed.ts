@@ -1,13 +1,9 @@
 // Kører ved hver udrulning. Filnavnet er arvet fra dengang, den lagde
-// demo-data ind; nu gør den to ting, og kun den ene som standard.
+// demo-data ind; nu sikrer den de få konti og produktionsrettelser, der skal
+// eksistere efter enhver deploy.
 //
-// 1. Sikrer, at ejerens superadmin-konto findes. Uden den er der ingen vej
-//    ind, hvis noget går galt — og den kontrol koster ét opslag.
-//
-// 2. Tømmer databasen for alt andet, men KUN hvis RESET_TO_PRODUCTION er
-//    sat. Uden den spærre ville en oprydning, der giver mening i dag,
-//    slette rigtige klubbers bookinger ved næste udrulning. Sæt variablen,
-//    udrul, fjern den igen.
+// RESET_TO_PRODUCTION er den eneste vej til at tømme øvrige produktionsdata.
+// Uden den spærre må dette script aldrig slette rigtige klubbers bookinger.
 //
 // Indstillingerne (PlatformSetting) og sidevisningerne røres aldrig. Det
 // første er Stripe-nøgler og afsenderadresse — at tabe dem ville tage
@@ -21,6 +17,8 @@ import { provisionPrivateClub } from "../src/lib/deploy-club-provision";
 const db = new PrismaClient();
 
 const OWNER_EMAIL = (process.env.OWNER_EMAIL ?? "").trim().toLowerCase();
+const APPLE_REVIEW_EMAIL = (process.env.APPLE_REVIEW_EMAIL ?? "").trim().toLowerCase();
+const APPLE_REVIEW_PASSWORD = process.env.APPLE_REVIEW_PASSWORD ?? "";
 
 /**
  * Rækkefølgen er ikke tilfældig: børn før forældre.
@@ -49,8 +47,8 @@ async function wipe() {
   await db.clubLead.deleteMany({});
   await db.websiteOrder.deleteMany({});
 
-  // Alle brugere undtagen ejeren. Ellers ville oprydningen slette den ene
-  // konto, der kan komme ind bagefter.
+  // Alle brugere undtagen ejeren. Apple Review-kontoen bliver genskabt
+  // umiddelbart efter en eventuel oprydning.
   await db.user.deleteMany({
     where: OWNER_EMAIL ? { email: { not: OWNER_EMAIL } } : {},
   });
@@ -93,6 +91,59 @@ async function ensureOwner() {
     await db.user.update({ where: { id: existing.id }, data: { role: "SUPERADMIN" } });
     console.log(`Ejerkonto fik superadmin: ${OWNER_EMAIL}`);
   }
+}
+
+/**
+ * Stabil, ikke-privilegeret konto til Apple App Review.
+ *
+ * Loginoplysningerne ligger kun i Render environment variables og aldrig i
+ * repositoryet. Kontrollen kører ved hver deploy, så review-kontoen ikke kan
+ * forsvinde før eller under Apples gennemgang. Den bruger præcis samme login-
+ * endpoint og session-flow som almindelige brugere.
+ */
+async function ensureAppleReview() {
+  if (!APPLE_REVIEW_EMAIL.includes("@") || APPLE_REVIEW_PASSWORD.length < 8) {
+    console.log("Apple Review-login er ikke konfigureret — springer review-kontoen over.");
+    return;
+  }
+
+  const existing = await db.user.findUnique({ where: { email: APPLE_REVIEW_EMAIL } });
+  const passwordMatches = existing
+    ? await bcrypt.compare(APPLE_REVIEW_PASSWORD, existing.passwordHash)
+    : false;
+
+  const common = {
+    name: "Apple App Review",
+    role: "PLAYER",
+    level: 4,
+    area: "Boston",
+    country: "US",
+    countryChosen: true,
+    locale: "en",
+    sports: "TENNIS,PADEL,PICKLEBALL",
+    termsAcceptedAt: existing?.termsAcceptedAt ?? new Date(),
+  };
+
+  if (!existing) {
+    await db.user.create({
+      data: {
+        email: APPLE_REVIEW_EMAIL,
+        passwordHash: await bcrypt.hash(APPLE_REVIEW_PASSWORD, 10),
+        ...common,
+      },
+    });
+    console.log(`Apple App Review-konto oprettet: ${APPLE_REVIEW_EMAIL}`);
+    return;
+  }
+
+  await db.user.update({
+    where: { id: existing.id },
+    data: {
+      ...common,
+      ...(passwordMatches ? {} : { passwordHash: await bcrypt.hash(APPLE_REVIEW_PASSWORD, 10) }),
+    },
+  });
+  console.log(`Apple App Review-konto er klar: ${APPLE_REVIEW_EMAIL}`);
 }
 
 /**
@@ -151,6 +202,7 @@ async function main() {
   }
 
   await ensureOwner();
+  await ensureAppleReview();
   try {
     console.log("Private club provisioning:", await provisionPrivateClub(db, process.env.PRIVATE_CLUB_PROVISION));
   } catch {
