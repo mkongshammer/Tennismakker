@@ -1,0 +1,37 @@
+name: EAS iOS Submit
+
+on:
+  push:
+    branches:
+      - eas-submit-ios-20261009
+    paths:
+      - ".github/workflows/eas-submit-ios.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  submit-ios:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.4"
+      - name: Verify Expo authentication
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "EXPO_TOKEN secret is missing"
+            exit 2
+          fi
+          npx --yes eas-cli@latest whoami
+      - name: Install dependencies
+        run: npm ci
+      - name: Submit latest iOS build to App Store Connect
+        run: npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive
