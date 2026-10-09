@@ -33,5 +33,17 @@ jobs:
           npx --yes eas-cli@latest whoami
       - name: Install dependencies
         run: npm ci
+      - name: Configure App Store Connect app ID
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit.production ||= {};
+          json.submit.production.ios ||= {};
+          json.submit.production.ios.ascAppId = '6820186123';
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
       - name: Submit latest iOS build to App Store Connect
         run: npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive
