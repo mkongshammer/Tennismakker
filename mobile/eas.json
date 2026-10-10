@@ -9,6 +9,10 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "app-review": {
+      "extends": "production",
+      "autoIncrement": false
     }
   },
   "submit": {
