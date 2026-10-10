@@ -48,19 +48,19 @@ jobs:
           npx --yes eas-cli@latest whoami
       - name: Confirm build number remains 5
         run: npx --yes eas-cli@latest build:version:get --platform ios --profile app-review --json --non-interactive
-      - name: Download existing iOS signing credentials from EAS
+      - name: Download production iOS signing credentials from EAS
         env:
           CI: "false"
         run: |
           cat > /tmp/download-ios-creds.exp <<'EXPECT'
           log_user 1
-          set timeout 180
+          set timeout 90
           spawn npx --yes eas-cli@latest credentials -p ios
           expect {
             -re {Which build profile do you want to configure\?} {
-              send "\033\[B\033\[B\r"
+              send "\033\[B\r"
             }
-            timeout { puts "Timed out selecting app-review profile"; exit 10 }
+            timeout { puts "Timed out selecting production profile"; exit 10 }
           }
           expect {
             -re {What do you want to do\?} {
@@ -78,11 +78,14 @@ jobs:
             -re {iOS part of your local credentials.json is synced with values stored on EAS servers\.} {
               send "\003"
             }
-            timeout { puts "Timed out downloading iOS credentials"; exit 13 }
+            -re {There are no credentials configured for the APP_STORE distribution of this project on EAS servers} {
+              puts "Production APP_STORE credentials are not stored on EAS"; exit 14
+            }
+            timeout { puts "Timed out downloading production iOS credentials"; exit 13 }
           }
           expect eof
           EXPECT
-          expect /tmp/download-ios-creds.exp || true
+          expect /tmp/download-ios-creds.exp
           test -f credentials.json || (echo "credentials.json was not downloaded" && exit 20)
           node - <<'NODE'
           const fs = require('fs');
@@ -97,7 +100,7 @@ jobs:
           for (const p of [target.distributionCertificate.path, target.provisioningProfilePath]) {
             if (!fs.existsSync(path.resolve(p))) throw new Error(`Missing downloaded credential file: ${p}`);
           }
-          console.log('Downloaded iOS signing credentials successfully.');
+          console.log('Downloaded production iOS signing credentials successfully.');
           NODE
       - name: Switch app-review profile to local signing credentials
         run: |
