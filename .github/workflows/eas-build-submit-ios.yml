@@ -1,4 +1,4 @@
-name: EAS iOS Build and Submit
+name: EAS iOS Build Direct
 
 on:
   push:
@@ -11,126 +11,18 @@ permissions:
   contents: read
 
 jobs:
-  build-submit-ios:
+  eas-build-ios:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: mobile
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      EAS_PROJECT_ID: 620ef3a3-d92c-4241-86bb-511817c9d3cb
-      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
-      EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
-      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
-      EXPO_APPLE_TEAM_ID: 28H9663B4V
-      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Install dependencies and expect
-        run: |
-          npm ci
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq expect
-      - name: Configure App Store Connect API key
-        run: |
-          test -n "$EXPO_TOKEN" || (echo "EXPO_TOKEN secret is missing" && exit 2)
-          test -n "$ASC_KEY_ID" || (echo "ASC_KEY_ID secret is missing" && exit 2)
-          test -n "$ASC_ISSUER_ID" || (echo "ASC_ISSUER_ID secret is missing" && exit 2)
-          test -n "$ASC_PRIVATE_KEY" || (echo "ASC_PRIVATE_KEY secret is missing" && exit 2)
-          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
-          chmod 600 /tmp/AuthKey.p8
-          npx --yes eas-cli@latest whoami
-      - name: Confirm build number remains 5
-        run: npx --yes eas-cli@latest build:version:get --platform ios --profile app-review --json --non-interactive
-      - name: Download production iOS signing credentials from EAS
-        env:
-          CI: "false"
-        run: |
-          cat > /tmp/download-ios-creds.exp <<'EXPECT'
-          log_user 1
-          set timeout 90
-          spawn npx --yes eas-cli@latest credentials -p ios
-          expect {
-            -re {Which build profile do you want to configure\?} {
-              send "\033\[B\r"
-            }
-            timeout { puts "Timed out selecting production profile"; exit 10 }
-          }
-          expect {
-            -re {What do you want to do\?} {
-              send "\033\[B\033\[B\033\[B\r"
-            }
-            timeout { puts "Timed out selecting credentials.json menu"; exit 11 }
-          }
-          expect {
-            -re {What do you want to do\?} {
-              send "\r"
-            }
-            timeout { puts "Timed out selecting credentials download"; exit 12 }
-          }
-          expect {
-            -re {iOS part of your local credentials.json is synced with values stored on EAS servers\.} {
-              send "\003"
-            }
-            -re {There are no credentials configured for the APP_STORE distribution of this project on EAS servers} {
-              puts "Production APP_STORE credentials are not stored on EAS"; exit 14
-            }
-            timeout { puts "Timed out downloading production iOS credentials"; exit 13 }
-          }
-          expect eof
-          EXPECT
-          expect /tmp/download-ios-creds.exp
-          test -f credentials.json || (echo "credentials.json was not downloaded" && exit 20)
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          const c = JSON.parse(fs.readFileSync('credentials.json','utf8'));
-          const ios = c.ios;
-          if (!ios) throw new Error('No iOS credentials in credentials.json');
-          const target = ios.distributionCertificate ? ios : ios[Object.keys(ios)[0]];
-          if (!target?.distributionCertificate?.path || !target?.provisioningProfilePath) {
-            throw new Error('Downloaded iOS credentials are incomplete');
-          }
-          for (const p of [target.distributionCertificate.path, target.provisioningProfilePath]) {
-            if (!fs.existsSync(path.resolve(p))) throw new Error(`Missing downloaded credential file: ${p}`);
-          }
-          console.log('Downloaded production iOS signing credentials successfully.');
-          NODE
-      - name: Switch app-review profile to local signing credentials
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const p = 'eas.json';
-          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
-          json.build ||= {};
-          json.build['app-review'] ||= {};
-          json.build['app-review'].credentialsSource = 'local';
-          json.build['app-review'].autoIncrement = false;
-          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
-          NODE
-      - name: Build iOS App Review build 5
-        run: npx --yes eas-cli@latest build --platform ios --profile app-review --non-interactive --wait
-      - name: Submit build 5 to App Store Connect
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const p = 'eas.json';
-          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
-          json.submit ||= {};
-          json.submit.production ||= {};
-          json.submit.production.ios ||= {};
-          Object.assign(json.submit.production.ios, {
-            ascAppId: '6820186123',
-            ascApiKeyPath: '/tmp/AuthKey.p8',
-            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
-            ascApiKeyId: process.env.ASC_KEY_ID
-          });
-          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
-          NODE
-          npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
+      - run: npm ci
+      - name: Run EAS build command
+        run: npx eas-cli@latest build --platform ios --profile app-review
