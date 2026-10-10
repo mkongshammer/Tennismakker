@@ -23,6 +23,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - name: Install dependencies
+        run: npm ci
       - name: Link project
         run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: List recent iOS builds
