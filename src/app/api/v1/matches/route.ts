@@ -4,6 +4,7 @@ import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { userFromRequest } from "../../../../lib/session";
 import { isDanishRegion, regionForArea } from "../../../../lib/regions";
+import { blockedUserIds } from "../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -19,11 +20,13 @@ export async function GET(req: Request) {
   const country=me?.country ?? url.searchParams.get("land") ?? "DK";
   if(!marketFor(country)) return apiError("Unsupported country.");
   const selectedRegion=country==="DK"?(isDanishRegion(rawRegion)?rawRegion:regionForArea(rawRegion)??""):rawRegion;
+  const blocked = me ? await blockedUserIds(me.id) : [];
 
   const requests = await db.matchRequest.findMany({
     where: {
       status: "OPEN",
       requester:{country},
+      ...(blocked.length ? { requesterId: { notIn: blocked } } : {}),
       ...(level && level >= 1 && level <= 7 ? { level } : {}),
     },
     include: { requester: true },
