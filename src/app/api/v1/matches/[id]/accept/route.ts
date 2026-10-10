@@ -1,5 +1,6 @@
 import { db } from "../../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../../lib/api/helpers";
+import { isBlockedBetween } from "../../../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -21,6 +22,9 @@ export async function POST(
   if (request.status !== "OPEN") return apiError("Opslaget er ikke længere åbent.");
   if (request.requesterId === auth.user.id) {
     return apiError("Du kan ikke slå til på dit eget opslag.");
+  }
+  if (await isBlockedBetween(auth.user.id, request.requesterId)) {
+    return apiError("This player is not available for contact.", 403);
   }
 
   await db.matchRequest.update({

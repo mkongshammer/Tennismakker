@@ -9,6 +9,8 @@ import {
   View } from
 "react-native";
 import { api } from "../lib/api";
+import { moderationApi } from "../lib/moderationApi";
+import { feedback as Alert } from "../lib/feedback";
 import { Button, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent } from "../lib/theme";
 import { time } from "../lib/dates";
@@ -25,6 +27,7 @@ export default function ChatScreen({ route }) {useInternational();
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState(null);
   const [sent, setSent] = useState([]);
+  const [moderating, setModerating] = useState(null);
   const listRef = useRef(null);
   const sendingLock = useRef(false);
   const nearBottom = useRef(true);
@@ -32,9 +35,11 @@ export default function ChatScreen({ route }) {useInternational();
   const insets = useSafeAreaInsets();
   useEffect(() => {setSent([]);setDraft("");setSendError(null);nearBottom.current = true;}, [id]);
 
+  const messagingBlocked = Boolean(state.data?.blockedByMe || state.data?.blockedByOther);
+
   const send = async () => {
     const body = draft.trim();
-    if (!body || sendingLock.current) return;
+    if (!body || sendingLock.current || messagingBlocked) return;
     sendingLock.current = true;
     setSendError(null);
     setSending(true);
@@ -51,6 +56,75 @@ export default function ChatScreen({ route }) {useInternational();
     }
   };
 
+  const submitReport = async (reason) => {
+    if (moderating) return;
+    setModerating("report");
+    try {
+      await moderationApi.reportThread(id, reason);
+      Alert.alert("Report received", "Thank you. Our team can now review this conversation.");
+    } catch (e) {
+      Alert.alert("Could not send report", e.message ?? "Please try again.");
+    } finally {
+      setModerating(null);
+    }
+  };
+
+  const reportConversation = () => {
+    Alert.alert("Report conversation", "Choose the reason that best describes the problem.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Spam", onPress: () => submitReport("SPAM") },
+      { text: "Harassment", onPress: () => submitReport("HARASSMENT") },
+      { text: "Inappropriate content", onPress: () => submitReport("INAPPROPRIATE") },
+      { text: "Other", onPress: () => submitReport("OTHER") },
+    ]);
+  };
+
+  const toggleBlock = () => {
+    if (state.data?.blockedByMe) {
+      Alert.alert("Unblock user", `Allow ${state.data.otherName ?? "this user"} to contact you again?`, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Unblock",
+          onPress: async () => {
+            if (moderating) return;
+            setModerating("block");
+            try {
+              await moderationApi.unblockThreadUser(id);
+              await load();
+            } catch (e) {
+              Alert.alert("Could not unblock user", e.message ?? "Please try again.");
+            } finally {
+              setModerating(null);
+            }
+          },
+        },
+      ]);
+      return;
+    }
+
+    Alert.alert("Block user", `Block ${state.data?.otherName ?? "this user"}? They will no longer be able to message you or appear in player discovery.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Block",
+        style: "destructive",
+        onPress: async () => {
+          if (moderating) return;
+          setModerating("block");
+          try {
+            await moderationApi.blockThreadUser(id);
+            setDraft("");
+            await load();
+            Alert.alert("User blocked", "This user can no longer message you or appear in your player discovery.");
+          } catch (e) {
+            Alert.alert("Could not block user", e.message ?? "Please try again.");
+          } finally {
+            setModerating(null);
+          }
+        },
+      },
+    ]);
+  };
+
   if (state.loading) return <Loading />;
   if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
@@ -60,7 +134,30 @@ export default function ChatScreen({ route }) {useInternational();
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={headerHeight}>
 
-      <Text style={styles.subject}>{tr("Om:") + " "}{state.data.subject}</Text>
+      <View style={styles.threadHeader}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.subject}>{tr("Om:") + " "}{state.data.subject}</Text>
+          {!!state.data.otherName && <Text style={styles.otherName}>{state.data.otherName}</Text>}
+        </View>
+        <View style={styles.moderationActions}>
+          <Button title="Report" variant="quiet" onPress={reportConversation} loading={moderating === "report"} />
+          <Button
+            title={state.data.blockedByMe ? "Unblock" : "Block"}
+            variant={state.data.blockedByMe ? "quiet" : "dangerQuiet"}
+            onPress={toggleBlock}
+            loading={moderating === "block"} />
+        </View>
+      </View>
+      {messagingBlocked &&
+        <View style={styles.blockedBanner}>
+          <Text style={styles.blockedTitle}>{state.data.blockedByMe ? "You blocked this user" : "Messaging unavailable"}</Text>
+          <Text style={styles.blockedText}>
+            {state.data.blockedByMe
+              ? "Messages are disabled. You can unblock this user at any time."
+              : "You cannot send messages in this conversation."}
+          </Text>
+        </View>
+      }
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {sendError && <Text accessibilityRole="alert" style={{ padding: 12, color: colors.court }}>{sendError}</Text>}
 
@@ -98,27 +195,36 @@ export default function ChatScreen({ route }) {useInternational();
             style={styles.input}
             value={draft}
             onChangeText={setDraft}
-            placeholder={tr("Skriv en besked\u2026")}
+            placeholder={messagingBlocked ? "Messaging is unavailable" : tr("Skriv en besked\u2026")}
             accessibilityLabel={tr("Besked")}
-            editable={!sending}
+            editable={!sending && !messagingBlocked}
             multiline
             maxLength={2000} />
 
-        <Button title={tr("Send")} onPress={send} loading={sending} disabled={!draft.trim()} />
+        <Button title={tr("Send")} onPress={send} loading={sending} disabled={!draft.trim() || messagingBlocked} />
       </View></View>
     </KeyboardAvoidingView>);
 
 }
 
 const styles = StyleSheet.create({
-  subject: {
-    padding: 12,
-    color: colors.slate,
-    fontSize: 13,
+  threadHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
-    borderBottomColor: colors.border
+    borderBottomColor: colors.border,
+    gap: 8,
   },
+  subject: {
+    color: colors.slate,
+    fontSize: 13,
+  },
+  otherName: { color: colors.ink, fontSize: 15, fontWeight: "700", marginTop: 3 },
+  moderationActions: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 4 },
+  blockedBanner: { backgroundColor: "#FFF4F1", borderBottomWidth: 1, borderBottomColor: "#E9C9C1", paddingHorizontal: 16, paddingVertical: 10 },
+  blockedTitle: { color: "#7E2727", fontWeight: "800", fontSize: 14 },
+  blockedText: { color: "#7E4A4A", marginTop: 2, fontSize: 13, lineHeight: 18 },
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
   bubble: { maxWidth: "85%", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 12 },
