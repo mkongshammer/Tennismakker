@@ -1,0 +1,57 @@
+name: Submit iOS Build 5
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/eas-submit-build5.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  submit-build-5:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Configure App Store Connect API key
+        run: |
+          test -n "$EXPO_TOKEN"
+          test -n "$ASC_KEY_ID"
+          test -n "$ASC_ISSUER_ID"
+          test -n "$ASC_PRIVATE_KEY"
+          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
+      - name: Configure submit profile
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit.production ||= {};
+          json.submit.production.ios ||= {};
+          Object.assign(json.submit.production.ios, {
+            ascAppId: '6820186123',
+            ascApiKeyPath: '/tmp/AuthKey.p8',
+            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
+            ascApiKeyId: process.env.ASC_KEY_ID
+          });
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
+      - name: Submit exact EAS build 5 to App Store Connect
+        run: npx --yes eas-cli@latest submit --platform ios --id 759a5589-8f55-4513-b6ca-45d91aec5492 --profile production --non-interactive --wait
