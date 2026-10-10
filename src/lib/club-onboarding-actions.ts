@@ -8,7 +8,7 @@ import {db} from './db';
 import {createSession,getCurrentUser} from './session';
 import {clubSignupPrices,startOnboardingCheckout,refreshClubSignup} from './club-onboarding';
 import {normaliseFeatures} from './club-features';
-import {marketFor,validSalesCurrency,validTimeZone,validLocale} from './international';
+import {bookingCurrency,marketFor,validCurrency,validTimeZone,validLocale} from './international';
 import {geocode} from './geocode';
 import {COURT_OPTIONS} from './club-sports';
 import {SPORTS,sportLabel,type Sport} from './sports';
@@ -18,8 +18,8 @@ export async function registerClub(_prev:unknown,form:FormData){
   const email=String(form.get('email')??'').trim().toLowerCase(),password=String(form.get('password')??''),name=String(form.get('name')??'').trim(),city=String(form.get('city')??'').trim(),contact=String(form.get('contact')??'').trim(),mode=String(form.get('mode'));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||Buffer.byteLength(password)>72||password.length<10||name.length<2||name.length>150||!city||city.length>100||!contact||contact.length>150)throw Error('Udfyld navn, by, kontaktperson og gyldig e-mail. Brug en adgangskode på 10–72 tegn.');
   if(form.get('terms')!=='on')throw Error('Acceptér abonnementsvilkår og databehandleraftale.');
-  const country=String(form.get('country')??'DK').toUpperCase(),market=marketFor(country),currency=String(form.get('currency')??market?.currency??'EUR'),timeZone=String(form.get('timeZone')??market?.timeZone??'Europe/Copenhagen'),locale=String(form.get('locale')??'da'),address=String(form.get('address')??'').trim();
-  if(!market||!validSalesCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>150)throw Error('Choose a valid country, currency and time zone.');
+  const country=String(form.get('country')??'DK').toUpperCase(),market=marketFor(country),currency=bookingCurrency(country),timeZone=String(form.get('timeZone')??market?.timeZone??'Europe/Copenhagen'),locale=String(form.get('locale')??'da'),address=String(form.get('address')??'').trim();
+  if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>150)throw Error('Choose a valid country and time zone.');
   const features=normaliseFeatures(mode,form.getAll('features').map(String));
   const sports=[...new Set(form.getAll('sports').map(String))];if(!sports.length||sports.some(s=>!(SPORTS as readonly string[]).includes(s)))throw Error('Vælg klubbens sportsgrene.');
   const prices=await clubSignupPrices(country),price=mode==='CUSTOM'?prices.custom:prices.standard;if(price==null)throw Error('Custom-prisen er endnu ikke offentliggjort. Kontakt RacketBuddy.');
@@ -50,5 +50,6 @@ export async function saveClubSignupPrices(_prev:unknown,form:FormData){
   await ensureWebhookEndpoint();if((await inspectWebhook()).status!=='ok')throw Error('Kontrollér Stripe-nøgler og webhook i Opsætning, før tilmeldingen åbnes.');
   await db.platformSetting.upsert({where:{key:'clubSignupPricesV3'},create:{key:'clubSignupPricesV3',value:JSON.stringify(prices)},update:{value:JSON.stringify(prices)}});
   revalidatePath('/','layout');return{ok:'EUR- og USD-priserne er gemt. Eksisterende aftaler ændres ikke.'};
- }catch(e){return{error:(e as Error).message};}
+ }catch(e){return{error:(e as Error).message};
+ }
 }
