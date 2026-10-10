@@ -22,6 +22,10 @@ jobs:
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
+      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,7 +40,7 @@ jobs:
           npx --yes eas-cli@latest whoami
       - name: Install dependencies
         run: npm ci
-      - name: Configure App Store Connect credentials
+      - name: Configure App Store Connect credentials and preserve build 5
         run: |
           printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
           chmod 600 /tmp/AuthKey.p8
@@ -44,6 +48,11 @@ jobs:
           const fs = require('fs');
           const p = 'eas.json';
           const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.build ||= {};
+          json.build.production ||= {};
+          // The first attempt already reserved remote iOS buildNumber 5.
+          // Do not auto-increment again on this retry.
+          json.build.production.autoIncrement = false;
           json.submit ||= {};
           json.submit.production ||= {};
           json.submit.production.ios ||= {};
@@ -55,6 +64,34 @@ jobs:
           });
           fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
           NODE
+      - name: Recover Apple Team ID from last successful iOS build
+        run: |
+          npx --yes eas-cli@latest build:view f1eb0892-9d64-477a-be2e-3070c0acd748 --json > /tmp/last-build.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const value = JSON.parse(fs.readFileSync('/tmp/last-build.json', 'utf8'));
+          let found = null;
+          function walk(v) {
+            if (!v || found) return;
+            if (Array.isArray(v)) return v.forEach(walk);
+            if (typeof v !== 'object') return;
+            for (const [k, x] of Object.entries(v)) {
+              if (/^(appleTeamId|teamId|developmentTeam)$/i.test(k) && typeof x === 'string' && /^[A-Z0-9]{10}$/.test(x)) {
+                found = x; return;
+              }
+              walk(x);
+            }
+          }
+          walk(value);
+          if (found) {
+            fs.appendFileSync(process.env.GITHUB_ENV, `EXPO_APPLE_TEAM_ID=${found}\n`);
+            console.log('Recovered Apple Team ID from successful build metadata.');
+          } else {
+            console.log('No Apple Team ID exposed in build metadata; EAS will use the stored project team association.');
+          }
+          NODE
+      - name: Confirm remote iOS build number
+        run: npx --yes eas-cli@latest build:version:get --platform ios --profile production --json --non-interactive
       - name: Build iOS production binary
         run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive --wait
       - name: Submit build to App Store Connect
