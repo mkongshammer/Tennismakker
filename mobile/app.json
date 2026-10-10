@@ -34,7 +34,10 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://racketbuddy.app"
+      "apiUrl": "https://racketbuddy.app",
+      "eas": {
+        "projectId": "620ef3a3-d92c-4241-86bb-511817c9d3cb"
+      }
     },
     "experiments": {
       "baseUrl": "/app"
