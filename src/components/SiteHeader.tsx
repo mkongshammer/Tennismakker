@@ -4,7 +4,7 @@
 // (TabBar), så hovedet reduceres til logo og konto.
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { LanguagePicker } from "./LanguagePicker";
 import { translator } from "../lib/i18n";
@@ -23,6 +23,7 @@ export function SiteHeader({ user, locale }: Props) {
   const pathname = usePathname();
   const t = translator(locale);
   const marketingPage = isPublicPage(pathname);
+  const languageDetailsRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     if (user?.role !== "COACH" || pathname === "/onboarding-sports") return;
@@ -41,6 +42,25 @@ export function SiteHeader({ user, locale }: Props) {
       cancelled = true;
     };
   }, [pathname, user?.role]);
+
+  useEffect(() => {
+    const closeLanguagePicker = (event: PointerEvent) => {
+      const details = languageDetailsRef.current;
+      if (details?.open && !details.contains(event.target as Node)) details.open = false;
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && languageDetailsRef.current?.open) {
+        languageDetailsRef.current.open = false;
+        languageDetailsRef.current.querySelector("summary")?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", closeLanguagePicker);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeLanguagePicker);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   const links = marketingPage ? [] : [
     { href: "/book", label: t("nav.book") },
@@ -81,7 +101,19 @@ export function SiteHeader({ user, locale }: Props) {
         </div>
 
         <div className="ml-auto flex items-center gap-2 text-sm">
-          <details className="relative"><summary className="cursor-pointer list-none min-h-11 flex items-center px-2 font-semibold" aria-label={t('common.language')}>{locale.toUpperCase()} ▾</summary><div className="absolute right-0 top-full mt-2 w-64 rounded-xl border bg-white p-4 shadow-lg"><LanguagePicker active={locale}/></div></details>
+          <details ref={languageDetailsRef} className="relative">
+            <summary className="cursor-pointer list-none min-h-11 flex items-center px-2 font-semibold" aria-label={t('common.language')}>{locale.toUpperCase()} ▾</summary>
+            <div
+              className="absolute right-0 top-full mt-2 w-64 rounded-xl border bg-white p-4 shadow-lg"
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("button") && languageDetailsRef.current) {
+                  languageDetailsRef.current.open = false;
+                }
+              }}
+            >
+              <LanguagePicker active={locale}/>
+            </div>
+          </details>
           {user ? (
             <>
               <Link
