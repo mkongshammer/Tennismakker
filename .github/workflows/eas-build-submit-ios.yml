@@ -65,7 +65,7 @@ jobs:
               send "\r"
               exp_continue
             }
-            -re {Would you like to set up Push Notifications for your app\?} {
+            -re {Would you like to set up Push Notifications for your .*\?} {
               send "\r"
               exp_continue
             }
