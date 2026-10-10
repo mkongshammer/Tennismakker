@@ -3,6 +3,8 @@ export const MARKETS: Market[];
 export const SALES_CURRENCIES: ('EUR' | 'USD')[];
 export function salesCurrency(country: unknown): 'EUR' | 'USD';
 export function validSalesCurrency(currency: unknown): boolean;
+export const BOOKING_CURRENCY_BY_COUNTRY: Readonly<Record<string,string>>;
+export function bookingCurrency(country: unknown): string;
 export const CURRENCIES: string[];
 export const LANGUAGES: string[];
 export const LANGUAGE_NAMES: Record<string,string>;
