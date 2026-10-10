@@ -1,4 +1,4 @@
-name: EAS iOS Build Direct
+name: EAS iOS Build 5 and Submit
 
 on:
   push:
@@ -18,13 +18,103 @@ jobs:
         working-directory: mobile
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
+      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      EXPO_APPLE_TEAM_ID: 28H9663B4V
+      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
+      CI: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - run: npm ci
+      - name: Install dependencies
+        run: |
+          npm ci
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq expect
+      - name: Configure App Store Connect API key
+        run: |
+          test -n "$EXPO_TOKEN" || (echo "EXPO_TOKEN secret is missing" && exit 2)
+          test -n "$ASC_KEY_ID" || (echo "ASC_KEY_ID secret is missing" && exit 2)
+          test -n "$ASC_ISSUER_ID" || (echo "ASC_ISSUER_ID secret is missing" && exit 2)
+          test -n "$ASC_PRIVATE_KEY" || (echo "ASC_PRIVATE_KEY secret is missing" && exit 2)
+          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
+          npx --yes eas-cli@latest whoami
       - name: Link existing EAS project
-        run: npx eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
-      - name: Run EAS build command
-        run: npx eas-cli@latest build --platform ios --profile app-review
+        run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Confirm iOS build number is 5
+        run: npx --yes eas-cli@latest build:version:get --platform ios --profile app-review --json --non-interactive
+      - name: Build iOS App Review build 5
+        run: |
+          cat > /tmp/eas-build.exp <<'EXPECT'
+          log_user 1
+          set timeout 3600
+          spawn npx --yes eas-cli@latest build --platform ios --profile app-review --wait
+          expect {
+            -re {Generate a new .*Distribution Certificate.*\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Reuse this distribution certificate\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Would you like to set up Push Notifications for your app\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Generate a new .*Push.*Key.*\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Generate a new .*Provisioning Profile.*\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Would you like to use this provisioning profile.*\?} {
+              send "\r"
+              exp_continue
+            }
+            -re {Select certificates to revoke\.} {
+              puts "Refusing to automatically revoke Apple distribution certificates.";
+              exit 31
+            }
+            -re {Build finished} {
+              exp_continue
+            }
+            eof {
+              catch wait result
+              set exit_status [lindex $result 3]
+              exit $exit_status
+            }
+            timeout {
+              puts "Timed out waiting for EAS build.";
+              exit 32
+            }
+          }
+          EXPECT
+          expect /tmp/eas-build.exp
+      - name: Submit build 5 to App Store Connect
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit.production ||= {};
+          json.submit.production.ios ||= {};
+          Object.assign(json.submit.production.ios, {
+            ascAppId: '6820186123',
+            ascApiKeyPath: '/tmp/AuthKey.p8',
+            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
+            ascApiKeyId: process.env.ASC_KEY_ID
+          });
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
+          npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
