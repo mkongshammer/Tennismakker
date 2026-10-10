@@ -54,4 +54,4 @@ jobs:
           fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
           NODE
       - name: Submit exact EAS build 5 to App Store Connect
-        run: npx --yes eas-cli@latest submit --platform ios --id 759a5589-8f55-4513-b6ca-45d91aec5492 --profile production --non-interactive --wait
+        run: npx --yes eas-cli@latest submit --platform ios --id 759a5589-8f55-4513-b6ca-45d91aec5492 --profile production --non-interactive --wait --verbose --verbose-fastlane --no-auto-testflight-setup
