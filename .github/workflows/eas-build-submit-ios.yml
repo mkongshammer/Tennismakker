@@ -25,33 +25,36 @@ jobs:
       EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
       EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      EXPO_APPLE_TEAM_ID: 28H9663B4V
       EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.19.4"
-      - name: Verify credentials
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Configure App Store Connect API key
         run: |
           test -n "$EXPO_TOKEN" || (echo "EXPO_TOKEN secret is missing" && exit 2)
           test -n "$ASC_KEY_ID" || (echo "ASC_KEY_ID secret is missing" && exit 2)
           test -n "$ASC_ISSUER_ID" || (echo "ASC_ISSUER_ID secret is missing" && exit 2)
           test -n "$ASC_PRIVATE_KEY" || (echo "ASC_PRIVATE_KEY secret is missing" && exit 2)
-          npx --yes eas-cli@20.1.0 whoami
-      - name: Install dependencies
-        run: npm ci
-      - name: Configure App Store Connect credentials and preserve build 5
-        run: |
           printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
           chmod 600 /tmp/AuthKey.p8
+          npx --yes eas-cli@latest whoami
+      - name: Confirm build number remains 5
+        run: npx --yes eas-cli@latest build:version:get --platform ios --profile app-review --json --non-interactive
+      - name: Build iOS App Review build 5
+        env:
+          CI: ""
+        run: npx --yes eas-cli@latest build --platform ios --profile app-review --wait
+      - name: Submit build 5 to App Store Connect
+        run: |
           node - <<'NODE'
           const fs = require('fs');
           const p = 'eas.json';
           const json = JSON.parse(fs.readFileSync(p, 'utf8'));
-          json.build ||= {};
-          json.build.production ||= {};
-          // Build number 5 is already stored remotely from the first attempt.
-          json.build.production.autoIncrement = false;
           json.submit ||= {};
           json.submit.production ||= {};
           json.submit.production.ios ||= {};
@@ -63,54 +66,4 @@ jobs:
           });
           fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
           NODE
-      - name: Recover Apple Team ID from build 4 signing profile
-        run: |
-          npx --yes eas-cli@20.1.0 build:view f1eb0892-9d64-477a-be2e-3070c0acd748 --json > /tmp/last-build.json
-          node - <<'NODE' > /tmp/build4-url.txt
-          const fs = require('fs');
-          const value = JSON.parse(fs.readFileSync('/tmp/last-build.json', 'utf8'));
-          let team = null;
-          let archive = null;
-          function walk(v) {
-            if (!v) return;
-            if (Array.isArray(v)) return v.forEach(walk);
-            if (typeof v !== 'object') return;
-            for (const [k, x] of Object.entries(v)) {
-              if (!team && /^(appleTeamId|teamId|developmentTeam)$/i.test(k) && typeof x === 'string' && /^[A-Z0-9]{10}$/.test(x)) team = x;
-              if (!archive && typeof x === 'string' && /^https:\/\//.test(x) && (/\.ipa(?:\?|$)/i.test(x) || /buildUrl|applicationArchiveUrl/i.test(k))) archive = x;
-              walk(x);
-            }
-          }
-          walk(value);
-          if (team) {
-            fs.appendFileSync(process.env.GITHUB_ENV, `EXPO_APPLE_TEAM_ID=${team}\n`);
-            console.error('Recovered Apple Team ID from build metadata.');
-          }
-          if (archive) process.stdout.write(archive);
-          NODE
-          if ! grep -q '^EXPO_APPLE_TEAM_ID=' "$GITHUB_ENV"; then
-            ARCHIVE_URL="$(cat /tmp/build4-url.txt)"
-            test -n "$ARCHIVE_URL" || (echo "Could not locate build 4 archive URL" && exit 3)
-            curl --fail --silent --show-error --location "$ARCHIVE_URL" --output /tmp/build4.ipa
-            unzip -p /tmp/build4.ipa 'Payload/*.app/embedded.mobileprovision' > /tmp/embedded.mobileprovision
-            (openssl smime -inform DER -verify -noverify -in /tmp/embedded.mobileprovision -out /tmp/profile.plist 2>/dev/null || \
-             openssl cms -verify -inform DER -noverify -in /tmp/embedded.mobileprovision -out /tmp/profile.plist 2>/dev/null)
-            python - <<'PY'
-          import os, plistlib
-          with open('/tmp/profile.plist','rb') as f:
-              p=plistlib.load(f)
-          teams=p.get('TeamIdentifier') or []
-          team=teams[0] if teams else p.get('ApplicationIdentifierPrefix',[None])[0]
-          if not team:
-              raise SystemExit('TeamIdentifier missing from build 4 provisioning profile')
-          with open(os.environ['GITHUB_ENV'],'a') as f:
-              f.write(f'EXPO_APPLE_TEAM_ID={team}\n')
-          print('Recovered Apple Team ID from build 4 provisioning profile.')
-          PY
-          fi
-      - name: Confirm remote iOS build number
-        run: npx --yes eas-cli@20.1.0 build:version:get --platform ios --profile production --json --non-interactive
-      - name: Build iOS production binary
-        run: npx --yes eas-cli@20.1.0 build --platform ios --profile production --non-interactive --freeze-credentials --wait
-      - name: Submit build to App Store Connect
-        run: npx --yes eas-cli@20.1.0 submit --platform ios --latest --profile production --non-interactive --wait
+          npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
