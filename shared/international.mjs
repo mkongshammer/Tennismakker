@@ -1,4 +1,5 @@
-// Shared by the website and Expo app. Country controls discovery, never conversion of stored prices.
+// Shared by the website and Expo app. Country controls discovery. Stored marketplace prices
+// stay in the local currency for their market; club subscriptions are billed separately in EUR/USD.
 export const MARKETS = [
   ['DK', 'Denmark', 'EUR', 'da', 'Europe/Copenhagen', 56, 10.6],
   ['SE', 'Sweden', 'EUR', 'sv', 'Europe/Stockholm', 62, 15],
@@ -21,9 +22,24 @@ export const MARKETS = [
   ['CZ', 'Czechia', 'EUR', 'en', 'Europe/Prague', 50, 15],
 ].map(([code, name, currency, defaultLocale, timeZone, latitude, longitude]) => ({ code, name, currency, defaultLocale, timeZone, center: [latitude, longitude], live: true, flag: String.fromCodePoint(...String(code).split('').map(c => c.charCodeAt(0) + 127397)) }));
 
+// RacketBuddy's own club subscriptions are intentionally sold only in EUR/USD.
 export const SALES_CURRENCIES = ['EUR', 'USD'];
 export function salesCurrency(country) { return ['US', 'CA'].includes(String(country).toUpperCase()) ? 'USD' : 'EUR'; }
 export function validSalesCurrency(currency) { return SALES_CURRENCIES.includes(currency); }
+
+// Player-facing court bookings use the market's normal local currency. This is deliberately
+// separate from SALES_CURRENCIES so a Danish club can charge players in DKK while paying its
+// RacketBuddy subscription in EUR.
+export const BOOKING_CURRENCY_BY_COUNTRY = Object.freeze({
+  DK: 'DKK', SE: 'SEK', NO: 'NOK', DE: 'EUR', GB: 'GBP', US: 'USD', CA: 'CAD',
+  FR: 'EUR', ES: 'EUR', IT: 'EUR', NL: 'EUR', BE: 'EUR', AT: 'EUR', CH: 'CHF',
+  FI: 'EUR', IE: 'EUR', PT: 'EUR', PL: 'PLN', CZ: 'CZK',
+});
+export function bookingCurrency(country) {
+  const code = String(country).toUpperCase();
+  return BOOKING_CURRENCY_BY_COUNTRY[code] ?? salesCurrency(code);
+}
+
 // Retained for truthful historical receipts and existing contracts.
 export const CURRENCIES = ['DKK', 'EUR', 'GBP', 'SEK', 'NOK', 'USD', 'CAD', 'CHF', 'PLN', 'CZK'];
 export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no', 'fr', 'es'];
