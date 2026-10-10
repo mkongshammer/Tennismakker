@@ -24,5 +24,7 @@ jobs:
         with:
           node-version: "24"
       - run: npm ci
+      - name: Link existing EAS project
+        run: npx eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: Run EAS build command
         run: npx eas-cli@latest build --platform ios --profile app-review
