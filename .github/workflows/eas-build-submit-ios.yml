@@ -47,7 +47,7 @@ jobs:
         run: npx --yes eas-cli@latest build:version:get --platform ios --profile app-review --json --non-interactive
       - name: Build iOS App Review build 5
         env:
-          CI: ""
+          CI: "false"
         run: npx --yes eas-cli@latest build --platform ios --profile app-review --wait
       - name: Submit build 5 to App Store Connect
         run: |
