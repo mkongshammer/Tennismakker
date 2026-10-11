@@ -12,11 +12,13 @@ import React from "react";
 export async function LegalPage({
   title,
   updated,
+  updatedLabel,
   draft = true,
   children,
 }: {
   title: string;
   updated: string;
+  updatedLabel?: string;
   draft?: boolean;
   children: React.ReactNode;
 }) {
@@ -24,7 +26,7 @@ export async function LegalPage({
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="display text-3xl">{title}</h1>
-      <p className="mt-1 text-sm text-slate/50">{tr("Senest opdateret:")}{updated}</p>
+      <p className="mt-1 text-sm text-slate/50">{updatedLabel ?? tr("Senest opdateret:")}{updated}</p>
 
       {draft && (
         <div className="mt-5 rounded-md border-2 border-court bg-court/5 p-4">
