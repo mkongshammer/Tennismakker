@@ -1,96 +1,138 @@
-import {getPreferences} from '../../../lib/preferences';
-import {phrase} from '../../../lib/phrases';
 import { LegalPage, Section } from "../LegalPage";
 import { COMPANY, EU_REPRESENTATIVE } from "../company";
 
-export const metadata = { title: "Privatlivspolitik — RacketBuddy" };
+export const metadata = { title: "Privacy Policy — RacketBuddy" };
 
-export default async function PrivatlivPage() {
- const {locale}=await getPreferences(); const tr=(s:string)=>` ${phrase(s,locale)} `;
+export default function PrivacyPage() {
   return (
-    <LegalPage draft={false} title={tr("Privatlivspolitik")} updated={tr("22. september 2026")}>
-      <Section n="1" title={tr("Dataansvarlig")}>
+    <LegalPage
+      draft={false}
+      title="Privacy Policy"
+      updated="September 22, 2026"
+      updatedLabel="Last updated: "
+    >
+      <Section n="1" title="Data controller">
         <p>
-          {COMPANY.name}, {tr(COMPANY.registration)}{tr(", med adresse")}{" "}
-          {COMPANY.address}{tr(", er dataansvarlig for de oplysninger, du giver os, når du opretter en profil og bruger platformen.")}</p>
-        <p>{tr("Har du spørgsmål til behandlingen af dine oplysninger, kan du skrive til")}{COMPANY.email}.
+          {COMPANY.name}, registered in the State of Delaware, USA, with its address at {COMPANY.address}, is the data controller for the personal data you provide when you create a profile and use the platform.
         </p>
-        <p>{tr("Fordi selskabet er registreret uden for EU, har vi udpeget en repræsentant i EU efter databeskyttelsesforordningens artikel 27. Bor du i EU, kan du henvende dig direkte til")}{" "}
-          {EU_REPRESENTATIVE.name}, {tr(EU_REPRESENTATIVE.country)}{tr(", på")}{" "}
-          {EU_REPRESENTATIVE.email}{tr(". Du kan bruge den kontakt til alt, der handler om dine oplysninger — du behøver ikke skrive til USA.")}</p>
-        <p>{tr("Bruger du platformen som medlem af en klub, er klubben selvstændigt dataansvarlig for de oplysninger, klubben selv behandler om dig. Vi er i den sammenhæng databehandler for klubben.")}</p>
+        <p>
+          If you have questions about how we process your personal data, you can contact us at {COMPANY.email}.
+        </p>
+        <p>
+          Because the company is established outside the EU, we have appointed an EU representative under Article 27 of the GDPR. If you are located in the EU, you may contact {EU_REPRESENTATIVE.name}, Denmark, at {EU_REPRESENTATIVE.email} directly regarding your personal data.
+        </p>
+        <p>
+          If you use the platform as a member of a club, the club is an independent data controller for the personal data it processes about you. In that context, RacketBuddy acts as a data processor for the club.
+        </p>
       </Section>
 
-      <Section n="2" title={tr("Hvilke oplysninger vi behandler")}>
-        <p>{tr("Vi behandler følgende om dig:")}</p>
+      <Section n="2" title="Personal data we process">
+        <p>We may process the following information about you:</p>
         <ul className="ml-5 list-disc space-y-1">
-          <li>{tr("Navn, e-mail og eventuelt telefonnummer")}</li>
-          <li>{tr("Dit spillerniveau og område")}</li>
-          <li>{tr("Dine bookinger og betalingshistorik")}</li>
-          <li>{tr("Indholdet af de opslag, du selv opretter")}</li>
-          <li>{tr("Tekniske oplysninger som IP-adresse og tidspunkter for login")}</li>
+          <li>Name, email address and, where provided, phone number</li>
+          <li>Your playing level and area</li>
+          <li>Your bookings and payment history</li>
+          <li>Content you create on the platform</li>
+          <li>Technical information such as IP address and login timestamps</li>
         </ul>
-        <p>{tr("Vi opbevarer ikke dine kortoplysninger. Betalinger håndteres af")}{" "}{tr("Stripe, Inc., som er selvstændigt dataansvarlig for betalingsdata.")}</p>
-      </Section>
-
-      <Section n="3" title={tr("Hvad vi bruger oplysningerne til")}>
         <p>
-          <strong>{tr("For at opfylde aftalen med dig")}</strong>{tr("(databeskyttelsesforordningens artikel 6, stk. 1, litra b): at oprette din profil, gennemføre bookinger, sende kvitteringer og formidle kontakt mellem spillere.")}</p>
+          We do not store your payment card details. Payments are handled by Stripe, Inc., which acts as an independent controller for payment data where applicable.
+        </p>
+      </Section>
+
+      <Section n="3" title="How we use your personal data">
         <p>
-          <strong>{tr("For at overholde loven")}</strong>{tr("(artikel 6, stk. 1, litra c): bogføringsloven kræver, at vi gemmer regnskabsmateriale i 5 år.")}</p>
+          <strong>To perform our agreement with you</strong> (GDPR Article 6(1)(b)): to create and maintain your profile, process bookings, send receipts and enable communication between users.
+        </p>
         <p>
-          <strong>{tr("Efter en interesseafvejning")}</strong>{tr("(artikel 6, stk. 1, litra f): at drive og sikre platformen, forhindre misbrug og forbedre tjenesten. Vi har vurderet, at det ikke går forud for dine rettigheder.")}</p>
+          <strong>To comply with legal obligations</strong> (Article 6(1)(c)): for example, accounting rules may require us to retain certain financial records for five years.
+        </p>
+        <p>
+          <strong>For our legitimate interests</strong> (Article 6(1)(f)): to operate and secure the platform, prevent misuse, support users and improve the service, where those interests are not overridden by your rights and interests.
+        </p>
       </Section>
 
-      <Section n="4" title={tr("Hvem oplysningerne deles med")}>
-        <p>{tr("Booker du en bane, deler vi dit navn, din e-mail og bookingens tidspunkt med klubben, så de kan give dig adgang. Booker du en trænertime, deles de samme oplysninger med træneren.")}</p>
-        <p>{tr("Slår du til på et makker-opslag, får opslagets ejer din e-mail og dit telefonnummer, hvis du har angivet det. Det sker kun, når du selv aktivt vælger at slå til.")}</p>
-        <p>{tr("Vi bruger følgende databehandlere: Render Services, Inc. (drift, servere i Frankfurt), Stripe, Inc. (betaling) og Resend, Inc. (udsendelse af kvitteringer). Der er indgået databehandleraftaler med dem alle.")}</p>
-        <p>{tr("Vi sælger ikke dine oplysninger og bruger dem ikke til reklamer fra tredjeparter.")}</p>
+      <Section n="4" title="Who we share personal data with">
+        <p>
+          If you book a court, we may share your name, email address and booking details with the relevant club so it can provide the booking and any required access. If you book a coaching session, the corresponding information may be shared with the coach.
+        </p>
+        <p>
+          If you choose to connect with another player through the platform, information you choose to provide may be shared as necessary to enable that interaction.
+        </p>
+        <p>
+          We use service providers including Render Services, Inc. for hosting and infrastructure, Stripe, Inc. for payments, and Resend, Inc. for transactional email. Where required, appropriate data processing agreements are in place.
+        </p>
+        <p>We do not sell your personal data or use it for third-party advertising.</p>
       </Section>
 
-      <Section n="5" title={tr("Overførsel til lande uden for EU/EØS")}>
-        <p>{tr("Ja. Vores servere og database ligger i Frankfurt, altså inden for EU. Men selskabet bag RacketBuddy er amerikansk, og både betalingsformidling (Stripe) og udsendelse af e-mail (Resend) sker fra USA. Overførslerne hviler på EU-Kommissionens standardkontraktbestemmelser og de respektive udbyderes egne overførselsordninger..")}</p>
+      <Section n="5" title="International data transfers">
+        <p>
+          Our application servers and database are hosted in Frankfurt, Germany. RacketBuddy is operated by a U.S. company, and some service providers, including Stripe and Resend, may process data in the United States. Where required, international transfers are protected through recognized transfer mechanisms such as the European Commission&apos;s Standard Contractual Clauses and the relevant providers&apos; transfer frameworks.
+        </p>
       </Section>
 
-      <Section n="6" title={tr("Hvor længe vi gemmer oplysningerne")}>
-        <p>{tr("Din profil gemmes, så længe du har en konto. Sletter du din konto, slettes profiloplysningerne inden for 30 dage.")}</p>
-        <p>{tr("Bookinger og betalinger gemmes i 5 år efter udgangen af det regnskabsår, de vedrører, fordi bogføringsloven kræver det.")}</p>
-        <p>{tr("Makker-opslag slettes 12 måneder efter, de er lukket.")}</p>
+      <Section n="6" title="How long we keep personal data">
+        <p>
+          Your profile is retained for as long as you have an account. If you delete your account, profile information is deleted within 30 days, except where we are legally required to keep specific records for longer.
+        </p>
+        <p>
+          Booking and payment records may be retained for five years after the end of the relevant financial year where required by accounting law.
+        </p>
+        <p>Closed player posts may be deleted after 12 months.</p>
       </Section>
 
-      <Section n="7" title={tr("Børn og unge")}>
-        <p>{tr("Platformen er beregnet til personer på 18 år og derover. Er du under 18, skal en forælder eller værge oprette profilen og stå for bookingen.")}</p>
-        <p>{tr("Bliver vi opmærksomme på, at vi har oplysninger om et barn under 18 uden samtykke fra en forælder, sletter vi dem hurtigst muligt. Kontakt os på")}{" "}
-          {COMPANY.email}{tr(", hvis du mener, det er tilfældet.")}</p>
+      <Section n="7" title="Children and young people">
+        <p>
+          The platform is intended for users aged 18 and over. If you are under 18, a parent or legal guardian must create the profile and be responsible for the booking.
+        </p>
+        <p>
+          If we become aware that we hold personal data about a child under 18 without the required parental or guardian involvement, we will delete it as soon as reasonably possible. Contact us at {COMPANY.email} if you believe this applies.
+        </p>
       </Section>
 
-      <Section n="8" title={tr("Dine rettigheder")}>
-        <p>{tr("Du har ret til at:")}</p>
+      <Section n="8" title="Your rights">
+        <p>Depending on applicable law, you may have the right to:</p>
         <ul className="ml-5 list-disc space-y-1">
-          <li>{tr("få indsigt i, hvilke oplysninger vi har om dig")}</li>
-          <li>{tr("få rettet forkerte oplysninger")}</li>
-          <li>{tr("få slettet oplysninger, når vi ikke længere har grund til at gemme dem")}</li>
-          <li>{tr("få begrænset behandlingen")}</li>
-          <li>{tr("få dine oplysninger udleveret i et maskinlæsbart format")}</li>
-          <li>{tr("gøre indsigelse mod behandling, der sker efter en interesseafvejning")}</li>
+          <li>access the personal data we hold about you</li>
+          <li>correct inaccurate personal data</li>
+          <li>request deletion where we no longer have a lawful reason to retain the data</li>
+          <li>request restriction of processing</li>
+          <li>receive certain personal data in a machine-readable format</li>
+          <li>object to processing based on legitimate interests</li>
         </ul>
-        <p>{tr("Skriv til")}{COMPANY.email}{tr(", så svarer vi inden for en måned. Du kan også slette din konto selv under Min profil.")}</p>
-        <p>{tr("Er du utilfreds med vores behandling, kan du klage til Datatilsynet, Carl Jacobsens Vej 35, 2500 Valby, datatilsynet.dk.")}</p>
+        <p>
+          Contact {COMPANY.email} to exercise your rights. We aim to respond within one month where the GDPR applies. You can also delete your account directly from your profile in RacketBuddy.
+        </p>
+        <p>
+          If you are located in Denmark and are dissatisfied with how we handle your personal data, you may lodge a complaint with the Danish Data Protection Agency (Datatilsynet), Carl Jacobsens Vej 35, 2500 Valby, Denmark.
+        </p>
       </Section>
 
-      <Section n="9" title={tr("Cookies")}>
-        <p>{tr("Vi bruger en enkelt nødvendig cookie til at holde dig logget ind. Den kræver ikke samtykke, fordi tjenesten ikke kan fungere uden.")}</p>
-        <p>{tr("Vi bruger ikke cookies til statistik, markedsføring eller sporing på tværs af hjemmesider.")}{" "}{tr("Vi tæller sidevisninger i et samlet tal pr. dag. Vi gemmer hverken cookie, IP-adresse eller hvilke sider der blev set, så tallet kan ikke føres tilbage til dig. Derfor er der ingen samtykke at bede om..")}</p>
+      <Section n="9" title="Cookies">
+        <p>
+          We use a strictly necessary cookie to keep you signed in. This cookie does not require consent because the service cannot function without it.
+        </p>
+        <p>
+          We do not use cookies for advertising, cross-site tracking or marketing analytics. We may count page views in aggregate by day without storing a tracking cookie, IP address or a record of the specific pages viewed in a way that identifies you.
+        </p>
       </Section>
 
-      <Section n="10" title={tr("Sikkerhed")}>
-        <p>{tr("Adgangskoder gemmes krypteret og kan ikke læses af os. Al trafik til og fra platformen er krypteret. Adgang til persondata er begrænset til de personer, der har brug for den.")}</p>
-        <p>{tr("Sker der et brud på persondatasikkerheden, der indebærer en risiko for dig, underretter vi Datatilsynet inden for 72 timer og dig direkte, hvis risikoen er høj.")}</p>
+      <Section n="10" title="Security">
+        <p>
+          Passwords are stored using one-way password hashing and cannot be read back by us. Traffic to and from the platform is encrypted in transit, and access to personal data is limited to people who need it for their work.
+        </p>
+        <p>
+          If a personal data breach creates a risk to individuals, we will notify the relevant supervisory authority within the time limits required by applicable law and notify affected users directly where the risk is high.
+        </p>
       </Section>
-      <Section n="11" title={tr("Pushnotifikationer i mobilappen")}>
-        <p>{tr("Hvis du aktiverer push, gemmer vi telefonens push-token og dine valg af notifikationer. Vi bruger Expo samt Apples eller Googles pushtjeneste til at sende beskeder om bookinger, påmindelser, trænerforespørgsler og ulæste beskeder. Pushbeskeder indeholder ikke indholdet af din chat, betalingsoplysninger eller adgangskoder til klubben.")}</p>
-        <p>{tr("Du kan ændre dine valg eller deaktivere push under Min profil. Enhedens tilmelding fjernes ved logout og kontosletning og udløber senest med din login-session. Tekniske afsendelsesoplysninger ryddes efter 30 dage. Telefonens egne indstillinger styrer også, om notifikationer vises.")}</p>
+
+      <Section n="11" title="Push notifications in the mobile app">
+        <p>
+          If you enable push notifications, we store your device push token and notification preferences. We use Expo and Apple or Google push notification services to send notifications about bookings, reminders, coaching requests and unread messages. Push notifications do not include the content of your chat, payment card details or club access credentials.
+        </p>
+        <p>
+          You can change your notification preferences or disable push notifications from your profile. Device registration is removed when you log out or delete your account and otherwise expires with your login session. Technical delivery records are removed after 30 days. Your device settings also control whether notifications are displayed.
+        </p>
       </Section>
     </LegalPage>
   );
