@@ -1,82 +1,138 @@
-import {getPreferences} from '../../../lib/preferences';
-import {phrase} from '../../../lib/phrases';
 import { LegalPage, Section } from "../LegalPage";
-import { COMPANY } from "../company";
+import { COMPANY, EU_REPRESENTATIVE } from "../company";
 
-export const metadata = { title: "Databehandleraftale — RacketBuddy" };
+export const metadata = { title: "Data Processing Agreement — RacketBuddy" };
 
-export default async function DatabehandleraftalePage() {
- const {locale}=await getPreferences(); const tr=(s:string)=>` ${phrase(s,locale)} `;
+export default function DataProcessingAgreementPage() {
   return (
-    <LegalPage draft={false} title={tr("Databehandleraftale")} updated={tr("2. september 2026")}>
-      <p className="text-slate/70">{tr("Denne aftale indgås mellem klubben (")}<strong>{tr("den dataansvarlige")}</strong>{tr(") og")}{COMPANY.name}, {tr(COMPANY.registration)} (
-        <strong>{tr("databehandleren")}</strong>{tr("), når klubben opretter sig på Tennis Makker. Den opfylder kravet i databeskyttelsesforordningens artikel 28, stk. 3.")}</p>
+    <LegalPage
+      draft={false}
+      title="Data Processing Agreement"
+      updated="September 2, 2026"
+      updatedLabel="Last updated: "
+    >
+      <p className="text-slate/70">
+        This Data Processing Agreement (the <strong>“DPA”</strong>) is entered into between the club using RacketBuddy (the <strong>“Controller”</strong>) and {COMPANY.name}, a Delaware limited liability company with an address at {COMPANY.address} (the <strong>“Processor”</strong>). It applies whenever RacketBuddy processes personal data on behalf of the club and is intended to satisfy Article 28(3) of the EU General Data Protection Regulation (GDPR).
+      </p>
 
-      <Section n="1" title={tr("Baggrund og formål")}>
-        <p>{tr("Klubben bruger RacketBuddy til at vise ledige banetider til spillere uden medlemskab og til at modtage betaling for dem. I den forbindelse behandler vi personoplysninger på klubbens vegne.")}</p>
-        <p>{tr("Vi behandler kun oplysningerne efter dokumenteret instruks fra klubben. Denne aftale, sammen med den funktionalitet klubben selv vælger i administrationen, udgør instruksen.")}</p>
+      <Section n="1" title="Background and purpose">
+        <p>
+          The club uses RacketBuddy to manage club activities and services, including court availability and bookings, memberships, payments, communications, and other features selected by the club. In doing so, RacketBuddy may process personal data on the club&apos;s behalf.
+        </p>
+        <p>
+          RacketBuddy will process personal data only on documented instructions from the club, unless processing is required by applicable law. This DPA, together with the settings and functionality selected by the club in RacketBuddy, constitutes the club&apos;s documented instructions.
+        </p>
       </Section>
 
-      <Section n="2" title={tr("Hvad vi behandler")}>
+      <Section n="2" title="Nature and scope of the processing">
+        <p><strong>Categories of data subjects:</strong> club members, guest players, coaches where applicable, and club administrators.</p>
+        <p><strong>Categories of personal data:</strong> name, email address, telephone number where provided, player information, location or area information, memberships, bookings, payment history, account information, and information submitted through club administration features.</p>
+        <p><strong>Purpose of processing:</strong> providing and operating the RacketBuddy services selected by the club, including account administration, booking, membership management, payment processing, access control, support, communications, and security.</p>
+        <p><strong>Duration:</strong> for as long as RacketBuddy processes personal data on behalf of the club, subject to the deletion and statutory-retention provisions below.</p>
         <p>
-          <strong>{tr("Kategorier af registrerede:")}</strong>{tr("klubbens medlemmer, gæstespillere der booker baner, og klubbens administratorer.")}</p>
+          RacketBuddy is not intended for the processing of special categories of personal data under GDPR Article 9. The club must not intentionally submit health information or other sensitive special-category data through free-text fields or other platform features unless a separate lawful arrangement has been agreed in writing.
+        </p>
         <p>
-          <strong>{tr("Kategorier af oplysninger:")}</strong>{tr("navn, e-mail, telefonnummer, spillerniveau, område, bookinger og betalingshistorik.")}</p>
-        <p>
-          <strong>{tr("Ingen særlige kategorier.")}</strong>{tr("Platformen er ikke indrettet til helbredsoplysninger eller andre følsomme oplysninger efter artikel 9. Klubben må ikke lægge sådanne oplysninger ind i systemet, fx i fritekstfelter.")}</p>
-        <p>{tr("Har klubben medlemmer under 18 år, skal klubben sikre det fornødne samtykke fra forældre eller værge, før oplysningerne behandles.")}</p>
+          If the club uses RacketBuddy in relation to minors, the club is responsible for ensuring that it has an appropriate legal basis and any parental or guardian permissions required by applicable law.
+        </p>
       </Section>
 
-      <Section n="3" title={tr("Vores forpligtelser")}>
-        <p>{tr("Vi forpligter os til at:")}</p>
+      <Section n="3" title="Processor obligations">
+        <p>RacketBuddy will:</p>
         <ul className="ml-5 list-disc space-y-1">
-          <li>{tr("behandle oplysningerne udelukkende efter klubbens instruks")}</li>
-          <li>{tr("sikre, at alle med adgang er underlagt tavshedspligt")}</li>
-          <li>{tr("træffe de sikkerhedsforanstaltninger, der følger af artikel 32")}</li>
-          <li>{tr("bistå klubben med at besvare henvendelser fra registrerede")}</li>
-          <li>{tr("bistå klubben med anmeldelse af sikkerhedsbrud og konsekvensanalyser")}</li>
-          <li>{tr("stille de oplysninger til rådighed, klubben skal bruge for at dokumentere overholdelse")}</li>
+          <li>process personal data only on documented instructions from the club, unless otherwise required by applicable law</li>
+          <li>ensure that persons authorised to process personal data are subject to appropriate confidentiality obligations</li>
+          <li>implement appropriate technical and organisational measures in accordance with GDPR Article 32</li>
+          <li>assist the club, taking into account the nature of the processing, with responding to data-subject requests where reasonably possible</li>
+          <li>assist the club with applicable personal-data-breach obligations, data protection impact assessments, and prior consultations where reasonably required</li>
+          <li>make available information reasonably necessary to demonstrate compliance with this DPA and GDPR Article 28</li>
+          <li>inform the club if, in RacketBuddy&apos;s reasonable opinion, an instruction infringes applicable data-protection law</li>
         </ul>
       </Section>
 
-      <Section n="4" title={tr("Sikkerhedsforanstaltninger")}>
-        <p>{tr("Al trafik krypteres. Adgangskoder gemmes med envejskryptering. Databasen er adgangsbegrænset, og adgang gives kun til de personer, der har brug for den. Klubbens administratorer kan kun se oplysninger om egne baner, bookinger og medlemmer.")}</p>
-        <p>{tr("Databasen sikkerhedskopieres dagligt af vores hostingudbyder, og kopierne opbevares i syv dage. Gendannelse sker efter aftale med klubben og testes ved større ændringer af databasen..")}</p>
+      <Section n="4" title="Security measures">
+        <p>
+          RacketBuddy uses technical and organisational safeguards designed to protect personal data. Traffic to and from the platform is encrypted in transit, user passwords are stored using one-way password hashing, database access is restricted, and access to personal data is limited according to operational need and account permissions.
+        </p>
+        <p>
+          Club administrators are restricted to information associated with the club they administer. RacketBuddy also uses operational logging, access controls, and hosting-provider backup and recovery measures appropriate to the service.
+        </p>
       </Section>
 
-      <Section n="5" title={tr("Underdatabehandlere")}>
-        <p>{tr("Klubben giver generel godkendelse til, at vi bruger underdatabehandlere. Vi bruger i dag:")}</p>
+      <Section n="5" title="Sub-processors">
+        <p>The club gives RacketBuddy general authorisation to use sub-processors. Current key sub-processors include:</p>
         <ul className="ml-5 list-disc space-y-1">
-          <li>{tr("Render Services, Inc. — drift af server og database, servere i Frankfurt (EU)")}</li>
-          <li>{tr("Stripe, Inc. — betalingsformidling, USA")}</li>
-          <li>{tr("Resend, Inc. — udsendelse af kvitteringer og beskeder, USA")}</li>
+          <li>Render Services, Inc. — application and database hosting, including infrastructure in Frankfurt, Germany</li>
+          <li>Stripe, Inc. — payment processing</li>
+          <li>Resend, Inc. — transactional email delivery</li>
+          <li>Expo and the relevant Apple or Google push-notification services — mobile push notifications where enabled</li>
         </ul>
-        <p>{tr("Vi varsler klubben mindst 30 dage før, vi tilføjer eller skifter underdatabehandler. Klubben kan gøre indsigelse. Fastholder vi ændringen, kan klubben opsige aftalen uden varsel.")}</p>
-        <p>{tr("Vi pålægger alle underdatabehandlere de samme forpligtelser, som følger af denne aftale, og hæfter for deres behandling.")}</p>
+        <p>
+          RacketBuddy will impose data-protection obligations on sub-processors that are appropriate to the services they provide. RacketBuddy remains responsible for its obligations under this DPA where processing is performed by an authorised sub-processor.
+        </p>
+        <p>
+          Where required by GDPR Article 28, RacketBuddy will provide reasonable notice of material additions or replacements of sub-processors so that the club can raise a reasonable data-protection objection.
+        </p>
       </Section>
 
-      <Section n="6" title={tr("Overførsel til tredjelande")}>
-        <p>{tr("Ja. Server og database ligger i Frankfurt inden for EU, men databehandleren selv, betalingsformidling og e-mailudsendelse sker fra USA. Overførslerne hviler på EU-Kommissionens standardkontraktbestemmelser..")}</p>
+      <Section n="6" title="International data transfers">
+        <p>
+          RacketBuddy&apos;s primary application and database infrastructure is hosted in Frankfurt, Germany. Some service providers and RacketBuddy&apos;s corporate operations are located outside the EEA, including in the United States.
+        </p>
+        <p>
+          Where personal data is transferred from the EEA to a country that does not benefit from an applicable adequacy decision, RacketBuddy will rely on a lawful transfer mechanism, such as the European Commission&apos;s Standard Contractual Clauses, together with supplementary measures where required.
+        </p>
       </Section>
 
-      <Section n="7" title={tr("Brud på persondatasikkerheden")}>
-        <p>{tr("Opdager vi et brud, underretter vi klubben uden unødig forsinkelse og senest 24 timer efter, vi er blevet opmærksomme på det.")}</p>
-        <p>{tr("Underretningen beskriver, hvad der er sket, hvilke oplysninger og hvor mange personer der er berørt, de sandsynlige konsekvenser og hvad vi gør for at begrænse skaden. Det er klubben, der anmelder til Datatilsynet.")}</p>
+      <Section n="7" title="Personal data breaches">
+        <p>
+          RacketBuddy will notify the club without undue delay after becoming aware of a personal data breach affecting personal data processed on the club&apos;s behalf.
+        </p>
+        <p>
+          To the extent information is available, the notification will describe the nature of the breach, the categories of data and data subjects affected, likely consequences, and measures taken or proposed to address the breach. RacketBuddy will provide reasonable assistance to help the club meet its notification obligations.
+        </p>
       </Section>
 
-      <Section n="8" title={tr("Revision og dokumentation")}>
-        <p>{tr("Klubben kan én gang årligt bede om dokumentation for, at vi overholder aftalen. Vi svarer inden for 30 dage.")}</p>
-        <p>{tr("Ønsker klubben en fysisk revision, aftales tidspunkt og omfang på forhånd, og klubben afholder omkostningerne, medmindre revisionen afdækker væsentlig misligholdelse fra vores side.")}</p>
+      <Section n="8" title="Data-subject requests">
+        <p>
+          If RacketBuddy receives a request from a data subject that clearly relates to personal data processed on behalf of the club, RacketBuddy will, where appropriate, direct the request to the club or otherwise assist the club in responding. RacketBuddy will not independently determine the club&apos;s legal obligations as Controller.
+        </p>
       </Section>
 
-      <Section n="9" title={tr("Ved aftalens ophør")}>
-        <p>{tr("Når aftalen ophører, kan klubben inden for 30 dage bede om at få udleveret oplysningerne i et maskinlæsbart format.")}</p>
-        <p>{tr("Derefter sletter vi oplysningerne. Undtaget er materiale, vi er forpligtet til at gemme efter bogføringsloven, som slettes, når opbevaringspligten udløber.")}</p>
+      <Section n="9" title="Audits and documentation">
+        <p>
+          On reasonable request, RacketBuddy will provide information reasonably necessary to demonstrate compliance with this DPA. The parties will first seek to satisfy audit requirements through documentation, security information, or other available evidence.
+        </p>
+        <p>
+          If an additional audit is reasonably required under GDPR Article 28, its timing, scope, confidentiality requirements, and method will be agreed in advance so that it does not unnecessarily compromise security or disrupt the service. Unless required because of a material breach by RacketBuddy, the club will bear its own audit costs.
+        </p>
       </Section>
 
-      <Section n="10" title={tr("Ansvar og ikrafttræden")}>
-        <p>{tr("Parterne hæfter efter databeskyttelsesforordningens artikel 82 og dansk rets almindelige regler.")}</p>
-        <p>{tr("Aftalen træder i kraft, når klubben oprettes på platformen, og løber, så længe vi behandler oplysninger på klubbens vegne. Ved uoverensstemmelse mellem denne aftale og øvrige aftaler mellem parterne går denne aftale forud for så vidt angår behandling af personoplysninger.")}</p>
+      <Section n="10" title="Return and deletion of data">
+        <p>
+          When the processing relationship ends, the club may request an export of personal data that RacketBuddy processes on its behalf, where export functionality is reasonably available.
+        </p>
+        <p>
+          RacketBuddy will then delete or anonymise personal data processed solely on the club&apos;s behalf, unless applicable law requires continued retention. Records that must be retained for accounting, tax, fraud-prevention, dispute-resolution, or other legal obligations may be retained for the required period and will remain protected during that period.
+        </p>
+      </Section>
+
+      <Section n="11" title="Contact and EU representative">
+        <p>
+          Questions about this DPA or RacketBuddy&apos;s processing of personal data may be sent to {COMPANY.email}.
+        </p>
+        <p>
+          For matters relating to EU data-protection law, RacketBuddy&apos;s EU representative may be contacted at {EU_REPRESENTATIVE.email}. The representative is located in Denmark.
+        </p>
+      </Section>
+
+      <Section n="12" title="Term and precedence">
+        <p>
+          This DPA takes effect when the club starts using RacketBuddy in a manner that causes RacketBuddy to process personal data on the club&apos;s behalf and remains in force for as long as that processing continues.
+        </p>
+        <p>
+          If this DPA conflicts with another agreement between the parties regarding the processing of personal data on the club&apos;s behalf, this DPA will prevail to the extent of that conflict.
+        </p>
       </Section>
     </LegalPage>
   );
