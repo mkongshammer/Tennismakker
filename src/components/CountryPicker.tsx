@@ -3,6 +3,7 @@ import {useFormStatus} from 'react-dom';
 import {phrase} from '../lib/phrases';
 import { setCountry } from '../lib/actions';
 import { COUNTRIES, countryName, type Locale } from '../lib/sports';
+import { marketFor } from '../lib/international';
 import { translator } from '../lib/i18n';
 
 export function CountryPicker({ active, locale }: { active: string; locale: Locale }) {
@@ -11,7 +12,13 @@ export function CountryPicker({ active, locale }: { active: string; locale: Loca
 function CountryFields({ active, locale }: { active: string; locale: Locale }) {
   const t = translator(locale), {pending} = useFormStatus();
   return <><input type="hidden" name="locale" value={locale}/>
-    <label className="label"><span>{t('common.country')}</span><select key={active} disabled={pending} onChange={event=>event.currentTarget.form?.requestSubmit()} className="input mt-1 min-w-48" name="country" defaultValue={active}>
+    <label className="label"><span>{t('common.country')}</span><select key={active} disabled={pending} onChange={event=>{
+      const form = event.currentTarget.form;
+      const localeInput = form?.elements.namedItem('locale');
+      const defaultLocale = marketFor(event.currentTarget.value)?.defaultLocale;
+      if (localeInput instanceof HTMLInputElement && defaultLocale) localeInput.value = defaultLocale;
+      form?.requestSubmit();
+    }} className="input mt-1 min-w-48" name="country" defaultValue={active}>
       {COUNTRIES.map(c => <option key={c.code} value={c.code}>{countryName(c.code,locale)}</option>)}
     </select></label>
     <button className="btn-ghost min-h-11" disabled={pending}>{pending ? phrase('Gemmer…',locale) : t('common.save')}</button>
