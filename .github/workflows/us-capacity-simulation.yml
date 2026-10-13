@@ -1,0 +1,57 @@
+name: US 1000-club capacity simulation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/simulate-us-capacity.ts'
+      - '.github/workflows/us-capacity-simulation.yml'
+      - 'prisma/schema.prisma'
+
+permissions:
+  contents: read
+
+jobs:
+  capacity:
+    name: 1000 clubs + 108k players/coaches
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: racketbuddy_capacity
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d racketbuddy_capacity"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/racketbuddy_capacity?connection_limit=20
+      SIM_CLUBS: '1000'
+      SIM_PLAYERS_PER_CLUB: '100'
+      SIM_COACHES_PER_CLUB: '8'
+      SIM_COURTS_PER_CLUB: '6'
+      SIM_BOOKINGS_PER_CLUB: '30'
+      SIM_THREADS_PER_CLUB: '6'
+      SIM_SAMPLE_ACTIONS: '12000'
+      SIM_CONCURRENCY: '40'
+      SIM_DAILY_ACTIONS: '250000'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+      - name: Create isolated production schema
+        run: npx prisma db push --skip-generate
+      - name: Simulate 1000 US clubs and daily activity
+        run: npx tsx scripts/simulate-us-capacity.ts
