@@ -5,6 +5,7 @@ import { db } from "../../lib/db";
 import { signup as baseSignup } from "../../lib/actions";
 import { normaliseBuddySports, saveSignupSportsIntent } from "../../lib/buddy-sports";
 import { validArea } from "../../lib/profile-location";
+import { normalizeUSState, validUSPostalCode, validUSState } from "../../../shared/us-address.mjs";
 
 function intentKey(email: string) {
   const hash = crypto.createHash("sha256").update(email).digest("hex");
@@ -21,12 +22,24 @@ const US_SIGNUP_ERRORS: Record<string, string> = {
 export async function signup(prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const locale = String(formData.get("locale") ?? "da");
+  const country = String(formData.get("country") ?? "DK").toUpperCase();
   const usEnglish = locale === "en-US";
   const optedIn = formData.get("engagementEmails") === "on";
   const sports = normaliseBuddySports(formData.getAll("sports").map(String));
+  const city = String(formData.get("area") ?? "").trim();
+
+  if (country === "US") {
+    const state = normalizeUSState(formData.get("state"));
+    if (!validUSState(state) || !validUSPostalCode(formData.get("postalCode"))) {
+      return { error: "Choose a state and enter a valid US ZIP code." };
+    }
+    // Public discovery needs only city + state. Exact street/ZIP are deliberately not stored
+    // for player/coach accounts, even when the browser uses them to autofill the form.
+    formData.set("area", `${city}, ${state}`);
+  }
   const area = String(formData.get("area") ?? "").trim();
 
-  if (!validArea(String(formData.get("country")??"DK"), area)) {
+  if (!validArea(country, area)) {
     return { error: locale==="da" ? "Vælg et gyldigt område." : "Choose a valid city/area." };
   }
 
@@ -44,13 +57,8 @@ export async function signup(prev: unknown, formData: FormData) {
       await Promise.all([
         db.platformSetting.upsert({
           where: { key: intentKey(email) },
-          update: {
-            value: JSON.stringify({ optedIn, at: new Date().toISOString() }),
-          },
-          create: {
-            key: intentKey(email),
-            value: JSON.stringify({ optedIn, at: new Date().toISOString() }),
-          },
+          update: { value: JSON.stringify({ optedIn, at: new Date().toISOString() }) },
+          create: { key: intentKey(email), value: JSON.stringify({ optedIn, at: new Date().toISOString() }) },
         }),
         saveSignupSportsIntent(email, sports),
       ]);
