@@ -26,12 +26,13 @@ export async function setToken(token) {
   else await AsyncStorage.removeItem(TOKEN_KEY);
 }
 
-async function request(path, { method = "GET", body, auth = true } = {}) {
+async function request(path, { method = "GET", body, auth = true, country } = {}) {
   const international = getInternational();
+  const requestCountry = String(country ?? international.country).toUpperCase();
   const headers = {
     "Content-Type": "application/json",
     "Accept-Language": international.locale,
-    "X-RacketBuddy-Country": international.country,
+    "X-RacketBuddy-Country": requestCountry,
   };
   let token;
   if (auth) {
@@ -40,7 +41,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
   }
 
   try {
-    return await fetchJson(`${apiBaseUrl(international.country)}/api/v1${path}`, {
+    return await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
@@ -56,11 +57,11 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
 
 export const api = {
   location:()=>request('/location',{auth:false}),
-  saveLocation:body=>request('/location',{method:'POST',body}),
+  saveLocation:body=>request('/location',{method:'POST',body,country:body?.country}),
   login: (email, password) =>
     request("/auth/login", { method: "POST", body: { email, password }, auth: false }),
   signup: (payload) =>
-    request("/auth/signup", { method: "POST", body: payload, auth: false }),
+    request("/auth/signup", { method: "POST", body: payload, auth: false, country: payload?.country }),
   pushPreferences: () => request("/push"),
   savePushPreferences: preferences => request("/push", {method:"POST",body:{preferences}}),
   registerPush: (token, platform) => request("/push", {method:"POST",body:{token,platform}}),
@@ -71,13 +72,13 @@ export const api = {
   deleteAccount: () => request("/me", { method: "DELETE" }),
 
   clubs: (sport = "TENNIS", country = getInternational().country) =>
-    request(`/clubs?sport=${sport}&land=${country}`, { auth: false }),
+    request(`/clubs?sport=${sport}&land=${country}`, { auth: false, country }),
   club: (slug, days = 7) => request(`/clubs/${slug}?dage=${days}`, { auth: false }),
 
   coaches: (sport = "TENNIS", area, country=getInternational().country) => {
     const q = new URLSearchParams({ sport,land:country });
     if (area) q.set("omraade", area);
-    return request(`/coaches?${q}`, { auth: false });
+    return request(`/coaches?${q}`, { auth: false, country });
   },
   coach: (id) => request(`/coaches/${id}`, { auth: false }),
 
@@ -86,21 +87,23 @@ export const api = {
     request("/bookings/rebook", { method: "POST", body: { bookingId } }),
 
   matches: (params = {}) => {
-    const q = new URLSearchParams({land:getInternational().country});
+    const country=getInternational().country;
+    const q = new URLSearchParams({land:country});
     if (params.area) q.set("omraade", params.area);
     if (params.level) q.set("niveau", String(params.level));
     const qs = q.toString();
-    return request(`/matches${qs ? `?${qs}` : ""}`);
+    return request(`/matches${qs ? `?${qs}` : ""}`, {country});
   },
   createMatch: (payload) => request("/matches", { method: "POST", body: payload }),
   acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
 
   players: (params = {}) => {
-    const q = new URLSearchParams({land:getInternational().country});
+    const country=getInternational().country;
+    const q = new URLSearchParams({land:country});
     if (params.area) q.set("omraade", params.area);
     if (params.sport) q.set("sport", params.sport);
     const qs = q.toString();
-    return request(`/players${qs ? `?${qs}` : ""}`);
+    return request(`/players${qs ? `?${qs}` : ""}`, {country});
   },
   contactPlayer: (id) => request(`/players/${id}/contact`, { method: "POST" }),
 
