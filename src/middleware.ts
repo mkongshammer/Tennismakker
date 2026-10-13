@@ -11,9 +11,35 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { isOwnHost } from "./lib/hosts";
 
+function regionalRedirect(req: NextRequest) {
+  if (String(process.env.REGIONAL_SHARDING_ACTIVE ?? "false").toLowerCase() !== "true") return null;
+  const deployed = String(process.env.RACKETBUDDY_REGION ?? "GLOBAL").toUpperCase();
+  if (deployed !== "EU" && deployed !== "US") return null;
+
+  const cookieCountry = req.cookies.get("rb_prefs_country")?.value?.toUpperCase();
+  const headerCountry = req.headers.get("x-racketbuddy-country")?.toUpperCase();
+  const country = cookieCountry || headerCountry;
+  if (!country) return null;
+  const wanted = country === "US" ? "US" : "EU";
+  if (wanted === deployed) return null;
+
+  const origin = wanted === "US" ? process.env.US_APP_URL : process.env.EU_APP_URL;
+  if (!origin) return null;
+  try {
+    const target = new URL(req.nextUrl.pathname + req.nextUrl.search, origin);
+    if (target.origin === req.nextUrl.origin) return null;
+    return NextResponse.redirect(target, 307);
+  } catch {
+    return null;
+  }
+}
+
 export function middleware(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
-  if (isOwnHost(host)) return NextResponse.next();
+  if (isOwnHost(host)) {
+    const regional = regionalRedirect(req);
+    return regional ?? NextResponse.next();
+  }
 
   const clean = host.split(":")[0].toLowerCase();
   const url = req.nextUrl.clone();
