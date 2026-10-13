@@ -24,7 +24,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   const usState=normalizeUSState(form.get('state')),postalCode=normalizeUSPostalCode(form.get('postalCode'));
   if(country==='US'&&(!street||!validUSState(usState)||!validUSPostalCode(postalCode)))throw Error('Enter a complete US address with street, city, state, and a valid ZIP code.');
   const address=country==='US'?formatUSAddress(street,city,usState,postalCode):street;
-  if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||!address||address.length>300)throw Error('Choose a valid country, address, and time zone.');
+  if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>300)throw Error('Choose a valid country, address, and time zone.');
   const features=normaliseFeatures(mode,form.getAll('features').map(String));
   const sports=[...new Set(form.getAll('sports').map(String))];if(!sports.length||sports.some(s=>!(SPORTS as readonly string[]).includes(s)))throw Error('Vælg klubbens sportsgrene.');
   const prices=await clubSignupPrices(country),price=mode==='CUSTOM'?prices.custom:prices.standard;if(price==null)throw Error('Custom-prisen er endnu ikke offentliggjort. Kontakt RacketBuddy.');
@@ -36,7 +36,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   const coords=address?await geocode(address,city,country):null;
   userId=await db.$transaction(async tx=>{
    if(await tx.user.findUnique({where:{email}}))throw Error('E-mailen er allerede registreret. Log ind eller brug en anden e-mail.');
-   const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:mode,customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:mode==='CUSTOM'?price:0,billingModel:'SUBSCRIPTION',subscriptionKr:prices.standard,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
+   const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:mode,customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:mode==='CUSTOM'?price:0,billingModel:'SUBSCRIPTION',subscriptionKr:prices.standard,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
    for(const {sport,count} of counts){const opt=COURT_OPTIONS[sport];await tx.court.createMany({data:Array.from({length:count},(_,i)=>({clubId:club.id,name:`${sportLabel(sport,locale as any)} ${locale==="da"?opt.noun:sport==="BORDTENNIS"?"table":"court"} ${i+1}`,sport,surface:opt.surfaces[0],indoor:opt.indoor}))});}
    return (await tx.user.create({data:{email,name:contact,passwordHash,country,locale,countryChosen:true,role:'CLUB_ADMIN',clubId:club.id,termsAcceptedAt:new Date()}})).id;
   });
