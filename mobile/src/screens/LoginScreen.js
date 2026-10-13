@@ -9,10 +9,9 @@ import {
   View,
   Pressable,
   Linking,
-  Modal,
   useWindowDimensions } from
 "react-native";
-import { useInternational, tr, US_STATES as SHARED_US_STATES } from "../lib/international";
+import { useInternational, tr } from "../lib/international";
 import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
@@ -21,7 +20,9 @@ import { CourtScene } from "../lib/CourtScene";
 import { DK_REGIONS } from "../lib/regions";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const US_STATES = SHARED_US_STATES ?? [];
+const US_STATES = [
+  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','District of Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
+].map(([code,name])=>({code,name}));
 
 export default function LoginScreen() {
   const { login, signup } = useAuth();
@@ -51,6 +52,7 @@ export default function LoginScreen() {
     setStreetAddress("");
     setUsState("");
     setPostalCode("");
+    setShowStatePicker(false);
   };
 
   const submit = async () => {
@@ -114,7 +116,8 @@ export default function LoginScreen() {
             <Text style={styles.label}>City</Text>
             <TextInput accessibilityLabel="City" style={styles.input} value={area} onChangeText={setArea} editable={!busy} autoComplete="address-line2" textContentType="addressCity" maxLength={100} autoCapitalize="words" placeholder="Boston" placeholderTextColor={colors.slateLight}/>
             <Text style={styles.label}>State</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="State" disabled={busy} onPress={() => setShowStatePicker(true)} style={styles.input}><Text style={{color:usState?colors.ink:colors.slateLight,fontSize:16}}>{usState ? `${stateName} (${usState})` : "Select state"}</Text></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel="State" accessibilityState={{expanded:showStatePicker}} disabled={busy} onPress={() => setShowStatePicker(!showStatePicker)} style={styles.input}><Text style={{color:usState?colors.ink:colors.slateLight,fontSize:16}}>{usState ? `${stateName} (${usState})` : "Select state"}</Text></Pressable>
+            {showStatePicker&&<View style={styles.statePicker}><ScrollView nestedScrollEnabled style={{maxHeight:260}}>{US_STATES.map((state)=><Pressable key={state.code} accessibilityRole="button" accessibilityState={{selected:usState===state.code}} onPress={()=>{setUsState(state.code);setShowStatePicker(false);}} style={[styles.stateRow,usState===state.code&&styles.stateRowActive]}><Text style={styles.stateRowText}>{state.name}</Text><Text style={styles.stateCode}>{state.code}</Text></Pressable>)}</ScrollView></View>}
             <Text style={styles.label}>ZIP code</Text>
             <TextInput accessibilityLabel="ZIP code" style={styles.input} value={postalCode} onChangeText={text=>setPostalCode(text.replace(/[^0-9-]/g,''))} editable={!busy} autoComplete="postal-code" textContentType="postalCode" keyboardType="number-pad" maxLength={10} placeholder="02108" placeholderTextColor={colors.slateLight}/>
             <Text style={styles.privateHint}>Your public location is city and state only. ZIP stays private.</Text>
@@ -128,14 +131,6 @@ export default function LoginScreen() {
         <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => {setMode(mode === "login" ? "signup" : "login");setError(null);}}><Text style={styles.switch}>{mode === "login" ? tr("Ny her? Opret profil") : tr("Har du en konto? Log ind")}</Text></Pressable>
         </View>
       </ScrollView>
-      <Modal visible={showStatePicker} transparent animationType="slide" onRequestClose={()=>setShowStatePicker(false)}>
-        <Pressable style={styles.modalBackdrop} onPress={()=>setShowStatePicker(false)}>
-          <Pressable style={[styles.stateSheet,{paddingBottom:Math.max(20,insets.bottom+12)}]} onPress={()=>{}}>
-            <View style={styles.stateHeader}><Text style={styles.stateTitle}>Select state</Text><Pressable accessibilityRole="button" onPress={()=>setShowStatePicker(false)}><Text style={styles.stateDone}>Done</Text></Pressable></View>
-            <ScrollView>{US_STATES.map((state)=><Pressable key={state.code} accessibilityRole="button" accessibilityState={{selected:usState===state.code}} onPress={()=>{setUsState(state.code);setShowStatePicker(false);}} style={[styles.stateRow,usState===state.code&&styles.stateRowActive]}><Text style={styles.stateRowText}>{state.name}</Text><Text style={styles.stateCode}>{state.code}</Text></Pressable>)}</ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
     </KeyboardAvoidingView>);
 }
 
@@ -166,13 +161,9 @@ const styles = StyleSheet.create({
   chipText: { fontWeight: "600", color: colors.ink, fontSize: 13 },
   chipTextActive: { color: colors.chalk },
   error: { color: colors.court, fontWeight: "600", marginTop: 14 },
-  modalBackdrop:{flex:1,backgroundColor:"rgba(15,23,42,0.45)",justifyContent:"flex-end"},
-  stateSheet:{maxHeight:"72%",backgroundColor:colors.chalk,borderTopLeftRadius:24,borderTopRightRadius:24,paddingHorizontal:18,paddingTop:14},
-  stateHeader:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",paddingVertical:10,borderBottomWidth:1,borderBottomColor:colors.border},
-  stateTitle:{fontSize:20,fontWeight:"800",color:colors.ink},
-  stateDone:{fontSize:15,fontWeight:"700",color:colors.court,padding:8},
-  stateRow:{minHeight:52,flexDirection:"row",alignItems:"center",justifyContent:"space-between",paddingHorizontal:4,borderBottomWidth:1,borderBottomColor:colors.border},
+  statePicker:{marginTop:8,borderWidth:1,borderColor:colors.border,borderRadius:14,backgroundColor:"#fff",overflow:"hidden"},
+  stateRow:{minHeight:50,flexDirection:"row",alignItems:"center",justifyContent:"space-between",paddingHorizontal:14,borderBottomWidth:1,borderBottomColor:colors.border},
   stateRowActive:{backgroundColor:colors.mist},
-  stateRowText:{fontSize:16,color:colors.ink,fontWeight:"600"},
-  stateCode:{fontSize:14,color:colors.slate,fontWeight:"700"}
+  stateRowText:{fontSize:15,color:colors.ink,fontWeight:"600"},
+  stateCode:{fontSize:13,color:colors.slate,fontWeight:"700"}
 });
