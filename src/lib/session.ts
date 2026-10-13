@@ -3,9 +3,11 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { db } from "./db";
 
-const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "dev-secret-skift-mig"
-);
+const configuredSecret = process.env.AUTH_SECRET;
+if (process.env.NODE_ENV === "production" && !configuredSecret) {
+  throw new Error("AUTH_SECRET must be configured in production.");
+}
+const secret = new TextEncoder().encode(configuredSecret ?? "dev-secret-skift-mig");
 
 const COOKIE = "tm_session";
 
