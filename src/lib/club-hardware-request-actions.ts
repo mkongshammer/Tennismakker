@@ -8,10 +8,10 @@ import { sendMail } from "./email";
 import { requireCustomClub } from "./club-management-actions";
 import { getCurrentUser } from "./session";
 
-type FormResult =
-  | { ok: "SENT" }
-  | { error: "UNAUTHORIZED" | "INVALID_CATEGORY" | "DETAILS_SHORT" | "CLUB_NOT_FOUND" }
-  | null;
+type FormResult = {
+  ok?: "SENT";
+  error?: "UNAUTHORIZED" | "INVALID_CATEGORY" | "DETAILS_SHORT" | "CLUB_NOT_FOUND";
+} | null;
 
 const CATEGORIES = new Set(["LIGHTING", "ACCESS", "HEATING", "SCOREBOARD", "OTHER"]);
 const CATEGORY_LABELS: Record<string, string> = {
