@@ -1,0 +1,61 @@
+name: USA regression QA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'shared/**'
+      - 'scripts/**'
+      - 'prisma/**'
+      - 'mobile/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/usa-qa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  web-and-market:
+    name: Web, market and onboarding
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+      - run: npm ci
+      - name: Unit and localization tests
+        run: npm test
+      - name: Club onboarding integration tests
+        run: npm run test:onboarding
+      - name: Production build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build
+
+  mobile:
+    name: Mobile app
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Mobile unit tests
+        run: npm test
+      - name: Expo dependency and config validation
+        run: npx expo-doctor
+      - name: Export iOS and Android bundles
+        run: npx expo export --platform all --output-dir /tmp/racketbuddy-usa-qa
