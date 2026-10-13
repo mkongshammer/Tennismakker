@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
 import { issueToken } from "../../../../../lib/session";
-import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
+import { apiError, json, preflight, publicUser, regionalApiError } from "../../../../../lib/api/helpers";
+import { regionAllowsCountry } from "../../../../../lib/region";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
     return apiError("Forkert e-mail eller adgangskode.", 401);
   }
+  if (!regionAllowsCountry(user.country)) return regionalApiError(user.country);
 
   return json({ token: await issueToken(user.id), user: publicUser(user) });
 }
