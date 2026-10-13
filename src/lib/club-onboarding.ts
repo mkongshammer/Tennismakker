@@ -4,11 +4,31 @@ import {stripe} from './stripe';
 import {getSettings} from './settings';
 import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry} from './platform-pricing';
 import {marketFor,validCurrency} from './international';
+import {addFailureDay,consecutiveFailureDays,localFailureDay,parseFailureDays,shouldPauseAfterFailures} from './subscription-grace';
+
+const failureKey=(clubId:string)=>`clubPaymentFailuresV1:${clubId}`;
+
 export async function clubSignupPriceBook(){
  const row=await db.platformSetting.findUnique({where:{key:'clubSignupPricesV3'}});
  return row?parsePriceBook(row.value):DEFAULT_PRICE_BOOK;
 }
 export async function clubSignupPrices(country='DK'){return pricesForCountry(await clubSignupPriceBook(),country);}
+
+/** Record at most one failed collection per local calendar day. Three consecutive days pause the public club profile. */
+export async function recordClubSubscriptionFailure(customerId:string,at=new Date()){
+ const club=await db.club.findFirst({where:{stripeCustomerId:customerId,signupManaged:true}});if(!club)return null;
+ return db.$transaction(async tx=>{
+  await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${club.id} FOR UPDATE`;
+  const current=await tx.club.findUniqueOrThrow({where:{id:club.id}}),key=failureKey(club.id);
+  const row=await tx.platformSetting.findUnique({where:{key}});
+  const days=addFailureDay(parseFailureDays(row?.value),localFailureDay(at,current.timeZone));
+  await tx.platformSetting.upsert({where:{key},create:{key,value:JSON.stringify(days)},update:{value:JSON.stringify(days)}});
+  const streak=consecutiveFailureDays(days),pause=shouldPauseAfterFailures(days)&&current.status==='APPROVED';
+  const updated=pause?await tx.club.update({where:{id:current.id},data:{status:'SUSPENDED'}}):current;
+  return {clubId:updated.id,days,streak,paused:updated.status==='SUSPENDED'};
+ });
+}
+
 /** A club row lock and Stripe idempotency keys prevent duplicate subscriptions on repeated clicks. */
 export async function startOnboardingCheckout(clubId:string,preferredLocale?:string){
  const settings=await getSettings();if(!settings.stripeSecretKey||!settings.stripeWebhookSecret)throw Error('Abonnementsbetaling er ikke klar. Kontakt RacketBuddy.');
@@ -54,15 +74,19 @@ export async function refreshClubSignup(clubId:string){
   const current=await tx.club.findUniqueOrThrow({where:{id:clubId}});
   // A new checkout must not be overwritten by an old reconciliation.
   if(current.signupCheckoutId!==c.signupCheckoutId)return {...current,currentPaymentVerified:false};
-  const updated=await tx.club.update({where:{id:clubId},data:{subscriptionId:sub.id,subscriptionStatus:sub.status,signupSetupPaidAt:paid&&c.signupSetupKr>0?current.signupSetupPaidAt??new Date():current.signupSetupPaidAt,subscriptionRenewsAt:item.current_period_end?new Date(item.current_period_end*1000):null,signupPaidAt:paid?current.signupPaidAt??new Date():null,status:current.status==='REJECTED'?'REJECTED':!paid&&current.status==='APPROVED'?'SUSPENDED':paid&&current.status==='SUSPENDED'&&current.approvedAt?'APPROVED':current.status}});
-  return {...updated,currentPaymentVerified:paid};
+  const key=failureKey(clubId),failureRow=await tx.platformSetting.findUnique({where:{key}}),failureDays=parseFailureDays(failureRow?.value),streak=consecutiveFailureDays(failureDays);
+  const shouldSuspend=!paid&&current.status==='APPROVED'&&(sub.status==='canceled'||streak>=3);
+  const nextStatus=current.status==='REJECTED'?'REJECTED':paid?'APPROVED':shouldSuspend?'SUSPENDED':current.status;
+  if(paid)await tx.platformSetting.deleteMany({where:{key}});
+  const updated=await tx.club.update({where:{id:clubId},data:{subscriptionId:sub.id,subscriptionStatus:sub.status,signupSetupPaidAt:paid&&c.signupSetupKr>0?current.signupSetupPaidAt??new Date():current.signupSetupPaidAt,subscriptionRenewsAt:item.current_period_end?new Date(item.current_period_end*1000):null,signupPaidAt:paid?current.signupPaidAt??new Date():current.signupPaidAt,status:nextStatus,approvedAt:paid&&current.status!=='REJECTED'?current.approvedAt??new Date():current.approvedAt}});
+  return {...updated,currentPaymentVerified:paid,paymentFailureStreak:paid?0:streak};
  });
 }
 
 export async function approvePaidSignup(id:string){
  const verified=await refreshClubSignup(id);
  if(!verified.signupManaged||!verified.currentPaymentVerified||!verified.signupPaidAt||verified.subscriptionStatus!=='active'||verified.status==='REJECTED')throw Error('Klubben skal have et bekræftet betalt abonnement før godkendelse.');
- const result=await db.club.updateMany({where:{id,signupPaidAt:{not:null},subscriptionStatus:'active',status:{in:['PENDING','APPROVED']}},data:{status:'APPROVED',approvedAt:new Date(),reviewNote:null}});
+ const result=await db.club.updateMany({where:{id,signupPaidAt:{not:null},subscriptionStatus:'active',status:{in:['PENDING','APPROVED']}},data:{status:'APPROVED',approvedAt:verified.approvedAt??new Date(),reviewNote:null}});
  if(!result.count)throw Error('Klubbens status er ændret. Genindlæs siden.');
 }
 
@@ -74,5 +98,6 @@ export async function rejectPaidSignup(id:string,note:string){
   const subId=typeof checkout.subscription==='string'?checkout.subscription:checkout.subscription?.id;
   if(subId){const sub=await client.subscriptions.retrieve(subId);if(sub.status!=='canceled')await client.subscriptions.cancel(subId,{invoice_now:false,prorate:false});}
  }
+ await db.platformSetting.deleteMany({where:{key:failureKey(id)}});
  await db.club.update({where:{id},data:{status:'REJECTED',subscriptionStatus:'canceled',signupPaidAt:null,reviewNote:note||'Kontakt RacketBuddy vedrørende jeres tilmelding og eventuel tilbagebetaling.'}});
 }
