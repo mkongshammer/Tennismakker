@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const ts=require('typescript');
+const {transformSync}=require('@babel/core');
 function setup() {
  let saved=null,registers=0,unregisters=0,fail=false,release;
  let gate=null;
@@ -11,7 +11,10 @@ function setup() {
   './api':{api:{registerPush:async()=>{registers++;if(gate)await gate;},unregisterPush:async()=>{unregisters++;if(fail)throw Error('Offline');}}},
   'expo-device':{isDevice:true},'expo-notifications':{getPermissionsAsync:async()=>({granted:true}),getExpoPushTokenAsync:async()=>({data:'ExpoPushToken[abcdefghijklmnop]'})}
  };
- const code=ts.transpileModule(fs.readFileSync(__dirname+'/push.js','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,esModuleInterop:true}}).outputText;
+ const code=transformSync(fs.readFileSync(__dirname+'/push.js','utf8'),{
+  filename:__dirname+'/push.js',babelrc:false,configFile:false,
+  plugins:[require.resolve('@babel/plugin-transform-modules-commonjs')]
+ }).code;
  const module={exports:{}};
  new Function('require','module','exports',code)(name=>{if(!(name in mocks))throw Error(name);return mocks[name];},module,module.exports);
  return {api:module.exports,get saved(){return saved;},get registers(){return registers;},get unregisters(){return unregisters;},set fail(v){fail=v;},pause(){gate=new Promise(r=>{release=r;});},resume(){release();}};
