@@ -1,209 +1,69 @@
-// Stripes webhook — kilden til sandhed for betalinger.
-//
-// Kunden kan lukke browseren, miste forbindelsen eller aldrig blive sendt
-// tilbage til success_url. Ingen af de ting må forhindre bookingen i at
-// blive bekræftet, hvis pengene faktisk er trukket. Derfor sker den
-// egentlige bekræftelse her — success_url er kun for brugerens oplevelse.
-//
-// Sæt denne adresse op i Stripe Dashboard → Developers → Webhooks:
-//   https://racketbuddy.app/api/webhooks/stripe
-// og lyt på: checkout.session.completed, checkout.session.async_payment_succeeded, account.updated,
-//   customer.subscription.created, customer.subscription.updated,
-//   customer.subscription.deleted, invoice.paid, invoice.payment_failed
-//
-// HÅNDTERER TO FORMATER:
-// Stripe har to slags udsendelser. Den klassiske ("snapshot") indeholder
-// hele objektet i beskeden. Den nyere ("thin") sender kun et event-id, som
-// modtageren selv skal slå op. Vi understøtter begge, fordi en forkert
-// indstilling i Stripe-panelet ellers får alle webhooks til at fejle tavst
-// — hvilket er præcis, hvad der skete første gang.
-import { confirmWalletTopup, freezeWalletForPayment, expireWalletTopup } from "../../../../lib/wallet";
-import {db} from "../../../../lib/db";
-import {recordClubSubscriptionFailure,refreshClubSignup} from "../../../../lib/club-onboarding";
-import Stripe from "stripe";
-import { stripe } from "../../../../lib/stripe";
-import { confirmBookingPayment } from "../../../../lib/payments";
-import { refreshAccountStatus, findRecipientByAccountId } from "../../../../lib/connect";
-import { getSettings } from "../../../../lib/settings";
-import { confirmPackagePurchase } from "../../../../lib/packages";
-import { confirmMembership } from "../../../../lib/memberships";
-import { confirmTeamSignup } from "../../../../lib/teams";
-import { confirmPunchPurchase } from "../../../../lib/punch-cards";
-import { syncSubscription } from "../../../../lib/subscription";
-import { checkoutIsSettled } from "../../../../lib/payment-validation";
-import { InvalidStripeSignature, verifiedStripeEvent } from "../../../../lib/stripe-event";
+// Stripe remains a single external webhook endpoint. EU verifies Stripe's
+// signature first; verified US events are then relayed over RacketBuddy's
+// authenticated internal channel to the Virginia data shard.
+import {db} from '../../../../lib/db';
+import {stripe} from '../../../../lib/stripe';
+import {getSettings} from '../../../../lib/settings';
+import {InvalidStripeSignature,verifiedStripeEvent} from '../../../../lib/stripe-event';
+import {handleStripeEvent} from '../../../../lib/stripe-webhook-handler';
+import {stripeEventRegion} from '../../../../lib/stripe-event-region';
+import {deploymentRegion,regionalShardingActive} from '../../../../lib/region';
+import {regionalInternalHeaders} from '../../../../lib/internal-auth';
 
-export const dynamic = "force-dynamic";
+export const dynamic='force-dynamic';
 
-/** Behandler et event, uanset hvordan det kom ind. */
-async function handleEvent(type: string, object: any) {
-  switch (type) {
-    case "invoice.paid": {
-      const customerId=typeof object.customer==="string"?object.customer:object.customer?.id;
-      if(customerId){const club=await db.club.findFirst({where:{stripeCustomerId:customerId,signupManaged:true}});if(club)await refreshClubSignup(club.id);}
-      return;
-    }
-    case "invoice.payment_failed": {
-      const customerId=typeof object.customer==="string"?object.customer:object.customer?.id;
-      if(customerId){
-        const failure=await recordClubSubscriptionFailure(customerId,new Date());
-        if(failure?.clubId)await refreshClubSignup(failure.clubId);
-      }
-      return;
-    }
-    case "checkout.session.expired": {
-      const id=object.metadata?.walletTopupId;
-      if(id)await expireWalletTopup(id, object.id);
-      return;
-    }
-    case "charge.refunded":
-    case "charge.dispute.created": {
-      const pi = typeof object.payment_intent === 'string' ? object.payment_intent : object.payment_intent?.id;
-      if (pi) await freezeWalletForPayment(pi);
-      return;
-    }
-    case "checkout.session.completed":
-    case "checkout.session.async_payment_succeeded": {
-      const session = object as Stripe.Checkout.Session;
-
-      // Samme event dækker to ting: en gæst der har betalt for en booking,
-      // og en klub der lige har lagt kort ind til sit abonnement.
-      if (session.mode === "subscription") {
-        const subscriptionId =
-          typeof session.subscription === "string"
-            ? session.subscription
-            : session.subscription?.id;
-        if (subscriptionId) {
-          const sub = await (await stripe()).subscriptions.retrieve(subscriptionId);
-          await syncSubscription(sub as any);
-        }
-        return;
-      }
-
-      // Checkout completion is not necessarily payment completion (bank-based
-      // methods can settle later). Never fulfil an unpaid checkout.
-      if (!checkoutIsSettled(session)) return;
-      if (session.metadata?.walletTopupId) { await confirmWalletTopup(session); return; }
-
-      // Et pakkekøb er også en betaling, bare uden en booking bagved.
-      // Kontingent: klubbens indtægt, ikke en booking.
-      const teamSignupId = session.metadata?.teamSignupId;
-      if (teamSignupId) {
-        await confirmTeamSignup(teamSignupId, session);
-        return;
-      }
-
-      const punchPurchaseId = session.metadata?.punchPurchaseId;
-      if (punchPurchaseId) {
-        await confirmPunchPurchase(punchPurchaseId, session);
-        return;
-      }
-
-      const membershipId = session.metadata?.membershipId;
-      if (membershipId) {
-        await confirmMembership(membershipId, session);
-        return;
-      }
-
-      const purchaseId = session.metadata?.purchaseId;
-      if (purchaseId) {
-        await confirmPackagePurchase(purchaseId, session);
-        return;
-      }
-
-      const bookingId = session.metadata?.bookingId;
-      if (!bookingId) {
-        console.error("checkout.session.completed uden bookingId i metadata", session.id);
-        return;
-      }
-      await confirmBookingPayment(bookingId, { provider: "stripe", session });
-      return;
-    }
-
-    // Klubben/træneren har ændret noget i deres Stripe-onboarding —
-    // opdater om de kan modtage betalinger og udbetalinger endnu.
-    case "account.updated": {
-      const account = object as Stripe.Account;
-      const recipient = await findRecipientByAccountId(account.id);
-      if (recipient) {
-        await refreshAccountStatus(recipient.kind, recipient.id);
-      }
-      return;
-    }
-
-    // Abonnementet er startet, fornyet, fejlet eller opsagt. Statussen
-    // skrives ned, fordi den afgør, om klubben slipper for provision:
-    // holder de op med at betale, falder de tilbage på 10%.
-    case "customer.subscription.created":
-    case "customer.subscription.updated":
-    case "customer.subscription.deleted": {
-      await syncSubscription(object as any);
-      return;
-    }
-
-    default:
-      // Ukendte events ignoreres bevidst — Stripe sender langt flere
-      // event-typer, end vi har brug for at reagere på.
-      return;
-  }
+async function relayToUS(payload:{eventId?:string;type:string;object:any;live:boolean}){
+  const origin=process.env.US_INTERNAL_ORIGIN??process.env.US_APP_URL;
+  if(!origin)throw Error('US internal origin is not configured.');
+  const url=new URL('/api/internal/stripe-event',origin);
+  const response=await fetch(url,{
+    method:'POST',
+    headers:regionalInternalHeaders(),
+    body:JSON.stringify(payload),
+    cache:'no-store',
+    signal:AbortSignal.timeout(15_000),
+  });
+  if(!response.ok)throw Error(`US Stripe relay returned ${response.status}`);
 }
 
-export async function POST(req: Request) {
-  const signature = req.headers.get("stripe-signature");
-  const secret = (await getSettings()).stripeWebhookSecret;
+export async function POST(req:Request){
+  const signature=req.headers.get('stripe-signature');
+  const secret=(await getSettings()).stripeWebhookSecret;
+  if(!secret){console.error('Webhook-hemmeligheden er ikke sat — webhook afvist.');return new Response('Webhook er ikke konfigureret',{status:500});}
+  if(!signature)return new Response('Mangler signatur',{status:400});
 
-  if (!secret) {
-    console.error("Webhook-hemmeligheden er ikke sat — webhook afvist.");
-    return new Response("Webhook er ikke konfigureret", { status: 500 });
+  const rawBody=await req.text();
+  let type:string,object:any,eventId:string|undefined,live=false;
+  try{
+    const verified=await verifiedStripeEvent(await stripe(),rawBody,signature,secret);
+    type=verified.type;object=verified.object;eventId=verified.id;live=verified.livemode===true;
+  }catch(err){
+    if(err instanceof InvalidStripeSignature)return new Response('Ugyldig signatur',{status:400});
+    console.error('Stripe-webhook: verificeret event kunne ikke hentes.');
+    return new Response('Kunne ikke hente event',{status:500});
   }
-  if (!signature) {
-    return new Response("Mangler signatur", { status: 400 });
-  }
+  if(!object)return new Response('Event uden indhold',{status:400});
 
-  // Stripe kræver den RÅ krop for at kunne verificere signaturen — læses
-  // derfor som tekst, ikke som JSON, før noget andet rører den.
-  const rawBody = await req.text();
-
-  let type: string;
-  let object: any;
-  let eventId: string | undefined;
-  let live = false;
-
-  try {
-    const verified = await verifiedStripeEvent(await stripe(), rawBody, signature, secret);
-    type = verified.type;
-    object = verified.object;
-    eventId = verified.id;
-    live = verified.livemode === true;
-  } catch (err) {
-    if (err instanceof InvalidStripeSignature) return new Response("Ugyldig signatur", { status: 400 });
-    console.error("Stripe-webhook: verificeret event kunne ikke hentes.");
-    return new Response("Kunne ikke hente event", { status: 500 });
-  }
-
-  if (!object) {
-    console.error("Stripe-webhook: event uden indhold", type);
-    return new Response("Event uden indhold", { status: 400 });
+  try{
+    const target=await stripeEventRegion(object);
+    const deployed=deploymentRegion();
+    if(regionalShardingActive()&&deployed==='EU'&&target==='US'){
+      await relayToUS({eventId,type,object,live});
+    }else if(regionalShardingActive()&&target&&deployed!=='GLOBAL'&&target!==deployed){
+      throw Error(`Stripe event belongs to ${target}, not ${deployed}.`);
+    }else{
+      // Legacy events have no region metadata and intentionally stay in EU,
+      // where all pre-sharding records were created.
+      await handleStripeEvent(type,object);
+    }
+  }catch(err){
+    console.error(`Stripe-webhook fejlede ved håndtering af ${type}:`,err);
+    return new Response('Intern fejl ved behandling',{status:500});
   }
 
-  try {
-    await handleEvent(type, object);
-  } catch (err) {
-    // 500 beder Stripe prøve igen senere, i stedet for at give op på et
-    // event, der fejlede pga. noget forbigående (fx databasen var langsom).
-    console.error(`Stripe-webhook fejlede ved håndtering af ${type}:`, err);
-    return new Response("Intern fejl ved behandling", { status: 500 });
-  }
-
-  // Evidence is written only after SDK signature verification and successful
-  // handling. Test requests and unsigned IDs cannot mark production ready.
-  if (live && eventId) {
+  if(live&&eventId){
     const key='stripeLastVerifiedWebhookV1',value=JSON.stringify({eventId,type,receivedAt:new Date().toISOString()});
-    try { await db.platformSetting.upsert({where:{key},create:{key,value},update:{value}}); }
-    catch { console.error('Kunne ikke gemme tidspunkt for verificeret Stripe-webhook.'); }
+    try{await db.platformSetting.upsert({where:{key},create:{key,value},update:{value}});}catch{console.error('Kunne ikke gemme tidspunkt for verificeret Stripe-webhook.');}
   }
-
-  return new Response(JSON.stringify({ received: true }), {
-    headers: { "Content-Type": "application/json" },
-  });
+  return Response.json({received:true});
 }
