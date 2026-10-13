@@ -4,16 +4,12 @@
 // Connect-konto, vi sender penge UD til, når en gæst booker. Her er klubben
 // derimod kunde hos os, med en almindelig Stripe-kunde og et abonnement på
 // vores egen konto. Samme klub, to id'er, modsat pengestrøm.
-//
-// Prisen laves som `price_data` direkte i checkout frem for et Produkt i
-// Stripe-panelet. Hver klub har sin egen aftalte pris, og et katalog af
-// produkter, der skal holdes i sync med `subscriptionKr`, ville være to
-// steder at rette det samme.
 
 import { refreshClubSignup, startOnboardingCheckout } from "./club-onboarding";
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { getSettings } from "./settings";
+import { dataRegionForCountry } from "./region";
 
 export { subscriptionIsActive, describeSubscription } from "./billing";
 export type { ClubBilling } from "./billing";
@@ -30,7 +26,7 @@ async function ensureCustomer(clubId: string): Promise<string> {
   const customer = await (await stripe()).customers.create({
     name: club.name,
     email: club.members[0]?.email ?? club.contactEmail ?? undefined,
-    metadata: { clubId: club.id },
+    metadata: { clubId: club.id, region: dataRegionForCountry(club.country) },
   });
 
   await db.club.update({
@@ -40,10 +36,7 @@ async function ensureCustomer(clubId: string): Promise<string> {
   return customer.id;
 }
 
-/**
- * Sender klubadministratoren til Stripe for at lægge et kort ind.
- * Returnerer adressen, de skal videre til.
- */
+/** Sender klubadministratoren til Stripe for at lægge et kort ind. */
 export async function startSubscriptionCheckout(clubId: string): Promise<string> {
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) throw new Error("Klubben findes ikke.");
@@ -54,6 +47,7 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
 
   const settings = await getSettings();
   const customerId = await ensureCustomer(clubId);
+  const region = dataRegionForCountry(club.country);
 
   const taxEnabled=["EUR","USD"].includes(club.billingCurrency);
   const client=await stripe();
@@ -74,8 +68,8 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
         quantity: 1,
       },
     ],
-    subscription_data: { metadata: { clubId: club.id } },
-    metadata: { clubId: club.id },
+    subscription_data: { metadata: { clubId: club.id, region } },
+    metadata: { clubId: club.id, region },
     success_url: `${settings.appUrl}/admin?abonnement=ok`,
     cancel_url: `${settings.appUrl}/admin?abonnement=afbrudt`,
   });
@@ -84,13 +78,7 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
   return session.url;
 }
 
-/**
- * Stripes eget selvbetjeningspanel: skift kort, se fakturaer, opsig.
- *
- * Panelet skal slås til én gang i Stripe under Settings → Billing → Customer
- * portal. Er det ikke gjort, fejler kaldet — og det er bedre at sige det
- * højt end at sende klubben videre til en tom side.
- */
+/** Stripes kundeportal: skift kort, se fakturaer, opsig. */
 export async function billingPortalUrl(clubId: string): Promise<string> {
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club?.stripeCustomerId) {
@@ -116,7 +104,7 @@ export async function billingPortalUrl(clubId: string): Promise<string> {
 export async function syncSubscription(subscription: {
   id: string;
   status: string;
-  metadata?: { clubId?: string } | null;
+  metadata?: { clubId?: string; region?: string } | null;
   customer?: string | { id: string };
   current_period_end?: number;
 }): Promise<void> {
@@ -125,8 +113,6 @@ export async function syncSubscription(subscription: {
       ? subscription.customer
       : subscription.customer?.id;
 
-  // Metadata er den sikre vej; kunde-id'et er reserven, hvis abonnementet
-  // er oprettet i Stripe-panelet i hånden og altså ikke har vores metadata.
   const club =
     (subscription.metadata?.clubId
       ? await db.club.findUnique({ where: { id: subscription.metadata.clubId } })
