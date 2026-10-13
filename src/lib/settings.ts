@@ -14,6 +14,7 @@
 
 import crypto from "crypto";
 import { db } from "./db";
+import { regionalSharedConfig } from "./regional-config";
 
 export type Settings = {
   paymentProvider: "stripe" | "mock";
@@ -57,15 +58,13 @@ export const LABELS: Record<SettingKey, string> = {
 };
 
 /** Hvor en værdi i sidste ende kom fra — vises på opsætningssiden. */
-export type Source = "database" | "miljø" | "standard";
+export type Source = "database" | "miljø" | "regional" | "standard";
 
 // ---------------------------------------------------------------------------
 // Kryptering af hemmeligheder
 // ---------------------------------------------------------------------------
 
 function cipherKey(): Buffer {
-  // AUTH_SECRET er allerede den nøgle, hele login-systemet står og falder med.
-  // Er den kompromitteret, er Stripe-nøglen det mindste af problemerne.
   return crypto
     .createHash("sha256")
     .update(process.env.AUTH_SECRET ?? "racketbuddy-uden-noegle")
@@ -85,15 +84,13 @@ function encrypt(plain: string): string {
 }
 
 function decrypt(stored: string): string {
-  if (!stored.startsWith("v1.")) return stored; // gemt før krypteringen kom til
+  if (!stored.startsWith("v1.")) return stored;
   const [, iv, tag, data] = stored.split(".");
   try {
     const d = crypto.createDecipheriv("aes-256-gcm", cipherKey(), Buffer.from(iv, "base64url"));
     d.setAuthTag(Buffer.from(tag, "base64url"));
     return Buffer.concat([d.update(Buffer.from(data, "base64url")), d.final()]).toString("utf8");
   } catch {
-    // Forkert AUTH_SECRET. Bedre at opføre sig som "ikke sat" end at
-    // sende en ulæselig nøgle videre til Stripe.
     console.error("Kunne ikke dekryptere en indstilling — er AUTH_SECRET skiftet?");
     return "";
   }
@@ -130,8 +127,6 @@ function resolve(stored: Map<string, string>) {
     paymentProvider: raw.paymentProvider === "stripe" ? "stripe" : "mock",
     stripeSecretKey: raw.stripeSecretKey,
     stripeWebhookSecret: raw.stripeWebhookSecret,
-    // Et fejlindtastet felt må aldrig kunne sætte provisionen til NaN og
-    // dermed vælte enhver betaling. Uden for 0-50% falder vi tilbage til 10.
     commissionPct: Number.isFinite(pct) && pct >= 0 && pct <= 0.5 ? pct : 0.1,
     appUrl: raw.appUrl.replace(/\/+$/, ""),
     emailApiKey: raw.emailApiKey,
@@ -157,6 +152,22 @@ async function load() {
   }
 
   const { settings, source } = resolve(new Map(rows.map((r) => [r.key, r.value])));
+
+  // US-sharden har sin egen database og sin egen AUTH_SECRET, så krypterede
+  // platformnøgler kan ikke kopieres råt fra EU. I stedet hentes kun de
+  // operationelle værdier via den signerede interne kanal. Lokale DB/env
+  // værdier vinder altid over den regionale fallback.
+  const shared = await regionalSharedConfig();
+  if (shared) {
+    const remote = shared.sharedSettings;
+    if (source.paymentProvider === "standard") { settings.paymentProvider = remote.paymentProvider; source.paymentProvider = "regional"; }
+    if (source.stripeSecretKey === "standard" && remote.stripeSecretKey) { settings.stripeSecretKey = remote.stripeSecretKey; source.stripeSecretKey = "regional"; }
+    if (source.commissionPct === "standard" && Number.isFinite(remote.commissionPct)) { settings.commissionPct = remote.commissionPct; source.commissionPct = "regional"; }
+    if (source.emailApiKey === "standard" && remote.emailApiKey) { settings.emailApiKey = remote.emailApiKey; source.emailApiKey = "regional"; }
+    if (source.emailFrom === "standard" && remote.emailFrom) { settings.emailFrom = remote.emailFrom; source.emailFrom = "regional"; }
+    if (source.ordersEmail === "standard" && remote.ordersEmail) { settings.ordersEmail = remote.ordersEmail; source.ordersEmail = "regional"; }
+  }
+
   cache = { at: Date.now(), settings, source };
   return cache;
 }
@@ -172,18 +183,11 @@ export async function getSettingsWithSource() {
   return { settings, source };
 }
 
-/**
- * Sidst indlæste opsætning, uden at vente på databasen.
- *
- * Findes udelukkende, fordi e-mailskabelonerne bygger links synkront, mens
- * de sammensættes. Er cachen kold, svarer den præcis som miljøvariablerne —
- * altså som appen gjorde, før denne fil fandtes.
- */
+/** Sidst indlæste opsætning, uden at vente på databasen. */
 export function settingsSnapshot(): Settings {
   return cache?.settings ?? resolve(new Map()).settings;
 }
 
-/** Henter opsætningen ind i cachen, så snapshottet er varmt bagefter. */
 export async function ensureSettings(): Promise<void> {
   await load();
 }
@@ -192,11 +196,6 @@ export async function ensureSettings(): Promise<void> {
 // Skrivning
 // ---------------------------------------------------------------------------
 
-/**
- * Gemmer ændrede felter. En værdi på `null` sletter rækken, så feltet falder
- * tilbage til miljøvariablen — det er sådan man fortryder en indtastning
- * uden at skulle kende den oprindelige værdi.
- */
 export async function saveSettings(patch: Partial<Record<SettingKey, string | null>>) {
   for (const [key, value] of Object.entries(patch) as [SettingKey, string | null][]) {
     if (value === null) {
@@ -213,7 +212,6 @@ export async function saveSettings(patch: Partial<Record<SettingKey, string | nu
   cache = null;
 }
 
-/** Er tabellen overhovedet lagt ind i databasen endnu? */
 export async function settingsTableReady(): Promise<boolean> {
   try {
     await db.platformSetting.count();
@@ -223,7 +221,6 @@ export async function settingsTableReady(): Promise<boolean> {
   }
 }
 
-/** "sk_live_…4821" — nok til at genkende en nøgle, ikke nok til at bruge den. */
 export function maskSecret(value: string): string {
   if (!value) return "";
   if (value.length <= 8) return "••••";
