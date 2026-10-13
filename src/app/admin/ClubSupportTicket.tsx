@@ -30,12 +30,12 @@ const COPY = {
   },
 } as const;
 
-type Copy = typeof COPY.en;
+type Copy = Record<keyof typeof COPY.en, string>;
 type TicketState = { ok?: 'SENT'; ticketNumber?: string; error?: string } | null;
 
 function copyFor(locale: Locale): Copy {
   if (locale === 'en-US') return COPY.en;
-  return (COPY as Record<string, Copy>)[locale] ?? COPY.en;
+  return (COPY as unknown as Record<string, Copy>)[locale] ?? COPY.en;
 }
 
 export function ClubSupportTicket({ locale, page }: { locale: Locale; page: string }) {
@@ -51,8 +51,8 @@ export function ClubSupportTicket({ locale, page }: { locale: Locale; page: stri
     : state?.error === 'CLUB_NOT_FOUND' ? c.clubMissing
     : state?.error ? c.detailsShort : null;
 
-  return <details className="mt-4 border-t border-slate/10 pt-4" open={Boolean(state)}>
-    <summary className="group cursor-pointer list-none rounded-xl bg-court/5 px-3 py-3 transition-colors hover:bg-court/10">
+  return <details className="group mt-4 border-t border-slate/10 pt-4" open={Boolean(state)}>
+    <summary className="cursor-pointer list-none rounded-xl bg-court/5 px-3 py-3 transition-colors hover:bg-court/10">
       <span className="flex items-center justify-between gap-3">
         <span>
           <span className="block text-sm font-bold text-ink">{c.title}</span>
