@@ -9,7 +9,7 @@
 //   https://racketbuddy.app/api/webhooks/stripe
 // og lyt på: checkout.session.completed, checkout.session.async_payment_succeeded, account.updated,
 //   customer.subscription.created, customer.subscription.updated,
-//   customer.subscription.deleted
+//   customer.subscription.deleted, invoice.paid, invoice.payment_failed
 //
 // HÅNDTERER TO FORMATER:
 // Stripe har to slags udsendelser. Den klassiske ("snapshot") indeholder
@@ -19,7 +19,7 @@
 // — hvilket er præcis, hvad der skete første gang.
 import { confirmWalletTopup, freezeWalletForPayment, expireWalletTopup } from "../../../../lib/wallet";
 import {db} from "../../../../lib/db";
-import {refreshClubSignup} from "../../../../lib/club-onboarding";
+import {recordClubSubscriptionFailure,refreshClubSignup} from "../../../../lib/club-onboarding";
 import Stripe from "stripe";
 import { stripe } from "../../../../lib/stripe";
 import { confirmBookingPayment } from "../../../../lib/payments";
@@ -38,10 +38,17 @@ export const dynamic = "force-dynamic";
 /** Behandler et event, uanset hvordan det kom ind. */
 async function handleEvent(type: string, object: any) {
   switch (type) {
-    case "invoice.paid":
-    case "invoice.payment_failed": {
+    case "invoice.paid": {
       const customerId=typeof object.customer==="string"?object.customer:object.customer?.id;
       if(customerId){const club=await db.club.findFirst({where:{stripeCustomerId:customerId,signupManaged:true}});if(club)await refreshClubSignup(club.id);}
+      return;
+    }
+    case "invoice.payment_failed": {
+      const customerId=typeof object.customer==="string"?object.customer:object.customer?.id;
+      if(customerId){
+        const failure=await recordClubSubscriptionFailure(customerId,new Date());
+        if(failure?.clubId)await refreshClubSignup(failure.clubId);
+      }
       return;
     }
     case "checkout.session.expired": {
