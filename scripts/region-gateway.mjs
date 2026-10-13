@@ -42,7 +42,7 @@ function forwardedHeaders(req, target) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.url === '/healthz' || req.url === '/api/health') {
+  if (req.url === '/healthz') {
     res.writeHead(200, {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
@@ -98,4 +98,15 @@ server.keepAliveTimeout = 65_000;
 server.headersTimeout = 66_000;
 server.listen(port, '0.0.0.0', () => {
   console.log(`RacketBuddy ${region} regional gateway listening on ${port}, upstream ${upstream.origin}`);
+  const healthUrl = new URL('/api/health', upstream);
+  fetch(healthUrl, {
+    headers: {
+      'x-racketbuddy-region': region.toLowerCase(),
+      ...(region === 'US' ? { 'x-geo-country': 'US' } : {}),
+    },
+  }).then(response => {
+    console.log(`Regional upstream health check: ${response.status} ${healthUrl.origin}`);
+  }).catch(error => {
+    console.error(`Regional upstream health check failed: ${error.message}`);
+  });
 });
