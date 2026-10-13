@@ -1,8 +1,7 @@
 "use client";
 import {UiText} from "../../components/InternationalProvider";
-
-
 import { MARKETS,SALES_CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
+import {US_STATES,usStateTimeZone} from '../../../shared/us-address.mjs';
 import {phrase} from "../../lib/phrases";
 import Link from "next/link";
 import { termsHref } from "../../lib/legal-market";
@@ -48,16 +47,17 @@ export function SignupForm({
   const [state, action] = useFormState(signup, null);
   const [role, setRole] = useState("PLAYER");
   const tr=(value:string)=>phrase(value,locale);
-  const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(marketFor(initialCountry)?.currency??"EUR"),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??"Europe/Copenhagen");
+  const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(marketFor(initialCountry)?.currency??"EUR"),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??"Europe/Copenhagen"),[usState,setUsState]=useState('');
+  const isUS=country==='US';
 
   const engagementLabel = tr("Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.");
 
   return (
     <form action={action} className="card space-y-4"><input type="hidden" name="locale" value={locale}/>
-      <label className="label block">{tr("Land")}<select className="input" name="country" value={country} onChange={e=>{setCountry(e.target.value);const m=marketFor(e.target.value)!;setCurrency(m.currency);setTimeZone(m.timeZone);}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
+      <label className="label block">{tr("Land")}<select className="input" name="country" autoComplete="country" value={country} onChange={e=>{const next=e.target.value;setCountry(next);const m=marketFor(next)!;setCurrency(m.currency);setTimeZone(m.timeZone);setUsState('');}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
       <div>
         <label className="label" htmlFor="name">{labels.name}</label>
-        <input className="input" id="name" name="name" required />
+        <input className="input" id="name" name="name" autoComplete="name" required />
       </div>
       <div>
         <label className="label" htmlFor="email">{labels.email}</label>
@@ -83,73 +83,55 @@ export function SignupForm({
             ))}
           </select>
         </div>
-        <div>
-          <label className="label" htmlFor="area">{country==="DK"?<UiText text="Region"/>:tr("By / område")}</label>
-          {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
+        {country==="DK"?<div>
+          <label className="label" htmlFor="area"><UiText text="Region"/></label>
+          <select className="input" id="area" name="area" defaultValue="" required>
             <option value="" disabled>{tr("Vælg region")}</option>
-            {DK_REGIONS.map((region) => (
-              <option key={region} value={region}>{region}</option>
-            ))}
-          </select>:<input key={country} className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
-        </div>
+            {DK_REGIONS.map((region) => <option key={region} value={region}>{region}</option>)}
+          </select>
+        </div>:isUS?<>
+          <div className="sm:col-span-2">
+            <label className="label" htmlFor="streetAddress">Street address <span className="font-normal text-slate">(optional)</span></label>
+            <input className="input" id="streetAddress" name="streetAddress" autoComplete="street-address" maxLength={150} placeholder="123 Main St"/>
+            <p className="mt-1 text-xs text-slate">Used only to help your device autofill the form. Your street address is not stored or shown on your profile.</p>
+          </div>
+          <div><label className="label" htmlFor="area">City</label><input className="input" id="area" name="area" autoComplete="address-level2" required minLength={2} maxLength={100} placeholder="Boston"/></div>
+          <div><label className="label" htmlFor="state">State</label><select className="input" id="state" name="state" autoComplete="address-level1" required value={usState} onChange={e=>{setUsState(e.target.value);if(e.target.value)setTimeZone(usStateTimeZone(e.target.value));}}><option value="" disabled>Select state</option>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}</select></div>
+          <div><label className="label" htmlFor="postalCode">ZIP code</label><input className="input" id="postalCode" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108"/></div>
+          <div className="self-end pb-3 text-xs text-slate">Your public location is limited to city and state. ZIP and street address stay private.</div>
+        </>:<div>
+          <label className="label" htmlFor="area">{tr("By / område")}</label>
+          <input key={country} className="input" id="area" name="area" autoComplete="address-level2" required minLength={2} maxLength={100}/>
+        </div>}
       </div>
 
       <div className="rounded-xl border border-court/25 bg-court/5 p-4">
-        <span className="label">
-          {role === "COACH"
-            ? (tr("Hvilke sportsgrene er du træner i og vil tilbyde træning i?"))
-            : (tr("Hvilke sportsgrene spiller du og vil gerne finde medspillere til?"))}
-        </span>
-        <p className="mb-3 mt-1 text-xs text-slate">
-          {tr("Du kan vælge flere.")}
-        </p>
+        <span className="label">{role === "COACH" ? tr("Hvilke sportsgrene er du træner i og vil tilbyde træning i?") : tr("Hvilke sportsgrene spiller du og vil gerne finde medspillere til?")}</span>
+        <p className="mb-3 mt-1 text-xs text-slate">{tr("Du kan vælge flere.")}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {SPORTS.map((s) => (
-            <label key={s} className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="sports" value={s} />
-              {sportLabel(s, locale)}
-            </label>
-          ))}
+          {SPORTS.map((s) => <label key={s} className="flex items-center gap-2 text-sm"><input type="checkbox" name="sports" value={s} />{sportLabel(s, locale)}</label>)}
         </div>
       </div>
 
       {role === "COACH" && (
         <div className="space-y-4 rounded-xl border border-court/25 bg-court/5 p-4">
           <p className="text-xs text-slate">{labels.coachAreaNote}</p>
-          <div>
-            <label className="label" htmlFor="headline">{labels.coachHeadline}</label>
-            <input className="input" id="headline" name="headline" placeholder={labels.coachHeadlinePlaceholder} maxLength={120} />
-          </div>
-          <div>
-            <label className="label" htmlFor="priceHour">{tr("Trænerpris pr. time")} ({currency})</label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={currency==='USD'?53:47} />
-          </div>
+          <div><label className="label" htmlFor="headline">{labels.coachHeadline}</label><input className="input" id="headline" name="headline" placeholder={labels.coachHeadlinePlaceholder} maxLength={120} /></div>
+          <div><label className="label" htmlFor="priceHour">{tr("Trænerpris pr. time")} ({currency})</label><input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} key={currency} defaultValue={currency==='USD'?53:47} /></div>
           <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select className="input" name="currency" value={currency} onChange={e=>setCurrency(e.target.value)}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Tidszone")}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
           <p className="text-xs text-slate">{labels.coachRest}</p>
         </div>
       )}
 
-      {state?.error && <p className="text-sm font-semibold text-court-dark">{<UiText text={state.error}/>}</p>}
+      {state?.error && <p className="text-sm font-semibold text-court-dark"><UiText text={state.error}/></p>}
 
-      <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate">
-        <input type="checkbox" name="engagementEmails" className="mt-1" />
-        <span>{engagementLabel}</span>
-      </label>
+      <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate"><input type="checkbox" name="engagementEmails" className="mt-1" /><span>{engagementLabel}</span></label>
 
-      <p className="text-sm text-slate">
-        {terms.before}
-        <Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>
-        {terms.middle}
-        <Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>
-        {terms.after}
-      </p>
+      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
 
       <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 
-      <p className="text-center text-sm text-slate/60">
-        {labels.haveAccount}{" "}
-        <Link href="/login" className="font-semibold text-court underline">{labels.login}</Link>
-      </p>
+      <p className="text-center text-sm text-slate/60">{labels.haveAccount}{" "}<Link href="/login" className="font-semibold text-court underline">{labels.login}</Link></p>
     </form>
   );
 }
