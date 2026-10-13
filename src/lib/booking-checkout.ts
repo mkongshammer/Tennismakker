@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { db } from "./db";
 import { stripe } from "./stripe";
+import { dataRegionForCountry } from "./region";
 
 type CheckoutBooking = { id: string; checkoutParams: string | null; checkoutSessionId: string | null };
 
@@ -13,8 +14,6 @@ export async function resumeBookingCheckout(booking: CheckoutBooking): Promise<s
   if (booking.checkoutSessionId) {
     session = await client.checkout.sessions.retrieve(booking.checkoutSessionId);
   } else {
-    // Stripe retains idempotency keys for at least 24h. Only replay within the
-    // original checkout window; an old key must never create a second session.
     if (!params.expires_at || params.expires_at * 1000 <= Date.now()) {
       throw new Error("Betalingens status skal kontrolleres. Kontakt support før en ny booking.");
     }
@@ -33,12 +32,30 @@ export async function resumeBookingCheckout(booking: CheckoutBooking): Promise<s
 export async function prepareBookingCheckout(bookingId: string, params: Stripe.Checkout.SessionCreateParams) {
   const now = new Date();
   if (!params.expires_at) throw new Error("Betalingen mangler en frist.");
-  // Conditional update locks the booking row. Cancellation and expiry use the
-  // same condition, so a stale read cannot release a newly prepared checkout.
+
+  const booking = await db.booking.findUnique({
+    where:{id:bookingId},
+    include:{user:true,court:{include:{club:true}},coachProfile:true},
+  });
+  if(!booking)throw new Error("Booking findes ikke");
+  const country=booking.kind==='COURT'?booking.court?.club.country:booking.coachProfile?.country??booking.user.country;
+  const region=dataRegionForCountry(country);
+  const regionalParams:Stripe.Checkout.SessionCreateParams={
+    ...params,
+    adaptive_pricing:{enabled:false},
+    metadata:{...(params.metadata??{}),region},
+    ...(params.payment_intent_data?{
+      payment_intent_data:{
+        ...params.payment_intent_data,
+        metadata:{...(params.payment_intent_data.metadata??{}),region},
+      },
+    }:{}),
+  };
+
   await db.booking.updateMany({
     where: { id: bookingId, status: "HOLD", checkoutParams: null,
       OR: [{ holdExpiresAt: null }, { holdExpiresAt: { gt: now } }] },
-    data: { checkoutParams: JSON.stringify({...params, adaptive_pricing: {enabled: false}}), holdExpiresAt: new Date(params.expires_at * 1000) },
+    data: { checkoutParams: JSON.stringify(regionalParams), holdExpiresAt: new Date(params.expires_at * 1000) },
   });
   const current = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
   if (current.status !== "HOLD" || !current.checkoutParams) throw new Error("Reservationen er ikke længere aktiv.");
@@ -54,7 +71,6 @@ export async function closeBookingCheckout(booking: CheckoutBooking): Promise<vo
   const client = await stripe();
   let session = await client.checkout.sessions.retrieve(booking.checkoutSessionId);
   if (session.status === "open") {
-    // If payment wins this race, expire rejects and the booking stays held.
     session = await client.checkout.sessions.expire(session.id);
   }
   if (session.status !== "expired" || session.payment_status !== "unpaid") {
