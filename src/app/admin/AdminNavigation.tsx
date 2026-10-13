@@ -3,6 +3,8 @@ import type {Locale} from "../../lib/sports";
 import { clubHasSection } from '../../lib/club-features';
 import Link from 'next/link';
 import { ADMIN_PAGES, adminHref, type AdminSection } from '../../lib/admin-navigation';
+import { ClubSupportTicket } from './ClubSupportTicket';
+
 export function AdminNavigation({ section, facility, mode, features,locale="da" }: { section: AdminSection; facility: string; mode?: string; features?:string|null;locale?:Locale }) {
   const tr=(s:string)=>phrase(s,locale);
   const current = ADMIN_PAGES.find(p => p.id === section)!;
@@ -15,6 +17,7 @@ export function AdminNavigation({ section, facility, mode, features,locale="da" 
         </Link>
       </li>)}</ul>
     </div>)}
+    <ClubSupportTicket locale={locale} page={section} />
   </nav>;
   return <>
     <aside className="hidden lg:block lg:sticky lg:top-6 lg:self-start rounded-2xl border border-slate/15 bg-white p-3">{menu}</aside>
