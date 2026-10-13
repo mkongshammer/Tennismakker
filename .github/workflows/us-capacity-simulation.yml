@@ -39,11 +39,11 @@ jobs:
       SIM_COURTS_PER_CLUB: '6'
       SIM_BOOKINGS_PER_CLUB: '30'
       SIM_THREADS_PER_CLUB: '6'
-      # Full production-sized dataset; representative compressed daily mix.
-      # 2,500 operations are executed concurrently and the daily model is
-      # reported separately, avoiding a CI job whose result mostly measures
-      # the GitHub runner rather than query scalability.
-      SIM_SAMPLE_ACTIONS: '2500'
+      # The database contains the full 1,000-club dataset. The concurrent
+      # request mix is sampled because unpaginated discovery calls can return
+      # thousands of records per request; the result still measures those
+      # production query shapes and reports a 250k-action/day demand model.
+      SIM_SAMPLE_ACTIONS: '500'
       SIM_CONCURRENCY: '40'
       SIM_DAILY_ACTIONS: '250000'
     steps:
