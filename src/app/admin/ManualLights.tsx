@@ -1,13 +1,33 @@
-'use client';import { useWebsiteInternational } from "../../components/InternationalProvider";
+'use client';
+import { useWebsiteInternational } from "../../components/InternationalProvider";
 import { useFormState } from 'react-dom';
 import { setManualLight } from '../../lib/club-control-actions';
 import { requestClubHardwareIntegration } from '../../lib/club-hardware-request-actions';
 import { SubmitButton } from '../../components/SubmitButton';
 
+type HardwareRequestState = {
+  ok?: 'SENT';
+  error?: 'UNAUTHORIZED' | 'INVALID_CATEGORY' | 'DETAILS_SHORT' | 'CLUB_NOT_FOUND';
+} | null;
+
 export function ManualLights({ channels }: {channels: {id: string;label: string | null;}[];}) {
-  const { tr } = useWebsiteInternational();
+  const { tr, locale } = useWebsiteInternational();
   const [state, action] = useFormState(setManualLight, null);
-  const [requestState, requestAction] = useFormState(requestClubHardwareIntegration, null);
+  const [requestState, requestAction] = useFormState(requestClubHardwareIntegration, null as HardwareRequestState);
+  const usEnglish = locale === 'en-US';
+
+  const requestError = requestState?.error === 'UNAUTHORIZED'
+    ? (usEnglish ? 'Only club administrators can send a request.' : tr('Kun klubadministratorer kan sende en anmodning.'))
+    : requestState?.error === 'INVALID_CATEGORY'
+      ? (usEnglish ? 'Choose what type of equipment the request is about.' : tr('Vælg hvilken type udstyr det drejer sig om.'))
+      : requestState?.error === 'DETAILS_SHORT'
+        ? (usEnglish ? 'Briefly describe the equipment you have and what you want to control.' : tr('Beskriv kort hvilket udstyr I har, og hvad I gerne vil kunne styre.'))
+        : requestState?.error === 'CLUB_NOT_FOUND'
+          ? (usEnglish ? 'The club could not be found.' : tr('Klubben kunne ikke findes.'))
+          : null;
+  const requestOk = usEnglish
+    ? 'Thanks — your request has been sent. We will review the equipment and reply to the club contact email.'
+    : tr('Tak — anmodningen er sendt. Vi gennemgår udstyret og vender tilbage til klubbens kontaktmail.');
 
   return <div className="space-y-4">
     <section className="card space-y-3">
@@ -56,8 +76,8 @@ export function ManualLights({ channels }: {channels: {id: string;label: string 
           </div>
           <SubmitButton pendingText={tr("Sender anmodning…")}>{tr("Send anmodning")}</SubmitButton>
         </form>
-        {requestState?.error && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{tr(requestState.error)}</p>}
-        {requestState?.ok && <p className="mt-3 rounded-lg bg-court/10 p-3 text-sm font-semibold text-court-dark">{tr(requestState.ok)}</p>}
+        {requestError && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-800">{requestError}</p>}
+        {requestState?.ok === 'SENT' && <p className="mt-3 rounded-lg bg-court/10 p-3 text-sm font-semibold text-court-dark">{requestOk}</p>}
       </details>
     </section>
   </div>;
