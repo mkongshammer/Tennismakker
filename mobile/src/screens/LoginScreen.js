@@ -12,8 +12,7 @@ import {
   Modal,
   useWindowDimensions } from
 "react-native";
-import { useInternational, tr } from "../lib/international";
-import { US_STATES } from "../../../shared/us-address.mjs";
+import { useInternational, tr, US_STATES as SHARED_US_STATES } from "../lib/international";
 import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
@@ -21,6 +20,8 @@ import { colors } from "../lib/theme";
 import { CourtScene } from "../lib/CourtScene";
 import { DK_REGIONS } from "../lib/regions";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const US_STATES = SHARED_US_STATES ?? [];
 
 export default function LoginScreen() {
   const { login, signup } = useAuth();
