@@ -9,6 +9,7 @@ import {createSession,getCurrentUser} from './session';
 import {clubSignupPrices,startOnboardingCheckout,refreshClubSignup} from './club-onboarding';
 import {normaliseFeatures} from './club-features';
 import {bookingCurrency,marketFor,validCurrency,validTimeZone,validLocale} from './international';
+import {regionAllowsCountry} from './region';
 import {formatUSAddress,normalizeUSPostalCode,normalizeUSState,validUSPostalCode,validUSState} from '../../shared/us-address.mjs';
 import {geocode} from './geocode';
 import {COURT_OPTIONS} from './club-sports';
@@ -20,6 +21,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||Buffer.byteLength(password)>72||password.length<10||name.length<2||name.length>150||!city||city.length>100||!contact||contact.length>150)throw Error('Udfyld navn, by, kontaktperson og gyldig e-mail. Brug en adgangskode på 10–72 tegn.');
   if(form.get('terms')!=='on')throw Error('Acceptér abonnementsvilkår og databehandleraftale.');
   const country=String(form.get('country')??'DK').toUpperCase(),market=marketFor(country),currency=bookingCurrency(country),timeZone=String(form.get('timeZone')??market?.timeZone??'Europe/Copenhagen'),locale=String(form.get('locale')??'da');
+  if(!regionAllowsCountry(country))throw Error(country==='US'?'This US club must be created on RacketBuddy US.':'This club must be created on the RacketBuddy EU region.');
   const street=String(form.get('address')??'').trim();
   const structuredUSAddress=form.has('state')||form.has('postalCode');
   const usState=normalizeUSState(form.get('state')),postalCode=normalizeUSPostalCode(form.get('postalCode'));
