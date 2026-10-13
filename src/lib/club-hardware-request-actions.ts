@@ -8,7 +8,10 @@ import { sendMail } from "./email";
 import { requireCustomClub } from "./club-management-actions";
 import { getCurrentUser } from "./session";
 
-type FormResult = { ok?: string; error?: string } | null;
+type FormResult =
+  | { ok: "SENT" }
+  | { error: "UNAUTHORIZED" | "INVALID_CATEGORY" | "DETAILS_SHORT" | "CLUB_NOT_FOUND" }
+  | null;
 
 const CATEGORIES = new Set(["LIGHTING", "ACCESS", "HEATING", "SCOREBOARD", "OTHER"]);
 const CATEGORY_LABELS: Record<string, string> = {
@@ -27,7 +30,7 @@ export async function requestClubHardwareIntegration(
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
-    return { error: "Kun klubadministratorer kan sende en anmodning." };
+    return { error: "UNAUTHORIZED" };
   }
 
   const category = String(formData.get("category") ?? "").trim().toUpperCase();
@@ -35,14 +38,14 @@ export async function requestClubHardwareIntegration(
   const model = String(formData.get("model") ?? "").trim().slice(0, 120);
   const details = String(formData.get("details") ?? "").trim().slice(0, 2_000);
 
-  if (!CATEGORIES.has(category)) return { error: "Vælg hvilken type udstyr det drejer sig om." };
-  if (details.length < 10) return { error: "Beskriv kort hvilket udstyr I har, og hvad I gerne vil kunne styre." };
+  if (!CATEGORIES.has(category)) return { error: "INVALID_CATEGORY" };
+  if (details.length < 10) return { error: "DETAILS_SHORT" };
 
   const club = await db.club.findUnique({
     where: { id: user.clubId },
     select: { id: true, name: true, city: true, country: true },
   });
-  if (!club) return { error: "Klubben kunne ikke findes." };
+  if (!club) return { error: "CLUB_NOT_FOUND" };
 
   const requestId = crypto.randomUUID();
   const createdAt = new Date();
@@ -93,7 +96,5 @@ export async function requestClubHardwareIntegration(
   });
 
   revalidatePath("/admin/lys-adgang");
-  return {
-    ok: "Tak — anmodningen er sendt. Vi gennemgår udstyret og vender tilbage til klubbens kontaktmail.",
-  };
+  return { ok: "SENT" };
 }
