@@ -2,7 +2,7 @@ import * as platformPricing from "../platform-pricing";
 import * as international from "../international";
 import * as location from "../profile-location";
 import * as phrases from "../phrases";
-import * as usAddress from "../../../shared/us-address.mjs";
+import * as subscriptionGrace from "../subscription-grace";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
@@ -18,7 +18,7 @@ export function loadIsolatedModule(relative: string, mocks: Record<string, unkno
   const module = { exports: {} as any };
   new Function("require", "module", "exports", outputText)((name: string) => {
     if (name in mocks) return mocks[name];
-    const pure:Record<string,unknown>={"platform-pricing":platformPricing,"international":international,"profile-location":location,"phrases":phrases,"us-address.mjs":usAddress};
+    const pure:Record<string,unknown>={"platform-pricing":platformPricing,"international":international,"profile-location":location,"phrases":phrases,"subscription-grace":subscriptionGrace};
     const moduleName=name.split("/").at(-1)!;if(moduleName in pure)return pure[moduleName];
     if (!(name in mocks)) throw new Error(`Unmocked dependency: ${name}`);
     return mocks[name];
