@@ -4,8 +4,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
 
-const BASE_URL =
+const EU_BASE_URL =
   Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
+const US_BASE_URL =
+  Constants.expoConfig?.extra?.apiUrlUs ?? "https://racketbuddy-us.onrender.com";
+
+export function apiBaseUrl(country = getInternational().country) {
+  return String(country).toUpperCase() === "US" ? US_BASE_URL : EU_BASE_URL;
+}
 
 const TOKEN_KEY = "tm_token";
 const sessionListeners = new Set();
@@ -21,7 +27,12 @@ export async function setToken(token) {
 }
 
 async function request(path, { method = "GET", body, auth = true } = {}) {
-  const headers = { "Content-Type": "application/json", "Accept-Language":getInternational().locale };
+  const international = getInternational();
+  const headers = {
+    "Content-Type": "application/json",
+    "Accept-Language": international.locale,
+    "X-RacketBuddy-Country": international.country,
+  };
   let token;
   if (auth) {
     token = await getToken();
@@ -29,7 +40,7 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
   }
 
   try {
-    return await fetchJson(`${BASE_URL}/api/v1${path}`, {
+    return await fetchJson(`${apiBaseUrl(international.country)}/api/v1${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
@@ -113,4 +124,4 @@ export const api = {
   resumePayment: (bookingId) => request(`/bookings/${bookingId}/checkout`, { method: "POST" }),
 };
 
-export const checkoutUrl = (path) => resolveCheckoutUrl(path, BASE_URL);
+export const checkoutUrl = (path) => resolveCheckoutUrl(path, apiBaseUrl());
