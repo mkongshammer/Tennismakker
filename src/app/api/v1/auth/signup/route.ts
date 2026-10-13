@@ -4,7 +4,7 @@ import { issueToken } from "../../../../../lib/session";
 import { profileLocation } from "../../../../../lib/profile-location";
 import { phrase } from "../../../../../lib/phrases";
 import type { Locale } from "../../../../../lib/sports";
-import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
+import { apiError, json, preflight, publicUser, requireRegionalCountry } from "../../../../../lib/api/helpers";
 import { normalizeUSState, validUSPostalCode, validUSState } from "../../../../../../shared/us-address.mjs";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +17,8 @@ export async function POST(req: Request) {
   const name = String(body.name ?? "").trim();
   const level = Number(body.level ?? 3);
   const country = String(body.country ?? "DK").toUpperCase();
+  const regionError = requireRegionalCountry(country);
+  if (regionError) return regionError;
   if (country === "US") {
     const state = normalizeUSState(body.state);
     const city = String(body.area ?? "").trim();
