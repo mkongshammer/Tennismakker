@@ -5,12 +5,17 @@ import {getSettings} from './settings';
 import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry} from './platform-pricing';
 import {marketFor,validCurrency} from './international';
 import {addFailureDay,consecutiveFailureDays,localFailureDay,parseFailureDays,shouldPauseAfterFailures} from './subscription-grace';
+import {regionalSharedConfig} from './regional-config';
+import {dataRegionForCountry,deploymentRegion,regionalShardingActive} from './region';
 
 const failureKey=(clubId:string)=>`clubPaymentFailuresV1:${clubId}`;
 
 export async function clubSignupPriceBook(){
- const row=await db.platformSetting.findUnique({where:{key:'clubSignupPricesV3'}});
- return row?parsePriceBook(row.value):DEFAULT_PRICE_BOOK;
+ const row=await db.platformSetting.findUnique({where:{key:'clubSignupPricesV3'}}).catch(()=>null);
+ if(row)return parsePriceBook(row.value);
+ const shared=await regionalSharedConfig();
+ if(shared?.clubSignupPriceBook)return parsePriceBook(JSON.stringify(shared.clubSignupPriceBook));
+ return DEFAULT_PRICE_BOOK;
 }
 export async function clubSignupPrices(country='DK'){return pricesForCountry(await clubSignupPriceBook(),country);}
 
@@ -31,8 +36,10 @@ export async function recordClubSubscriptionFailure(customerId:string,at=new Dat
 
 /** A club row lock and Stripe idempotency keys prevent duplicate subscriptions on repeated clicks. */
 export async function startOnboardingCheckout(clubId:string,preferredLocale?:string){
- const settings=await getSettings();if(!settings.stripeSecretKey||!settings.stripeWebhookSecret)throw Error('Abonnementsbetaling er ikke klar. Kontakt RacketBuddy.');
- if((await inspectWebhook()).status!=='ok')throw Error('Abonnementsbetaling afventer opsætning hos RacketBuddy. Der er ikke opkrævet noget.');
+ const settings=await getSettings();
+ const relay=deploymentRegion()==='US'&&regionalShardingActive();
+ if(!settings.stripeSecretKey||(!relay&&!settings.stripeWebhookSecret))throw Error('Abonnementsbetaling er ikke klar. Kontakt RacketBuddy.');
+ if(!relay&&(await inspectWebhook()).status!=='ok')throw Error('Abonnementsbetaling afventer opsætning hos RacketBuddy. Der er ikke opkrævet noget.');
  const client=await stripe();
  return db.$transaction(async tx=>{
   await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${clubId} FOR UPDATE`;
@@ -41,14 +48,15 @@ export async function startOnboardingCheckout(clubId:string,preferredLocale?:str
   if(c.subscriptionId&&!['canceled','incomplete_expired'].includes(c.subscriptionStatus??''))throw Error('Klubben har allerede et abonnement. Administrér det under Betaling.');
   const currency=c.billingCurrency.toLowerCase();
   if(!validCurrency(c.billingCurrency))throw Error('Invalid billing currency.');
+  const region=dataRegionForCountry(c.country);
   const language=preferredLocale??marketFor(c.country)?.defaultLocale??'en',locale=language==='en-US'?'en':language==='no'?'nb':language as 'da'|'en'|'de'|'sv'|'fr'|'es';
   let attempt=c.signupCheckoutAttempt;
   if(c.signupCheckoutId){const old=await client.checkout.sessions.retrieve(c.signupCheckoutId);if(old.status==='open'&&old.url)return old.url;if(old.status==='complete'&&!['canceled','incomplete_expired'].includes(c.subscriptionStatus??''))return `${settings.appUrl}/club-start?betaling=kontroller`;attempt++;}
   const taxEnabled=['EUR','USD'].includes(c.billingCurrency);
   if(taxEnabled&&(await client.tax.settings.retrieve()).status!=='active')throw Error('Tax setup is not ready. Please contact RacketBuddy.');
   let customer=c.stripeCustomerId;
-  if(!customer){const created=await client.customers.create({name:c.name,email:c.contactEmail??undefined,metadata:{clubId}},{idempotencyKey:`club-signup-customer:${clubId}`});customer=created.id;}
-  const session=await client.checkout.sessions.create({adaptive_pricing:{enabled:false},automatic_tax:{enabled:taxEnabled},mode:'subscription',customer,locale,billing_address_collection:'required',tax_id_collection:{enabled:true},customer_update:{name:'auto',address:'auto'},payment_method_types:['card'],client_reference_id:clubId,metadata:{clubId},subscription_data:{metadata:{clubId}},line_items:[...(c.signupSetupKr>0&&!c.signupSetupPaidAt?[{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.signupSetupKr*100,product_data:{name:'RacketBuddy Custom'}}}]:[]),{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.subscriptionKr*100,recurring:{interval:'month'},product_data:{name:`RacketBuddy ${c.solutionMode==='CUSTOM'?'Custom':'Standard'} – ${c.name}`}}}],success_url:`${settings.appUrl}/club-start?betaling=kontroller`,cancel_url:`${settings.appUrl}/club-start?betaling=afbrudt`},{idempotencyKey:`club-signup-checkout:${clubId}:${attempt}`});
+  if(!customer){const created=await client.customers.create({name:c.name,email:c.contactEmail??undefined,metadata:{clubId,region}},{idempotencyKey:`club-signup-customer:${clubId}`});customer=created.id;}
+  const session=await client.checkout.sessions.create({adaptive_pricing:{enabled:false},automatic_tax:{enabled:taxEnabled},mode:'subscription',customer,locale,billing_address_collection:'required',tax_id_collection:{enabled:true},customer_update:{name:'auto',address:'auto'},payment_method_types:['card'],client_reference_id:clubId,metadata:{clubId,region},subscription_data:{metadata:{clubId,region}},line_items:[...(c.signupSetupKr>0&&!c.signupSetupPaidAt?[{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.signupSetupKr*100,product_data:{name:'RacketBuddy Custom'}}}]:[]),{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.subscriptionKr*100,recurring:{interval:'month'},product_data:{name:`RacketBuddy ${c.solutionMode==='CUSTOM'?'Custom':'Standard'} – ${c.name}`}}}],success_url:`${settings.appUrl}/club-start?betaling=kontroller`,cancel_url:`${settings.appUrl}/club-start?betaling=afbrudt`},{idempotencyKey:`club-signup-checkout:${clubId}:${attempt}`});
   if(!session.url)throw Error('Betalingssiden kunne ikke oprettes. Prøv igen.');
   await tx.club.update({where:{id:clubId},data:{stripeCustomerId:customer,signupCheckoutId:session.id,signupCheckoutAttempt:attempt}});return session.url;
  },{timeout:60000,maxWait:10000});
@@ -66,13 +74,11 @@ export async function refreshClubSignup(clubId:string){
  const item=sub.items.data[0],invoice=typeof sub.latest_invoice==='object'?sub.latest_invoice:null;
  const subCustomer=typeof sub.customer==='string'?sub.customer:sub.customer.id;
  if(subCustomer!==c.stripeCustomerId||sub.metadata.clubId!==c.id||sub.items.data.length!==1||item.quantity!==1||item.price.currency!==currency||item.price.unit_amount!==c.subscriptionKr*100||item.price.recurring?.interval!=='month'||item.price.recurring.interval_count!==1)throw Error('Abonnementets pris eller tilknytning stemmer ikke.');
- // Tax must never be mistaken for a missing Custom setup charge.
  const setupPaid=Boolean(c.signupSetupPaidAt)||c.signupSetupKr===0||(session.status==='complete'&&session.payment_status==='paid'&&session.currency===currency&&session.amount_subtotal===(c.signupSetupKr+c.subscriptionKr)*100);
  const paid=setupPaid&&sub.status==='active'&&invoice?.status==='paid'&&invoice.currency===currency&&invoice.amount_paid>=c.subscriptionKr*100;
  return db.$transaction(async tx=>{
   await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${clubId} FOR UPDATE`;
   const current=await tx.club.findUniqueOrThrow({where:{id:clubId}});
-  // A new checkout must not be overwritten by an old reconciliation.
   if(current.signupCheckoutId!==c.signupCheckoutId)return {...current,currentPaymentVerified:false};
   const key=failureKey(clubId),failureRow=await tx.platformSetting.findUnique({where:{key}}),failureDays=parseFailureDays(failureRow?.value),streak=consecutiveFailureDays(failureDays);
   const shouldSuspend=!paid&&current.status==='APPROVED'&&(sub.status==='canceled'||streak>=3);
