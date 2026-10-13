@@ -4,10 +4,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
 
-const EU_BASE_URL =
-  Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
-const US_BASE_URL =
-  Constants.expoConfig?.extra?.apiUrlUs ?? "https://racketbuddy-us.onrender.com";
+const EU_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
+const US_BASE_URL = Constants.expoConfig?.extra?.apiUrlUs ?? "https://racketbuddy-us.onrender.com";
 
 export function apiBaseUrl(country = getInternational().country) {
   return String(country).toUpperCase() === "US" ? US_BASE_URL : EU_BASE_URL;
@@ -16,115 +14,76 @@ export function apiBaseUrl(country = getInternational().country) {
 const TOKEN_KEY = "tm_token";
 const sessionListeners = new Set();
 export function onSessionExpired(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener); }
-
-export async function getToken() {
-  return AsyncStorage.getItem(TOKEN_KEY);
-}
-
-export async function setToken(token) {
-  if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
-  else await AsyncStorage.removeItem(TOKEN_KEY);
-}
+export async function getToken() { return AsyncStorage.getItem(TOKEN_KEY); }
+export async function setToken(token) { if (token) await AsyncStorage.setItem(TOKEN_KEY, token); else await AsyncStorage.removeItem(TOKEN_KEY); }
 
 async function request(path, { method = "GET", body, auth = true, country } = {}) {
   const international = getInternational();
   const requestCountry = String(country ?? international.country).toUpperCase();
-  const headers = {
-    "Content-Type": "application/json",
-    "Accept-Language": international.locale,
-    "X-RacketBuddy-Country": requestCountry,
-  };
+  const headers = {"Content-Type":"application/json","Accept-Language":international.locale,"X-RacketBuddy-Country":requestCountry};
   let token;
-  if (auth) {
-    token = await getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
-
+  if (auth) { token = await getToken(); if (token) headers.Authorization = `Bearer ${token}`; }
   try {
-    return await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    return await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1${path}`, {method,headers,body:body?JSON.stringify(body):undefined});
   } catch (error) {
     if (auth && token && error.status === 401 && await getToken() === token) {
-      await setToken(null);
-      sessionListeners.forEach(listener => listener());
+      await setToken(null); sessionListeners.forEach(listener => listener());
     }
     throw error;
+  }
+}
+
+async function loginAcrossRegions(email,password){
+  const preferred=String(getInternational().country??'DK').toUpperCase();
+  const first=preferred==='US'?'US':'DK';
+  const second=first==='US'?'DK':'US';
+  try { return await request("/auth/login",{method:"POST",body:{email,password},auth:false,country:first}); }
+  catch(error){
+    // A person can travel or use a fresh phone whose market has not been set
+    // yet. Retry the other data region only for authentication/region errors;
+    // all successful authenticated traffic then follows the user's stored country.
+    if(error?.status!==401&&error?.status!==409)throw error;
+    return request("/auth/login",{method:"POST",body:{email,password},auth:false,country:second});
   }
 }
 
 export const api = {
   location:()=>request('/location',{auth:false}),
   saveLocation:body=>request('/location',{method:'POST',body,country:body?.country}),
-  login: (email, password) =>
-    request("/auth/login", { method: "POST", body: { email, password }, auth: false }),
-  signup: (payload) =>
-    request("/auth/signup", { method: "POST", body: payload, auth: false, country: payload?.country }),
-  pushPreferences: () => request("/push"),
-  savePushPreferences: preferences => request("/push", {method:"POST",body:{preferences}}),
-  registerPush: (token, platform) => request("/push", {method:"POST",body:{token,platform}}),
-  unregisterPush: token => request("/push", {method:"DELETE",body:{token}}),
-  appHandoff: destination => request("/app-handoff", {method:"POST",body:{destination}}),
-  me: () => request("/me"),
-  savePreferences: payload=>request("/me",{method:"POST",body:payload}),
-  deleteAccount: () => request("/me", { method: "DELETE" }),
+  login: loginAcrossRegions,
+  signup: payload=>request("/auth/signup",{method:"POST",body:payload,auth:false,country:payload?.country}),
+  pushPreferences:()=>request("/push"),
+  savePushPreferences:preferences=>request("/push",{method:"POST",body:{preferences}}),
+  registerPush:(token,platform)=>request("/push",{method:"POST",body:{token,platform}}),
+  unregisterPush:token=>request("/push",{method:"DELETE",body:{token}}),
+  appHandoff:destination=>request("/app-handoff",{method:"POST",body:{destination}}),
+  me:()=>request("/me"),
+  savePreferences:payload=>request("/me",{method:"POST",body:payload}),
+  deleteAccount:()=>request("/me",{method:"DELETE"}),
 
-  clubs: (sport = "TENNIS", country = getInternational().country) =>
-    request(`/clubs?sport=${sport}&land=${country}`, { auth: false, country }),
-  club: (slug, days = 7) => request(`/clubs/${slug}?dage=${days}`, { auth: false }),
+  clubs:(sport="TENNIS",country=getInternational().country)=>request(`/clubs?sport=${sport}&land=${country}`,{auth:false,country}),
+  club:(slug,days=7)=>request(`/clubs/${slug}?dage=${days}`,{auth:false}),
+  coaches:(sport="TENNIS",area,country=getInternational().country)=>{const q=new URLSearchParams({sport,land:country});if(area)q.set("omraade",area);return request(`/coaches?${q}`,{auth:false,country});},
+  coach:id=>request(`/coaches/${id}`,{auth:false}),
 
-  coaches: (sport = "TENNIS", area, country=getInternational().country) => {
-    const q = new URLSearchParams({ sport,land:country });
-    if (area) q.set("omraade", area);
-    return request(`/coaches?${q}`, { auth: false, country });
-  },
-  coach: (id) => request(`/coaches/${id}`, { auth: false }),
-
-  repeatableBookings: () => request("/bookings/repeatable"),
-  rebook: (bookingId) =>
-    request("/bookings/rebook", { method: "POST", body: { bookingId } }),
-
-  matches: (params = {}) => {
-    const country=getInternational().country;
-    const q = new URLSearchParams({land:country});
-    if (params.area) q.set("omraade", params.area);
-    if (params.level) q.set("niveau", String(params.level));
-    const qs = q.toString();
-    return request(`/matches${qs ? `?${qs}` : ""}`, {country});
-  },
-  createMatch: (payload) => request("/matches", { method: "POST", body: payload }),
-  acceptMatch: (id) => request(`/matches/${id}/accept`, { method: "POST" }),
-
-  players: (params = {}) => {
-    const country=getInternational().country;
-    const q = new URLSearchParams({land:country});
-    if (params.area) q.set("omraade", params.area);
-    if (params.sport) q.set("sport", params.sport);
-    const qs = q.toString();
-    return request(`/players${qs ? `?${qs}` : ""}`, {country});
-  },
-  contactPlayer: (id) => request(`/players/${id}/contact`, { method: "POST" }),
-
-  swipeQueue: () => request("/swipe"),
-  swipe: (toUserId, liked) =>
-    request("/swipe", { method: "POST", body: { toUserId, liked } }),
-
-  pendingReviews: () => request("/reviews"),
-  review: (bookingId, rating, comment) =>
-    request("/reviews", { method: "POST", body: { bookingId, rating, comment } }),
-
-  threads: () => request("/threads"),
-  thread: (id) => request(`/threads/${id}`),
-  sendMessage: (id, body) =>
-    request(`/threads/${id}`, { method: "POST", body: { body } }),
-
-  bookings: () => request("/bookings"),
-  book: (payload) => request("/bookings", { method: "POST", body: payload }),
-  openDoor: (bookingId) =>
-    request(`/bookings/${bookingId}/door`, { method: "POST" }),
-  resumePayment: (bookingId) => request(`/bookings/${bookingId}/checkout`, { method: "POST" }),
+  repeatableBookings:()=>request("/bookings/repeatable"),
+  rebook:bookingId=>request("/bookings/rebook",{method:"POST",body:{bookingId}}),
+  matches:(params={})=>{const country=getInternational().country;const q=new URLSearchParams({land:country});if(params.area)q.set("omraade",params.area);if(params.level)q.set("niveau",String(params.level));const qs=q.toString();return request(`/matches${qs?`?${qs}`:""}`,{country});},
+  createMatch:payload=>request("/matches",{method:"POST",body:payload}),
+  acceptMatch:id=>request(`/matches/${id}/accept`,{method:"POST"}),
+  players:(params={})=>{const country=getInternational().country;const q=new URLSearchParams({land:country});if(params.area)q.set("omraade",params.area);if(params.sport)q.set("sport",params.sport);const qs=q.toString();return request(`/players${qs?`?${qs}`:""}`,{country});},
+  contactPlayer:id=>request(`/players/${id}/contact`,{method:"POST"}),
+  swipeQueue:()=>request("/swipe"),
+  swipe:(toUserId,liked)=>request("/swipe",{method:"POST",body:{toUserId,liked}}),
+  pendingReviews:()=>request("/reviews"),
+  review:(bookingId,rating,comment)=>request("/reviews",{method:"POST",body:{bookingId,rating,comment}}),
+  threads:()=>request("/threads"),
+  thread:id=>request(`/threads/${id}`),
+  sendMessage:(id,body)=>request(`/threads/${id}`,{method:"POST",body:{body}}),
+  bookings:()=>request("/bookings"),
+  book:payload=>request("/bookings",{method:"POST",body:payload}),
+  openDoor:bookingId=>request(`/bookings/${bookingId}/door`,{method:"POST"}),
+  resumePayment:bookingId=>request(`/bookings/${bookingId}/checkout`,{method:"POST"}),
 };
 
-export const checkoutUrl = (path) => resolveCheckoutUrl(path, apiBaseUrl());
+export const checkoutUrl=(path)=>resolveCheckoutUrl(path,apiBaseUrl());
