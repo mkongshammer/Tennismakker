@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { regionAllowsCountry, regionalShardingActive } from "./region";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -9,6 +10,29 @@ const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
 if (!globalForPrisma.messageEmailMiddlewareInstalled) {
   prisma.$use(async (params, next) => {
+    // Last line of defence for regional data residency. Route-level guards are
+    // better UX, but every direct Prisma write — server actions included —
+    // still passes here. This prevents a future form from accidentally writing
+    // a US User/Club/CoachProfile into Frankfurt (or EU data into Virginia).
+    if (regionalShardingActive() && ["User", "Club", "CoachProfile"].includes(params.model ?? "")) {
+      const action = params.action;
+      if (["create", "update", "upsert", "createMany", "updateMany"].includes(action)) {
+        const candidates: any[] = [];
+        const data = params.args?.data;
+        if (Array.isArray(data)) candidates.push(...data);
+        else if (data && typeof data === "object") candidates.push(data);
+        const create = params.args?.create;
+        const update = params.args?.update;
+        if (create && typeof create === "object") candidates.push(create);
+        if (update && typeof update === "object") candidates.push(update);
+        for (const candidate of candidates) {
+          if (candidate?.country !== undefined && !regionAllowsCountry(candidate.country)) {
+            throw new Error("REGION_MISMATCH: data write belongs to another RacketBuddy region.");
+          }
+        }
+      }
+    }
+
     const result = await next(params);
 
     if (params.model === "Message" && params.action === "create") {
