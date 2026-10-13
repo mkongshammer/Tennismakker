@@ -5,8 +5,9 @@ test('club payout setup lets Stripe collect the actual legal form and retries us
  const calls:any[]=[];
  const {ensureConnectAccount}=loadIsolatedModule('src/lib/connect.ts',{
   './settings':{},'./db':{db:{club:{findUnique:async()=>({id:'club-1',name:'Commercial Padel',country:'US',members:[],stripeAccountId:null}),update:async()=>{}}}},
+  './region':{dataRegionForCountry:(country:any)=>String(country).toUpperCase()==='US'?'US':'EU'},
   './stripe':{stripe:async()=>({accounts:{create:async(params:any,options:any)=>{calls.push({params,options});return{id:'acct_test'};}}})},
  });
  await ensureConnectAccount('CLUB','club-1');await ensureConnectAccount('CLUB','club-1');
- assert.equal(calls[0].params.country,'US');assert.equal('business_type' in calls[0].params,false);assert.equal(calls[0].options.idempotencyKey,calls[1].options.idempotencyKey);
+ assert.equal(calls[0].params.country,'US');assert.equal(calls[0].params.metadata.region,'US');assert.equal('business_type' in calls[0].params,false);assert.equal(calls[0].options.idempotencyKey,calls[1].options.idempotencyKey);
 });
