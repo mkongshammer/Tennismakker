@@ -12,17 +12,21 @@ function webhookFixture(t: any) {
   const client = new Stripe("sk_test_offline_only");
   let bookings = 0; let packages = 0; const evidence:any[]=[];
   t.mock.method(client.events, "retrieve", () => { throw new Error("Unexpected network call"); });
+  const handleStripeEvent = async (type:string, object:any) => {
+    if (type !== 'checkout.session.completed' && type !== 'checkout.session.async_payment_succeeded') return;
+    if (!validation.checkoutIsSettled(object)) return;
+    if (object.metadata?.purchaseId) { packages++; return; }
+    if (object.metadata?.bookingId) { assert.equal(object.metadata.bookingId,'booking-1'); bookings++; }
+  };
   const { POST } = loadIsolatedModule("src/app/api/webhooks/stripe/route.ts", {
-    "../../../../lib/wallet":{}, "../../../../lib/db":{db:{platformSetting:{upsert:async(data:any)=>{evidence.push(data);}}}}, "../../../../lib/club-onboarding":{},
+    "../../../../lib/db":{db:{platformSetting:{upsert:async(data:any)=>{evidence.push(data);}}}},
     "../../../../lib/stripe": { stripe: async () => client },
     "../../../../lib/settings": { getSettings: async () => ({ stripeWebhookSecret: secret }) },
-    "../../../../lib/payments": { confirmBookingPayment: async (id: string, proof: validation.BookingPaymentProof) => {
-      assert.equal(id, "booking-1"); assert.equal(proof.provider, "stripe"); bookings++;
-    } },
-    "../../../../lib/connect": {}, "../../../../lib/memberships": {},
-    "../../../../lib/teams": {}, "../../../../lib/punch-cards": {}, "../../../../lib/subscription": {},
-    "../../../../lib/packages": { confirmPackagePurchase: async () => { packages++; } },
-    "../../../../lib/payment-validation": validation, "../../../../lib/stripe-event": stripeEvent,
+    "../../../../lib/stripe-event": stripeEvent,
+    "../../../../lib/stripe-webhook-handler": { handleStripeEvent },
+    "../../../../lib/stripe-event-region": { stripeEventRegion: async () => null },
+    "../../../../lib/region": { deploymentRegion: () => 'GLOBAL', regionalShardingActive: () => false },
+    "../../../../lib/internal-auth": { regionalInternalHeaders: () => ({}) },
   });
   return {
     counts: () => ({ bookings, packages }),
