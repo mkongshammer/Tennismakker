@@ -9,9 +9,14 @@ function setup() {
   'react-native':{Platform:{OS:'ios'}},'expo-constants':{expoConfig:{extra:{eas:{projectId:'test'}}}},
   '@react-native-async-storage/async-storage':{getItem:async()=>saved,setItem:async(_k,v)=>{saved=v;},removeItem:async()=>{saved=null;}},
   './api':{api:{registerPush:async()=>{registers++;if(gate)await gate;},unregisterPush:async()=>{unregisters++;if(fail)throw Error('Offline');}}},
-  'expo-device':{isDevice:true},'expo-notifications':{getPermissionsAsync:async()=>({granted:true}),getExpoPushTokenAsync:async()=>({data:'ExpoPushToken[abcdefghijklmnop]'})}
+  'expo-device':{isDevice:true},'expo-notifications':{getPermissionsAsync:async()=>({granted:true}),requestPermissionsAsync:async()=>({granted:true}),getExpoPushTokenAsync:async()=>({data:'ExpoPushToken[abcdefghijklmnop]'})}
  };
- const code=transformSync(fs.readFileSync(__dirname+'/push.js','utf8'),{
+ let source=fs.readFileSync(__dirname+'/push.js','utf8');
+ // Dynamic imports otherwise bypass the test require shim and load the native Expo modules.
+ source=source
+  .replace("import('expo-device')","Promise.resolve(require('expo-device'))")
+  .replace("import('expo-notifications')","Promise.resolve(require('expo-notifications'))");
+ const code=transformSync(source,{
   filename:__dirname+'/push.js',babelrc:false,configFile:false,
   plugins:[require.resolve('@babel/plugin-transform-modules-commonjs')]
  }).code;
