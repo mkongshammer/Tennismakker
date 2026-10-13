@@ -8,6 +8,7 @@ function setup() {
   let session: any = { id: 'cs_1', status: 'open', payment_status: 'unpaid', url: 'https://checkout.stripe.com/one' };
   const requests: any[] = []; const keys = new Map();
   const db = { booking: {
+    findUnique: async () => ({ ...row, kind:'COURT', user:{country:'DK'}, court:{club:{country:'DK'}}, coachProfile:null }),
     updateMany: async ({ where, data }: any) => {
       if (row.status !== where.status || row.checkoutParams !== where.checkoutParams || row.holdExpiresAt <= where.OR[1].holdExpiresAt.gt) return { count: 0 };
       row = { ...row, ...data }; return { count: 1 };
@@ -17,6 +18,7 @@ function setup() {
   } };
   const api = loadIsolatedModule('src/lib/booking-checkout.ts', {
     './db': { db },
+    './region': { dataRegionForCountry: (country:any) => String(country).toUpperCase()==='US'?'US':'EU' },
     './stripe': { stripe: async () => ({ checkout: { sessions: {
       create: async (params: any, options: any) => {
         requests.push({ params, options });
@@ -44,6 +46,7 @@ test('concurrent checkout starts share frozen parameters, deadline and idempoten
   ]);
   assert.equal(f.creates(), 1); assert.equal(urls[0], urls[1]);
   assert.equal(f.requests[0].params.adaptive_pricing.enabled,false);
+  assert.equal(f.requests[0].params.metadata.region,'EU');
   assert.equal(f.row().holdExpiresAt.getTime(), f.params.expires_at * 1000);
   await f.api.resumeBookingCheckout(f.row());
   assert.equal(f.creates(), 1);
