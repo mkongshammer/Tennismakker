@@ -5,6 +5,7 @@ import { profileLocation } from "../../../../../lib/profile-location";
 import { phrase } from "../../../../../lib/phrases";
 import type { Locale } from "../../../../../lib/sports";
 import { apiError, json, preflight, publicUser } from "../../../../../lib/api/helpers";
+import { normalizeUSState, validUSPostalCode, validUSState } from "../../../../../../shared/us-address.mjs";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -15,6 +16,17 @@ export async function POST(req: Request) {
   const password = String(body.password ?? "");
   const name = String(body.name ?? "").trim();
   const level = Number(body.level ?? 3);
+  const country = String(body.country ?? "DK").toUpperCase();
+  if (country === "US") {
+    const state = normalizeUSState(body.state);
+    const city = String(body.area ?? "").trim();
+    if (!city || !validUSState(state) || !validUSPostalCode(body.postalCode)) {
+      return apiError("Choose a city and state and enter a valid US ZIP code.");
+    }
+    // Home street/ZIP are accepted only for native autofill validation and are not persisted.
+    // Discovery exposes city + state, never a player's exact home address.
+    body.area = `${city}, ${state}`;
+  }
   let location;
   try { location=profileLocation(body); } catch(e) { return apiError((e as Error).message); }
   const err=(message:string)=>apiError(phrase(message,location.locale as Locale));
