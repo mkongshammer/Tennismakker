@@ -7,12 +7,14 @@
 import { NextResponse } from "next/server";
 import { userFromRequest } from "../session";
 
+const ALLOWED_HEADERS = "Content-Type, Authorization, X-RacketBuddy-Country";
+
 export function json(data: unknown, status = 200) {
   return NextResponse.json(data, {
     status,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Headers": ALLOWED_HEADERS,
       "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
     },
   });
@@ -26,7 +28,7 @@ export function apiError(message: string, status = 400) {
 export function preflight() {
   return new NextResponse(null, { status: 204, headers: {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": ALLOWED_HEADERS,
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
   } });
 }
