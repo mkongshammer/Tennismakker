@@ -14,7 +14,7 @@ function setup(balance=10000){
  };
  const db:any={...tx,walletTopup:{findUnique:async()=>({id:'t',currency:'DKK',userId:'u',clubId:'c',paidOre:180000,creditOre:200000,destination:'acct_club',sessionId:'cs_test'})},$transaction:async(fn:any)=>{const previous=queue;let release:any;queue=new Promise(r=>release=r);await previous;const backup=structuredClone(state);try{return await fn(tx);}catch(e){state=backup;throw e;}finally{release();}}};
  const intent:any={status:'succeeded',amount_received:180000,currency:'dkk',transfer_data:{destination:'acct_club'},metadata:{walletTopupId:'t'},latest_charge:{refunded:false,amount_refunded:0,disputed:false}};
- const api=loadIsolatedModule('src/lib/wallet.ts',{'./db':{db},'./billing':{},'./stripe':{stripe:async()=>({paymentIntents:{retrieve:async()=>intent}})},'./settings':{},'./memberships':{},'./wallet-policy':policy});
+ const api=loadIsolatedModule('src/lib/wallet.ts',{'./db':{db},'./billing':{},'./stripe':{stripe:async()=>({paymentIntents:{retrieve:async()=>intent}})},'./settings':{},'./memberships':{},'./wallet-policy':policy,'./region':{dataRegionForCountry:(country:any)=>String(country).toUpperCase()==='US'?'US':'EU'}});
  return{api,state:()=>state,intent,fail:()=>{failLedger=true;}};
 }
 test('two bookings cannot spend the same last wallet balance',async()=>{
