@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bookingCurrency, countryLabel, marketFor, salesCurrency, validTimeZone } from './international';
+import { US_STATES, formatUSAddress, usStateTimeZone, validUSPostalCode, validUSState } from '../../shared/us-address.mjs';
 import { profileLocation } from './profile-location';
 import { termsHref } from './legal-market';
 import { phrase } from './phrases';
@@ -23,6 +24,26 @@ test('USA profile accepts American English and a local city', () => {
     area: 'Boston',
     countryChosen: true,
   });
+});
+
+test('US address helpers cover all states plus DC and validate ZIP codes', () => {
+  assert.equal(US_STATES.length, 51);
+  assert.equal(new Set(US_STATES.map(state => state.code)).size, 51);
+  assert.equal(validUSState('MA'), true);
+  assert.equal(validUSState('XX'), false);
+  assert.equal(validUSPostalCode('02108'), true);
+  assert.equal(validUSPostalCode('02108-1234'), true);
+  assert.equal(validUSPostalCode('2108'), false);
+  assert.equal(formatUSAddress('123 Main St', 'Boston', 'ma', '02108'), '123 Main St, Boston, MA 02108');
+});
+
+test('US state selection provides a sensible editable timezone default', () => {
+  assert.equal(usStateTimeZone('MA'), 'America/New_York');
+  assert.equal(usStateTimeZone('CA'), 'America/Los_Angeles');
+  assert.equal(usStateTimeZone('TX'), 'America/Chicago');
+  assert.equal(usStateTimeZone('AZ'), 'America/Phoenix');
+  assert.equal(usStateTimeZone('HI'), 'Pacific/Honolulu');
+  for (const state of US_STATES) assert.equal(validTimeZone(usStateTimeZone(state.code)), true, state.code);
 });
 
 test('major US time zones are valid', () => {
