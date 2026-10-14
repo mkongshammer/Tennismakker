@@ -61,3 +61,5 @@ jobs:
           NODE
       - name: Submit latest Android build to Google Play production
         run: npx --yes eas-cli@latest submit --platform android --latest --profile production --non-interactive --wait
+
+# Triggered for Google Play review on 2026-10-14
