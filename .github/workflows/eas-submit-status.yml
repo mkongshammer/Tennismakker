@@ -26,22 +26,47 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm ci
-      - name: Inspect Android submissions and latest failure logs
+      - name: Inspect latest Android failure
         run: |
           npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive > /tmp/android-submissions.json
-          cat /tmp/android-submissions.json
           node - <<'NODE' > /tmp/android-log-urls.txt
           const fs = require('fs');
           const submissions = JSON.parse(fs.readFileSync('/tmp/android-submissions.json', 'utf8'));
-          const target = submissions.find(s => s.status === 'ERRORED') || submissions[0];
-          console.error(`Inspecting submission ${target?.id || 'none'} status=${target?.status || 'none'}`);
+          console.log(`LATEST_STATUS=${submissions[0]?.status || 'NONE'}`, {file: process.stderr});
+          const target = submissions.find(s => s.status === 'ERRORED');
+          console.error(`Inspecting failed submission ${target?.id || 'none'}`);
           for (const url of (target?.logFiles || [])) console.log(url);
           NODE
+          i=0
           while IFS= read -r url; do
             [ -z "$url" ] && continue
-            echo "===== ANDROID SUBMISSION LOG ====="
-            curl -fsSL "$url" | gzip -dc 2>/dev/null || curl -fsSL "$url" || true
-            echo
+            i=$((i+1))
+            f="/tmp/eas-log-$i.bin"
+            curl -fsSL "$url" -o "$f"
+            echo "===== LOG $i TYPE ====="
+            file "$f" || true
+            xxd -l 32 "$f" || true
+            echo "===== LOG $i READABLE STRINGS ====="
+            strings -n 6 "$f" | grep -E -i 'Google|Error|permission|package|Play|upload|release|track|developer|API|first|version|draft|production|access|denied' | tail -n 100 || true
+            echo "===== LOG $i DECOMPRESSION ATTEMPTS ====="
+            python - "$f" <<'PY'
+import sys, gzip, zlib, bz2, lzma
+p=sys.argv[1]
+b=open(p,'rb').read()
+print('bytes', len(b), 'magic', b[:16].hex())
+for name, fn in [
+ ('gzip', gzip.decompress),
+ ('zlib', zlib.decompress),
+ ('bz2', bz2.decompress),
+ ('lzma', lzma.decompress),
+]:
+    try:
+        out=fn(b)
+        print('---', name, 'OK', len(out), '---')
+        print(out.decode('utf-8','replace')[-12000:])
+    except Exception as e:
+        print(name, 'failed:', type(e).__name__, str(e)[:200])
+PY
           done < /tmp/android-log-urls.txt
-      - name: Check Android store status
-        run: npx --yes eas-cli@latest submit:status --platform android --json --non-interactive || true
+      - name: Current Android submission list
+        run: npx --yes eas-cli@latest submit:list --platform android --limit 5 --json --non-interactive
