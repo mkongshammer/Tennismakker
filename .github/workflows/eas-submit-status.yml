@@ -26,15 +26,17 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm ci
-      - name: Diagnose newest failed Android submission
+      - name: Decode newest failed Android submission log
         run: |
           npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive > /tmp/android.json
           echo "===== CURRENT SUBMISSIONS ====="
           jq -r '.[] | [.id,.status,.createdAt,.completedAt] | @tsv' /tmp/android.json
           url=$(jq -r '[.[] | select(.status=="ERRORED")][0].logFiles[-1]' /tmp/android.json)
-          echo "===== DOWNLOADING FAILURE LOG ====="
           curl -fsSL "$url" -o /tmp/eas-failure.bin
-          file /tmp/eas-failure.bin
-          xxd -l 64 /tmp/eas-failure.bin
-          echo "===== READABLE STRINGS ====="
-          strings -n 5 /tmp/eas-failure.bin | tail -n 200
+          node -e "const fs=require('fs'),z=require('zlib'); const b=fs.readFileSync('/tmp/eas-failure.bin'); try{const o=z.brotliDecompressSync(b);fs.writeFileSync('/tmp/eas-failure.txt',o);console.log('BROTLI_OK',o.length)}catch(e){console.log('BROTLI_FAILED',e.message)}"
+          if [ -f /tmp/eas-failure.txt ]; then
+            echo "===== DECODED FAILURE LOG ====="
+            tail -n 250 /tmp/eas-failure.txt
+          else
+            echo "No decoded log produced"
+          fi
