@@ -26,22 +26,22 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm ci
-      - name: Inspect latest Android submission and logs
+      - name: Inspect Android submissions and latest failure logs
         run: |
           npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive > /tmp/android-submissions.json
           cat /tmp/android-submissions.json
           node - <<'NODE' > /tmp/android-log-urls.txt
           const fs = require('fs');
           const submissions = JSON.parse(fs.readFileSync('/tmp/android-submissions.json', 'utf8'));
-          for (const url of (submissions[0]?.logFiles || [])) console.log(url);
+          const target = submissions.find(s => s.status === 'ERRORED') || submissions[0];
+          console.error(`Inspecting submission ${target?.id || 'none'} status=${target?.status || 'none'}`);
+          for (const url of (target?.logFiles || [])) console.log(url);
           NODE
           while IFS= read -r url; do
             [ -z "$url" ] && continue
-            echo "===== LATEST ANDROID SUBMISSION LOG ====="
-            curl -fsSL "$url" || true
+            echo "===== ANDROID SUBMISSION LOG ====="
+            curl -fsSL "$url" | gzip -dc 2>/dev/null || curl -fsSL "$url" || true
             echo
           done < /tmp/android-log-urls.txt
       - name: Check Android store status
         run: npx --yes eas-cli@latest submit:status --platform android --json --non-interactive || true
-      - name: List recent iOS submissions
-        run: npx --yes eas-cli@latest submit:list --platform ios --limit 10 --json --non-interactive
