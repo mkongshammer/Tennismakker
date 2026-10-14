@@ -1,0 +1,53 @@
+name: Google Play Production Draft
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/google-play-production-draft.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  submit-production-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify Expo authentication
+        run: |
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@latest whoami
+      - name: Link EAS project
+        run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Configure Google Play production draft
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit['production-draft'] = {
+            android: {
+              track: 'production',
+              releaseStatus: 'draft',
+              changesNotSentForReview: true
+            }
+          };
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
+      - name: Submit versionCode 4 as production draft
+        run: npx --yes eas-cli@latest submit --platform android --id 9dcd12dc-11d0-4357-a47a-68bc2a335294 --profile production-draft --non-interactive --wait --verbose-fastlane
