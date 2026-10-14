@@ -18,6 +18,7 @@ jobs:
         working-directory: mobile
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,5 +26,9 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm ci
+      - name: List recent Android submissions
+        run: npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive
+      - name: Check Android store status
+        run: npx --yes eas-cli@latest submit:status --platform android --json --non-interactive || true
       - name: List recent iOS submissions
         run: npx --yes eas-cli@latest submit:list --platform ios --limit 10 --json --non-interactive
