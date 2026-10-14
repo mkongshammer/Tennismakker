@@ -26,5 +26,15 @@ jobs:
           node-version: "24"
       - name: Install dependencies
         run: npm ci
-      - name: List current Android submissions
-        run: npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive
+      - name: Diagnose newest failed Android submission
+        run: |
+          npx --yes eas-cli@latest submit:list --platform android --limit 10 --json --non-interactive > /tmp/android.json
+          echo "===== CURRENT SUBMISSIONS ====="
+          jq -r '.[] | [.id,.status,.createdAt,.completedAt] | @tsv' /tmp/android.json
+          url=$(jq -r '[.[] | select(.status=="ERRORED")][0].logFiles[-1]' /tmp/android.json)
+          echo "===== DOWNLOADING FAILURE LOG ====="
+          curl -fsSL "$url" -o /tmp/eas-failure.bin
+          file /tmp/eas-failure.bin
+          xxd -l 64 /tmp/eas-failure.bin
+          echo "===== READABLE STRINGS ====="
+          strings -n 5 /tmp/eas-failure.bin | tail -n 200
