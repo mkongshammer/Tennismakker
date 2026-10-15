@@ -1,6 +1,6 @@
 // Global login-tilstand, så alle skærme kender brugeren.
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api, setToken, getToken, onSessionExpired } from "./api";
+import { api, clearSessionTokens, getToken, onSessionExpired, setSessionTokens } from "./api";
 
 import { restoreInternational,setInternational } from "./international";
 import { disablePush } from "./push";
@@ -20,39 +20,42 @@ export function AuthProvider({ children }) {
   }, []);
   useEffect(() => { restore(); return onSessionExpired(() => { setUser(null); setSessionError(null); }); }, [restore]);
 
-  const login = async (email, password, clubOnly = false) => {
-    const { token, user: u } = await api.login(email, password);
-    if (clubOnly && u.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
-    await setToken(token);
-    setUser(u);
-    await setInternational(u);
+  const acceptSession = async (result) => {
+    await setSessionTokens(result.token, result.refreshToken);
+    setUser(result.user);
+    await setInternational(result.user);
+    return result.user;
   };
 
-  const signup = async (payload) => {
-    const { token, user: u } = await api.signup(payload);
-    await setToken(token);
-    setUser(u);
-    await setInternational(u);
+  const login = async (email, password, clubOnly = false) => {
+    const result = await api.login(email, password);
+    if (clubOnly && result.user.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
+    return acceptSession(result);
   };
+
+  const signup = async (payload) => acceptSession(await api.signup(payload));
+  const socialLogin = async (payload) => acceptSession(await api.socialLogin(payload));
+  const requestPasswordReset = async (email) => api.requestPasswordReset(email);
 
   const savePreferences=async payload=>{const u=(await api.savePreferences(payload)).user;setUser(u);await setInternational(u);};
   const saveLocation=async payload=>{const u=(await api.saveLocation(payload)).user;setUser(u);await setInternational(u);};
 
   const logout = async () => {
-    await disablePush();
-    await setToken(null);
+    try { await disablePush(); } catch {}
+    try { await api.logout(user?.country); } catch {}
+    await clearSessionTokens();
     setUser(null);
     setSessionError(null);
   };
 
   const deleteAccount = async () => {
     await api.deleteAccount();
-    await setToken(null);
+    await clearSessionTokens();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, logout, deleteAccount,savePreferences,saveLocation }}>
+    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, socialLogin, requestPasswordReset, logout, deleteAccount,savePreferences,saveLocation }}>
       {children}
     </AuthContext.Provider>
   );
