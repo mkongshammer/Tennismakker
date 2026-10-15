@@ -4,7 +4,7 @@ import Constants from "expo-constants";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { GoogleSignin, GoogleSigninButton } from "@react-native-google-signin/google-signin";
 
-const googleWebClientId = Constants.expoConfig?.extra?.googleWebClientId;
+const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? Constants.expoConfig?.extra?.googleWebClientId;
 
 export function SocialAuthButtons({ disabled, onCredential, onError }) {
   useEffect(() => {
