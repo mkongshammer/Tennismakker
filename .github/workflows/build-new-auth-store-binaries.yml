@@ -1,0 +1,115 @@
+name: Build New Auth Store Binaries
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-new-auth-store-binaries.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify Expo authentication
+        run: |
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@latest whoami
+      - name: Link EAS project
+        run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Validate Android configuration
+        run: |
+          npx expo-doctor
+          node -e "const a=require('./app.json').expo;if(a.android.package!=='dk.racketbuddy.app')process.exit(1);if(!a.extra.googleWebClientId)process.exit(2);console.log('Android auth config ready')"
+      - name: Build Android production AAB
+        run: npx --yes eas-cli@latest build --platform android --profile production --non-interactive --wait
+      - name: Upload latest build to Google Play closed testing as draft
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit.production ||= {};
+          json.submit.production.android = {
+            track: 'alpha',
+            releaseStatus: 'draft',
+            changesNotSentForReview: true
+          };
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
+          npx --yes eas-cli@latest submit --platform android --latest --profile production --non-interactive --wait
+
+  ios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
+      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      EXPO_APPLE_TEAM_ID: 28H9663B4V
+      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Configure App Store Connect API key
+        run: |
+          test -n "$EXPO_TOKEN"
+          test -n "$ASC_KEY_ID"
+          test -n "$ASC_ISSUER_ID"
+          test -n "$ASC_PRIVATE_KEY"
+          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
+          npx --yes eas-cli@latest whoami
+      - name: Link EAS project
+        run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Validate iOS configuration
+        run: |
+          npx expo-doctor
+          node -e "const a=require('./app.json').expo;if(a.ios.bundleIdentifier!=='dk.racketbuddy.app'||!a.ios.usesAppleSignIn)process.exit(1);console.log('iOS Apple Sign-In config ready')"
+      - name: Build iOS production binary
+        run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive --wait
+      - name: Submit latest iOS build to App Store Connect
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const json = JSON.parse(fs.readFileSync(p, 'utf8'));
+          json.submit ||= {};
+          json.submit.production ||= {};
+          json.submit.production.ios = {
+            ascAppId: '6820186123',
+            ascApiKeyPath: '/tmp/AuthKey.p8',
+            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
+            ascApiKeyId: process.env.ASC_KEY_ID
+          };
+          fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
+          NODE
+          npx --yes eas-cli@latest submit --platform ios --latest --profile production --non-interactive --wait
