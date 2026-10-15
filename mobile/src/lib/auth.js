@@ -1,6 +1,6 @@
 // Global login-tilstand, så alle skærme kender brugeren.
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api, clearSessionTokens, getToken, onSessionExpired, setSessionTokens } from "./api";
+import { api, clearSessionTokens, getRefreshToken, getToken, onSessionExpired, setSessionTokens } from "./api";
 
 import { restoreInternational,setInternational } from "./international";
 import { disablePush } from "./push";
@@ -14,7 +14,21 @@ export function AuthProvider({ children }) {
 
   const restore = useCallback(async () => {
     setLoading(true); setSessionError(null);
-    try { await restoreInternational(); if (await getToken()) {const u=(await api.me()).user;setUser(u);await setInternational(u);} }
+    try {
+      await restoreInternational();
+      if (await getToken()) {
+        const u=(await api.me()).user;
+        setUser(u);
+        await setInternational(u);
+        // Existing installations only have the old bearer token. Upgrade it
+        // while it is still valid so those users are never forced to sign in
+        // again just because the legacy 30-day token reaches its expiry.
+        if (!(await getRefreshToken())) {
+          const persistent = await api.bootstrapSession();
+          await setSessionTokens(persistent.token, persistent.refreshToken);
+        }
+      }
+    }
     catch (error) { if (error.status !== 401) setSessionError(error.message); }
     finally { setLoading(false); }
   }, []);
