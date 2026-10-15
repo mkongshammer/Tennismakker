@@ -88,9 +88,13 @@ export function AppLockProvider({ children }) {
       appState.current = next;
       if (!user || !enabled) return;
       if (previous === "active" && next !== "active") setLocked(true);
+      if (previous !== "active" && next === "active") {
+        setLocked(true);
+        setTimeout(() => { void unlock(); }, 150);
+      }
     });
     return () => subscription.remove();
-  }, [user?.id, enabled]);
+  }, [user?.id, enabled, unlock]);
 
   const enableBiometricLock = useCallback(async () => {
     if (!user || Platform.OS === "web") return { ok: false, message: "Biometrisk applås er kun tilgængelig i mobilappen." };
