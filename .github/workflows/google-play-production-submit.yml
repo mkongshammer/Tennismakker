@@ -63,3 +63,4 @@ jobs:
         run: npx --yes eas-cli@latest submit --platform android --latest --profile production --non-interactive --wait
 
 # Triggered for Google Play production review after successful internal upload on 2026-10-14
+# Retriggered 2026-10-15 to build a fresh version code and submit directly to production review.
