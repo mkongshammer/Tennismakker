@@ -53,7 +53,7 @@ export async function clearSessionTokens() {
 
 async function refreshAccess(requestCountry) {
   const refreshToken = await getRefreshToken();
-  if (!refreshToken) return null;
+  if (!refreshToken) return { token: null, invalid: true };
   try {
     const result = await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1/auth/refresh`, {
       method: "POST",
@@ -61,10 +61,18 @@ async function refreshAccess(requestCountry) {
       body: JSON.stringify({ refreshToken }),
     });
     await setSessionTokens(result.token, result.refreshToken ?? refreshToken);
-    return result.token;
-  } catch {
-    return null;
+    return { token: result.token, invalid: false };
+  } catch (error) {
+    // Only a definitive rejected refresh token ends the session. A temporary
+    // network/server problem must never sign a user out.
+    if (error?.status === 401) return { token: null, invalid: true };
+    throw error;
   }
+}
+
+async function expireLocalSession() {
+  await clearSessionTokens();
+  sessionListeners.forEach(listener => listener());
 }
 
 async function request(path, { method = "GET", body, auth = true, country, retry = true } = {}) {
@@ -78,11 +86,12 @@ async function request(path, { method = "GET", body, auth = true, country, retry
   } catch (error) {
     if (auth && token && error.status === 401 && retry) {
       const refreshed = await refreshAccess(requestCountry);
-      if (refreshed) return request(path, { method, body, auth, country: requestCountry, retry: false });
+      if (refreshed.token) return request(path, { method, body, auth, country: requestCountry, retry: false });
+      if (refreshed.invalid) await expireLocalSession();
+      throw error;
     }
-    if (auth && token && error.status === 401 && await getToken() === token) {
-      await clearSessionTokens();
-      sessionListeners.forEach(listener => listener());
+    if (auth && token && error.status === 401 && !retry) {
+      await expireLocalSession();
     }
     throw error;
   }
