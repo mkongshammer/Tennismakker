@@ -13,10 +13,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#1E3D2F"
     },
+    "plugins": [
+      "expo-apple-authentication",
+      "expo-secure-store",
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow RacketBuddy to use Face ID to unlock the app."
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "dk.racketbuddy.app",
       "buildNumber": "1",
+      "usesAppleSignIn": true,
       "config": {
         "usesNonExemptEncryption": false
       }

@@ -59,7 +59,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
 
 export type ResetResult = { ok: true } | { ok: false; reason: "ugyldig" | "kort" };
 
-/** Sætter en ny adgangskode, hvis tokenet holder. */
+/** Sætter den nye adgangskode, hvis tokenet holder. */
 export async function completePasswordReset(
   token: string,
   password: string
@@ -80,6 +80,7 @@ export async function completePasswordReset(
   // Alt der lå og ventede på den gamle adgangskode ryddes med det samme.
   await db.passwordReset.deleteMany({ where: { userId: reset.userId } });
   await db.loginChallenge.deleteMany({ where: { userId: reset.userId } });
+  await db.mobileSession.deleteMany({ where: { userId: reset.userId } });
 
   return { ok: true };
 }

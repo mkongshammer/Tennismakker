@@ -12,6 +12,7 @@ export async function fetchJson(url, options = {}, timeoutMs = 20000) {
       const error = new Error(typeof data.error === "string" ? data.error : response.status === 409
         ? "Tiden er ikke længere ledig. Opdatér og vælg en anden tid." : "Der gik noget galt. Prøv igen.");
       error.status = response.status;
+      error.data = data;
       throw error;
     }
     return data;

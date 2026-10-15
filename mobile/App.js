@@ -11,6 +11,7 @@ import { DesktopNavigation } from "./src/lib/DesktopNavigation";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "./src/lib/auth";
+import { AppLockGate, AppLockProvider } from "./src/lib/AppLock";
 import { Loading, ErrorMessage } from "./src/lib/ui";
 import { colors } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
@@ -188,12 +189,16 @@ export default function App() {useInternational();
     <View style={{ flex: 1, width: "100%", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
       <AuthProvider>
-        <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
-          <SessionStatusBar />
-          <PushLifecycle />
-          <CountryOnboarding />
-          <Root />
-        </NavigationContainer>
+        <AppLockProvider>
+          <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
+            <SessionStatusBar />
+            <AppLockGate>
+              <PushLifecycle />
+              <CountryOnboarding />
+              <Root />
+            </AppLockGate>
+          </NavigationContainer>
+        </AppLockProvider>
       </AuthProvider>
     </SafeAreaProvider>
     </View>

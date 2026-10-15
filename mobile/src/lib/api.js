@@ -2,6 +2,8 @@
 import {getInternational} from "./international";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
 
 const EU_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
@@ -12,12 +14,68 @@ export function apiBaseUrl(country = getInternational().country) {
 }
 
 const TOKEN_KEY = "tm_token";
+const REFRESH_KEY = "tm_refresh_token";
 const sessionListeners = new Set();
 export function onSessionExpired(listener) { sessionListeners.add(listener); return () => sessionListeners.delete(listener); }
-export async function getToken() { return AsyncStorage.getItem(TOKEN_KEY); }
-export async function setToken(token) { if (token) await AsyncStorage.setItem(TOKEN_KEY, token); else await AsyncStorage.removeItem(TOKEN_KEY); }
 
-async function request(path, { method = "GET", body, auth = true, country } = {}) {
+async function storageGet(key) {
+  if (Platform.OS === "web") return AsyncStorage.getItem(key);
+  const secure = await SecureStore.getItemAsync(key);
+  if (secure) return secure;
+  // One-time migration for users who were signed in before SecureStore was introduced.
+  const legacy = await AsyncStorage.getItem(key);
+  if (legacy) {
+    await SecureStore.setItemAsync(key, legacy);
+    await AsyncStorage.removeItem(key);
+  }
+  return legacy;
+}
+
+async function storageSet(key, value) {
+  if (Platform.OS === "web") {
+    if (value) await AsyncStorage.setItem(key, value); else await AsyncStorage.removeItem(key);
+    return;
+  }
+  if (value) await SecureStore.setItemAsync(key, value); else await SecureStore.deleteItemAsync(key);
+  await AsyncStorage.removeItem(key).catch(() => {});
+}
+
+export async function getToken() { return storageGet(TOKEN_KEY); }
+export async function setToken(token) { return storageSet(TOKEN_KEY, token); }
+export async function getRefreshToken() { return storageGet(REFRESH_KEY); }
+export async function setRefreshToken(token) { return storageSet(REFRESH_KEY, token); }
+export async function setSessionTokens(token, refreshToken) {
+  await Promise.all([setToken(token), setRefreshToken(refreshToken)]);
+}
+export async function clearSessionTokens() {
+  await Promise.all([setToken(null), setRefreshToken(null)]);
+}
+
+async function refreshAccess(requestCountry) {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) return { token: null, invalid: true };
+  try {
+    const result = await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-RacketBuddy-Country": requestCountry },
+      body: JSON.stringify({ refreshToken }),
+    });
+    await setSessionTokens(result.token, result.refreshToken ?? refreshToken);
+    return { token: result.token, invalid: false };
+  } catch (error) {
+    // Only a definitive rejected refresh token ends the session. A temporary
+    // network/server problem must never sign a user out.
+    if (error?.status === 401) return { token: null, invalid: true };
+    throw error;
+  }
+}
+
+async function expireLocalSession() {
+  await clearSessionTokens();
+  sessionListeners.forEach(listener => listener());
+}
+
+async function request(path, { method = "GET", body, auth = true, country, retry = true } = {}) {
   const international = getInternational();
   const requestCountry = String(country ?? international.country).toUpperCase();
   const headers = {"Content-Type":"application/json","Accept-Language":international.locale,"X-RacketBuddy-Country":requestCountry};
@@ -26,8 +84,14 @@ async function request(path, { method = "GET", body, auth = true, country } = {}
   try {
     return await fetchJson(`${apiBaseUrl(requestCountry)}/api/v1${path}`, {method,headers,body:body?JSON.stringify(body):undefined});
   } catch (error) {
-    if (auth && token && error.status === 401 && await getToken() === token) {
-      await setToken(null); sessionListeners.forEach(listener => listener());
+    if (auth && token && error.status === 401 && retry) {
+      const refreshed = await refreshAccess(requestCountry);
+      if (refreshed.token) return request(path, { method, body, auth, country: requestCountry, retry: false });
+      if (refreshed.invalid) await expireLocalSession();
+      throw error;
+    }
+    if (auth && token && error.status === 401 && !retry) {
+      await expireLocalSession();
     }
     throw error;
   }
@@ -47,11 +111,46 @@ async function loginAcrossRegions(email,password){
   }
 }
 
+async function socialAcrossRegions(payload) {
+  const preferred=String(payload?.country??getInternational().country??'DK').toUpperCase();
+  const first=preferred==='US'?'US':'DK';
+  const second=first==='US'?'DK':'US';
+  if (payload?.completeProfile) {
+    return request('/auth/social',{method:'POST',body:payload,auth:false,country:preferred});
+  }
+  try {
+    return await request('/auth/social',{method:'POST',body:payload,auth:false,country:first});
+  } catch (firstError) {
+    if (firstError?.data?.code !== 'PROFILE_REQUIRED') throw firstError;
+    try {
+      return await request('/auth/social',{method:'POST',body:payload,auth:false,country:second});
+    } catch (secondError) {
+      if (secondError?.data?.code === 'PROFILE_REQUIRED') throw firstError;
+      throw secondError;
+    }
+  }
+}
+
+async function passwordResetAcrossRegions(email) {
+  const calls=['DK','US'].map(country=>request('/auth/password-reset/request',{method:'POST',body:{email},auth:false,country}));
+  const results=await Promise.allSettled(calls);
+  if(results.some(result=>result.status==='fulfilled'))return {ok:true};
+  throw results[0].reason;
+}
+
 export const api = {
   location:()=>request('/location',{auth:false}),
   saveLocation:body=>request('/location',{method:'POST',body,country:body?.country}),
   login: loginAcrossRegions,
   signup: payload=>request("/auth/signup",{method:"POST",body:payload,auth:false,country:payload?.country}),
+  socialLogin:socialAcrossRegions,
+  requestPasswordReset:passwordResetAcrossRegions,
+  bootstrapSession:()=>request('/auth/mobile-session',{method:'POST'}),
+  logout:async(country=getInternational().country)=>{
+    const refreshToken=await getRefreshToken();
+    if(!refreshToken)return {ok:true};
+    return request('/auth/logout',{method:'POST',body:{refreshToken},auth:false,country});
+  },
   pushPreferences:()=>request("/push"),
   savePushPreferences:preferences=>request("/push",{method:"POST",body:{preferences}}),
   registerPush:(token,platform)=>request("/push",{method:"POST",body:{token,platform}}),

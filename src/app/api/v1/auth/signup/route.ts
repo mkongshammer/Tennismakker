@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
-import { issueToken } from "../../../../../lib/session";
+import { createMobileSession } from "../../../../../lib/mobile-session";
 import { profileLocation } from "../../../../../lib/profile-location";
 import { phrase } from "../../../../../lib/phrases";
 import type { Locale } from "../../../../../lib/sports";
@@ -55,5 +55,5 @@ export async function POST(req: Request) {
     },
   });
 
-  return json({ token: await issueToken(user.id), user: publicUser(user) }, 201);
+  return json({ ...(await createMobileSession(user.id)), user: publicUser(user) }, 201);
 }

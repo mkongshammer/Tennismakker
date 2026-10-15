@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
-import { issueToken } from "../../../../../lib/session";
+import { createMobileSession } from "../../../../../lib/mobile-session";
 import { apiError, json, preflight, publicUser, regionalApiError } from "../../../../../lib/api/helpers";
 import { regionAllowsCountry } from "../../../../../lib/region";
 
@@ -21,5 +21,5 @@ export async function POST(req: Request) {
   }
   if (!regionAllowsCountry(user.country)) return regionalApiError(user.country);
 
-  return json({ token: await issueToken(user.id), user: publicUser(user) });
+  return json({ ...(await createMobileSession(user.id)), user: publicUser(user) });
 }
