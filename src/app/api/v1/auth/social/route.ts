@@ -75,12 +75,12 @@ export async function POST(req: Request) {
     return json({ error: "Loginet kunne ikke bekræftes. Prøv igen." }, 401);
   }
 
-  const byProvider = provider === "google"
-    ? await db.user.findUnique({ where: { googleSub: identity.subject }, include: { coachProfile: true } })
-    : await db.user.findUnique({ where: { appleSub: identity.subject }, include: { coachProfile: true } });
-
-  if (byProvider) {
-    return json({ ...(await createMobileSession(byProvider.id)), user: publicUser(byProvider) });
+  const social = await db.socialIdentity.findUnique({
+    where: { provider_subject: { provider, subject: identity.subject } },
+    include: { user: { include: { coachProfile: true } } },
+  });
+  if (social) {
+    return json({ ...(await createMobileSession(social.user.id)), user: publicUser(social.user) });
   }
 
   const byEmail = await db.user.findUnique({
@@ -88,16 +88,32 @@ export async function POST(req: Request) {
     include: { coachProfile: true },
   });
   if (byEmail) {
-    const alreadyLinked = provider === "google" ? byEmail.googleSub : byEmail.appleSub;
-    if (alreadyLinked && alreadyLinked !== identity.subject) {
+    const existingForProvider = await db.socialIdentity.findUnique({
+      where: { provider_userId: { provider, userId: byEmail.id } },
+    });
+    if (existingForProvider && existingForProvider.subject !== identity.subject) {
       return json({ error: "Denne konto er allerede knyttet til et andet login." }, 409);
     }
-    const linked = await db.user.update({
-      where: { id: byEmail.id },
-      data: provider === "google" ? { googleSub: identity.subject } : { appleSub: identity.subject },
-      include: { coachProfile: true },
-    });
-    return json({ ...(await createMobileSession(linked.id)), user: publicUser(linked) });
+    if (!existingForProvider) {
+      try {
+        await db.socialIdentity.create({
+          data: {
+            provider,
+            subject: identity.subject,
+            email: identity.email,
+            userId: byEmail.id,
+          },
+        });
+      } catch {
+        const linkedElsewhere = await db.socialIdentity.findUnique({
+          where: { provider_subject: { provider, subject: identity.subject } },
+        });
+        if (!linkedElsewhere || linkedElsewhere.userId !== byEmail.id) {
+          return json({ error: "Dette login er allerede knyttet til en anden konto." }, 409);
+        }
+      }
+    }
+    return json({ ...(await createMobileSession(byEmail.id)), user: publicUser(byEmail) });
   }
 
   const suggestedName = String(body.name ?? identity.name ?? "").trim().slice(0, 150);
@@ -134,19 +150,41 @@ export async function POST(req: Request) {
   if (!name) return apiError("Skriv dit navn.");
 
   const randomPassword = crypto.randomBytes(48).toString("base64url");
-  const user = await db.user.create({
-    data: {
-      email: identity.email,
-      name,
-      role: "PLAYER",
-      level: 3,
-      ...location,
-      termsAcceptedAt: new Date(),
-      passwordHash: await bcrypt.hash(randomPassword, 10),
-      ...(provider === "google" ? { googleSub: identity.subject } : { appleSub: identity.subject }),
-    },
-    include: { coachProfile: true },
-  });
-
-  return json({ ...(await createMobileSession(user.id)), user: publicUser(user) }, 201);
+  try {
+    const user = await db.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email: identity.email,
+          name,
+          role: "PLAYER",
+          level: 3,
+          ...location,
+          termsAcceptedAt: new Date(),
+          passwordHash: await bcrypt.hash(randomPassword, 10),
+        },
+      });
+      await tx.socialIdentity.create({
+        data: {
+          provider,
+          subject: identity.subject,
+          email: identity.email,
+          userId: created.id,
+        },
+      });
+      return tx.user.findUniqueOrThrow({
+        where: { id: created.id },
+        include: { coachProfile: true },
+      });
+    });
+    return json({ ...(await createMobileSession(user.id)), user: publicUser(user) }, 201);
+  } catch {
+    const existing = await db.socialIdentity.findUnique({
+      where: { provider_subject: { provider, subject: identity.subject } },
+      include: { user: { include: { coachProfile: true } } },
+    });
+    if (existing) {
+      return json({ ...(await createMobileSession(existing.user.id)), user: publicUser(existing.user) });
+    }
+    return json({ error: "Kontoen kunne ikke oprettes. Prøv igen." }, 409);
+  }
 }
