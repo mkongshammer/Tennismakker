@@ -30,12 +30,12 @@ jobs:
           sudo apt-get install -y imagemagick
       - name: Generate app and web icon assets
         run: |
-          magick -background none src/app/icon.svg -resize 1024x1024 mobile/assets/icon.png
-          magick -background none src/app/icon.svg -resize 1024x1024 mobile/assets/adaptive-icon.png
-          magick -background none src/app/icon.svg -resize 1024x1024 mobile/assets/splash-icon.png
-          magick -background none src/app/icon.svg -resize 256x256 mobile/assets/favicon.png
-          magick -background none src/app/icon.svg -resize 512x512 src/app/icon.png
-          magick -background none src/app/icon.svg -resize 180x180 src/app/apple-icon.png
+          convert -background none src/app/icon.svg -resize 1024x1024 mobile/assets/icon.png
+          convert -background none src/app/icon.svg -resize 1024x1024 mobile/assets/adaptive-icon.png
+          convert -background none src/app/icon.svg -resize 1024x1024 mobile/assets/splash-icon.png
+          convert -background none src/app/icon.svg -resize 256x256 mobile/assets/favicon.png
+          convert -background none src/app/icon.svg -resize 512x512 src/app/icon.png
+          convert -background none src/app/icon.svg -resize 180x180 src/app/apple-icon.png
           test $(stat -c%s mobile/assets/icon.png) -lt 1048576
       - name: Validate backend and legal routes
         run: |
