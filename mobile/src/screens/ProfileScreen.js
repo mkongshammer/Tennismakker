@@ -1,11 +1,12 @@
 import { money, tr, useInternational } from "../lib/international";
 import { ProfilePreferences } from "../lib/ProfilePreferences";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Platform, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { feedback as Alert } from "../lib/feedback";
 import { api, checkoutUrl } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { useAppLock } from "../lib/AppLock";
 import { PlayAgain } from "../lib/PlayAgain";
 import { Avatar, Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
@@ -18,6 +19,7 @@ const TERMS_URL = "https://racketbuddy.app/vilkaar";
 
 export default function ProfileScreen({ navigation }) {useInternational();
   const { user, logout, deleteAccount } = useAuth();
+  const appLock = useAppLock();
   const state = useScreenData(useCallback(async () => {
     const [bookings, repeatable] = await Promise.all([
     api.bookings(), api.repeatableBookings().catch(() => ({ items: [] }))]
@@ -27,6 +29,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
   const load = state.refresh;
   const repeatable = state.data?.repeatable ?? [];
   const [deleting, setDeleting] = useState(false);
+  const [lockBusy, setLockBusy] = useState(false);
   const [openingDoor, setOpeningDoor] = useState(null);
   const doorLock = useRef(false);
   const paymentLock = useRef(false);
@@ -56,6 +59,19 @@ export default function ProfileScreen({ navigation }) {useInternational();
   const openLink = async (url) => {
     try {await Linking.openURL(url);}
     catch {Alert.alert("Linket kunne ikke åbnes", "Prøv igen om lidt.");}
+  };
+
+  const toggleAppLock = async () => {
+    if (lockBusy) return;
+    setLockBusy(true);
+    try {
+      const result = appLock.enabled ? await appLock.disableBiometricLock() : await appLock.enableBiometricLock();
+      if (!result.ok) Alert.alert("Applås", result.message ?? "Indstillingen kunne ikke ændres.");
+    } catch (error) {
+      Alert.alert("Applås", error.message ?? "Indstillingen kunne ikke ændres.");
+    } finally {
+      setLockBusy(false);
+    }
   };
 
   const openDoor = async (booking) => {
@@ -190,6 +206,22 @@ export default function ProfileScreen({ navigation }) {useInternational();
       {user.clubId && <Button title={tr("Min klubwallet")} onPress={() => navigation.navigate("WalletPortal", { destination: "/wallet" })} />}
       <ProfilePreferences />
       <NotificationSettings />
+      {Platform.OS !== "web" && <>
+        <Text style={styles.section}>{tr("Sikkerhed")}</Text>
+        <Card>
+          <Text style={{ color: colors.ink, fontWeight: "800", fontSize: 16 }}>{tr("Applås")}</Text>
+          <Text style={{ color: colors.slate, lineHeight: 21, marginTop: 6, marginBottom: 14 }}>
+            {appLock.enabled
+              ? `${appLock.biometricLabel} ${tr("er slået til. RacketBuddy låses, når du forlader appen.")}`
+              : tr("Du forbliver logget ind. Slå biometrisk applås til, hvis appen skal kræve godkendelse, hver gang du åbner den.")}
+          </Text>
+          <Button
+            title={appLock.enabled ? `${tr("Slå")} ${appLock.biometricLabel} ${tr("fra")}` : `${tr("Slå")} ${appLock.biometricLabel} ${tr("til")}`}
+            variant={appLock.enabled ? "quiet" : undefined}
+            loading={lockBusy}
+            onPress={toggleAppLock} />
+        </Card>
+      </>}
       <Text style={styles.section}>{tr("Konto og vilk\xE5r")}</Text>
       <Card>
         <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(PRIVACY_URL)}>{tr("Privatlivspolitik")}</Text>
