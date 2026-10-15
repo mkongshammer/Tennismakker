@@ -145,6 +145,7 @@ export const api = {
   signup: payload=>request("/auth/signup",{method:"POST",body:payload,auth:false,country:payload?.country}),
   socialLogin:socialAcrossRegions,
   requestPasswordReset:passwordResetAcrossRegions,
+  bootstrapSession:()=>request('/auth/mobile-session',{method:'POST'}),
   logout:async(country=getInternational().country)=>{
     const refreshToken=await getRefreshToken();
     if(!refreshToken)return {ok:true};
