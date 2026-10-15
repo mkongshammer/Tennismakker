@@ -24,8 +24,13 @@ export function AuthProvider({ children }) {
         // while it is still valid so those users are never forced to sign in
         // again just because the legacy 30-day token reaches its expiry.
         if (!(await getRefreshToken())) {
-          const persistent = await api.bootstrapSession();
-          await setSessionTokens(persistent.token, persistent.refreshToken);
+          try {
+            const persistent = await api.bootstrapSession();
+            await setSessionTokens(persistent.token, persistent.refreshToken);
+          } catch {
+            // The member is already authenticated. A temporary migration
+            // failure must not block the app; the next launch tries again.
+          }
         }
       }
     }
