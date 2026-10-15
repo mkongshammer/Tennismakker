@@ -33,7 +33,7 @@ jobs:
           npx --yes eas-cli@latest whoami
       - name: Link EAS project
         run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
-      - name: Configure Google Play closed testing submission
+      - name: Configure Google Play closed testing draft
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -43,11 +43,11 @@ jobs:
           json.submit['closed-test'] = {
             android: {
               track: 'alpha',
-              releaseStatus: 'completed',
-              changesNotSentForReview: false
+              releaseStatus: 'draft',
+              changesNotSentForReview: true
             }
           };
           fs.writeFileSync(p, JSON.stringify(json, null, 2) + '\n');
           NODE
-      - name: Submit versionCode 4 build to closed testing
+      - name: Submit versionCode 4 build to closed testing draft
         run: npx --yes eas-cli@latest submit --platform android --id 9dcd12dc-11d0-4357-a47a-68bc2a335294 --profile closed-test --non-interactive --wait --verbose-fastlane
