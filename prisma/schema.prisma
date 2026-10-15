@@ -15,33 +15,35 @@ datasource db {
 // ---------- Brugere ----------
 // role: "PLAYER" | "COACH" | "CLUB_ADMIN"
 model User {
-  pushDevices PushDevice[]
-  pushPreference PushPreference?
+  pushDevices       PushDevice[]
+  pushPreference    PushPreference?
   pushBookingStates PushBookingState[]
-  id               String    @id @default(cuid())
-  email            String    @unique
-  passwordHash     String
-  name             String
-  phone            String?
-  role             String    @default("PLAYER")
-  level            Int       @default(3) // 1-7, se src/lib/levels.ts
-  area             String? // fx "København NV", "Aarhus C"
-  country          String    @default("DK") // ISO-landekode, styrer hvad man ser
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  googleSub         String?            @unique
+  appleSub          String?            @unique
+  name              String
+  phone             String?
+  role              String             @default("PLAYER")
+  level             Int                @default(3) // 1-7, se src/lib/levels.ts
+  area              String? // fx "København NV", "Aarhus C"
+  country           String             @default("DK") // ISO-landekode, styrer hvad man ser
   // Har man selv valgt land, eller er "DK" bare standarden? Uden dette kan
   // vi ikke se forskel på en dansker og en tysker, der endnu ikke er
   // blevet spurgt — og så ville vi enten spørge alle hver gang eller
   // aldrig spørge nogen.
-  countryChosen    Boolean   @default(false)
+  countryChosen     Boolean            @default(false)
   // Hvornår handelsbetingelserne blev accepteret. Uden et tidsstempel kan
   // vi ikke vise, at nogen sagde ja — og "de stod på siden" er ikke et
   // bevis, hvis det en dag bliver en tvist.
-  termsAcceptedAt  DateTime?
+  termsAcceptedAt   DateTime?
   /// Stripe-kunde, hvis personen har gemt et kort til fornyelse.
-  stripeCustomerId String?
-  locale           String    @default("da") // se LOCALES i src/lib/sports.ts
-  sports           String    @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
-  bio              String?
-  createdAt        DateTime  @default(now())
+  stripeCustomerId  String?
+  locale            String             @default("da") // se LOCALES i src/lib/sports.ts
+  sports            String             @default("TENNIS") // kommasepareret, fx "TENNIS,PADEL"
+  bio               String?
+  createdAt         DateTime           @default(now())
 
   clubId String? // klub-admins og medlemmer kan være tilknyttet en klub
   club   Club?   @relation(fields: [clubId], references: [id])
@@ -62,6 +64,18 @@ model User {
   punchPurchases   ClubPunchPurchase[]
   packagePurchases PackagePurchase[]
   controlEvents    ClubControlEvent[]
+  mobileSessions   MobileSession[]
+}
+
+model MobileSession {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ---------- Modul C: Klubber ----------
@@ -71,32 +85,32 @@ model User {
 //   ICAL    — vi spejler optaget-tider fra en kalenderfeed fra klubbens eget system
 //   API     — direkte integration mod fx Halbooking (kræver partneraftale, ikke bygget endnu)
 model Club {
-  signupManaged Boolean @default(false)
-  signupSetupKr Int @default(0)
-  signupSetupPaidAt DateTime?
-  customFeatures String?
-  signupPaidAt DateTime?
-  signupCheckoutId String?
-  signupCheckoutAttempt Int @default(0)
-  walletEnabled Boolean @default(false)
-  walletTiers String @default("[]")
-  solutionMode String @default("STANDARD")
-  sports      String @default("") // tom = vælg sportsgrene; eksisterende baner bevares
-  id          String   @id @default(cuid())
-  slug        String   @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
-  name        String
-  city        String
-  description String?
-  color       String   @default("#1E3D2F") // klubbens egen farve på klubsiden
-  priceHour   Int      @default(80) // banepris i kr pr. time
-  openHour    Int      @default(7)
-  closeHour   Int      @default(22)
-  createdAt   DateTime @default(now())
+  signupManaged         Boolean   @default(false)
+  signupSetupKr         Int       @default(0)
+  signupSetupPaidAt     DateTime?
+  customFeatures        String?
+  signupPaidAt          DateTime?
+  signupCheckoutId      String?
+  signupCheckoutAttempt Int       @default(0)
+  walletEnabled         Boolean   @default(false)
+  walletTiers           String    @default("[]")
+  solutionMode          String    @default("STANDARD")
+  sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
+  id                    String    @id @default(cuid())
+  slug                  String    @unique // fx "demo-tennisklub" -> /klub/demo-tennisklub
+  name                  String
+  city                  String
+  description           String?
+  color                 String    @default("#1E3D2F") // klubbens egen farve på klubsiden
+  priceHour             Int       @default(80) // banepris i kr pr. time
+  openHour              Int       @default(7)
+  closeHour             Int       @default(22)
+  createdAt             DateTime  @default(now())
 
   // Klubben vælger: COMMISSION (vi tager 10% af hver gæstebooking) eller
   // SUBSCRIPTION (fast beløb pr. måned, klubben beholder hele bookingen).
-  billingModel   String @default("COMMISSION")
-  subscriptionKr Int    @default(199) // major units in billingCurrency
+  billingModel    String @default("COMMISSION")
+  subscriptionKr  Int    @default(199) // major units in billingCurrency
   billingCurrency String @default("DKK") // preserve existing contracts; new sales explicitly use EUR/USD
 
   // Abonnementet, klubben betaler TIL os. Ikke det samme som
@@ -112,7 +126,7 @@ model Club {
 
   currency String @default("DKK") // ISO currency; existing stored prices remain DKK
   timeZone String @default("Europe/Copenhagen")
-  country String @default("DK")
+  country  String @default("DK")
 
   // Stripe Connect — kontoen pengene sendes videre til, når nogen booker
   // en bane. chargesEnabled/payoutsEnabled opdateres af Stripes webhook
@@ -344,16 +358,16 @@ model ExternalBusy {
 // kind: "COURT" | "COACH"
 // status: "HOLD" | "CONFIRMED" | "CANCELLED"
 model Booking {
-  importRecord BookingImport?
-  walletPaidOre Int @default(0)
-  id                String    @id @default(cuid())
+  importRecord      BookingImport?
+  walletPaidOre     Int            @default(0)
+  id                String         @id @default(cuid())
   kind              String
-  status            String    @default("HOLD")
+  status            String         @default("HOLD")
   startsAt          DateTime
   endsAt            DateTime
   priceKr           Int
-  currency          String @default("DKK") // immutable price snapshot
-  timeZone          String @default("Europe/Copenhagen") // venue time zone at booking
+  currency          String         @default("DKK") // immutable price snapshot
+  timeZone          String         @default("Europe/Copenhagen") // venue time zone at booking
   // Blev timen betalt med et klip fra et pakkeforløb? Så står id'et her, og
   // klippet gives tilbage, hvis bookingen aflyses.
   packagePurchaseId String?
@@ -366,7 +380,7 @@ model Booking {
   // calling Stripe so concurrent calls/retries use the same idempotency key.
   checkoutParams    String?
   checkoutSessionId String?
-  createdAt         DateTime  @default(now())
+  createdAt         DateTime       @default(now())
 
   // True når klubben bruger sit eget bookingsystem (MANUAL/ICAL/API): bookingen
   // findes hos os, men skal også ind i klubbens system. Vises i klub-admin som
@@ -414,12 +428,12 @@ model ClubControl {
   lightsBeforeMinutes Int @default(10)
   lightsAfterMinutes  Int @default(5)
 
-  lastCheckedAt DateTime?
-  lastOkAt      DateTime?
-  lastError     String?
+  lastCheckedAt        DateTime?
+  lastOkAt             DateTime?
+  lastError            String?
   setupTestLockedUntil DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   devices ClubControlDevice[]
 }
@@ -446,24 +460,24 @@ model ClubControlDevice {
 
 model ClubControlChannel {
   manualOnUntil DateTime?
-  id       String            @id @default(cuid())
-  deviceId String
-  device   ClubControlDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  channel  Int
+  id            String            @id @default(cuid())
+  deviceId      String
+  device        ClubControlDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  channel       Int
   // "COURT_LIGHT" | "COMMON_LIGHT" | "DOOR" | "UNUSED"
-  kind     String
-  label    String?
+  kind          String
+  label         String?
 
   courtId String?
   court   Court?  @relation(fields: [courtId], references: [id], onDelete: SetNull)
 
-  lastState     Boolean?
-  lastCommandAt DateTime?
-  setupTestedAt DateTime?
+  lastState        Boolean?
+  lastCommandAt    DateTime?
+  setupTestedAt    DateTime?
   setupConfirmedAt DateTime?
-  lastError     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  lastError        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@unique([deviceId, channel])
   @@index([courtId])
@@ -571,7 +585,7 @@ model Payment {
   bookingId   String   @unique
   booking     Booking  @relation(fields: [bookingId], references: [id])
   amountKr    Int
-  currency    String @default("DKK")
+  currency    String   @default("DKK")
   platformFee Int // RacketBuddys andel (kommission/transaktionsgebyr)
   provider    String   @default("mock") // "mock" | "stripe"
   providerRef String? // fx Stripe PaymentIntent-id
@@ -745,7 +759,7 @@ model PasswordReset {
 // sessionsUsed frem for at slette klip: en elev skal kunne se, hvad der er
 // brugt, og vi skal kunne svare på det, hvis der bliver spurgt.
 model PackagePurchase {
-  currency String @default("DKK")
+  currency       String       @default("DKK")
   id             String       @id @default(cuid())
   userId         String
   user           User         @relation(fields: [userId], references: [id])
@@ -934,12 +948,12 @@ model MembershipType {
 // Et felt ville betyde, at fornyelsen overskrev sidste sæson, og så kan
 // ingen svare på, hvem der var medlem i 2025.
 model Membership {
-  currency String @default("DKK")
-  id     String         @id @default(cuid())
-  typeId String
-  type   MembershipType @relation(fields: [typeId], references: [id])
-  userId String
-  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency String         @default("DKK")
+  id       String         @id @default(cuid())
+  typeId   String
+  type     MembershipType @relation(fields: [typeId], references: [id])
+  userId   String
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// "PENDING" | "PAID" | "CANCELLED". Kun PAID gør en til medlem.
   status  String @default("PENDING")
@@ -1002,12 +1016,12 @@ model SeasonTeam {
 }
 
 model TeamSignup {
-  currency String @default("DKK")
-  id     String     @id @default(cuid())
-  teamId String
-  team   SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  userId String
-  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency String     @default("DKK")
+  id       String     @id @default(cuid())
+  teamId   String
+  team     SeasonTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   status  String @default("PENDING") // "PENDING" | "PAID" | "CANCELLED"
   priceKr Int
@@ -1048,13 +1062,13 @@ model ClubPunchCard {
 }
 
 model ClubPunchPurchase {
-  currency String @default("DKK")
-  id     String        @id @default(cuid())
-  cardId String
-  card   ClubPunchCard @relation(fields: [cardId], references: [id])
-  userId String
-  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clubId String
+  currency String        @default("DKK")
+  id       String        @id @default(cuid())
+  cardId   String
+  card     ClubPunchCard @relation(fields: [cardId], references: [id])
+  userId   String
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId   String
 
   name         String
   sessions     Int
@@ -1131,107 +1145,116 @@ model SystemBlock {
   @@index([clubId, status])
 }
 
-
 model PushPreference {
-  userId String @id
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bookings Boolean @default(true)
-  reminders Boolean @default(true)
-  messages Boolean @default(true)
-  coaching Boolean @default(true)
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookings  Boolean  @default(true)
+  reminders Boolean  @default(true)
+  messages  Boolean  @default(true)
+  coaching  Boolean  @default(true)
   enabledAt DateTime @default(now())
   scannedAt DateTime @default(now())
 }
+
 model PushDevice {
-  id String @id @default(cuid())
-  token String @unique
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  platform String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id         String         @id @default(cuid())
+  token      String         @unique
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform   String
+  expiresAt  DateTime
+  createdAt  DateTime       @default(now())
   deliveries PushDelivery[]
+
   @@index([userId, expiresAt])
 }
+
 model PushBookingState {
-  id String @id @default(cuid())
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   bookingId String
-  status String
-  startsAt DateTime
+  status    String
+  startsAt  DateTime
   updatedAt DateTime @updatedAt
+
   @@unique([userId, bookingId])
 }
+
 model PushDelivery {
-  id String @id @default(cuid())
-  deviceId String
-  device PushDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
-  eventKey String
-  category String
-  title String
-  body String
-  data String
-  bookingId String?
-  expectedStatus String?
-  threadId String?
-  state String @default("PENDING")
-  attempts Int @default(0)
-  nextAttemptAt DateTime @default(now())
-  expiresAt DateTime
-  receiptId String?
+  id               String     @id @default(cuid())
+  deviceId         String
+  device           PushDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  eventKey         String
+  category         String
+  title            String
+  body             String
+  data             String
+  bookingId        String?
+  expectedStatus   String?
+  threadId         String?
+  state            String     @default("PENDING")
+  attempts         Int        @default(0)
+  nextAttemptAt    DateTime   @default(now())
+  expiresAt        DateTime
+  receiptId        String?
   receiptCheckedAt DateTime?
-  sentAt DateTime?
-  error String?
-  createdAt DateTime @default(now())
+  sentAt           DateTime?
+  error            String?
+  createdAt        DateTime   @default(now())
+
   @@unique([deviceId, eventKey])
   @@index([state, nextAttemptAt])
   @@index([receiptCheckedAt, sentAt])
 }
 
 model ClubWallet {
-  currency String @default("DKK")
-  id String @id @default(cuid())
-  userId String
-  clubId String
-  balanceOre Int @default(0)
-  frozen Boolean @default(false)
-  entries WalletEntry[]
+  currency   String        @default("DKK")
+  id         String        @id @default(cuid())
+  userId     String
+  clubId     String
+  balanceOre Int           @default(0)
+  frozen     Boolean       @default(false)
+  entries    WalletEntry[]
+
   @@unique([userId, clubId])
 }
+
 model WalletEntry {
-  id String @id @default(cuid())
-  walletId String
-  wallet ClubWallet @relation(fields:[walletId], references:[id])
-  eventKey String @unique
+  id        String     @id @default(cuid())
+  walletId  String
+  wallet    ClubWallet @relation(fields: [walletId], references: [id])
+  eventKey  String     @unique
   amountOre Int
-  label String
-  createdAt DateTime @default(now())
+  label     String
+  createdAt DateTime   @default(now())
+
   @@index([walletId, createdAt])
 }
+
 model WalletTopup {
-  currency String @default("DKK")
-  id String @id @default(cuid())
-  userId String
-  clubId String
-  paidOre Int
-  creditOre Int
-  destination String
-  status String @default("PENDING")
-  sessionId String? @unique
-  paymentIntentId String? @unique
-  createdAt DateTime @default(now())
+  currency        String   @default("DKK")
+  id              String   @id @default(cuid())
+  userId          String
+  clubId          String
+  paidOre         Int
+  creditOre       Int
+  destination     String
+  status          String   @default("PENDING")
+  sessionId       String?  @unique
+  paymentIntentId String?  @unique
+  createdAt       DateTime @default(now())
 }
 
 model AppHandoff {
-  hash String @id
-  userId String
+  hash        String   @id
+  userId      String
   destination String
-  expiresAt DateTime
+  expiresAt   DateTime
 }
 
 model BookingImport {
-  key String @id
-  bookingId String @unique
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  key       String  @id
+  bookingId String  @unique
+  booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }

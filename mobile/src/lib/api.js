@@ -156,7 +156,7 @@ export const api = {
   coach:id=>request(`/coaches/${id}`,{auth:false}),
 
   repeatableBookings:()=>request("/bookings/repeatable"),
-  rebook:bookingId=>request("/bookings/rebook",{method:"POST"}),
+  rebook:bookingId=>request("/bookings/rebook",{method:"POST",body:{bookingId}}),
   matches:(params={})=>{const country=getInternational().country;const q=new URLSearchParams({land:country});if(params.area)q.set("omraade",params.area);if(params.level)q.set("niveau",String(params.level));const qs=q.toString();return request(`/matches${qs?`?${qs}`:""}`,{country});},
   createMatch:payload=>request("/matches",{method:"POST",body:payload}),
   acceptMatch:id=>request(`/matches/${id}/accept`,{method:"POST"}),

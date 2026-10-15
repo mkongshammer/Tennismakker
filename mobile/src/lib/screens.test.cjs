@@ -146,11 +146,12 @@ test('court selection shows exact details; back does not book and confirmation i
 
 function doorProfile(booking, openDoor, alerts) {
   return loadSource('../screens/ProfileScreen.js', {
-    'react-native': { Linking: {}, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },
+    'react-native': { Linking: {}, Platform:{OS:'ios'}, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },
     '../lib/useScreenData': { useScreenData: () => ({ data: { bookings: [booking], repeatable: [] }, refresh: async () => {} }) },
     '../lib/feedback': { feedback: { alert: (...args) => alerts.push(args) } },
     '../lib/api': { api: { openDoor }, checkoutUrl: value => value },
     '../lib/auth': { useAuth: () => ({ user: { id: 'member', name: 'Test', level: 3 } }) },
+    '../lib/AppLock': { useAppLock: () => ({ enabled:false, biometricLabel:'Face ID', enableBiometricLock:async()=>({ok:true}), disableBiometricLock:async()=>({ok:true}) }) },
     '../lib/PlayAgain': { PlayAgain: 'PlayAgain' },
     '../lib/ui': Object.fromEntries(['Avatar','Badge','Button','Card','ErrorMessage','Loading'].map(x => [x,x])),
     '../lib/theme': { colors: {}, LEVELS: {} },
@@ -202,6 +203,7 @@ test('club login is a separate choice below login and submits in club-only mode'
     'react-native':{KeyboardAvoidingView:'KeyboardAvoidingView',Platform:{OS:'ios'},useWindowDimensions:()=>({width:390}),ScrollView:'ScrollView',StyleSheet:{create:x=>x},Text:'Text',TextInput:'TextInput',View:'View',Pressable:'Pressable',Linking:{}},
     '../lib/auth':{useAuth:()=>({login:async(...args)=>logins.push(args),signup:async()=>{throw Error('Must not sign up a player');}})},
     '../lib/ui':{Button:'Button'},'../lib/theme':{colors:{}},'../lib/regions':{DK_REGIONS:[]},'../lib/CourtScene':{CourtScene:'CourtScene'},
+    '../lib/SocialAuthButtons':{SocialAuthButtons:'SocialAuthButtons'},
     'react-native-safe-area-context':{useSafeAreaInsets:()=>({top:0,bottom:0})},
   });
   await act(async()=>{tree=create(React.createElement(Login));});
@@ -212,7 +214,7 @@ test('club login is a separate choice below login and submits in club-only mode'
     await act(async()=>{const inputs=tree.root.findAllByType('TextInput');inputs[0].props.onChangeText('ADMIN@example.invalid');inputs[1].props.onChangeText('test-password');});
     await act(()=>tree.root.findAllByType('Button')[0].props.onPress());
     assert.deepEqual(logins,[['admin@example.invalid','test-password',true]]);
-    await act(async()=>tree.root.findAllByType('Button')[1].props.onPress());assert.equal(tree.root.findAllByType('Button')[0].props.title,'Log ind');
+    await act(async()=>tree.root.findAllByType('Button')[1].props.onPress());assert.equal(tree.root.findAllByType('Button')[0].props.title,'Log ind med e-mail');
   }finally{await act(()=>tree.unmount());}
 });
 
