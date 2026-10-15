@@ -1,0 +1,71 @@
+name: Prepare Mobile Auth Feature
+
+on:
+  push:
+    branches:
+      - feature/mobile-auth-biometrics
+    paths:
+      - ".github/workflows/mobile-auth-prepare.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/mobile-auth-biometrics
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Patch Prisma schema and mobile API typo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('prisma/schema.prisma')
+          s = p.read_text()
+          start = s.index('model User {')
+          end = s.index('// ---------- Modul C: Klubber ----------')
+          user = s[start:end]
+          if 'googleSub' not in user:
+              user = user.replace('  passwordHash     String\n', '  passwordHash     String\n  googleSub        String?   @unique\n  appleSub         String?   @unique\n')
+          if 'mobileSessions' not in user:
+              user = user.replace('  controlEvents    ClubControlEvent[]\n}', '  controlEvents    ClubControlEvent[]\n  mobileSessions   MobileSession[]\n}')
+          if 'model MobileSession {' not in user:
+              user = user.rstrip() + '''\n\nmodel MobileSession {\n  id         String   @id @default(cuid())\n  tokenHash  String   @unique\n  userId     String\n  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  createdAt  DateTime @default(now())\n  lastUsedAt DateTime @default(now())\n\n  @@index([userId])\n}\n\n'''
+          s = s[:start] + user + s[end:]
+          p.write_text(s)
+
+          api = Path('mobile/src/lib/api.js')
+          a = api.read_text()
+          a = a.replace('rebook:bookingId=>request("/bookings/rebook",{method:"POST"}),', 'rebook:bookingId=>request("/bookings/rebook",{method:"POST",body:{bookingId}}),')
+          api.write_text(a)
+          PY
+      - name: Install mobile native auth dependencies
+        working-directory: mobile
+        run: npx expo install expo-apple-authentication expo-local-authentication expo-secure-store @react-native-google-signin/google-signin
+      - name: Validate Prisma schema
+        run: |
+          npm ci
+          npx prisma format
+          npx prisma generate
+          npm test
+      - name: Validate Expo app
+        working-directory: mobile
+        run: |
+          npm test
+          npx expo-doctor
+      - name: Commit generated dependency and schema changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prisma/schema.prisma mobile/package.json mobile/package-lock.json mobile/src/lib/api.js
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+          else
+            git commit -m "Prepare schema and dependencies for mobile social auth"
+            git push origin HEAD:feature/mobile-auth-biometrics
+          fi
