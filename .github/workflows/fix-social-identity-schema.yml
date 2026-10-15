@@ -1,0 +1,55 @@
+name: Fix Social Identity Schema
+
+on:
+  push:
+    branches:
+      - fix/mobile-social-identity-schema
+    paths:
+      - ".github/workflows/fix-social-identity-schema.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/mobile-social-identity-schema
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Replace provider columns with social identity table
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('prisma/schema.prisma')
+          s = p.read_text()
+          s = s.replace('  googleSub         String?            @unique\n', '')
+          s = s.replace('  appleSub          String?            @unique\n', '')
+          if '  socialIdentities  SocialIdentity[]\n' not in s:
+              s = s.replace('  mobileSessions   MobileSession[]\n}', '  mobileSessions   MobileSession[]\n  socialIdentities  SocialIdentity[]\n}')
+          if 'model SocialIdentity {' not in s:
+              marker = '''model MobileSession {\n  id         String   @id @default(cuid())\n  tokenHash  String   @unique\n  userId     String\n  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  createdAt  DateTime @default(now())\n  lastUsedAt DateTime @default(now())\n\n  @@index([userId])\n}\n'''
+              addition = marker + '''\nmodel SocialIdentity {\n  id        String   @id @default(cuid())\n  provider  String\n  subject   String\n  email     String\n  userId    String\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  createdAt DateTime @default(now())\n\n  @@unique([provider, subject])\n  @@unique([provider, userId])\n  @@index([userId])\n}\n'''
+              if marker not in s:
+                  raise SystemExit('MobileSession model marker not found')
+              s = s.replace(marker, addition)
+          p.write_text(s)
+          PY
+      - name: Install dependencies and validate
+        run: |
+          npm ci
+          npx prisma format
+          npx prisma generate
+          npm test
+          npx tsc --noEmit
+      - name: Commit schema fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prisma/schema.prisma
+          git commit -m "Model social logins with dedicated identity table"
+          git push origin HEAD:fix/mobile-social-identity-schema
