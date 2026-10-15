@@ -1,0 +1,153 @@
+name: Submit iOS to App Review
+
+on:
+  workflow_run:
+    workflows:
+      - "Force Fresh iOS Provisioning Profile and Rebuild"
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  submit-review:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      APP_ID: "6820186123"
+      VERSION_STRING: "1.0.0"
+    steps:
+      - name: Submit latest iOS version to App Review
+        run: |
+          cat > /tmp/submit-review.mjs <<'NODE'
+          import fs from 'node:fs';
+          import crypto from 'node:crypto';
+
+          const keyId = process.env.ASC_KEY_ID;
+          const issuerId = process.env.ASC_ISSUER_ID;
+          const privateKey = process.env.ASC_PRIVATE_KEY;
+          const appId = process.env.APP_ID;
+          const versionString = process.env.VERSION_STRING;
+          if (!keyId || !issuerId || !privateKey || !appId) throw new Error('Missing App Store Connect credentials');
+
+          const b64 = x => Buffer.from(JSON.stringify(x)).toString('base64url');
+          const token = () => {
+            const now = Math.floor(Date.now()/1000);
+            const unsigned = `${b64({alg:'ES256',kid:keyId,typ:'JWT'})}.${b64({iss:issuerId,iat:now-5,exp:now+900,aud:'appstoreconnect-v1'})}`;
+            const sig = crypto.sign('sha256', Buffer.from(unsigned), {key:privateKey,dsaEncoding:'ieee-p1363'}).toString('base64url');
+            return `${unsigned}.${sig}`;
+          };
+
+          async function req(path, options={}) {
+            const r = await fetch(`https://api.appstoreconnect.apple.com${path}`, {
+              ...options,
+              headers: {
+                Authorization: `Bearer ${token()}`,
+                'Content-Type': 'application/json',
+                ...(options.headers || {})
+              }
+            });
+            const text = await r.text();
+            let body = null;
+            try { body = text ? JSON.parse(text) : null; } catch { body = text; }
+            if (!r.ok) {
+              console.error('ASC API error', r.status, JSON.stringify(body));
+              const err = new Error(`ASC API ${r.status}`);
+              err.status = r.status;
+              err.body = body;
+              throw err;
+            }
+            return {status:r.status, body};
+          }
+
+          const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+          const versions = await req(`/v1/apps/${appId}/appStoreVersions?limit=50&include=build`);
+          const candidates = (versions.body?.data || []).filter(v => v.attributes?.platform === 'IOS' && v.attributes?.versionString === versionString);
+          if (!candidates.length) throw new Error(`No iOS App Store version ${versionString} found`);
+          const version = candidates[0];
+          const state = version.attributes?.appStoreState;
+          console.log(`App Store version ${versionString}: ${version.id}, state=${state}`);
+          if (['WAITING_FOR_REVIEW','IN_REVIEW','PENDING_APPLE_RELEASE','PENDING_DEVELOPER_RELEASE','PROCESSING_FOR_DISTRIBUTION','READY_FOR_DISTRIBUTION'].includes(state)) {
+            console.log(`Already submitted/reviewed: ${state}`);
+            process.exit(0);
+          }
+
+          let build = null;
+          for (let attempt=1; attempt<=20; attempt++) {
+            const builds = await req(`/v1/builds?filter[app]=${appId}&sort=-uploadedDate&limit=20&fields[builds]=version,uploadedDate,processingState,expired`);
+            build = (builds.body?.data || []).find(b => b.attributes?.processingState === 'VALID' && !b.attributes?.expired);
+            if (build) break;
+            console.log(`Waiting for App Store Connect to finish processing the new build (${attempt}/20)...`);
+            await sleep(60000);
+          }
+          if (!build) throw new Error('No valid processed iOS build found in App Store Connect');
+          console.log(`Using build ${build.attributes?.version} uploaded ${build.attributes?.uploadedDate} (${build.id})`);
+
+          await req(`/v1/appStoreVersions/${version.id}/relationships/build`, {
+            method:'PATCH',
+            body: JSON.stringify({data:{type:'builds',id:build.id}})
+          });
+          console.log('Attached latest processed build to App Store version.');
+
+          const existing = await req(`/v1/apps/${appId}/reviewSubmissions?limit=50&include=items`);
+          const active = (existing.body?.data || []).find(s => ['READY_FOR_REVIEW','WAITING_FOR_REVIEW','IN_REVIEW'].includes(s.attributes?.state));
+          if (active && ['WAITING_FOR_REVIEW','IN_REVIEW'].includes(active.attributes?.state)) {
+            console.log(`Review submission already active: ${active.attributes.state}`);
+            process.exit(0);
+          }
+
+          let submission = active;
+          if (!submission) {
+            const created = await req('/v1/reviewSubmissions', {
+              method:'POST',
+              body: JSON.stringify({
+                data:{
+                  type:'reviewSubmissions',
+                  attributes:{platform:'IOS'},
+                  relationships:{app:{data:{type:'apps',id:appId}}}
+                }
+              })
+            });
+            submission = created.body.data;
+            console.log(`Created review submission ${submission.id}`);
+          }
+
+          let items = [];
+          try {
+            const listed = await req(`/v1/reviewSubmissions/${submission.id}/items?limit=50`);
+            items = listed.body?.data || [];
+          } catch (e) {
+            if (e.status !== 404) throw e;
+          }
+          const alreadyHasVersion = items.some(item => item.relationships?.appStoreVersion?.data?.id === version.id);
+          if (!alreadyHasVersion) {
+            await req('/v1/reviewSubmissionItems', {
+              method:'POST',
+              body: JSON.stringify({
+                data:{
+                  type:'reviewSubmissionItems',
+                  relationships:{
+                    reviewSubmission:{data:{type:'reviewSubmissions',id:submission.id}},
+                    appStoreVersion:{data:{type:'appStoreVersions',id:version.id}}
+                  }
+                }
+              })
+            });
+            console.log('Added app version to review submission.');
+          }
+
+          const submitted = await req(`/v1/reviewSubmissions/${submission.id}`, {
+            method:'PATCH',
+            body: JSON.stringify({
+              data:{type:'reviewSubmissions',id:submission.id,attributes:{submitted:true}}
+            })
+          });
+          console.log(`Submitted to App Review. State: ${submitted.body?.data?.attributes?.state || 'submitted'}`);
+          NODE
+          node /tmp/submit-review.mjs
