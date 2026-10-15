@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Patch Prisma schema and mobile API typo
+      - name: Patch schema, regression tests and mobile API typo
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -43,6 +43,21 @@ jobs:
           a = api.read_text()
           a = a.replace('rebook:bookingId=>request("/bookings/rebook",{method:"POST"}),', 'rebook:bookingId=>request("/bookings/rebook",{method:"POST",body:{bookingId}}),')
           api.write_text(a)
+
+          tests = Path('mobile/src/lib/screens.test.cjs')
+          t = tests.read_text()
+          t = t.replace(
+              "'react-native': { Linking: {}, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },",
+              "'react-native': { Linking: {}, Platform:{OS:'ios'}, RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', View: 'View' },"
+          )
+          marker = "    '../lib/auth': { useAuth: () => ({ user: { id: 'member', name: 'Test', level: 3 } }) },\n"
+          if "../lib/AppLock': { useAppLock" not in t:
+              t = t.replace(marker, marker + "    '../lib/AppLock': { useAppLock: () => ({ enabled:false, biometricLabel:'Face ID', enableBiometricLock:async()=>({ok:true}), disableBiometricLock:async()=>({ok:true}) }) },\n")
+          login_marker = "    'react-native-safe-area-context':{useSafeAreaInsets:()=>({top:0,bottom:0})},\n"
+          if "../lib/SocialAuthButtons':{SocialAuthButtons" not in t:
+              t = t.replace(login_marker, "    '../lib/SocialAuthButtons':{SocialAuthButtons:'SocialAuthButtons'},\n" + login_marker)
+          t = t.replace("assert.equal(tree.root.findAllByType('Button')[0].props.title,'Log ind');", "assert.equal(tree.root.findAllByType('Button')[0].props.title,'Log ind med e-mail');")
+          tests.write_text(t)
           PY
       - name: Install existing mobile dependencies
         working-directory: mobile
@@ -50,25 +65,26 @@ jobs:
       - name: Install mobile native auth dependencies
         working-directory: mobile
         run: npx expo install expo-apple-authentication expo-local-authentication expo-secure-store @react-native-google-signin/google-signin
-      - name: Validate Prisma schema
+      - name: Format Prisma schema
         run: |
           npm ci
           npx prisma format
           npx prisma generate
-          npm test
-      - name: Validate Expo app
-        working-directory: mobile
-        run: |
-          npm test
-          npx expo-doctor
-      - name: Commit generated dependency and schema changes
+      - name: Commit prepared feature files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prisma/schema.prisma mobile/package.json mobile/package-lock.json mobile/src/lib/api.js
+          git add prisma/schema.prisma mobile/package.json mobile/package-lock.json mobile/src/lib/api.js mobile/src/lib/screens.test.cjs
           if git diff --cached --quiet; then
             echo "Nothing to commit"
           else
             git commit -m "Prepare schema and dependencies for mobile social auth"
             git push origin HEAD:feature/mobile-auth-biometrics
           fi
+      - name: Validate backend
+        run: npm test
+      - name: Validate Expo app
+        working-directory: mobile
+        run: |
+          npm test
+          npx expo-doctor
