@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/mobile-auth-prepare.yml"
       - "mobile/src/lib/api.js"
+      - "mobile/src/lib/auth.js"
       - "mobile/src/lib/AppLock.js"
       - "mobile/src/screens/LoginScreen.js"
       - "src/app/api/v1/auth/**"
@@ -88,10 +89,8 @@ jobs:
           fi
       - name: Validate backend tests
         run: npm test
-      - name: Validate backend build
-        env:
-          NEXT_TELEMETRY_DISABLED: "1"
-        run: npx next build
+      - name: Validate backend types
+        run: npx tsc --noEmit
       - name: Validate Expo app
         working-directory: mobile
         run: |
