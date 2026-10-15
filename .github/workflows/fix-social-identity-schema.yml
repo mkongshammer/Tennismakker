@@ -6,6 +6,7 @@ on:
       - fix/mobile-social-identity-schema
     paths:
       - ".github/workflows/fix-social-identity-schema.yml"
+      - "src/app/api/v1/auth/social/route.ts"
 
 permissions:
   contents: write
