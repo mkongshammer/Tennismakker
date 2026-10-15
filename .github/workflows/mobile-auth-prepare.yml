@@ -44,6 +44,9 @@ jobs:
           a = a.replace('rebook:bookingId=>request("/bookings/rebook",{method:"POST"}),', 'rebook:bookingId=>request("/bookings/rebook",{method:"POST",body:{bookingId}}),')
           api.write_text(a)
           PY
+      - name: Install existing mobile dependencies
+        working-directory: mobile
+        run: npm ci
       - name: Install mobile native auth dependencies
         working-directory: mobile
         run: npx expo install expo-apple-authentication expo-local-authentication expo-secure-store @react-native-google-signin/google-signin
