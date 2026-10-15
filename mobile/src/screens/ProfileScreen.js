@@ -14,8 +14,8 @@ import { dateTimeLong } from "../lib/dates";
 
 import { NotificationSettings } from "../lib/NotificationSettings";
 
-const PRIVACY_URL = "https://racketbuddy.app/privatliv";
-const TERMS_URL = "https://racketbuddy.app/vilkaar";
+const PRIVACY_URL = "https://racketbuddy.app/privacy";
+const TERMS_URL = "https://racketbuddy.app/terms";
 
 export default function ProfileScreen({ navigation }) {useInternational();
   const { user, logout, deleteAccount } = useAuth();
