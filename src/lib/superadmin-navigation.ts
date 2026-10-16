@@ -6,6 +6,7 @@ export const SUPERADMIN_PAGES = [
   { id: 'aktivitet', label: 'Aktivitet', description: 'Se platformens seneste aktivitet.', group: 'Daglig drift' },
   { id: 'traenere', label: 'Trænerbilleder', description: 'Gennemgå trænernes profilbilleder.', group: 'Daglig drift' },
   { id: 'oekonomi', label: 'Økonomi', description: 'Følg indtægter og økonomi.', group: 'Daglig drift' },
+  { id: 'agenter', label: 'AI Agents', description: 'Overvåg og kør RacketBuddys specialiserede AI-agenter.', group: 'Daglig drift' },
   { id: 'hjemmesider', label: 'Hjemmesidebestillinger', description: 'Følg bestillinger fra kontakt til færdig hjemmeside.', group: 'Opsætning' },
   { id: 'domaener', label: 'Domæner', description: 'Tilknyt og administrer klubbernes egne domæner.', group: 'Opsætning' },
   { id: 'automatisering', label: 'Bookingsystemer', description: 'Forbind klubbernes eksisterende bookingsystemer.', group: 'Opsætning' },
