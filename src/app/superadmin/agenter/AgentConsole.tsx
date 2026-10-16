@@ -10,16 +10,22 @@ export function AgentSettingsForm({
   apiKeyHint,
   fastModel,
   smartModel,
+  salesEnabled,
+  salesDailyLimit,
+  salesPostalAddress,
 }: {
   enabled: boolean;
   apiKeySet: boolean;
   apiKeyHint: string;
   fastModel: string;
   smartModel: string;
+  salesEnabled: boolean;
+  salesDailyLimit: number;
+  salesPostalAddress: string;
 }) {
   const [state, action] = useFormState(updateAgentSettings, null);
   return (
-    <form action={action} className="card space-y-4">
+    <form action={action} className="card space-y-6">
       <div>
         <h2 className="display text-2xl">Agentmotor</h2>
         <p className="mt-1 text-sm text-slate">Nøglen krypteres med platformens AUTH_SECRET og sendes aldrig tilbage til browseren.</p>
@@ -37,14 +43,43 @@ export function AgentSettingsForm({
         <label className="block">
           <span className="text-sm font-bold">Hurtig model</span>
           <input name="fastModel" defaultValue={fastModel} className="input mt-1" />
-          <span className="mt-1 block text-xs text-slate">Manager, onboarding, drift, support, growth og sales.</span>
+          <span className="mt-1 block text-xs text-slate">Manager, onboarding, drift, support og growth.</span>
         </label>
         <label className="block">
           <span className="text-sm font-bold">Avanceret model</span>
           <input name="smartModel" defaultValue={smartModel} className="input mt-1" />
-          <span className="mt-1 block text-xs text-slate">Integration recovery, revenue og release/QA.</span>
+          <span className="mt-1 block text-xs text-slate">Integration recovery, revenue, release/QA og prospect research.</span>
         </label>
       </div>
+
+      <section className="rounded-xl border border-slate/15 p-4 space-y-4">
+        <div>
+          <h3 className="font-bold">Sales Autopilot</h3>
+          <p className="mt-1 text-sm text-slate">Finder selv relevante amerikanske racketklubber via live web research, verificerer at kontaktmailen står på klubbens officielle hjemmeside og sender korte engelske first-touch mails. Samme klub kontaktes ikke igen automatisk.</p>
+        </div>
+        <label className="flex items-center gap-3 text-sm font-bold">
+          <input type="checkbox" name="salesEnabled" defaultChecked={salesEnabled} />
+          Sælg automatisk til nye klubber
+        </label>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-bold">Nye klubmails pr. hverdag</span>
+            <input type="number" min={1} max={10} name="salesDailyLimit" defaultValue={salesDailyLimit} className="input mt-1" />
+            <span className="mt-1 block text-xs text-slate">Starter konservativt med 3 om dagen. Der sendes kun i amerikansk arbejdstid.</span>
+          </label>
+          <label className="block">
+            <span className="text-sm font-bold">Marked</span>
+            <input value="United States" readOnly className="input mt-1 bg-mist" />
+            <span className="mt-1 block text-xs text-slate">USA først. EU holdes ude af autopiloten, indtil landenes outreach-regler håndteres særskilt.</span>
+          </label>
+        </div>
+        <label className="block">
+          <span className="text-sm font-bold">RacketBuddys virksomheds-postadresse</span>
+          <input name="salesPostalAddress" defaultValue={salesPostalAddress} className="input mt-1" placeholder="Street, city, postal code, country" />
+          <span className="mt-1 block text-xs text-slate">Bruges kun i bunden af kommercielle salgsmails. Autopiloten sender intet, før feltet er udfyldt.</span>
+        </label>
+      </section>
+
       {state?.error ? <p className="text-sm font-semibold text-court-dark">{state.error}</p> : null}
       {state?.ok ? <p className="text-sm font-semibold text-court">{state.ok}</p> : null}
       <SubmitButton pendingText="Gemmer…">Gem agentopsætning</SubmitButton>
