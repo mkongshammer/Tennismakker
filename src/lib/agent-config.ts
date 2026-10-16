@@ -12,7 +12,7 @@ export type AgentConfig = {
 };
 
 const DEFAULTS: AgentConfig = {
-  enabled: false,
+  enabled: true,
   fastModel: "gpt-6-luna",
   smartModel: "gpt-6.1-sol",
 };
@@ -38,7 +38,7 @@ export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; 
   const hasLocalConfig = Boolean(configRow);
 
   return {
-    enabled: hasLocalConfig ? stored.enabled === true : (sharedAgents?.enabled ?? false),
+    enabled: hasLocalConfig ? stored.enabled === true : (sharedAgents?.enabled ?? DEFAULTS.enabled),
     fastModel: String(stored.fastModel || process.env.RACKETBUDDY_AGENT_FAST_MODEL || sharedAgents?.fastModel || DEFAULTS.fastModel),
     smartModel: String(stored.smartModel || process.env.RACKETBUDDY_AGENT_SMART_MODEL || sharedAgents?.smartModel || DEFAULTS.smartModel),
     apiKey,
