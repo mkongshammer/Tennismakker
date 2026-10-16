@@ -20,6 +20,9 @@ export async function updateAgentSettings(_prev: unknown, formData: FormData): P
   const apiKey = String(formData.get("apiKey") ?? "").trim();
   const fastModel = String(formData.get("fastModel") ?? current.fastModel).trim();
   const smartModel = String(formData.get("smartModel") ?? current.smartModel).trim();
+  const salesEnabled = formData.get("salesEnabled") === "on";
+  const salesDailyLimit = Number(formData.get("salesDailyLimit") ?? current.salesDailyLimit);
+  const salesPostalAddress = String(formData.get("salesPostalAddress") ?? current.salesPostalAddress).trim();
 
   if (enabled && !apiKey && !current.apiKeySet) {
     return { error: "Indsæt en OpenAI API-nøgle, før agenterne slås til." };
@@ -27,10 +30,28 @@ export async function updateAgentSettings(_prev: unknown, formData: FormData): P
   if (!/^gpt-[a-zA-Z0-9.\-]+$/.test(fastModel) || !/^gpt-[a-zA-Z0-9.\-]+$/.test(smartModel)) {
     return { error: "Modelnavnene ser ikke gyldige ud." };
   }
+  if (!Number.isInteger(salesDailyLimit) || salesDailyLimit < 1 || salesDailyLimit > 10) {
+    return { error: "Automatisk salg skal være mellem 1 og 10 nye klubmails pr. dag." };
+  }
 
-  await saveAgentConfig({ enabled, apiKey: apiKey || undefined, fastModel, smartModel });
+  await saveAgentConfig({
+    enabled,
+    apiKey: apiKey || undefined,
+    fastModel,
+    smartModel,
+    salesEnabled,
+    salesDailyLimit,
+    salesMarket: "US",
+    salesPostalAddress,
+  });
   revalidatePath("/superadmin/agenter");
-  return { ok: enabled ? "AI-agenterne er slået til." : "AI-agenterne er slået fra." };
+  return {
+    ok: enabled
+      ? salesEnabled && salesPostalAddress.length < 8
+        ? "AI-agenterne er slået til. Sales Autopilot venter kun på en gyldig virksomheds-postadresse, før den må sende."
+        : "AI-agenterne er slået til."
+      : "AI-agenterne er slået fra.",
+  };
 }
 
 export async function runAgentFromAdmin(_prev: unknown, formData: FormData): Promise<AgentFormState> {
