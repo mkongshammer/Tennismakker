@@ -21,108 +21,108 @@ type Campaign = {
 
 const campaigns: Campaign[] = [
   {
-    player: { subject: "Skal du spille i denne uge?", lines: ["Har du lyst til at komme på banen?", "Find en spiller, du ikke har spillet med før — eller find en bane og invitér en, du allerede kender."], cta: "Find noget at spille", path: "/makkere" },
-    coach: { subject: "Har du en ledig træningstime?", lines: ["Har du en ledig time i kalenderen i denne uge?", "Læg den på RacketBuddy, så spillere i nærheden kan finde og booke dig."], cta: "Opret en træningstid", path: "/profil/traener" },
+    player: { subject: "Playing this week?", lines: ["Feel like getting on court?", "Find someone you have not played before — or book a court and invite someone you already know."], cta: "Find something to play", path: "/makkere" },
+    coach: { subject: "Got an open coaching slot?", lines: ["Do you have an open hour in your calendar this week?", "Add it to RacketBuddy so nearby players can find and book you."], cta: "Add a coaching slot", path: "/profil/traener" },
   },
   {
-    player: { subject: "Prøv en anden ketsjersport", lines: ["Spiller du normalt tennis? Prøv padel eller pickleball.", "RacketBuddy gør det nemt at finde spillere, baner og trænere på tværs af ketsjersport."], cta: "Se mulighederne", path: "/book" },
-    coach: { subject: "Kan du træne flere sportsgrene?", lines: ["Hvis du underviser i mere end én ketsjersport, så sørg for at det fremgår på din profil.", "Det kan gøre dig synlig for langt flere spillere."], cta: "Se din trænerprofil", path: "/profil/traener" },
+    player: { subject: "Try a different racket sport", lines: ["Usually play tennis? Try padel or pickleball.", "RacketBuddy makes it easy to find players, courts and coaches across racket sports."], cta: "Explore your options", path: "/book" },
+    coach: { subject: "Do you coach more than one sport?", lines: ["If you coach more than one racket sport, make sure it shows on your profile.", "It can make you visible to many more players."], cta: "View your coach profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Spil mod en, du aldrig har mødt", lines: ["Det bliver hurtigt de samme mennesker, man spiller med.", "Find en ny spiller omkring dit niveau og få en anderledes kamp."], cta: "Find en ny modstander", path: "/makkere" },
-    coach: { subject: "Nye spillere leder efter trænere", lines: ["Der kommer løbende nye spillere ind på RacketBuddy.", "Sørg for, at du har ledige tider synlige, så de også kan finde dig."], cta: "Tilføj ledige tider", path: "/profil/traener" },
+    player: { subject: "Play someone you have never met", lines: ["It is easy to end up playing the same people every time.", "Find a new player around your level and get a different kind of match."], cta: "Find a new opponent", path: "/makkere" },
+    coach: { subject: "New players are looking for coaches", lines: ["New players keep joining RacketBuddy.", "Keep some available slots visible so they can find and book you."], cta: "Add available times", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvem skal du have med på banen?", lines: ["Find en ledig bane på RacketBuddy og send tiden til en ven.", "Nogle gange er det eneste, der mangler, at én tager initiativet."], cta: "Find en bane", path: "/book" },
-    coach: { subject: "Fyld et hul i kalenderen", lines: ["Har du en tom time mellem to træninger?", "Gør den bookbar på RacketBuddy og se, om en spiller tager den."], cta: "Åbn en tid", path: "/profil/traener" },
+    player: { subject: "Who are you taking on court?", lines: ["Find an available court on RacketBuddy and send the time to a friend.", "Sometimes all it takes is one person making the first move."], cta: "Find a court", path: "/book" },
+    coach: { subject: "Fill a gap in your calendar", lines: ["Got an empty hour between sessions?", "Make it bookable on RacketBuddy and see if a player takes it."], cta: "Open a time slot", path: "/profil/traener" },
   },
   {
-    player: { subject: "Én træning kan gøre en forskel", lines: ["Serv, baghånd, volley eller bare lidt mere stabilitet?", "Find en træner og arbejd på præcis det, du gerne vil forbedre."], cta: "Find en træner", path: "/traenere" },
-    coach: { subject: "Hvad er du bedst til at lære fra dig?", lines: ["Spillere leder ikke bare efter en træner — de leder efter hjælp til noget bestemt.", "Gør det tydeligt på din profil, hvad du kan hjælpe med."], cta: "Opdater din profil", path: "/profil/traener" },
+    player: { subject: "One coaching session can make a difference", lines: ["Serve, backhand, volley or just more consistency?", "Find a coach and work on exactly what you want to improve."], cta: "Find a coach", path: "/traenere" },
+    coach: { subject: "What are you best at teaching?", lines: ["Players are not just looking for a coach — they are looking for help with something specific.", "Make it clear on your profile what you can help them improve."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Har du en ledig time?", lines: ["En fri time kan hurtigt blive til en kamp.", "Åbn RacketBuddy og se, hvem der vil spille i nærheden."], cta: "Se spillere nær dig", path: "/makkere" },
-    coach: { subject: "En aflysning behøver ikke blive en tom time", lines: ["Hvis du får en aflysning, kan du lægge tiden ud på RacketBuddy.", "En anden spiller kan måske tage den."], cta: "Tilføj en tid", path: "/profil/traener" },
+    player: { subject: "Got a free hour?", lines: ["A free hour can quickly turn into a match.", "Open RacketBuddy and see who wants to play nearby."], cta: "See players near you", path: "/makkere" },
+    coach: { subject: "A cancellation does not have to mean an empty hour", lines: ["If someone cancels, put the slot on RacketBuddy.", "Another player may be able to take it."], cta: "Add a time", path: "/profil/traener" },
   },
   {
-    player: { subject: "Find nogen på dit niveau", lines: ["De bedste kampe er ofte dem, hvor niveauet passer.", "Brug RacketBuddy til at finde spillere, der matcher dig bedre."], cta: "Find spillere", path: "/spillere" },
-    coach: { subject: "Hjælp spillerne med at finde den rigtige træning", lines: ["Skriv tydeligt hvilke niveauer du underviser.", "Begynder, motionist eller turneringsspiller — det gør det lettere at matche dig med de rigtige kunder."], cta: "Opdater trænerprofil", path: "/profil/traener" },
+    player: { subject: "Find someone at your level", lines: ["The best matches are often the ones where the level is right.", "Use RacketBuddy to find players who are a better match for you."], cta: "Find players", path: "/spillere" },
+    coach: { subject: "Help players find the right coaching", lines: ["Make it clear which levels you coach.", "Beginner, recreational or competitive — it helps match you with the right players."], cta: "Update your coach profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Planer i weekenden?", lines: ["Hvis kalenderen stadig er lidt tom, så få en kamp ind.", "Find en spiller eller en bane på RacketBuddy."], cta: "Planlæg weekendens kamp", path: "/makkere" },
-    coach: { subject: "Har du tider i weekenden?", lines: ["Weekendtimer kan være attraktive for spillere, der ikke kan træne i hverdagen.", "Læg dem ud, hvis du har plads."], cta: "Tilføj weekendtider", path: "/profil/traener" },
+    player: { subject: "Plans for the weekend?", lines: ["If your calendar still has some room, get a match in.", "Find a player or a court on RacketBuddy."], cta: "Plan your weekend match", path: "/makkere" },
+    coach: { subject: "Do you have weekend availability?", lines: ["Weekend slots can be especially attractive to players who are busy during the week.", "Add them if you have space."], cta: "Add weekend times", path: "/profil/traener" },
   },
   {
-    player: { subject: "Tid til revanche?", lines: ["Tabte du den sidste?", "Så er der kun én løsning: book en ny kamp."], cta: "Find en bane", path: "/book" },
-    coach: { subject: "Få dine spillere tilbage på banen", lines: ["Har du spillere, du ikke har set i et stykke tid?", "Hav ledige tider på RacketBuddy, så det er nemt for dem at komme tilbage."], cta: "Se dine tider", path: "/profil/traener" },
+    player: { subject: "Time for a rematch?", lines: ["Lost the last one?", "There is only one answer: book another match."], cta: "Find a court", path: "/book" },
+    coach: { subject: "Get your players back on court", lines: ["Have players you have not seen in a while?", "Keep available times on RacketBuddy so it is easy for them to come back."], cta: "View your availability", path: "/profil/traener" },
   },
   {
-    player: { subject: "Din næste makker er måske allerede på RacketBuddy", lines: ["Ketsjersport er også en ret god måde at møde nye mennesker på.", "Se hvem der spiller omkring dig og spørg, om de vil tage en kamp."], cta: "Find en makker", path: "/makkere" },
-    coach: { subject: "Gør det nemt for nye spillere at vælge dig", lines: ["En god profil og synlige tider gør en stor forskel, når en spiller ikke kender dig i forvejen.", "Tjek hvordan din profil ser ud."], cta: "Se min profil", path: "/profil/traener" },
+    player: { subject: "Your next playing partner may already be on RacketBuddy", lines: ["Racket sports are also a great way to meet new people.", "See who plays near you and ask if they want a match."], cta: "Find a playing partner", path: "/makkere" },
+    coach: { subject: "Make it easy for new players to choose you", lines: ["A strong profile and visible availability make a big difference when a player does not know you yet.", "Check how your profile looks."], cta: "View my profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Har du prøvet pickleball?", lines: ["Hvis ikke, er det måske på tide.", "Det er hurtigt at lære og en god afveksling fra tennis og padel."], cta: "Udforsk en ny sport", path: "/book" },
-    coach: { subject: "Underviser du også i pickleball?", lines: ["Hvis du også kan undervise i pickleball, så tilføj det til din RacketBuddy-profil.", "Det gør dig synlig for spillere, der vil prøve noget nyt."], cta: "Opdater sportsgrene", path: "/profil/traener" },
+    player: { subject: "Have you tried pickleball?", lines: ["If not, maybe now is the time.", "It is quick to learn and a fun change from tennis or padel."], cta: "Explore a new sport", path: "/book" },
+    coach: { subject: "Do you coach pickleball too?", lines: ["If you also coach pickleball, add it to your RacketBuddy profile.", "That makes you visible to players who want to try something new."], cta: "Update your sports", path: "/profil/traener" },
   },
   {
-    player: { subject: "Kamp efter arbejde?", lines: ["I stedet for endnu en aften på sofaen: find en ledig bane og få en time på banen."], cta: "Se ledige baner", path: "/book" },
-    coach: { subject: "Har du tider efter arbejde?", lines: ["Tider sidst på eftermiddagen og om aftenen er ofte de nemmeste for spillere at booke.", "Sørg for, at dine ledige tider er synlige."], cta: "Administrer tider", path: "/profil/traener" },
+    player: { subject: "Match after work?", lines: ["Instead of another evening on the couch, find an available court and get an hour on court."], cta: "See available courts", path: "/book" },
+    coach: { subject: "Do you have after-work availability?", lines: ["Late-afternoon and evening slots are often the easiest for players to book.", "Make sure your available times are visible."], cta: "Manage your availability", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvor meget har du egentlig spillet?", lines: ["Det er let at få spillet mindre, end man egentlig gerne vil.", "Sæt en kamp i kalenderen nu."], cta: "Book næste kamp", path: "/book" },
-    coach: { subject: "Hvordan ser din træningskalender ud?", lines: ["Hvis du gerne vil have lidt flere træninger ind, så start med at åbne nogle ekstra tider på RacketBuddy."], cta: "Åbn flere tider", path: "/profil/traener" },
+    player: { subject: "How much have you actually played lately?", lines: ["It is easy to end up playing less than you would like.", "Put your next match in the calendar now."], cta: "Book your next match", path: "/book" },
+    coach: { subject: "How does your coaching calendar look?", lines: ["If you want a few more sessions, start by opening some extra times on RacketBuddy."], cta: "Open more times", path: "/profil/traener" },
   },
   {
-    player: { subject: "Spil mod en lidt bedre end dig", lines: ["En af de bedste måder at blive bedre på er at spille mod nogen, der presser dig lidt mere."], cta: "Find en udfordring", path: "/spillere" },
-    coach: { subject: "Spillere vil gerne tage næste niveau", lines: ["Gør det tydeligt, hvordan du kan hjælpe spillere med at udvikle deres spil — teknik, taktik, fysik eller kamptræning."], cta: "Opdater profil", path: "/profil/traener" },
+    player: { subject: "Play someone slightly better than you", lines: ["One of the best ways to improve is to play someone who pushes you a little harder."], cta: "Find a challenge", path: "/spillere" },
+    coach: { subject: "Players want to reach the next level", lines: ["Make it clear how you help players improve — technique, tactics, fitness or match play."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvem spiller tæt på dig?", lines: ["Der kan være flere spillere tæt på dig, end du tror.", "Åbn RacketBuddy og se mulighederne i dit område."], cta: "Se hvad der er i nærheden", path: "/spillere" },
-    coach: { subject: "Bliv fundet af spillere tæt på dig", lines: ["Lokale spillere er ofte de letteste at få som faste kunder.", "Sørg for, at din lokation er korrekt på RacketBuddy."], cta: "Tjek min profil", path: "/profil/traener" },
+    player: { subject: "Who plays near you?", lines: ["There may be more players close to you than you think.", "Open RacketBuddy and see what is available in your area."], cta: "See what is nearby", path: "/spillere" },
+    coach: { subject: "Get found by players near you", lines: ["Local players are often the easiest to turn into regular clients.", "Make sure your location is correct on RacketBuddy."], cta: "Check my profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Skift bane, ikke sport", lines: ["Dårligt vejr eller fulde baner behøver ikke stoppe dig.", "Se hvilke andre baner og klubber der er tilgængelige omkring dig."], cta: "Find en anden bane", path: "/book" },
-    coach: { subject: "Gør dine alternative lokationer synlige", lines: ["Hvis du træner flere forskellige steder, så gør det tydeligt på din profil.", "Det giver spillerne flere muligheder for at booke dig."], cta: "Opdater profil", path: "/profil/traener" },
+    player: { subject: "Change court, not sport", lines: ["Bad weather or fully booked courts do not have to stop you.", "See which other courts and clubs are available nearby."], cta: "Find another court", path: "/book" },
+    coach: { subject: "Make your other locations visible", lines: ["If you coach at more than one location, make it clear on your profile.", "More locations can give players more ways to book you."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvem er jeres fjerde spiller?", lines: ["Mangler I én til en double?", "Se om I kan finde den sidste spiller gennem RacketBuddy."], cta: "Find en spiller", path: "/makkere" },
-    coach: { subject: "Tilbyder du træning for flere spillere?", lines: ["Hvis du tilbyder par-, gruppe- eller holdtræning, så vis det på din profil.", "Det kan være attraktivt for både spillere og dig."], cta: "Opdater dine tilbud", path: "/profil/traener" },
+    player: { subject: "Who is your fourth player?", lines: ["Missing one player for doubles?", "See if you can find the final player through RacketBuddy."], cta: "Find a player", path: "/makkere" },
+    coach: { subject: "Do you offer coaching for multiple players?", lines: ["If you offer pairs, group or team sessions, show it on your profile.", "It can be attractive for both players and you."], cta: "Update your coaching options", path: "/profil/traener" },
   },
   {
-    player: { subject: "Længe siden sidst?", lines: ["Du behøver ikke være i topform for at komme tilbage.", "Find en hyggelig kamp og kom på banen igen."], cta: "Kom tilbage på banen", path: "/makkere" },
-    coach: { subject: "Der er mange, der gerne vil starte igen", lines: ["Tidligere spillere leder ofte efter en træner, når de vil i gang igen.", "Gør det tydeligt, hvis du hjælper med comeback og genopstart."], cta: "Opdater profil", path: "/profil/traener" },
+    player: { subject: "Been a while?", lines: ["You do not need to be in top form to come back.", "Find a relaxed match and get back on court."], cta: "Get back on court", path: "/makkere" },
+    coach: { subject: "Plenty of players want to start again", lines: ["Returning players often look for a coach when they get back into the sport.", "Make it clear if you help players restart or make a comeback."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Du behøver ikke være god for at spille", lines: ["Alle starter et sted.", "Find andre begyndere eller en træner, og kom i gang uden at bekymre dig om niveauet."], cta: "Find nogen at spille med", path: "/makkere" },
-    coach: { subject: "Er begyndere velkomne hos dig?", lines: ["Mange nye spillere er usikre på, hvilken træner de skal vælge.", "Hvis du er god til begyndere, så fortæl dem det."], cta: "Opdater profil", path: "/profil/traener" },
+    player: { subject: "You do not have to be good to play", lines: ["Everyone starts somewhere.", "Find other beginners or a coach and get started without worrying about your level."], cta: "Find someone to play", path: "/makkere" },
+    coach: { subject: "Are beginners welcome?", lines: ["Many new players are unsure which coach to choose.", "If you are great with beginners, make sure they know it."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Har du prøvet at spille om morgenen?", lines: ["Banerne kan være mere stille, og det er en ret god måde at starte dagen på."], cta: "Se morgentider", path: "/book" },
-    coach: { subject: "Kan du fylde morgentimerne?", lines: ["Hvis du har plads tidligere på dagen, kan det være værd at lægge tiderne ud.", "Nogle spillere foretrækker netop morgen og formiddag."], cta: "Tilføj morgentider", path: "/profil/traener" },
+    player: { subject: "Have you tried playing in the morning?", lines: ["Courts can be quieter, and it is a great way to start the day."], cta: "See morning times", path: "/book" },
+    coach: { subject: "Can you fill your morning hours?", lines: ["If you have availability earlier in the day, it may be worth listing it.", "Some players specifically prefer mornings and late mornings."], cta: "Add morning times", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvad vil du gerne være bedre til?", lines: ["Vælg én ting: serv, forhånd, volley, positionering eller taktik.", "Find en træner og brug en time på præcis dét."], cta: "Find den rigtige træner", path: "/traenere" },
-    coach: { subject: "Sælg din specialitet", lines: ["Har du noget, du er særligt god til at træne?", "Skriv det på din profil, så den rigtige spiller lettere finder dig."], cta: "Rediger profil", path: "/profil/traener" },
+    player: { subject: "What do you want to improve?", lines: ["Pick one thing: serve, forehand, volley, positioning or tactics.", "Find a coach and spend an hour working on exactly that."], cta: "Find the right coach", path: "/traenere" },
+    coach: { subject: "Show players your specialty", lines: ["Is there something you are especially good at coaching?", "Add it to your profile so the right players can find you more easily."], cta: "Edit your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Har du spillet et nyt sted?", lines: ["Det er nemt altid at spille samme sted.", "Se hvilke andre klubber og baner der findes omkring dig på RacketBuddy."], cta: "Udforsk klubber", path: "/klubber" },
-    coach: { subject: "Træner du i mere end én klub?", lines: ["Hvis spillere kan møde dig flere steder, så gør det tydeligt på din profil.", "Flere lokationer kan betyde flere potentielle spillere."], cta: "Opdater profil", path: "/profil/traener" },
+    player: { subject: "Have you played somewhere new?", lines: ["It is easy to always play at the same place.", "See which other clubs and courts are available around you on RacketBuddy."], cta: "Explore clubs", path: "/klubber" },
+    coach: { subject: "Do you coach at more than one club?", lines: ["If players can meet you at several locations, make that clear on your profile.", "More locations can mean more potential players."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Tag en ven med", lines: ["Kender du nogen, der burde komme mere ud på banen?", "Find en tid og invitér dem med."], cta: "Book en bane", path: "/book" },
-    coach: { subject: "Gør det nemt at tage en ven med", lines: ["Par- og gruppetræning kan være en nem måde for nye spillere at prøve træning på.", "Hvis du tilbyder det, så gør det synligt."], cta: "Opdater dine træningstyper", path: "/profil/traener" },
+    player: { subject: "Bring a friend", lines: ["Know someone who should spend more time on court?", "Find a time and invite them along."], cta: "Book a court", path: "/book" },
+    coach: { subject: "Make it easy to bring a friend", lines: ["Pairs and group coaching can be an easy way for new players to try a session.", "If you offer it, make sure it is visible."], cta: "Update your coaching types", path: "/profil/traener" },
   },
   {
-    player: { subject: "Klar til en rigtig kamp?", lines: ["Ikke træning. Ikke bare lidt bold.", "Find en modstander og se, hvem der tager sejren."], cta: "Find en kamp", path: "/makkere" },
-    coach: { subject: "Tilbyder du matchplay?", lines: ["Mange spillere vil gerne blive bedre til selve kampen — ikke kun slagene.", "Hvis du tilbyder matchplay eller taktisk træning, så gør det tydeligt."], cta: "Opdater din profil", path: "/profil/traener" },
+    player: { subject: "Ready for a real match?", lines: ["Not practice. Not just hitting balls.", "Find an opponent and see who gets the win."], cta: "Find a match", path: "/makkere" },
+    coach: { subject: "Do you offer match play coaching?", lines: ["Many players want to get better at the match itself — not just individual shots.", "If you offer match play or tactical coaching, make it clear."], cta: "Update your profile", path: "/profil/traener" },
   },
   {
-    player: { subject: "Én kamp om ugen?", lines: ["Det behøver ikke være mere kompliceret.", "Én fast kamp om ugen kan være nok til at spille meget mere over et år."], cta: "Planlæg næste kamp", path: "/makkere" },
-    coach: { subject: "Kan du få flere faste spillere?", lines: ["En enkelt træning er god. En fast ugentlig spiller er bedre.", "Hold din kalender opdateret, så spillere nemt kan finde en tid, der kan blive fast."], cta: "Administrer kalender", path: "/profil/traener" },
+    player: { subject: "One match a week?", lines: ["It does not have to be more complicated than that.", "One regular match a week can add up to a lot more playing over a year."], cta: "Plan your next match", path: "/makkere" },
+    coach: { subject: "Could you get more regular players?", lines: ["One session is good. A regular weekly player is even better.", "Keep your calendar updated so players can easily find a time that could become a regular slot."], cta: "Manage your calendar", path: "/profil/traener" },
   },
   {
-    player: { subject: "Hvad skal du spille næste gang?", lines: ["Tennis? Padel? Pickleball?", "En gammel makker eller en helt ny? Uanset hvad: der er kun én måde at komme i gang."], cta: "Åbn RacketBuddy", path: "/book" },
-    coach: { subject: "Klar til flere timer på banen?", lines: ["Hold din profil skarp og dine tider opdaterede, så RacketBuddy kan hjælpe flere spillere med at finde dig."], cta: "Gå til trænerprofil", path: "/profil/traener" },
+    player: { subject: "What are you playing next?", lines: ["Tennis? Padel? Pickleball?", "An old playing partner or someone completely new? Either way, there is only one way to get started."], cta: "Open RacketBuddy", path: "/book" },
+    coach: { subject: "Ready for more hours on court?", lines: ["Keep your profile sharp and your availability up to date so RacketBuddy can help more players find you."], cta: "Go to your coach profile", path: "/profil/traener" },
   },
 ];
 
@@ -186,8 +186,8 @@ export async function unsubscribeEngagementEmails(userId: string) {
 }
 
 export async function runEngagementEmails() {
-  // Sync-jobbet kører hvert kvarter. Inspirationsmails sendes kun omkring
-  // kl. 10 dansk tid, så en bruger ikke får dem midt om natten.
+  // The sync job runs every 15 minutes. Inspiration emails are only sent
+  // around 10:00 Copenhagen time so users do not receive them overnight.
   if (copenhagenHour() !== 10) {
     return { sent: 0, skipped: 0, reason: "outside-send-window" };
   }
@@ -247,7 +247,7 @@ export async function runEngagementEmails() {
     const firstName = user.name.trim().split(/\s+/)[0] || user.name;
     const unsubscribeUrl = `${appUrl}/api/email/unsubscribe?user=${encodeURIComponent(user.id)}&token=${unsubscribeToken(user.id)}`;
     const body = [
-      `Hej ${firstName}`,
+      `Hi ${firstName}`,
       "",
       ...variant.lines.flatMap((line) => [line, ""]),
       `${variant.cta}: ${appUrl}${variant.path}`,
@@ -255,7 +255,7 @@ export async function runEngagementEmails() {
       "Magnus",
       "RacketBuddy",
       "",
-      `Vil du ikke have inspirationsmails længere? Afmeld her: ${unsubscribeUrl}`,
+      `Don't want to receive inspiration emails anymore? Unsubscribe here: ${unsubscribeUrl}`,
     ].join("\n");
 
     const ok = await sendMail({ to: user.email, subject: variant.subject, body });
