@@ -1,5 +1,6 @@
 import { runRenewals } from "../../../../lib/renewals";
 import { runEngagementEmails } from "../../../../lib/engagement-emails";
+import { runScheduledAgentSweep } from "../../../../lib/agent-scheduler";
 import { ensureBlocks, processBlocks } from "../../../../lib/system-blocks";
 // Baggrundsjob: synkroniserer alle klubber med kalenderfeed og rydder
 // udløbne reservationer.
@@ -16,10 +17,9 @@ import { releaseExpiredHolds } from "../../../../lib/payments";
 export const dynamic = "force-dynamic";
 
 /**
- * Fornyelser og engagement-mails køres her sammen med kalendersynkroniseringen.
- *
- * Egen cron ville være renere, men Render tager penge pr. cron-job, og de
- * eksisterende kørsler er hyppige nok til begge opgaver.
+ * Fornyelser, engagement-mails og AI-driftsscan køres her sammen med
+ * kalendersynkroniseringen. Agent-schedulerens egen timelås betyder, at den
+ * hyppige sync-cron ikke udløser flere betalte AI-kald end nødvendigt.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -73,6 +73,13 @@ export async function GET(req: Request) {
     return { sent: 0, skipped: 0, reason: "error" };
   });
 
+  // Manager-agenten er read-only og kører højst én gang i timen. Den er helt
+  // passiv, indtil den er slået til fra /superadmin/agenter og har en API-nøgle.
+  const agents = await runScheduledAgentSweep().catch((err) => {
+    console.error("AI-driftsscan fejlede:", err);
+    return { ran: false, reason: "error" };
+  });
+
   return Response.json({
     kørt: new Date().toISOString(),
     klubber: results.length,
@@ -80,5 +87,6 @@ export async function GET(req: Request) {
     fornyelser: renewals,
     engagement,
     spaerringer: blocks,
+    agents,
   });
 }
