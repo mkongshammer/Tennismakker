@@ -1,5 +1,6 @@
 import { db } from "./db";
 import { open, seal } from "./crypto-box";
+import { regionalSharedConfig } from "./regional-config";
 
 const CONFIG_KEY = "agent:config:v1";
 const API_KEY = "agent:openai-key:v1";
@@ -17,9 +18,10 @@ const DEFAULTS: AgentConfig = {
 };
 
 export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; apiKeySet: boolean }> {
-  const [configRow, keyRow] = await Promise.all([
+  const [configRow, keyRow, shared] = await Promise.all([
     db.platformSetting.findUnique({ where: { key: CONFIG_KEY } }).catch(() => null),
     db.platformSetting.findUnique({ where: { key: API_KEY } }).catch(() => null),
+    regionalSharedConfig(),
   ]);
 
   let stored: Partial<AgentConfig> = {};
@@ -31,12 +33,14 @@ export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; 
 
   const databaseKey = keyRow?.value ? open(keyRow.value) : "";
   const environmentKey = process.env.OPENAI_API_KEY ?? "";
-  const apiKey = databaseKey || environmentKey;
+  const sharedAgents = shared?.agentConfig;
+  const apiKey = databaseKey || environmentKey || sharedAgents?.apiKey || "";
+  const hasLocalConfig = Boolean(configRow);
 
   return {
-    enabled: stored.enabled === true,
-    fastModel: String(stored.fastModel || process.env.RACKETBUDDY_AGENT_FAST_MODEL || DEFAULTS.fastModel),
-    smartModel: String(stored.smartModel || process.env.RACKETBUDDY_AGENT_SMART_MODEL || DEFAULTS.smartModel),
+    enabled: hasLocalConfig ? stored.enabled === true : (sharedAgents?.enabled ?? false),
+    fastModel: String(stored.fastModel || process.env.RACKETBUDDY_AGENT_FAST_MODEL || sharedAgents?.fastModel || DEFAULTS.fastModel),
+    smartModel: String(stored.smartModel || process.env.RACKETBUDDY_AGENT_SMART_MODEL || sharedAgents?.smartModel || DEFAULTS.smartModel),
     apiKey,
     apiKeySet: Boolean(apiKey),
   };
