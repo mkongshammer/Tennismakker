@@ -5,6 +5,12 @@ import type {Settings} from './settings';
 export type RegionalSharedConfig={
   sharedSettings:Pick<Settings,'paymentProvider'|'stripeSecretKey'|'commissionPct'|'emailApiKey'|'emailFrom'|'ordersEmail'>;
   clubSignupPriceBook:unknown;
+  agentConfig?:{
+    enabled:boolean;
+    fastModel:string;
+    smartModel:string;
+    apiKey:string;
+  };
 };
 
 let cache:{at:number;value:RegionalSharedConfig|null}|null=null;
