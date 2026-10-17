@@ -8,6 +8,20 @@ const LAST_SWEEP_KEY = "agent:last-scheduled-sweep:v2";
 const MIN_INTERVAL_MS = 60 * 60 * 1000;
 const MAX_PHASE_ATTEMPTS = 3;
 
+const OCTOBER_MISSION = [
+  "RACKETBUDDY COMPANY MISSION THROUGH 31 OCTOBER 2026:",
+  "1. Reach at least 3 paying standard-plan clubs OR close at least 1 custom setup worth $2,250.",
+  "2. Reach at least 20 active coaches with a completed coach profile, sport and published availability.",
+  "3. Reach at least 75 active players who completed their profile and performed at least one meaningful marketplace action such as finding a player, coach or court/booking flow.",
+  "4. Contact at least 30 qualified new clubs with compliant, verified outreach.",
+  "5. Complete at least 50 qualified coach/player-community growth outreach contacts.",
+  "6. Answer relevant inbound club/player/coach emails within one agent cycle whenever the answer is routine and supported by evidence.",
+  "7. No qualified sales opportunity may die from missing follow-up, onboarding friction or a routine operational blocker.",
+  "Primary proof-of-autonomy goal: complete at least one club journey from autonomous prospecting -> outreach -> reply -> onboarding -> payment/live launch without owner-driven day-to-day execution.",
+  "Priority after critical reliability/security issues: revenue -> clubs -> coaches -> players -> retention -> lower-impact housekeeping.",
+  "Do not stop working toward unmet targets. On every scheduled cycle, identify the largest remaining gap and execute the highest-impact safe actions available. If a transient failure blocks progress, retry according to the retry policy and continue on the next eligible cycle. Only stop pursuing a target when it is achieved, the deadline has passed, or a genuine blocker requires owner/legal/financial judgment.",
+].join("\n");
+
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -68,6 +82,7 @@ export async function runScheduledAgentSweep(now = new Date()) {
       "operator",
       [
         "Run the hourly RacketBuddy autonomous operations cycle now.",
+        OCTOBER_MISSION,
         "Critical incidents come first. After that, growth and revenue are the dominant priorities: sell to clubs, get won clubs live, attract and retain players, and attract and activate coaches.",
         "Do not produce a to-do list for the owner. Inspect live state and execute every safe fix available through your action tools.",
         "Keep Club Sales Autopilot unblocked, remove sales-readiness friction, reconcile paid clubs quickly, protect active customers and reduce churn risk.",
@@ -106,6 +121,7 @@ export async function runScheduledAgentSweep(now = new Date()) {
 
   return {
     ran: true,
+    octoberMission: "active-through-2026-10-31",
     sales,
     salesAttempts: salesAttempt.attempts,
     maintenance,
