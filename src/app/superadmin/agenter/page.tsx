@@ -16,7 +16,7 @@ export default async function AgentsPage() {
 
   const [config, last, sales] = await Promise.all([
     getAgentConfig(),
-    getLastAgentRun("manager"),
+    getLastAgentRun("operator"),
     getSalesAutopilotStatus(),
   ]);
 
@@ -24,7 +24,7 @@ export default async function AgentsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="display text-3xl">AI Agents</h1>
-        <p className="text-slate">Ét sikkert agentlag oven på RacketBuddys eksisterende TypeScript-logik. Den automatiske manager laver højst ét driftsscan i timen.</p>
+        <p className="text-slate">Autopilot Operator kører automatisk hver time og udfører selv godkendte lavrisiko-opgaver. Du behøver ikke køre Manager manuelt for den daglige drift.</p>
       </div>
 
       <AgentSettingsForm
@@ -37,6 +37,22 @@ export default async function AgentsPage() {
         salesDailyLimit={config.salesDailyLimit}
         salesPostalAddress={config.salesPostalAddress}
       />
+
+      <section className="card">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="display text-2xl">Hourly Operations Autopilot</h2>
+            <p className="mt-1 text-sm text-slate">Kører uden klik: betalings-/onboarding-reconciliation, retry af fejlede integrationer, browser-health checks og AI-håndtering af almindelige supporttickets.</p>
+          </div>
+          <span className="text-sm font-bold">{config.enabled && config.apiKeySet ? "Aktiv" : "Ikke klar"}</span>
+        </div>
+        {last ? (
+          <>
+            <p className="mt-3 text-xs font-semibold text-slate">Seneste kørsel: {new Date(last.at).toLocaleString("da-DK", { timeZone: "Europe/Copenhagen" })} · {last.model}</p>
+            <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-6">{last.output}</pre>
+          </>
+        ) : <p className="mt-3 text-sm text-slate">Ingen automatisk operator-kørsel endnu. Den starter fra den eksisterende Render-cron og kører højst én gang i timen.</p>}
+      </section>
 
       <section className="card">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -58,11 +74,11 @@ export default async function AgentsPage() {
               </ul>
             ) : null}
           </div>
-        ) : <p className="mt-3 text-sm text-slate">Ingen salgskørsel endnu. Første automatiske kørsel sker på en hverdag i amerikansk arbejdstid, når API-nøgle, mailopsætning og virksomhedsadresse er klar.</p>}
+        ) : <p className="mt-3 text-sm text-slate">Ingen salgskørsel endnu. Første automatiske kørsel sker på en hverdag i amerikansk arbejdstid, når mailopsætning og virksomhedsadresse er klar.</p>}
       </section>
 
       <section>
-        <h2 className="display mb-3 text-2xl">Specialister</h2>
+        <h2 className="display mb-3 text-2xl">Agenter</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {AGENTS.filter((agent) => agent.id !== "manager").map((agent) => (
             <div key={agent.id} className="card py-4">
@@ -75,16 +91,6 @@ export default async function AgentsPage() {
       </section>
 
       <AgentRunner agents={AGENTS} />
-
-      <section className="card">
-        <h2 className="display text-2xl">Seneste automatiske managerstatus</h2>
-        {last ? (
-          <>
-            <p className="mt-1 text-xs font-semibold text-slate">{new Date(last.at).toLocaleString("da-DK", { timeZone: "Europe/Copenhagen" })} · {last.model}</p>
-            <pre className="mt-3 whitespace-pre-wrap font-sans text-sm leading-6">{last.output}</pre>
-          </>
-        ) : <p className="mt-2 text-sm text-slate">Ingen agentkørsel endnu.</p>}
-      </section>
     </div>
   );
 }
