@@ -6,6 +6,28 @@ import { runSalesAutopilot } from "./sales-autopilot";
 
 const LAST_SWEEP_KEY = "agent:last-scheduled-sweep:v2";
 const MIN_INTERVAL_MS = 60 * 60 * 1000;
+const MAX_PHASE_ATTEMPTS = 3;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function retryPhase<T>(name: string, fn: () => Promise<T>) {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= MAX_PHASE_ATTEMPTS; attempt++) {
+    try {
+      const value = await fn();
+      return { ok: true as const, value, attempts: attempt };
+    } catch (error) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`${name} failed (attempt ${attempt}/${MAX_PHASE_ATTEMPTS}):`, message);
+      if (attempt < MAX_PHASE_ATTEMPTS) await sleep(attempt * 1500);
+    }
+  }
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  return { ok: false as const, error: message, attempts: MAX_PHASE_ATTEMPTS };
+}
 
 export async function runScheduledAgentSweep(now = new Date()) {
   const config = await getAgentConfig();
@@ -31,26 +53,17 @@ export async function runScheduledAgentSweep(now = new Date()) {
   // during US business hours. The Sales Autopilot enforces its own daily quota,
   // verification, deduplication and unsubscribe rules. Player/coach acquisition is
   // handled by the dedicated RacketBuddy Growth Outreach automation outside this process.
-  let sales: Awaited<ReturnType<typeof runSalesAutopilot>> | { ran: false; reason: "error"; error: string };
-  try {
-    sales = await runSalesAutopilot(now);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("Scheduled RacketBuddy sales autopilot failed:", message);
-    sales = { ran: false, reason: "error", error: message };
-  }
+  const salesAttempt = await retryPhase("Scheduled RacketBuddy sales autopilot", () => runSalesAutopilot(now));
+  const sales = salesAttempt.ok
+    ? salesAttempt.value
+    : { ran: false as const, reason: "error" as const, error: salesAttempt.error, attempts: salesAttempt.attempts };
 
-  let maintenance: Awaited<ReturnType<typeof runDeterministicAgentMaintenance>> | { error: string };
-  try {
-    maintenance = await runDeterministicAgentMaintenance();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("Hourly deterministic autopilot maintenance failed:", message);
-    maintenance = { error: message };
-  }
+  const maintenanceAttempt = await retryPhase("Hourly deterministic autopilot maintenance", () => runDeterministicAgentMaintenance());
+  const maintenance = maintenanceAttempt.ok
+    ? maintenanceAttempt.value
+    : { error: maintenanceAttempt.error, attempts: maintenanceAttempt.attempts };
 
-  let operator: { ok: boolean; model?: string; error?: string } = { ok: false };
-  try {
+  const operatorAttempt = await retryPhase("Scheduled RacketBuddy operator", async () => {
     const result = await runRacketBuddyAgent(
       "operator",
       [
@@ -61,6 +74,7 @@ export async function runScheduledAgentSweep(now = new Date()) {
         "Treat player growth and coach growth as core marketplace objectives: surface activation/retention blockers, missing coach supply, weak player activity and anything that makes the marketplace less useful.",
         "Routine onboarding, failed integrations and ordinary support should be handled by you when evidence is sufficient.",
         "Do not attempt Render deployments from inside this runtime. Production deploy monitoring/recovery is handled by the separate connected GitHub + Render production automation, so a missing RENDER_API_KEY is not an owner blocker.",
+        "If a safe tool call fails transiently, retry it before declaring a blocker. Do not hand routine retry work back to the owner.",
         "The autonomous club-sales phase already ran with this result:",
         JSON.stringify(sales),
         "The deterministic maintenance phase already ran with this result:",
@@ -69,12 +83,34 @@ export async function runScheduledAgentSweep(now = new Date()) {
       ].join("\n"),
       { automatic: true }
     );
-    operator = { ok: true, model: result.model };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("Scheduled RacketBuddy operator failed:", message);
-    operator = { ok: false, error: message };
+    return { model: result.model };
+  });
+
+  const operator = operatorAttempt.ok
+    ? { ok: true as const, model: operatorAttempt.value.model, attempts: operatorAttempt.attempts }
+    : { ok: false as const, error: operatorAttempt.error, attempts: operatorAttempt.attempts };
+
+  // If a phase still failed after its in-run retries, make the next sync-cron
+  // eligible to try again instead of waiting a full hour. The cron itself runs
+  // every 15 minutes, so persistent transient failures keep getting retried
+  // without creating a tight/infinite loop inside one request.
+  const needsRetry = !salesAttempt.ok || !maintenanceAttempt.ok || !operatorAttempt.ok;
+  if (needsRetry) {
+    const retryEligibleAt = new Date(now.getTime() - MIN_INTERVAL_MS + 14 * 60 * 1000);
+    await db.platformSetting.upsert({
+      where: { key: LAST_SWEEP_KEY },
+      create: { key: LAST_SWEEP_KEY, value: retryEligibleAt.toISOString() },
+      update: { value: retryEligibleAt.toISOString() },
+    });
   }
 
-  return { ran: true, sales, maintenance, operator };
+  return {
+    ran: true,
+    sales,
+    salesAttempts: salesAttempt.attempts,
+    maintenance,
+    maintenanceAttempts: maintenanceAttempt.attempts,
+    operator,
+    retryScheduled: needsRetry,
+  };
 }
