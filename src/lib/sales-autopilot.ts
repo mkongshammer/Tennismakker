@@ -172,7 +172,7 @@ async function discoverProspects(apiKey: string, model: string, wanted: number):
     tool_choice: "required",
     text: { format: { type: "json_schema", name: "racketbuddy_club_prospects", strict: true, schema } },
     max_output_tokens: 5000,
-    input: `Use live web search to find ${wanted} US racket-sports clubs that are plausible customers for RacketBuddy, a court-booking and club-management platform. Target independent/community tennis, padel, pickleball, badminton or multi-racquet clubs. Prefer clubs with multiple courts, memberships, lessons, guest bookings or an existing booking workflow. Avoid schools, government departments, giant national chains, software vendors and clubs already clearly using RacketBuddy.\n\nFor every prospect, use ONLY a public business contact email visibly published on that club's own official website. Never infer an email pattern, never use a private/personal email found on a people-search site, and never use a directory as the source. website must be the official club website. sourceUrl must be the exact page on that same official website where the email is published. hook must be one short factual sentence based on the official site that makes the outreach relevant. If you cannot verify these fields, omit that club. Return structured JSON only.`,
+    input: `Use live web search to find ${wanted} US racket-sports clubs that are plausible customers for RacketBuddy, a court-booking and club-management platform. Target independent/community tennis, padel, pickleball, badminton or multi-racquet clubs. Prefer clubs with multiple courts, memberships, lessons, guest bookings or an existing booking workflow. Prioritize clubs whose current booking/admin setup appears fragmented, dated or unnecessarily manual, but do not invent weaknesses that are not visible on their official site. Avoid schools, government departments, giant national chains, software vendors and clubs already clearly using RacketBuddy.\n\nFor every prospect, use ONLY a public business contact email visibly published on that club's own official website. Never infer an email pattern, never use a private/personal email found on a people-search site, and never use a directory as the source. website must be the official club website. sourceUrl must be the exact page on that same official website where the email is published. hook must be one short factual sentence based on the official site that makes the outreach relevant. If you cannot verify these fields, omit that club. Return structured JSON only.`,
   });
 
   const parsed = JSON.parse(responseText(response) || "{}") as { prospects?: Prospect[] };
@@ -221,7 +221,7 @@ async function sendSalesMail(input: { to: string; replyTo: string; subject: stri
   }
 }
 
-async function markSent(prospect: Prospect, at: Date) {
+async function markSent(prospect: Prospect, at: Date, easternDate: string) {
   const record = JSON.stringify({
     clubName: prospect.clubName,
     website: prospect.website,
@@ -229,10 +229,16 @@ async function markSent(prospect: Prospect, at: Date) {
     sourceUrl: prospect.sourceUrl,
     sentAt: at.toISOString(),
   });
+  const contactHash = hash(prospect.contactEmail);
   await db.$transaction([
-    db.platformSetting.upsert({ where: { key: `sales:sent:email:${hash(prospect.contactEmail)}` }, create: { key: `sales:sent:email:${hash(prospect.contactEmail)}`, value: record }, update: { value: record } }),
+    db.platformSetting.upsert({ where: { key: `sales:sent:email:${contactHash}` }, create: { key: `sales:sent:email:${contactHash}`, value: record }, update: { value: record } }),
     db.platformSetting.upsert({ where: { key: `sales:sent:website:${hash(normalizeHost(prospect.website))}` }, create: { key: `sales:sent:website:${hash(normalizeHost(prospect.website))}`, value: record }, update: { value: record } }),
+    db.platformSetting.upsert({ where: { key: `sales:daily:${easternDate}:${contactHash}` }, create: { key: `sales:daily:${easternDate}:${contactHash}`, value: record }, update: { value: record } }),
   ]);
+}
+
+async function salesSentToday(easternDate: string) {
+  return db.platformSetting.count({ where: { key: { startsWith: `sales:daily:${easternDate}:` } } }).catch(() => 0);
 }
 
 async function saveReport(report: SalesAutopilotReport) {
@@ -264,15 +270,18 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   if (config.salesPostalAddress.trim().length < 8) return saveReport({ ...base, reason: "postal-address-missing", detail: "Add RacketBuddy's valid business postal address in AI Agents before commercial outreach can send." });
 
   const schedule = easternSchedule(now);
-  if (!options?.force && !schedule.inWindow) return { ...base, reason: "outside-us-business-hours" };
-  const dayKey = `sales:autopilot:day:${schedule.date}`;
-  if (!options?.force) {
-    try {
-      await db.platformSetting.create({ data: { key: dayKey, value: now.toISOString() } });
-    } catch {
-      return { ...base, reason: "already-ran-today" };
-    }
+  if (!options?.force && !schedule.inWindow) return saveReport({ ...base, reason: "outside-us-business-hours" });
+
+  const limit = Math.max(1, Math.min(10, config.salesDailyLimit));
+  const sentBeforeRun = await salesSentToday(schedule.date);
+  if (sentBeforeRun >= limit) {
+    return saveReport({
+      ...base,
+      reason: "daily-limit-reached",
+      detail: `Daily verified outreach quota already filled: ${sentBeforeRun}/${limit}.`,
+    });
   }
+  const remaining = limit - sentBeforeRun;
 
   const readiness = await salesReadiness();
   const blocked = readiness.filter((check) => check.status === "blocked");
@@ -284,10 +293,12 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   });
 
   const prices = await clubSignupPriceBook();
-  const limit = Math.max(1, Math.min(10, config.salesDailyLimit));
   let prospects: Prospect[] = [];
   try {
-    prospects = await discoverProspects(config.apiKey, config.smartModel, Math.max(12, limit * 4));
+    // Search broadly on every eligible hourly cycle until the verified daily
+    // outreach quota is actually filled. A weak discovery run therefore no
+    // longer wastes the entire sales day.
+    prospects = await discoverProspects(config.apiKey, config.smartModel, Math.max(16, remaining * 8));
   } catch (error) {
     return saveReport({ ...base, ran: true, reason: "discovery-failed", detail: error instanceof Error ? error.message : String(error) });
   }
@@ -297,7 +308,7 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   const seen = new Set<string>();
 
   for (const raw of prospects) {
-    if (base.sent >= limit) break;
+    if (base.sent >= remaining) break;
     const prospect: Prospect = {
       clubName: String(raw.clubName || "").trim(), sport: String(raw.sport || "").trim(), city: String(raw.city || "").trim(),
       state: String(raw.state || "").trim(), website: String(raw.website || "").trim(), contactEmail: String(raw.contactEmail || "").trim().toLowerCase(),
@@ -334,15 +345,16 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
 
     const sent = await sendSalesMail({ to: prospect.contactEmail, replyTo: settings.ordersEmail, subject, body });
     if (!sent) { base.failed++; continue; }
-    await markSent(prospect, now);
+    await markSent(prospect, now, schedule.date);
     base.sent++;
     base.sentTo.push({ clubName: prospect.clubName, website: prospect.website, at: now.toISOString() });
   }
 
+  const totalToday = sentBeforeRun + base.sent;
   return saveReport({
     ...base,
     detail: base.sent
-      ? `Sent ${base.sent} verified first-touch email${base.sent === 1 ? "" : "s"}. No automatic follow-up is sent until reply detection is connected.`
-      : "No eligible, publicly verified club contact passed all checks in this run.",
+      ? `Sent ${base.sent} verified first-touch email${base.sent === 1 ? "" : "s"} this run. Daily progress: ${totalToday}/${limit}. The hourly agent will keep prospecting during US business hours until the quota is filled.`
+      : `No eligible, publicly verified club contact passed all checks in this run. Daily progress remains ${totalToday}/${limit}; the next hourly cycle will try again during US business hours.`,
   });
 }
