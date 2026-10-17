@@ -18,7 +18,8 @@ const OCTOBER_MISSION = [
   "6. Answer relevant inbound club/player/coach emails within one agent cycle whenever the answer is routine and supported by evidence.",
   "7. No qualified sales opportunity may die from missing follow-up, onboarding friction or a routine operational blocker.",
   "Primary proof-of-autonomy goal: complete at least one club journey from autonomous prospecting -> outreach -> reply -> onboarding -> payment/live launch without owner-driven day-to-day execution.",
-  "Priority after critical reliability/security issues: revenue -> clubs -> coaches -> players -> retention -> lower-impact housekeeping.",
+  "MARKET-DENSITY RULE: player and coach acquisition must be concentrated around the same clubs and local markets RacketBuddy is actively trying to land. Prioritize in this order: paying/onboarding clubs -> replied/high-intent club prospects -> recently contacted qualified club prospects. Build local supply and demand around those clubs instead of scattering players and coaches randomly across the country. When choosing growth actions, prefer coaches, leagues, communities and players in the same city/metro or practical catchment area as the current club pipeline.",
+  "Priority after critical reliability/security issues: revenue -> clubs -> local coaches around target clubs -> local players around target clubs -> retention -> lower-impact housekeeping.",
   "Do not stop working toward unmet targets. On every scheduled cycle, identify the largest remaining gap and execute the highest-impact safe actions available. If a transient failure blocks progress, retry according to the retry policy and continue on the next eligible cycle. Only stop pursuing a target when it is achieved, the deadline has passed, or a genuine blocker requires owner/legal/financial judgment.",
 ].join("\n");
 
@@ -66,7 +67,8 @@ export async function runScheduledAgentSweep(now = new Date()) {
   // CLUB SALES FIRST. Every hourly cycle gives autonomous club prospecting first chance
   // during US business hours. The Sales Autopilot enforces its own daily quota,
   // verification, deduplication and unsubscribe rules. Player/coach acquisition is
-  // handled by the dedicated RacketBuddy Growth Outreach automation outside this process.
+  // handled by the dedicated RacketBuddy Growth Outreach automation and should cluster
+  // around the same club markets being sold/onboarded.
   const salesAttempt = await retryPhase("Scheduled RacketBuddy sales autopilot", () => runSalesAutopilot(now));
   const sales = salesAttempt.ok
     ? salesAttempt.value
@@ -83,10 +85,11 @@ export async function runScheduledAgentSweep(now = new Date()) {
       [
         "Run the hourly RacketBuddy autonomous operations cycle now.",
         OCTOBER_MISSION,
-        "Critical incidents come first. After that, growth and revenue are the dominant priorities: sell to clubs, get won clubs live, attract and retain players, and attract and activate coaches.",
+        "Critical incidents come first. After that, growth and revenue are the dominant priorities: sell to clubs, get won clubs live, and create dense local marketplaces around those clubs.",
         "Do not produce a to-do list for the owner. Inspect live state and execute every safe fix available through your action tools.",
         "Keep Club Sales Autopilot unblocked, remove sales-readiness friction, reconcile paid clubs quickly, protect active customers and reduce churn risk.",
-        "Treat player growth and coach growth as core marketplace objectives: surface activation/retention blockers, missing coach supply, weak player activity and anything that makes the marketplace less useful.",
+        "Treat player growth and coach growth as local market-seeding objectives tied to the club pipeline. Prioritize the city/metro/catchment areas of paying/onboarding clubs first, then replied/high-intent prospects, then recently contacted qualified prospects. Do not optimize for scattered nationwide signup counts if they do not strengthen markets around target clubs.",
+        "Surface activation/retention blockers, missing coach supply, weak player activity and anything that makes those target-club markets less useful.",
         "Routine onboarding, failed integrations and ordinary support should be handled by you when evidence is sufficient.",
         "Do not attempt Render deployments from inside this runtime. Production deploy monitoring/recovery is handled by the separate connected GitHub + Render production automation, so a missing RENDER_API_KEY is not an owner blocker.",
         "If a safe tool call fails transiently, retry it before declaring a blocker. Do not hand routine retry work back to the owner.",
