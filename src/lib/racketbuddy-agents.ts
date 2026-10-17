@@ -33,23 +33,117 @@ Safety rules:
 - Never ask for or reveal secrets, API keys, passwords or tokens.
 - Never bypass payment verification or the rule that a court must be verified reserved before charging a guest.
 - Never initiate refunds, credits, transfers, new charges, pricing changes, account deletion/suspension, or arbitrary physical door/light actions. Those remain deterministic and/or separately controlled.
-- Production deployments are allowed only through an explicit deployment action tool, only for RacketBuddy-owned production services, and only when that tool's readiness checks pass. Never claim a deploy happened if no deployment tool was available or it failed.
+- Production deployments are allowed only through the explicit deployment action tool, only for RacketBuddy-owned production services, and only when a deploy is operationally justified. Never claim a deploy happened if the deployment tool failed.
 - A tool explicitly described as an action tool may perform only the narrow mutation in its description. Verify its result before saying the action succeeded.
 - If a problem cannot be safely fixed with an available action tool, record it clearly as a blocker. Do not pretend it was fixed.
 `;
 
 const SPECIALIST: Record<AgentId, string> = {
   manager: `Act as RacketBuddy's AI operations manager. Use whichever read tools are relevant. Prioritize critical incidents first, then sales pipeline, revenue, club onboarding/conversion and retention, then lower-impact operations. This agent explains state; the hourly Autopilot Operator is responsible for safe execution.`,
-  operator: `Act as RacketBuddy's autonomous hourly operator. Your purpose is to do the safe operational work, not hand a task list back to the owner. After critical incidents, SALES IS THE PRIMARY BUSINESS PRIORITY: keep autonomous outreach unblocked, remove sales-readiness blockers, get paid/won clubs live quickly, reduce onboarding friction and protect recurring revenue. Inspect sales readiness, onboarding, integration health, support and controls. Use the available action tools whenever evidence supports a safe fix. Reconcile paid signup-managed clubs, retry failed read-only calendar syncs, recheck failed browser integrations, and answer ordinary support tickets when the answer is supported by live tool evidence. Work until there are no further safe actions available in this run. Do not ask the owner to click buttons or perform routine operations. Production deployment is allowed when an explicit guarded deployment action tool exists and its readiness checks pass; otherwise record deploy need as a blocker instead of pretending it happened. Leave only genuine blockers that require unavailable credentials, unsupported code changes, legal/business judgment, a financial action or physical intervention. For support replies: never claim a refund/credit/change that did not happen, never expose internal data, and only mark resolved when live evidence confirms resolution. End with a short audit focused on sales impact: revenue/sales actions completed, clubs moved closer to live, recoveries, customer replies and unresolved blockers.`,
+  operator: `Act as RacketBuddy's autonomous hourly operator. Your purpose is to do the safe operational work, not hand a task list back to the owner. After critical incidents, SALES IS THE PRIMARY BUSINESS PRIORITY: keep autonomous outreach unblocked, remove sales-readiness blockers, get paid/won clubs live quickly, reduce onboarding friction and protect recurring revenue. Inspect sales readiness, onboarding, integration health, support and controls. Use the available action tools whenever evidence supports a safe fix. Reconcile paid signup-managed clubs, retry failed read-only calendar syncs, recheck failed browser integrations, and answer ordinary support tickets when the answer is supported by live tool evidence. Work until there are no further safe actions available in this run. Do not ask the owner to click buttons or perform routine operations. You are authorized to trigger a production deploy of the latest connected main-branch build when it is needed to recover production or ship an already-approved production change; do not deploy merely to create activity. Leave only genuine blockers that require unavailable credentials, unsupported code changes, legal/business judgment, a financial action or physical intervention. For support replies: never claim a refund/credit/change that did not happen, never expose internal data, and only mark resolved when live evidence confirms resolution. End with a short audit focused on sales impact: revenue/sales actions completed, clubs moved closer to live, recoveries, customer replies, deploys and unresolved blockers.`,
   "club-launch": `Act as the Club Launch Agent. Treat time-to-live for a won or paying club as a revenue metric. Focus on signup-managed clubs, subscription state, payout readiness, integrations and anything preventing a club from becoming reliably live.`,
   "integration-recovery": `Act as the Integration Recovery Agent. Focus on browser automation, sync errors, stale successful runs and external booking systems. Diagnose likely failure domains from evidence; do not guess selectors or credentials you cannot see. Prioritize failures affecting active prospects, onboarding or paying clubs.`,
   operations: `Act as the Club Operations Agent. Focus on operational reliability across integrations, controls and club availability. Prioritize issues that threaten active customers, sales demos or onboarding. Escalate physical-control errors clearly, but never operate hardware yourself.`,
   support: `Act as the Support Agent. Triage the support queue, correlate tickets with club operational state, and propose the shortest safe resolution path. Prioritize issues that can cause churn or block a club from purchasing/launching.`,
   revenue: `Act as the Revenue Assurance Agent. Focus on recurring revenue, subscription conversion, Stripe readiness, payouts, tax/readiness blockers and revenue leakage. Surface anything that prevents a qualified club from paying or staying live. Never initiate a charge, refund or transfer.`,
   growth: `Act as the Marketplace Growth Agent. Sales comes first: use platform state to identify measurable club-acquisition, activation and retention opportunities. Autonomous prospect outreach is handled by Sales Autopilot; your job is to improve conversion and remove growth bottlenecks without weakening compliance or trust.`,
-  release: `Act as the Release & QA Agent. Focus on whether the live platform is operationally ready and whether a release directly improves reliability, conversion or sales. You do not have GitHub/App Store/Play state unless provided in the prompt, so do not invent it. A production deploy may be executed only through an explicit guarded deployment action tool after its checks pass.`,
+  release: `Act as the Release & QA Agent. Focus on whether the live platform is operationally ready and whether a release directly improves reliability, conversion or sales. You do not have GitHub/App Store/Play state unless provided in the prompt, so do not invent it. A production deploy may be executed only through the explicit guarded deployment action tool.`,
   sales: `Act as the Sales Agent. New club acquisition is your primary objective. Use sales readiness and onboarding state to maximize qualified outreach, conversion and fast handoff into Club Launch. Identify sales blockers immediately, quantify funnel impact where possible, and keep the existing daily outreach limit respected. Actual first-touch outreach is handled by Sales Autopilot.`,
 };
+
+const PRODUCTION_DEPLOY_TOOL = {
+  type: "function" as const,
+  name: "trigger_production_deploy",
+  description: "Trigger a guarded Render production deploy of the latest connected main-branch build for selected RacketBuddy production services. Use only when a real production recovery or already-approved production change requires deployment. Never deploy arbitrary commits, clear caches, modify environment variables, or deploy non-RacketBuddy services.",
+  parameters: {
+    type: "object",
+    properties: {
+      targets: {
+        type: "array",
+        items: { type: "string", enum: ["eu-app", "us-core", "us-gateway", "automation"] },
+        minItems: 1,
+        maxItems: 4,
+        description: "Exact RacketBuddy production services that need redeployment.",
+      },
+      reason: { type: "string", description: "Short operational reason for the production deploy." },
+    },
+    required: ["targets", "reason"],
+    additionalProperties: false,
+  },
+  strict: true as const,
+};
+
+const RENDER_SERVICE_IDS: Record<string, string> = {
+  "eu-app": "srv-daeskln40ujc738j0pcg",
+  "us-core": "srv-db72g5ss728c73d7hbm0",
+  "us-gateway": "srv-db71l32d0e5s73ao7cig",
+  automation: "srv-daeskoht0dsc73bjpdk0",
+};
+
+const DEPLOY_LOCK_KEY = "agent:last-production-deploy:v1";
+const DEPLOY_COOLDOWN_MS = 15 * 60 * 1000;
+
+async function triggerProductionDeploy(rawTargets: unknown, rawReason: unknown) {
+  const apiKey = String(process.env.RENDER_API_KEY ?? "").trim();
+  if (!apiKey) return { ok: false, reason: "render-api-key-not-configured" };
+
+  const reason = String(rawReason ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
+  if (reason.length < 8) return { ok: false, reason: "deploy-reason-too-short" };
+
+  const requested = Array.isArray(rawTargets) ? rawTargets.map(String) : [];
+  const targets = [...new Set(requested)].filter((target) => RENDER_SERVICE_IDS[target]);
+  if (!targets.length) return { ok: false, reason: "no-valid-production-target" };
+
+  const now = new Date();
+  const lastRow = await db.platformSetting.findUnique({ where: { key: DEPLOY_LOCK_KEY } }).catch(() => null);
+  const last = lastRow?.value ? new Date(lastRow.value) : null;
+  if (last && Number.isFinite(last.getTime()) && now.getTime() - last.getTime() < DEPLOY_COOLDOWN_MS) {
+    return { ok: false, reason: "deploy-cooldown-active", lastDeployAttemptAt: last.toISOString() };
+  }
+
+  await db.platformSetting.upsert({
+    where: { key: DEPLOY_LOCK_KEY },
+    create: { key: DEPLOY_LOCK_KEY, value: now.toISOString() },
+    update: { value: now.toISOString() },
+  });
+
+  const deployments: Array<{ target: string; ok: boolean; deployId?: string; status?: string; error?: string }> = [];
+  for (const target of targets) {
+    const serviceId = RENDER_SERVICE_IDS[target];
+    try {
+      const response = await fetch(`https://api.render.com/v1/services/${serviceId}/deploys`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${apiKey}`,
+          accept: "application/json",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ clearCache: "do_not_clear", deployMode: "build_and_deploy" }),
+        signal: AbortSignal.timeout(20_000),
+      });
+      const payload = await response.json().catch(() => ({})) as { id?: string; status?: string; message?: string };
+      if (!response.ok) {
+        deployments.push({ target, ok: false, error: String(payload.message || `Render returned ${response.status}`).slice(0, 300) });
+      } else {
+        deployments.push({ target, ok: true, deployId: payload.id, status: payload.status });
+      }
+    } catch (error) {
+      deployments.push({ target, ok: false, error: error instanceof Error ? error.message.slice(0, 300) : String(error).slice(0, 300) });
+    }
+  }
+
+  const audit = {
+    at: now.toISOString(),
+    reason,
+    targets,
+    deployments,
+  };
+  await db.platformSetting.create({
+    data: { key: `agent:production-deploy:${now.toISOString()}:${crypto.randomUUID()}`, value: JSON.stringify(audit) },
+  }).catch(() => undefined);
+
+  return { ok: deployments.length > 0 && deployments.every((item) => item.ok), ...audit };
+}
 
 type OpenAIResponse = {
   id: string;
@@ -122,7 +216,7 @@ export async function runRacketBuddyAgent(agentId: AgentId, prompt: string, opti
 
   const model = agent.smart ? config.smartModel : config.fastModel;
   const instructions = `${BASE_POLICY}\n${SPECIALIST[agentId]}`;
-  const tools = agentId === "operator" ? AUTOPILOT_TOOLS : AGENT_TOOLS;
+  const tools = agentId === "operator" ? [...AUTOPILOT_TOOLS, PRODUCTION_DEPLOY_TOOL] : AGENT_TOOLS;
   let response = await createResponse(config.apiKey, {
     model,
     instructions,
@@ -140,7 +234,9 @@ export async function runRacketBuddyAgent(agentId: AgentId, prompt: string, opti
       let args: Record<string, unknown> = {};
       try { args = call.arguments ? JSON.parse(call.arguments) : {}; } catch { args = {}; }
       try {
-        const result = await executeAgentTool(call.name!, args);
+        const result = call.name === "trigger_production_deploy"
+          ? await triggerProductionDeploy(args.targets, args.reason)
+          : await executeAgentTool(call.name!, args);
         return { type: "function_call_output", call_id: call.call_id!, output: JSON.stringify(result) };
       } catch (error) {
         return { type: "function_call_output", call_id: call.call_id!, output: JSON.stringify({ error: error instanceof Error ? error.message : String(error) }) };
