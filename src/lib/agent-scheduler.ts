@@ -27,9 +27,10 @@ export async function runScheduledAgentSweep(now = new Date()) {
     update: { value: now.toISOString() },
   });
 
-  // SALES FIRST. Every hourly cycle gives autonomous prospecting first chance
+  // CLUB SALES FIRST. Every hourly cycle gives autonomous club prospecting first chance
   // during US business hours. The Sales Autopilot enforces its own daily quota,
-  // verification, deduplication and unsubscribe rules.
+  // verification, deduplication and unsubscribe rules. Player/coach acquisition is
+  // handled by the dedicated RacketBuddy Growth Outreach automation outside this process.
   let sales: Awaited<ReturnType<typeof runSalesAutopilot>> | { ran: false; reason: "error"; error: string };
   try {
     sales = await runSalesAutopilot(now);
@@ -54,12 +55,13 @@ export async function runScheduledAgentSweep(now = new Date()) {
       "operator",
       [
         "Run the hourly RacketBuddy autonomous operations cycle now.",
-        "Critical incidents come first. After that, sales, revenue and getting clubs live are the dominant priorities.",
+        "Critical incidents come first. After that, growth and revenue are the dominant priorities: sell to clubs, get won clubs live, attract and retain players, and attract and activate coaches.",
         "Do not produce a to-do list for the owner. Inspect live state and execute every safe fix available through your action tools.",
-        "Keep Sales Autopilot unblocked, remove sales-readiness friction, reconcile paid clubs quickly, protect active customers and reduce churn risk.",
+        "Keep Club Sales Autopilot unblocked, remove sales-readiness friction, reconcile paid clubs quickly, protect active customers and reduce churn risk.",
+        "Treat player growth and coach growth as core marketplace objectives: surface activation/retention blockers, missing coach supply, weak player activity and anything that makes the marketplace less useful.",
         "Routine onboarding, failed integrations and ordinary support should be handled by you when evidence is sufficient.",
-        "Production deployment is authorized when an explicit guarded deployment action tool exists and its readiness checks pass.",
-        "The autonomous sales phase already ran with this result:",
+        "Do not attempt Render deployments from inside this runtime. Production deploy monitoring/recovery is handled by the separate connected GitHub + Render production automation, so a missing RENDER_API_KEY is not an owner blocker.",
+        "The autonomous club-sales phase already ran with this result:",
         JSON.stringify(sales),
         "The deterministic maintenance phase already ran with this result:",
         JSON.stringify(maintenance),
