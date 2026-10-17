@@ -17,9 +17,9 @@ import { releaseExpiredHolds } from "../../../../lib/payments";
 export const dynamic = "force-dynamic";
 
 /**
- * Fornyelser, engagement-mails og AI-driftsscan køres her sammen med
+ * Fornyelser, engagement-mails og AI-autopilot køres her sammen med
  * kalendersynkroniseringen. Agent-schedulerens egen timelås betyder, at den
- * hyppige sync-cron ikke udløser flere betalte AI-kald end nødvendigt.
+ * hyppige sync-cron kun udløser én fuld autopilot-cyklus pr. time.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -73,10 +73,10 @@ export async function GET(req: Request) {
     return { sent: 0, skipped: 0, reason: "error" };
   });
 
-  // Manager-agenten er read-only og kører højst én gang i timen. Den er helt
-  // passiv, indtil den er slået til fra /superadmin/agenter og har en API-nøgle.
+  // Autopilot kører højst én gang i timen og udfører selv de godkendte,
+  // lavrisiko handlinger. API-nøglen og agentmotoren skal være slået til.
   const agents = await runScheduledAgentSweep().catch((err) => {
-    console.error("AI-driftsscan fejlede:", err);
+    console.error("AI-autopilot fejlede:", err);
     return { ran: false, reason: "error" };
   });
 
