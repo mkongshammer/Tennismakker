@@ -27,6 +27,18 @@ export async function runScheduledAgentSweep(now = new Date()) {
     update: { value: now.toISOString() },
   });
 
+  // SALES FIRST. Every hourly cycle gives autonomous prospecting first chance
+  // during US business hours. The Sales Autopilot enforces its own daily quota,
+  // verification, deduplication and unsubscribe rules.
+  let sales: Awaited<ReturnType<typeof runSalesAutopilot>> | { ran: false; reason: "error"; error: string };
+  try {
+    sales = await runSalesAutopilot(now);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Scheduled RacketBuddy sales autopilot failed:", message);
+    sales = { ran: false, reason: "error", error: message };
+  }
+
   let maintenance: Awaited<ReturnType<typeof runDeterministicAgentMaintenance>> | { error: string };
   try {
     maintenance = await runDeterministicAgentMaintenance();
@@ -42,8 +54,13 @@ export async function runScheduledAgentSweep(now = new Date()) {
       "operator",
       [
         "Run the hourly RacketBuddy autonomous operations cycle now.",
+        "Critical incidents come first. After that, sales, revenue and getting clubs live are the dominant priorities.",
         "Do not produce a to-do list for the owner. Inspect live state and execute every safe fix available through your action tools.",
+        "Keep Sales Autopilot unblocked, remove sales-readiness friction, reconcile paid clubs quickly, protect active customers and reduce churn risk.",
         "Routine onboarding, failed integrations and ordinary support should be handled by you when evidence is sufficient.",
+        "Production deployment is authorized when an explicit guarded deployment action tool exists and its readiness checks pass.",
+        "The autonomous sales phase already ran with this result:",
+        JSON.stringify(sales),
         "The deterministic maintenance phase already ran with this result:",
         JSON.stringify(maintenance),
         "Re-check platform state after taking actions. Leave only genuine blockers that cannot be resolved with the available safe tools.",
@@ -57,16 +74,5 @@ export async function runScheduledAgentSweep(now = new Date()) {
     operator = { ok: false, error: message };
   }
 
-  let sales: Awaited<ReturnType<typeof runSalesAutopilot>> | { ran: false; reason: "error"; error: string };
-  try {
-    // Checked every hourly cycle. Sales Autopilot has its own business-hours,
-    // daily-limit and deduplication locks, so this cannot create duplicate mail.
-    sales = await runSalesAutopilot(now);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("Scheduled RacketBuddy sales autopilot failed:", message);
-    sales = { ran: false, reason: "error", error: message };
-  }
-
-  return { ran: true, maintenance, operator, sales };
+  return { ran: true, sales, maintenance, operator };
 }
