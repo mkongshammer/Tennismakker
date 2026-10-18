@@ -2,7 +2,7 @@ import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
 import { runRacketBuddyAgent } from "./racketbuddy-agents";
 import { runDeterministicAgentMaintenance } from "./racketbuddy-agent-tools";
-import { runSalesAutopilot } from "./sales-autopilot";
+import { getSalesAutopilotStatus, runSalesAutopilot } from "./sales-autopilot";
 
 const LAST_SWEEP_KEY = "agent:last-scheduled-sweep:v2";
 const MIN_INTERVAL_MS = 60 * 60 * 1000;
@@ -53,7 +53,12 @@ export async function runScheduledAgentSweep(now = new Date()) {
   const row = await db.platformSetting.findUnique({ where: { key: LAST_SWEEP_KEY } }).catch(() => null);
   const last = row?.value ? new Date(row.value) : null;
   if (last && Number.isFinite(last.getTime()) && now.getTime() - last.getTime() < MIN_INTERVAL_MS) {
-    return { ran: false, reason: "not-due" };
+    // Pick up a transient discovery outage recorded by an earlier deployment.
+    // Do not run the whole sweep more often than the underlying 15-minute cron.
+    const elapsedMs = now.getTime() - last.getTime();
+    const previousSales = elapsedMs >= 14 * 60_000 ? await getSalesAutopilotStatus() : null;
+    const retryable = previousSales && ["discovery-failed", "no-qualified-prospects", "mail-provider-retryable"].includes(previousSales.reason ?? "");
+    if (!retryable) return { ran: false, reason: "not-due" };
   }
 
   // Claim the hourly slot before paid/network calls. The surrounding sync cron
