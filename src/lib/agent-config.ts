@@ -13,6 +13,7 @@ export type AgentConfig = {
   salesDailyLimit: number;
   salesMarket: "US";
   salesPostalAddress: string;
+  salesLimitVersion?: number;
 };
 
 const DEFAULTS: AgentConfig = {
@@ -20,7 +21,7 @@ const DEFAULTS: AgentConfig = {
   fastModel: "gpt-6-luna",
   smartModel: "gpt-6.1-sol",
   salesEnabled: true,
-  salesDailyLimit: 3,
+  salesDailyLimit: 25,
   salesMarket: "US",
   salesPostalAddress: "",
 };
@@ -28,7 +29,7 @@ const DEFAULTS: AgentConfig = {
 function dailyLimit(value: unknown) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return DEFAULTS.salesDailyLimit;
-  return Math.max(1, Math.min(10, Math.trunc(parsed)));
+  return Math.max(1, Math.min(25, Math.trunc(parsed)));
 }
 
 export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; apiKeySet: boolean }> {
@@ -56,7 +57,7 @@ export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; 
     fastModel: String(stored.fastModel || process.env.RACKETBUDDY_AGENT_FAST_MODEL || sharedAgents?.fastModel || DEFAULTS.fastModel),
     smartModel: String(stored.smartModel || process.env.RACKETBUDDY_AGENT_SMART_MODEL || sharedAgents?.smartModel || DEFAULTS.smartModel),
     salesEnabled: stored.salesEnabled === undefined ? DEFAULTS.salesEnabled : stored.salesEnabled === true,
-    salesDailyLimit: dailyLimit(stored.salesDailyLimit),
+    salesDailyLimit: stored.salesLimitVersion === 2 ? dailyLimit(stored.salesDailyLimit) : stored.salesDailyLimit === 3 ? 25 : dailyLimit(stored.salesDailyLimit),
     salesMarket: "US",
     salesPostalAddress: String(stored.salesPostalAddress ?? "").trim(),
     apiKey,
@@ -81,6 +82,7 @@ export async function saveAgentConfig(input: {
     smartModel: input.smartModel.trim() || DEFAULTS.smartModel,
     salesEnabled: input.salesEnabled ?? current.salesEnabled,
     salesDailyLimit: dailyLimit(input.salesDailyLimit ?? current.salesDailyLimit),
+    salesLimitVersion: 2,
     salesMarket: "US",
     salesPostalAddress: String(input.salesPostalAddress ?? current.salesPostalAddress).trim(),
   };
