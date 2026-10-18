@@ -68,7 +68,7 @@ async function openAI(apiKey: string, body: Record<string, unknown>): Promise<Op
     method: "POST",
     headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(90_000),
+    signal: AbortSignal.timeout(28_000),
   });
   const payload = await response.json() as OpenAIResponse;
   if (!response.ok) throw new Error(payload.error?.message || `OpenAI returned ${response.status}.`);
@@ -186,7 +186,7 @@ async function discoverProspects(apiKey: string, model: string, wanted: number):
     tools: [{ type: "web_search" }],
     tool_choice: "required",
     text: { format: { type: "json_schema", name: "racketbuddy_club_prospects", strict: true, schema } },
-    max_output_tokens: 5000,
+    max_output_tokens: 3200,
     input: `Use live web search to find ${wanted} US racket-sports clubs that are plausible customers for RacketBuddy, a court-booking and club-management platform. Target independent/community tennis, padel, pickleball, badminton or multi-racquet clubs. Prefer clubs with multiple courts, memberships, lessons, guest bookings or an existing booking workflow. Prioritize clubs whose current booking/admin setup appears fragmented, dated or unnecessarily manual, but do not invent weaknesses that are not visible on their official site. Avoid schools, government departments, giant national chains, software vendors and clubs already clearly using RacketBuddy.\n\nFor every prospect, use ONLY a public business contact email visibly published on that club's own official website. Never infer an email pattern, never use a private/personal email found on a people-search site, and never use a directory as the source. website must be the official club website. sourceUrl must be the exact page on that same official website where the email is published. hook must be one short factual sentence based on the official site that makes the outreach relevant. If you cannot verify these fields, omit that club. Return structured JSON only.`,
   });
 
@@ -331,13 +331,30 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
 
   const prices = await clubSignupPriceBook();
   let prospects: Prospect[] = [];
-  try {
-    // Search broadly on every eligible hourly cycle until the verified daily
-    // outreach quota is actually filled. A weak discovery run therefore no
-    // longer wastes the entire sales day.
-    prospects = await discoverProspects(config.apiKey, config.smartModel, Math.max(16, remaining * 8));
-  } catch (error) {
-    return saveReport({ ...base, ran: true, reason: "discovery-failed", detail: error instanceof Error ? error.message : String(error) });
+  let discoveryError = "";
+  // Searching for hundreds of contacts in one web-search request regularly
+  // exceeded the production timeout. Research a small, verifiable batch;
+  // retries are bounded so the 15-minute cron cannot overlap indefinitely.
+  const batchSize = Math.min(8, Math.max(5, remaining));
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      prospects = await discoverProspects(config.apiKey, config.smartModel, batchSize);
+      if (prospects.length) break;
+      discoveryError = "Research returned no candidates.";
+    } catch (error) {
+      discoveryError = error instanceof Error ? error.message : String(error);
+      // Invalid credentials, request or model configuration needs a fix,
+      // not an automatic retry against the same invalid configuration.
+      if (/^.*(returned 40[0134]|returned 422|invalid_api_key|model_not_found)/i.test(discoveryError)) break;
+    }
+    if (attempt < 3) await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+  }
+  if (!prospects.length && discoveryError) {
+    return saveReport({
+      ...base, ran: true,
+      reason: discoveryError === "Research returned no candidates." ? "no-qualified-prospects" : "discovery-failed",
+      detail: `Contact research attempted up to 3 bounded requests (max ${batchSize} leads each). Last result: ${discoveryError.slice(0, 350)}. The next cron cycle can retry safely.`,
+    });
   }
 
   base.ran = true;
