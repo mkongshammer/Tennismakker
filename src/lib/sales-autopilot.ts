@@ -315,7 +315,7 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
   const schedule = easternSchedule(now);
   if (!options?.force && !schedule.inWindow) return { ...base, reason: "outside-us-business-hours" };
 
-  const limit = Math.max(1, Math.min(10, config.salesDailyLimit));
+  const limit = Math.max(1, Math.min(25, config.salesDailyLimit));
   const sentBeforeRun = await salesSentToday(schedule.date);
   if (sentBeforeRun >= limit) {
     return saveReport({
