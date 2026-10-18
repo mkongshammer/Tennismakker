@@ -15,6 +15,7 @@ function harness(input?: {
   const fetchCalls: string[] = [];
   let discoveryAttempts = 0;
   const db = {
+    $transaction: async (operations: Promise<any>[]) => Promise.all(operations),
     platformSetting: {
       create: async (input: any) => { rows.push(input.data); return input.data; },
       updateMany: async () => ({ count: 0 }),
