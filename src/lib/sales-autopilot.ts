@@ -372,9 +372,12 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
   base.discovered = prospects.length;
   const seen = new Set<string>();
   const sendErrors: string[] = [];
+  const verifiedProspects: Prospect[] = [];
 
+  // Verify at least three distinct prospects before attempting the first
+  // outbound email, as required by the sales workflow.
   for (const raw of prospects) {
-    if (base.sent >= remaining) break;
+    if (verifiedProspects.length >= Math.max(3, remaining)) break;
     const prospect: Prospect = {
       clubName: String(raw.clubName || "").trim(), sport: String(raw.sport || "").trim(), city: String(raw.city || "").trim(),
       state: String(raw.state || "").trim(), website: String(raw.website || "").trim(), contactEmail: String(raw.contactEmail || "").trim().toLowerCase(),
@@ -386,7 +389,18 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
     if (await alreadyContacted(prospect)) { base.skipped++; continue; }
     if (!(await verifyEmailPublished(prospect))) { base.skipped++; continue; }
     base.verified++;
+    verifiedProspects.push(prospect);
+  }
 
+  if (verifiedProspects.length < 3) {
+    return saveReport({
+      ...base,
+      reason: "insufficient-verified-prospects",
+      detail: `Verified ${verifiedProspects.length}/3 new, distinct official club contacts before sending. No email attempted. Another batch will be researched at the next cron cycle.`,
+    });
+  }
+
+  for (const prospect of verifiedProspects.slice(0, remaining)) {
     const unsubscribe = await createUnsubscribe(prospect, settings.appUrl);
     const customLine = prices.USD.custom ? ` Custom club-specific setup is available when a club needs integrations or tailored features.` : "";
     const body = [
