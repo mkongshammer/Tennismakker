@@ -1,0 +1,30 @@
+name: Sales outreach regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/lib/sales-autopilot.ts'
+      - 'src/lib/sales-autopilot.test.ts'
+      - 'src/app/superadmin/agenter/**'
+      - '.github/workflows/sales-outreach-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sales-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Verify regression tests
+        run: node --import tsx --test src/lib/sales-autopilot.test.ts
+      - name: Type-check application
+        run: npx tsc --noEmit
