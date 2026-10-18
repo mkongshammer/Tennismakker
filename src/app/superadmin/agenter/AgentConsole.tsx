@@ -64,8 +64,8 @@ export function AgentSettingsForm({
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block">
             <span className="text-sm font-bold">Nye klubmails pr. dag</span>
-            <input type="number" min={1} max={10} name="salesDailyLimit" defaultValue={salesDailyLimit} className="input mt-1" />
-            <span className="mt-1 block text-xs text-slate">Målet er 3 om dagen, også i weekender. Udsendelse sker kun i amerikansk dagtid. Resend-mailnøglen indtastes under Platformopsætning, ikke her.</span>
+            <input type="number" min={1} max={25} name="salesDailyLimit" defaultValue={salesDailyLimit} className="input mt-1" />
+            <span className="mt-1 block text-xs text-slate">Målet er op til 25 verificerede nye klubkontakter om dagen, også i weekender. Udsendelse sker kun i amerikansk dagtid. Resend-mailnøglen indtastes under Platformopsætning, ikke her.</span>
           </label>
           <label className="block">
             <span className="text-sm font-bold">Marked</span>
