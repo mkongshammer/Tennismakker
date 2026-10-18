@@ -9,9 +9,11 @@ function harness(input?: {
   dailyCount?: number;
   prospects?: Array<Record<string, string>>;
   providerStatus?: number;
+  discoveryFailures?: number;
 }) {
   const rows: any[] = [];
   const fetchCalls: string[] = [];
+  let discoveryAttempts = 0;
   const db = {
     platformSetting: {
       create: async (input: any) => { rows.push(input.data); return input.data; },
@@ -47,6 +49,8 @@ function harness(input?: {
     const url = String(inputUrl);
     fetchCalls.push(url);
     if (url.includes("api.openai.com")) {
+      discoveryAttempts++;
+      if (discoveryAttempts <= (input?.discoveryFailures ?? 0)) throw new Error("Research service timed out");
       return new Response(JSON.stringify({
         output_text: JSON.stringify({ prospects: input?.prospects ?? [] }),
       }), { status: 200 });
@@ -114,5 +118,34 @@ test("Unverified Resend sender is reported as a failure, never a sent email", as
     assert.equal(result.failed, 1);
     assert.ok(result.detail?.includes("Resend HTTP 403"));
     assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 1);
+  } finally { h.restore(); }
+});
+
+
+test("Transient discovery failures are retried before attempting email delivery", async () => {
+  const h = harness({
+    discoveryFailures: 1,
+    prospects: [{
+      clubName: "Example Club", sport: "tennis", city: "Austin", state: "TX",
+      website: "https://club.example", sourceUrl: "https://club.example/contact",
+      contactEmail: "hello@club.example", hook: "You offer tennis courts.",
+    }],
+  });
+  try {
+    const result = await h.module.runSalesAutopilot(new Date("2026-10-18T14:00:00Z"));
+    assert.equal(result.sent, 1);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.openai.com")).length, 2);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 1);
+  } finally { h.restore(); }
+});
+
+test("Exhausted discovery retries fail visibly without attempting any send", async () => {
+  const h = harness({ discoveryFailures: 3 });
+  try {
+    const result = await h.module.runSalesAutopilot(new Date("2026-10-18T14:00:00Z"));
+    assert.equal(result.reason, "discovery-failed");
+    assert.equal(result.sent, 0);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.openai.com")).length, 3);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 0);
   } finally { h.restore(); }
 });
