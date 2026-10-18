@@ -3,6 +3,7 @@ import { getCurrentUser } from "../../../lib/session";
 import { getAgentConfig, maskAgentKey } from "../../../lib/agent-config";
 import { AGENTS, getLastAgentRun } from "../../../lib/racketbuddy-agents";
 import { getSalesAutopilotStatus } from "../../../lib/sales-autopilot";
+import { getSettings } from "../../../lib/settings";
 import { AgentRunner, AgentSettingsForm } from "./AgentConsole";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +15,11 @@ export default async function AgentsPage() {
     return <div className="card mx-auto max-w-md text-center"><p className="font-bold">Ikke adgang</p><p className="mt-1 text-sm text-slate">Denne side er kun for RacketBuddys administratorer.</p></div>;
   }
 
-  const [config, last, sales] = await Promise.all([
+  const [config, last, sales, mailSettings] = await Promise.all([
     getAgentConfig(),
     getLastAgentRun("operator"),
     getSalesAutopilotStatus(),
+    getSettings(),
   ]);
 
   return (
@@ -58,9 +60,14 @@ export default async function AgentsPage() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 className="display text-2xl">Sales Autopilot</h2>
-            <p className="mt-1 text-sm text-slate">USA · op til {config.salesDailyLimit} verificerede nye klubkontakter pr. hverdag · engelske mails.</p>
+            <p className="mt-1 text-sm text-slate">USA · op til {config.salesDailyLimit} verificerede nye klubkontakter pr. dag i amerikansk arbejdstid · engelske mails.</p>
           </div>
-          <span className="text-sm font-bold">{config.salesEnabled ? "Aktiv" : "Slået fra"}</span>
+          <span className="text-sm font-bold">{!config.salesEnabled ? "Slået fra" : !config.apiKeySet ? "OpenAI-nøgle mangler" : !mailSettings.emailApiKey ? "Resend-nøgle mangler" : "Aktiveret"}</span>
+        </div>
+        <div className="mt-3 rounded-lg border border-slate/20 p-3 text-sm">
+          <p><span className="font-bold">Mailudbyder:</span> Resend · {mailSettings.emailApiKey ? "API-nøgle registreret" : "API-nøgle mangler"}</p>
+          <p><span className="font-bold">Afsender:</span> {mailSettings.emailFrom}</p>
+          <p className="mt-1 text-xs text-slate">OpenAI-nøglen ovenfor bruges kun til research og AI. For faktisk afsendelse skal Resend-nøglen og et verificeret afsenderdomæne være konfigureret under <a href="/superadmin/opsaetning" className="underline">Platformopsætning</a>. En registreret nøgle er ikke det samme som verificeret levering; læs seneste salgsrapport nedenfor.</p>
         </div>
         {sales ? (
           <div className="mt-4 space-y-2 text-sm">
@@ -74,7 +81,7 @@ export default async function AgentsPage() {
               </ul>
             ) : null}
           </div>
-        ) : <p className="mt-3 text-sm text-slate">Ingen salgskørsel endnu. Første automatiske kørsel sker på en hverdag i amerikansk arbejdstid, når mailopsætning og virksomhedsadresse er klar.</p>}
+        ) : <p className="mt-3 text-sm text-slate">Ingen salgskørsel endnu. Første automatiske kørsel sker i amerikansk arbejdstid, når OpenAI og mailudbyderen er konfigureret.</p>}
       </section>
 
       <section>
