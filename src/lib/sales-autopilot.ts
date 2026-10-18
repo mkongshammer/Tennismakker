@@ -422,9 +422,10 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
   }
 
   const totalToday = sentBeforeRun + base.sent;
+  const providerBlocked = sendErrors.some((error) => /^Resend HTTP (401|403):/.test(error));
   return saveReport({
     ...base,
-    reason: sendErrors.some((error) => /^Resend HTTP (401|403):/.test(error)) ? "mail-provider-blocked" : undefined,
+    reason: providerBlocked ? "mail-provider-blocked" : sendErrors.length ? "mail-provider-retryable" : undefined,
     detail: base.sent
       ? `Sent ${base.sent} verified first-touch email${base.sent === 1 ? "" : "s"} this run. Daily progress: ${totalToday}/${limit}. The hourly agent will keep prospecting during US business hours until the quota is filled.${sendErrors.length ? " Rejections: " + sendErrors.slice(0, 3).join(" | ") : ""}`
       : `No accepted sends this run. ${base.verified} official contacts verified; ${base.failed} provider failures; ${base.skipped} skipped. Daily progress: ${totalToday}/${limit}. ${sendErrors.length ? "Mail errors: " + sendErrors.slice(0, 3).join(" | ") : "Next hourly cycle will research more contacts during US business hours."}`,
