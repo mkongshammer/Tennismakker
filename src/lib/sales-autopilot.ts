@@ -3,11 +3,12 @@ import net from "node:net";
 import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
 import { getSettings } from "./settings";
-import { salesReadiness } from "./sales-readiness";
 import { clubSignupPriceBook } from "./club-onboarding";
 import { deploymentRegion } from "./region";
 
 const LAST_REPORT_KEY = "sales:autopilot:last-report:v1";
+const SALES_LOCK_KEY = "sales:autopilot:lease:v1";
+const DEFAULT_SALES_POSTAL_ADDRESS = "8 The Green Ste D, Dover, DE 19901, United States";
 
 type Prospect = {
   clubName: string;
@@ -134,7 +135,8 @@ function easternSchedule(now: Date) {
     weekday: parts.weekday,
     hour,
     date: `${parts.year}-${parts.month}-${parts.day}`,
-    inWindow: !["Sat", "Sun"].includes(parts.weekday) && hour >= 9 && hour <= 16,
+    // Daily outreach, including weekends. Keep sends inside US daytime.
+    inWindow: hour >= 9 && hour <= 16,
   };
 }
 
@@ -200,34 +202,55 @@ async function createUnsubscribe(prospect: Prospect, appUrl: string) {
   return `${appUrl}/sales/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
-async function sendSalesMail(input: { to: string; replyTo: string; subject: string; body: string }) {
+type SalesSendResult = { accepted: boolean; providerId?: string; error?: string };
+
+async function sendSalesMail(input: { to: string; replyTo: string; subject: string; body: string }): Promise<SalesSendResult> {
   const settings = await getSettings();
-  if (!settings.emailApiKey) return false;
+  if (!settings.emailApiKey) return { accepted: false, error: "Resend API key is missing from Platform settings." };
   try {
+    // Resend deduplicates identical retry requests for 24 hours.
+    const idempotencyKey = "racketbuddy-club-" + hash([input.to, input.subject, input.body].join("|"));
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { authorization: `Bearer ${settings.emailApiKey}`, "content-type": "application/json" },
-      body: JSON.stringify({ from: settings.emailFrom, to: [input.to], reply_to: input.replyTo, subject: input.subject, text: input.body }),
+      headers: {
+        authorization: "Bearer " + settings.emailApiKey,
+        "content-type": "application/json",
+        "Idempotency-Key": idempotencyKey,
+      },
+      body: JSON.stringify({
+        from: settings.emailFrom,
+        to: [input.to],
+        reply_to: input.replyTo,
+        subject: input.subject,
+        text: input.body,
+      }),
       signal: AbortSignal.timeout(20_000),
     });
+    const content = (await response.text()).slice(0, 1000);
     if (!response.ok) {
-      console.error("Sales email rejected:", response.status, await response.text());
-      return false;
+      const error = "Resend HTTP " + response.status + ": " + content.slice(0, 450);
+      console.error("Sales email rejected:", error);
+      return { accepted: false, error };
     }
-    return true;
+    let parsed: { id?: string } = {};
+    try { parsed = JSON.parse(content) as { id?: string }; } catch { /* provider may return no body */ }
+    if (!parsed.id) return { accepted: false, error: "Resend accepted request but returned no message ID; manual reconciliation required." };
+    return { accepted: true, providerId: parsed.id };
   } catch (error) {
-    console.error("Sales email failed:", error);
-    return false;
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Sales email failed:", message);
+    return { accepted: false, error: message.slice(0, 450) };
   }
 }
 
-async function markSent(prospect: Prospect, at: Date, easternDate: string) {
+async function markSent(prospect: Prospect, at: Date, easternDate: string, providerId: string) {
   const record = JSON.stringify({
     clubName: prospect.clubName,
     website: prospect.website,
     email: prospect.contactEmail,
     sourceUrl: prospect.sourceUrl,
     sentAt: at.toISOString(),
+    providerId,
   });
   const contactHash = hash(prospect.contactEmail);
   await db.$transaction([
@@ -256,7 +279,7 @@ export async function getSalesAutopilotStatus(): Promise<SalesAutopilotReport | 
   try { return JSON.parse(row.value) as SalesAutopilotReport; } catch { return null; }
 }
 
-export async function runSalesAutopilot(now = new Date(), options?: { force?: boolean }) {
+async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: boolean }) {
   const base: SalesAutopilotReport = {
     at: now.toISOString(), ran: false, market: "US", discovered: 0, verified: 0, sent: 0, failed: 0, skipped: 0, sentTo: [],
   };
@@ -266,8 +289,9 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
 
   const settings = await getSettings();
   if (!settings.emailApiKey) return saveReport({ ...base, reason: "email-unconfigured", detail: "Configure the production email provider before autonomous sales can send." });
-  if (!settings.ordersEmail) return saveReport({ ...base, reason: "reply-email-missing", detail: "Set the sales/support reply email in Platform settings before autonomous sales can send." });
-  if (config.salesPostalAddress.trim().length < 8) return saveReport({ ...base, reason: "postal-address-missing", detail: "Add RacketBuddy's valid business postal address in AI Agents before commercial outreach can send." });
+  const replyEmail = settings.ordersEmail || "racketbuddy.app@gmail.com";
+  const postalAddress = config.salesPostalAddress.trim() || DEFAULT_SALES_POSTAL_ADDRESS;
+  if (!settings.emailFrom || !settings.emailFrom.includes("@")) return saveReport({ ...base, reason: "sender-email-missing", detail: "Set a verified Resend sender address in Platform settings." });
 
   const schedule = easternSchedule(now);
   if (!options?.force && !schedule.inWindow) return saveReport({ ...base, reason: "outside-us-business-hours" });
@@ -283,14 +307,8 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   }
   const remaining = limit - sentBeforeRun;
 
-  const readiness = await salesReadiness();
-  const blocked = readiness.filter((check) => check.status === "blocked");
-  if (blocked.length) return saveReport({
-    ...base,
-    ran: true,
-    reason: "sales-readiness-blocked",
-    detail: blocked.map((check) => `${check.name}: ${check.detail}`).join(" | ").slice(0, 3000),
-  });
+  // Prospecting must not be blocked by Stripe, webhook or tax-readiness checks.
+  // Those checks still belong to checkout/onboarding; outreach itself is independent.
 
   const prices = await clubSignupPriceBook();
   let prospects: Prospect[] = [];
@@ -306,6 +324,7 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   base.ran = true;
   base.discovered = prospects.length;
   const seen = new Set<string>();
+  const sendErrors: string[] = [];
 
   for (const raw of prospects) {
     if (base.sent >= remaining) break;
@@ -338,14 +357,14 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
       "RacketBuddy",
       "",
       "This is a commercial email from RacketBuddy.",
-      config.salesPostalAddress,
+      postalAddress,
       `Unsubscribe: ${unsubscribe}`,
     ].join("\n");
     const subject = `A simpler booking setup for ${prospect.clubName}`.slice(0, 140);
 
-    const sent = await sendSalesMail({ to: prospect.contactEmail, replyTo: settings.ordersEmail, subject, body });
-    if (!sent) { base.failed++; continue; }
-    await markSent(prospect, now, schedule.date);
+    const sent = await sendSalesMail({ to: prospect.contactEmail, replyTo: replyEmail, subject, body });
+    if (!sent.accepted || !sent.providerId) { base.failed++; sendErrors.push(sent.error || "Unknown mail provider error"); continue; }
+    await markSent(prospect, now, schedule.date, sent.providerId);
     base.sent++;
     base.sentTo.push({ clubName: prospect.clubName, website: prospect.website, at: now.toISOString() });
   }
@@ -354,7 +373,43 @@ export async function runSalesAutopilot(now = new Date(), options?: { force?: bo
   return saveReport({
     ...base,
     detail: base.sent
-      ? `Sent ${base.sent} verified first-touch email${base.sent === 1 ? "" : "s"} this run. Daily progress: ${totalToday}/${limit}. The hourly agent will keep prospecting during US business hours until the quota is filled.`
-      : `No eligible, publicly verified club contact passed all checks in this run. Daily progress remains ${totalToday}/${limit}; the next hourly cycle will try again during US business hours.`,
+      ? `Sent ${base.sent} verified first-touch email${base.sent === 1 ? "" : "s"} this run. Daily progress: ${totalToday}/${limit}. The hourly agent will keep prospecting during US business hours until the quota is filled.${sendErrors.length ? " Rejections: " + sendErrors.slice(0, 3).join(" | ") : ""}`
+      : `No accepted sends this run. ${base.verified} official contacts verified; ${base.failed} provider failures; ${base.skipped} skipped. Daily progress: ${totalToday}/${limit}. ${sendErrors.length ? "Mail errors: " + sendErrors.slice(0, 3).join(" | ") : "Next hourly cycle will research more contacts during US business hours."}`,
   });
+}
+
+/**
+ * A database lease prevents multiple Render sync invocations from simultaneously
+ * discovering and sending the same contact. An expired lease may be reclaimed
+ * after a crashed worker. The app has one EU primary sender.
+ */
+async function acquireSalesLease(now: Date): Promise<string | null> {
+  const until = new Date(now.getTime() + 20 * 60_000).toISOString();
+  try {
+    await db.platformSetting.create({ data: { key: SALES_LOCK_KEY, value: until } });
+    return until;
+  } catch {
+    const claimed = await db.platformSetting.updateMany({
+      where: { key: SALES_LOCK_KEY, value: { lt: now.toISOString() } },
+      data: { value: until },
+    });
+    return claimed.count ? until : null;
+  }
+}
+
+export async function runSalesAutopilot(now = new Date(), options?: { force?: boolean }) {
+  const lease = await acquireSalesLease(now);
+  if (!lease) {
+    return {
+      at: now.toISOString(), ran: false, market: "US" as const,
+      discovered: 0, verified: 0, sent: 0, failed: 0, skipped: 0,
+      sentTo: [], reason: "already-running",
+    };
+  }
+  try {
+    return await runSalesAutopilotUnlocked(now, options);
+  } finally {
+    await db.platformSetting.deleteMany({ where: { key: SALES_LOCK_KEY, value: lease } })
+      .catch((error) => console.error("Could not release sales lease:", error));
+  }
 }
