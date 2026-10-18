@@ -62,8 +62,9 @@ function harness(input?: {
         : JSON.stringify({ id: "example-provider-message-id" }),
         { status: input?.providerStatus ?? 200 });
     }
-    if (url === "https://club.example/contact") {
-      const response = new Response("Contact: hello@club.example", { status: 200 });
+    const site = /^https:\/\/(club\d+\.example)\/contact$/.exec(url);
+    if (site) {
+      const response = new Response(`Contact: hello@${site[1]}`, { status: 200 });
       Object.defineProperty(response, "url", { value: url });
       return response;
     }
@@ -71,6 +72,12 @@ function harness(input?: {
   };
   return { module, db, rows, fetchCalls, restore: () => { globalThis.fetch = restore; } };
 }
+
+const distinctClubs = [1, 2, 3].map((n) => ({
+  clubName: `Example Club ${n}`, sport: "tennis", city: "Austin", state: "TX",
+  website: `https://club${n}.example`, sourceUrl: `https://club${n}.example/contact`,
+  contactEmail: `hello@club${n}.example`, hook: "You offer tennis courts.",
+}));
 
 test("Sunday US business hours are eligible, with independent daily cap", async () => {
   const h = harness({ dailyCount: 3 });
@@ -105,16 +112,12 @@ test("Club discovery is not blocked by Stripe/tax/webhook readiness", async () =
 test("Unverified Resend sender is reported as a failure, never a sent email", async () => {
   const h = harness({
     providerStatus: 403,
-    prospects: [{
-      clubName: "Example Club", sport: "tennis", city: "Austin", state: "TX",
-      website: "https://club.example", sourceUrl: "https://club.example/contact",
-      contactEmail: "hello@club.example", hook: "You offer tennis courts.",
-    }],
+    prospects: distinctClubs,
   });
   try {
     const result = await h.module.runSalesAutopilot(new Date("2026-10-18T14:00:00Z"));
     assert.equal(result.reason, "mail-provider-blocked");
-    assert.equal(result.verified, 1);
+    assert.equal(result.verified, 3);
     assert.equal(result.sent, 0);
     assert.equal(result.failed, 1);
     assert.ok(result.detail?.includes("Resend HTTP 403"));
@@ -126,17 +129,13 @@ test("Unverified Resend sender is reported as a failure, never a sent email", as
 test("Transient discovery failures are retried before attempting email delivery", async () => {
   const h = harness({
     discoveryFailures: 1,
-    prospects: [{
-      clubName: "Example Club", sport: "tennis", city: "Austin", state: "TX",
-      website: "https://club.example", sourceUrl: "https://club.example/contact",
-      contactEmail: "hello@club.example", hook: "You offer tennis courts.",
-    }],
+    prospects: distinctClubs,
   });
   try {
     const result = await h.module.runSalesAutopilot(new Date("2026-10-18T14:00:00Z"));
-    assert.equal(result.sent, 1);
+    assert.equal(result.sent, 3);
     assert.equal(h.fetchCalls.filter((url) => url.includes("api.openai.com")).length, 2);
-    assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 1);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 3);
   } finally { h.restore(); }
 });
 
@@ -147,6 +146,18 @@ test("Exhausted discovery retries fail visibly without attempting any send", asy
     assert.equal(result.reason, "discovery-failed");
     assert.equal(result.sent, 0);
     assert.equal(h.fetchCalls.filter((url) => url.includes("api.openai.com")).length, 3);
+    assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 0);
+  } finally { h.restore(); }
+});
+
+
+test("No outbound mail is attempted until three distinct prospects verify", async () => {
+  const h = harness({ prospects: distinctClubs.slice(0, 2) });
+  try {
+    const result = await h.module.runSalesAutopilot(new Date("2026-10-18T14:00:00Z"));
+    assert.equal(result.reason, "insufficient-verified-prospects");
+    assert.equal(result.verified, 2);
+    assert.equal(result.sent, 0);
     assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 0);
   } finally { h.restore(); }
 });
