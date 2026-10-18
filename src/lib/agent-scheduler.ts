@@ -57,7 +57,7 @@ export async function runScheduledAgentSweep(now = new Date()) {
     // Do not run the whole sweep more often than the underlying 15-minute cron.
     const elapsedMs = now.getTime() - last.getTime();
     const previousSales = elapsedMs >= 14 * 60_000 ? await getSalesAutopilotStatus() : null;
-    const retryable = previousSales && ["discovery-failed", "no-qualified-prospects", "mail-provider-retryable"].includes(previousSales.reason ?? "");
+    const retryable = previousSales && ["discovery-failed", "no-qualified-prospects", "insufficient-verified-prospects", "mail-provider-retryable"].includes(previousSales.reason ?? "");
     if (!retryable) return { ran: false, reason: "not-due" };
   }
 
@@ -121,7 +121,7 @@ export async function runScheduledAgentSweep(now = new Date()) {
   // example web-search timeout or no useful leads). Schedule a fresh research
   // attempt at the next 15-minute cron instead of silently waiting an hour.
   const salesNeedsResearchRetry = salesAttempt.ok && [
-    "discovery-failed", "no-qualified-prospects", "mail-provider-retryable",
+    "discovery-failed", "no-qualified-prospects", "insufficient-verified-prospects", "mail-provider-retryable",
   ].includes(salesAttempt.value.reason ?? "");
   const needsRetry = !salesAttempt.ok || !maintenanceAttempt.ok || !operatorAttempt.ok || salesNeedsResearchRetry;
   if (needsRetry) {
