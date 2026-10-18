@@ -58,7 +58,9 @@ function harness(input?: {
         { status: input?.providerStatus ?? 200 });
     }
     if (url === "https://club.example/contact") {
-      return new Response("Contact: hello@club.example", { status: 200 });
+      const response = new Response("Contact: hello@club.example", { status: 200 });
+      Object.defineProperty(response, "url", { value: url });
+      return response;
     }
     throw new Error("Unexpected request: " + url);
   };
