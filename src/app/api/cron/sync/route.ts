@@ -1,6 +1,7 @@
 import { runRenewals } from "../../../../lib/renewals";
 import { runEngagementEmails } from "../../../../lib/engagement-emails";
 import { runScheduledAgentSweep } from "../../../../lib/agent-scheduler";
+import { getSettings } from "../../../../lib/settings";
 import { ensureBlocks, processBlocks } from "../../../../lib/system-blocks";
 // Baggrundsjob: synkroniserer alle klubber med kalenderfeed og rydder
 // udløbne reservationer.
@@ -80,8 +81,12 @@ export async function GET(req: Request) {
     return { ran: false, reason: "error" };
   });
 
+  // Expose only safe configuration booleans to the authenticated cron logs.
+  // This lets operations distinguish missing email credentials from missed schedules.
+  const emailSettings = await getSettings();
   return Response.json({
     kørt: new Date().toISOString(),
+    mailProvider: { resendKeyConfigured: Boolean(emailSettings.emailApiKey), senderConfigured: Boolean(emailSettings.emailFrom) },
     klubber: results.length,
     resultater: results,
     fornyelser: renewals,
