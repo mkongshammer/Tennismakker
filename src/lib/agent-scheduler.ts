@@ -112,7 +112,13 @@ export async function runScheduledAgentSweep(now = new Date()) {
   // eligible to try again instead of waiting a full hour. The cron itself runs
   // every 15 minutes, so persistent transient failures keep getting retried
   // without creating a tight/infinite loop inside one request.
-  const needsRetry = !salesAttempt.ok || !maintenanceAttempt.ok || !operatorAttempt.ok;
+  // A successful function call can still report a transient failure (for
+  // example web-search timeout or no useful leads). Schedule a fresh research
+  // attempt at the next 15-minute cron instead of silently waiting an hour.
+  const salesNeedsResearchRetry = salesAttempt.ok && [
+    "discovery-failed", "no-qualified-prospects", "mail-provider-retryable",
+  ].includes(salesAttempt.value.reason ?? "");
+  const needsRetry = !salesAttempt.ok || !maintenanceAttempt.ok || !operatorAttempt.ok || salesNeedsResearchRetry;
   if (needsRetry) {
     const retryEligibleAt = new Date(now.getTime() - MIN_INTERVAL_MS + 14 * 60 * 1000);
     await db.platformSetting.upsert({
