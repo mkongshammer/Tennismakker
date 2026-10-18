@@ -46,11 +46,7 @@ export async function updateAgentSettings(_prev: unknown, formData: FormData): P
   });
   revalidatePath("/superadmin/agenter");
   return {
-    ok: enabled
-      ? salesEnabled && salesPostalAddress.length < 8
-        ? "AI-agenterne er slået til. Sales Autopilot venter kun på en gyldig virksomheds-postadresse, før den må sende."
-        : "AI-agenterne er slået til."
-      : "AI-agenterne er slået fra.",
+    ok: enabled ? "AI-agenterne er slået til. Kontrollér også separat Resend-mailnøgle under Platformopsætning." : "AI-agenterne er slået fra.",
   };
 }
 
