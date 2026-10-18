@@ -383,7 +383,7 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
       state: String(raw.state || "").trim(), website: String(raw.website || "").trim(), contactEmail: String(raw.contactEmail || "").trim().toLowerCase(),
       sourceUrl: String(raw.sourceUrl || "").trim(), hook: String(raw.hook || "").replace(/\s+/g, " ").trim().slice(0, 260),
     };
-    const unique = `${prospect.contactEmail}|${normalizeHost(prospect.website)}`;
+    const unique = `${normalizeHost(prospect.website)}|${prospect.clubName.toLowerCase().replace(/\\s+/g, " ").trim()}`;
     if (!prospect.clubName || !validEmail(prospect.contactEmail) || !prospect.hook || seen.has(unique)) { base.skipped++; continue; }
     seen.add(unique);
     if (await alreadyContacted(prospect)) { base.skipped++; continue; }
