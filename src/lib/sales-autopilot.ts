@@ -208,10 +208,20 @@ async function alreadyContacted(prospect: Prospect) {
 }
 
 async function createUnsubscribe(prospect: Prospect, appUrl: string) {
-  const token = crypto.randomBytes(24).toString("base64url");
+  // Keep the same token and email payload across failed/ambiguous attempts.
+  // A new random token for every retry would defeat the provider's dedupe key.
+  const recipientKey = `sales:unsubscribe:recipient:${hash(prospect.contactEmail)}`;
+  const record = await db.platformSetting.upsert({
+    where: { key: recipientKey },
+    create: { key: recipientKey, value: crypto.randomBytes(24).toString("base64url") },
+    update: {},
+  });
+  const token = record.value;
   const key = `sales:unsubscribe:${token}`;
-  await db.platformSetting.create({
-    data: { key, value: JSON.stringify({ email: prospect.contactEmail, website: prospect.website, createdAt: new Date().toISOString() }) },
+  await db.platformSetting.upsert({
+    where: { key },
+    create: { key, value: JSON.stringify({ email: prospect.contactEmail, website: prospect.website, createdAt: new Date().toISOString() }) },
+    update: {},
   });
   return `${appUrl}/sales/unsubscribe?token=${encodeURIComponent(token)}`;
 }
@@ -222,8 +232,9 @@ async function sendSalesMail(input: { to: string; replyTo: string; subject: stri
   const settings = await getSettings();
   if (!settings.emailApiKey) return { accepted: false, error: "Resend API key is missing from Platform settings." };
 
-  // Exactly the same body and idempotency key are reused for each retry.
-  const idempotencyKey = "racketbuddy-club-" + hash([input.to, input.subject, input.body].join("|"));
+  // An ambiguous provider acceptance must never result in a new first touch.
+  // Stable per recipient even when a later research run changes the wording.
+  const idempotencyKey = "racketbuddy-club-first-touch-" + hash(input.to);
   let lastError = "Mail provider unavailable";
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
