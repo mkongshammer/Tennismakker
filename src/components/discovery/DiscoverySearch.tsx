@@ -5,8 +5,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SPORTS, sportColor, sportLabel, type Sport } from "../../lib/sports";
-import { discoveryHref, type DiscoveryFilters } from "../../lib/discovery-filters";
+import { discoveryHref, DEFAULT_RADIUS_MILES, type DiscoveryFilters } from "../../lib/discovery-filters";
 import { Icon } from "../ui";
+import { PillMenu } from "../ui/PillMenu";
 
 const PRICE_STEPS = [25, 40, 60, 100] as const;
 
@@ -76,7 +77,7 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
       </div>
 
       {!compact && (
-        <div className="no-scrollbar -mx-1 mt-3 overflow-x-auto border-t border-slate/10 px-1 pt-3 text-sm">
+        <div className="no-scrollbar -mx-1 mt-3 overflow-x-auto border-t border-slate/10 px-1 pt-3 text-sm sm:overflow-visible">
         <div className="flex w-max items-center gap-2 sm:w-auto sm:flex-wrap">
           <span className="mr-1 hidden text-xs font-bold uppercase tracking-[0.14em] text-slate sm:inline">Filters</span>
           <button type="button" aria-pressed={filters.today} onClick={() => go({ today: !filters.today })} className="pill min-h-9 shrink-0 text-xs">
@@ -85,31 +86,26 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
           <button type="button" aria-pressed={filters.indoor} onClick={() => go({ indoor: !filters.indoor })} className="pill min-h-9 shrink-0 text-xs">
             <Icon name="roof" size={14} /> Indoor
           </button>
-          <label className="pill min-h-9 shrink-0 cursor-pointer text-xs">
-            <Icon name="dollar" size={14} />
-            <span className="sr-only">Maximum price per hour</span>
-            <select
-              value={filters.maxPrice ?? ""}
-              onChange={(e) => go({ maxPrice: e.target.value ? Number(e.target.value) : null })}
-              className="bg-transparent text-xs font-semibold outline-none"
-              style={{ fontSize: 16 }}
-            >
-              <option value="">Any price</option>
-              {PRICE_STEPS.map((p) => (
-                <option key={p} value={p}>Up to ${p}/hr</option>
-              ))}
-            </select>
-          </label>
+          <PillMenu
+            className="shrink-0"
+            srLabel="Maximum price per hour"
+            icon={<Icon name="dollar" size={14} />}
+            value={filters.maxPrice ?? 0}
+            label={filters.maxPrice ? `Up to $${filters.maxPrice}/hr` : "Any price"}
+            options={[{ value: 0, label: "Any price" }, ...PRICE_STEPS.map((p) => ({ value: p, label: `Up to $${p}`, hint: "per hour" }))]}
+            onChange={(v) => go({ maxPrice: v ? Number(v) : null })}
+          />
           {filters.q && radiusApplies && (
-            <label className="pill min-h-9 shrink-0 cursor-pointer text-xs">
-              <Icon name="map" size={14} />
-              <span className="sr-only">Search radius</span>
-              <select value={filters.radiusMiles} onChange={(e) => go({ radiusMiles: Number(e.target.value) })} className="bg-transparent text-xs font-semibold outline-none" style={{ fontSize: 16 }}>
-                {[10, 25, 50, 100, 250].map((r) => (
-                  <option key={r} value={r}>Within {r} mi</option>
-                ))}
-              </select>
-            </label>
+            <PillMenu
+              className="shrink-0"
+              srLabel="Search radius"
+              icon={<Icon name="map" size={14} />}
+              value={filters.radiusMiles}
+              defaultValue={DEFAULT_RADIUS_MILES}
+              label={`Within ${filters.radiusMiles} mi`}
+              options={[10, 25, 50, 100, 250].map((r) => ({ value: r, label: `Within ${r} miles` }))}
+              onChange={(v) => go({ radiusMiles: Number(v) })}
+            />
           )}
           {(filters.today || filters.indoor || filters.maxPrice) && (
             <button type="button" onClick={() => go({ today: false, indoor: false, maxPrice: null })} className="shrink-0 text-xs font-semibold text-slate underline-offset-2 hover:underline sm:ml-auto">
