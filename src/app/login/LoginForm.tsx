@@ -13,6 +13,7 @@ export function LoginForm({
   errors,
   notice,
   next,
+  legacyOrigin,
 }: {
   labels: {
     email: string;
@@ -26,6 +27,8 @@ export function LoginForm({
   notice?: string;
   /** Same-site path to return to after sign-in. */
   next?: string | null;
+  /** Shown under a failed sign-in when legacy European accounts live on another origin. */
+  legacyOrigin?: string | null;
   errors: Record<string, string>;
 }) {
   const [state, action] = useFormState(login, null);
@@ -56,6 +59,12 @@ export function LoginForm({
       {state?.error && (
         <p className="text-sm font-semibold text-court-dark">
           {errors[state.error] ?? state.error}
+        </p>
+      )}
+      {state?.error === "auth.errWrong" && legacyOrigin && (
+        <p className="text-xs text-slate">
+          Created your account in Europe before October 2026? Those accounts live on our European site:{" "}
+          <a href={`${legacyOrigin}/login`} className="font-semibold text-court underline">sign in there</a>.
         </p>
       )}
       <SubmitButton className="btn-ink w-full" pendingText={labels.pending}>

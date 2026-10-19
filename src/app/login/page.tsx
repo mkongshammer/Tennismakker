@@ -2,6 +2,7 @@ import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { LoginForm } from "./LoginForm";
 import { safeReturnPath } from "../../lib/return-path";
+import { deploymentRegion, regionalShardingActive, regionalOrigin } from "../../lib/region";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,8 @@ export default async function LoginPage({
   const query = await searchParams;
   const t = translator((await getPreferences()).locale);
   const next = safeReturnPath(query.next);
+  // On the US deployment, European accounts from before the US-only change still live on the EU origin.
+  const legacyOrigin = regionalShardingActive() && deploymentRegion() === "US" ? regionalOrigin("DK") : null;
 
   return (
     <div className="mx-auto max-w-sm">
@@ -21,6 +24,7 @@ export default async function LoginPage({
       {!next && <div className="mb-6" />}
       <LoginForm
         next={next}
+        legacyOrigin={legacyOrigin}
         labels={{
           email: t("auth.email"),
           password: t("auth.password"),
