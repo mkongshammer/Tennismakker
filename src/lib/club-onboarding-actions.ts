@@ -21,11 +21,12 @@ export async function registerClub(_prev:unknown,form:FormData){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||Buffer.byteLength(password)>72||password.length<10||name.length<2||name.length>150||!city||city.length>100||!contact||contact.length>150)throw Error('Udfyld navn, by, kontaktperson og gyldig e-mail. Brug en adgangskode på 10–72 tegn.');
   if(form.get('terms')!=='on')throw Error('Acceptér abonnementsvilkår og databehandleraftale.');
   const country=String(form.get('country')??'DK').toUpperCase(),market=marketFor(country),currency=bookingCurrency(country),timeZone=String(form.get('timeZone')??market?.timeZone??'Europe/Copenhagen'),locale=String(form.get('locale')??'da');
+  if(country!=='US')throw Error('RacketBuddy is accepting new club registrations in the United States only.');
   if(!regionAllowsCountry(country))throw Error(country==='US'?'This US club must be created on RacketBuddy US.':'This club must be created on the RacketBuddy EU region.');
   const street=String(form.get('address')??'').trim();
   const structuredUSAddress=form.has('state')||form.has('postalCode');
   const usState=normalizeUSState(form.get('state')),postalCode=normalizeUSPostalCode(form.get('postalCode'));
-  if(country==='US'&&structuredUSAddress&&(!street||!validUSState(usState)||!validUSPostalCode(postalCode)))throw Error('Enter a complete US address with street, city, state, and a valid ZIP code.');
+  if(country==='US'&&(!street||!validUSState(usState)||!validUSPostalCode(postalCode)))throw Error('Enter a complete US address with street, city, state, and a valid ZIP code.');
   const address=country==='US'&&structuredUSAddress?formatUSAddress(street,city,usState,postalCode):street;
   if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>300)throw Error('Choose a valid country, address, and time zone.');
   const features=normaliseFeatures(mode,form.getAll('features').map(String));
