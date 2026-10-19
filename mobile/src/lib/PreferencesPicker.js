@@ -9,9 +9,9 @@ export function PreferencesPicker({country:controlledCountry,locale:controlledLo
  const prefs=useInternational(),country=controlledCountry??prefs.country,locale=controlledLocale??prefs.locale,[field,setField]=useState(null),[languageChosen,setLanguageChosen]=useState(prefs.languageChosen);
  const t=value=>translatePhrase(value,locale);
  const choose=value=>{if(field==='locale')setLanguageChosen(true);const next={country,locale,[field]:value,countryChosen:true,...(field==='locale'?{languageChosen:true}:!languageChosen?{locale:marketFor(value).defaultLocale}:{})};if(onChange)onChange(next);else setInternational(next);setField(null);};
- const options=field==='country'?MARKETS.map(m=>({id:m.code,label:countryLabel(m.code,locale)})):LANGUAGES.map(id=>({id,label:LANGUAGE_NAMES[id]}));
+ const options=LANGUAGES.map(id=>({id,label:LANGUAGE_NAMES[id]}));
  return <View style={styles.wrap}>
- <Pressable accessibilityRole="button" accessibilityLabel={t('Vælg land')} onPress={()=>setField('country')} style={styles.choice}><Text style={styles.label}>{countryLabel(country,locale)} ▾</Text></Pressable>
+ <View style={styles.choice}><Text style={styles.label}>United States</Text></View>
  <Pressable accessibilityRole="button" accessibilityLabel={t('Vælg sprog')} onPress={()=>setField('locale')} style={styles.choice}><Text style={styles.label}>{LANGUAGE_NAMES[locale]} ▾</Text></Pressable>
  <Modal visible={!!field} animationType="slide" presentationStyle="pageSheet" onRequestClose={()=>setField(null)}><SafeAreaView style={{flex:1,backgroundColor:colors.chalk}}><ScrollView contentContainerStyle={{padding:24,gap:8}}><Text style={styles.title}>{t(field==='country'?'Vælg land':'Vælg sprog')}</Text>{options.map(option=><Pressable key={option.id} accessibilityRole="button" accessibilityState={{selected:option.id===(field==='country'?country:locale)}} onPress={()=>choose(option.id)} style={[styles.option,option.id===(field==='country'?country:locale)&&{backgroundColor:colors.courtTint}]}><Text style={styles.label}>{option.label}</Text>{option.id===(field==='country'?country:locale)&&<Text>✓</Text>}</Pressable>)}<Button title={t('Luk')} variant="quiet" onPress={()=>setField(null)}/></ScrollView></SafeAreaView></Modal>
  </View>;
