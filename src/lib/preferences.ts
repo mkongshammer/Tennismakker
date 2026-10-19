@@ -42,7 +42,7 @@ export async function getPreferences(): Promise<Preferences> {
   }
 
   // US-only acquisition: new visitors always browse the US market.
-  // Existing signed-in users retain their original region for bookings and obligations.
+  // Data and contractual records retain their original stored country.
   const cookieLocale = jar.get(`${COOKIE}_locale`)?.value;
   return {
     country: "US",
