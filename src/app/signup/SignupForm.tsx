@@ -1,6 +1,6 @@
 "use client";
 import {UiText} from "../../components/InternationalProvider";
-import { SALES_CURRENCIES,TIME_ZONES } from "../../lib/international";
+import { TIME_ZONES } from "../../lib/international";
 import {US_STATES,usStateTimeZone} from '../../../shared/us-address.mjs';
 import {phrase} from "../../lib/phrases";
 import Link from "next/link";
@@ -119,7 +119,7 @@ export function SignupForm({
           <p className="text-xs text-slate">{labels.coachAreaNote}</p>
           <div><label className="label" htmlFor="headline">{labels.coachHeadline}</label><input className="input" id="headline" name="headline" placeholder={labels.coachHeadlinePlaceholder} maxLength={120} /></div>
           <div><label className="label" htmlFor="priceHour">{tr("Trænerpris pr. time")} ({currency})</label><input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} key={currency} defaultValue={currency==='USD'?53:47} /></div>
-          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select className="input" name="currency" value={currency} onChange={e=>setCurrency(e.target.value)}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Tidszone")}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<input type="hidden" name="currency" value="USD"/><div className="input flex items-center">USD</div></label><label className="label">{tr("Tidszone")}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
           <p className="text-xs text-slate">{labels.coachRest}</p>
         </div>
       )}
