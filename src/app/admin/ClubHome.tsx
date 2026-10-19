@@ -55,7 +55,7 @@ export function ClubHome({ data, locale }: { data: ClubDashboard; locale: string
         <StatTile label="Bookings today" value={today.bookings} hint={`${today.remaining.length} still to come`} />
         <StatTile label="Court use today" value={pct(today.utilization)} hint={`${today.hours.toFixed(0)} of ${(club.closeHour - club.openHour) * club.courts.length} court-hours`} tone={today.utilization >= 0.5 ? "success" : undefined} />
         <StatTile label="Bookings this week" value={week.bookings} hint={<Change value={week.bookingsChange} />} />
-        <StatTile label="Paid out this week" value={money(week.paidOutKr)} hint={<Change value={week.paidOutChange} />} tone="court" />
+        <StatTile label="Your share this week" value={money(week.paidOutKr)} hint={<span className="flex flex-wrap items-center gap-x-2"><Change value={week.paidOutChange} /><span className="text-slate">paid bookings, after RacketBuddy’s fee</span></span>} tone="court" />
       </section>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-[1.1fr_.9fr]">
