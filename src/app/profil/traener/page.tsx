@@ -40,7 +40,7 @@ export default function TraenerProfilPage() {
     load();
   }, [searchParams]);
 
-  if (!profile) return <p className="text-slate/60"><UiText text="Henter…"/></p>;
+  if (!profile) return <p className="text-slate"><UiText text="Henter…"/></p>;
   if (profile.error) return <p className="text-court font-semibold">{profile.error}</p>;
 
   return (

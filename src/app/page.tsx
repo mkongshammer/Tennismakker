@@ -76,9 +76,9 @@ function CourtTiles() {
   return (
     <div className="grid grid-cols-4 gap-2" aria-hidden="true">
       {hours.map((h) => (
-        <div key={h} className={`court-tile flex h-16 flex-col justify-center px-3 ${taken.has(h) ? "opacity-30" : ""}`} style={{ ["--sport" as string]: "#1B62C4" }}>
+        <div key={h} className={`flex h-16 flex-col justify-center rounded-xl px-3 ${taken.has(h) ? "border border-dashed border-slate/30 bg-mist text-slate" : "court-tile"}`} style={{ ["--sport" as string]: "#1B62C4" }}>
           <span className="data text-xs font-bold">{h}</span>
-          <span className="text-[11px] opacity-80">{taken.has(h) ? "Booked" : "$38"}</span>
+          <span className={`text-[11px] ${taken.has(h) ? "" : "text-chalk"}`}>{taken.has(h) ? "Booked" : "$38"}</span>
         </div>
       ))}
     </div>

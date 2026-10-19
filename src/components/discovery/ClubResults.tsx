@@ -49,7 +49,7 @@ function CourtGraphic({ color }: { color: string }) {
 export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club: MapClub; active: boolean; favorite: boolean; onFavorite: () => void; onHover: (id: string | null) => void }) {
   const next = club.nextSlotAt ? new Date(club.nextSlotAt) : null;
   return (
-    <li onMouseEnter={() => onHover(club.id)} onMouseLeave={() => onHover(null)} className="relative">
+    <div onMouseEnter={() => onHover(club.id)} onMouseLeave={() => onHover(null)} className="relative">
       <Link
         href={`/klub/${club.slug}`}
         onFocus={() => onHover(club.id)}
@@ -105,7 +105,7 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
       >
         <Icon name="heart" size={18} strokeWidth={favorite ? 2.4 : 1.8} />
       </button>
-    </li>
+    </div>
   );
 }
 
@@ -140,9 +140,9 @@ export function ClubResults({ clubs, origin }: { clubs: MapClub[]; origin: { lat
   const list = (
     <ul className="space-y-3">
       {sorted.map((club) => (
-        <div key={club.id} ref={(el) => { cardRefs.current[club.id] = el; }}>
+        <li key={club.id} ref={(el) => { cardRefs.current[club.id] = el; }}>
           <ClubCard club={club} active={club.id === activeId} favorite={favorites.includes(club.id)} onFavorite={() => toggleFavorite(club.id)} onHover={setActiveId} />
-        </div>
+        </li>
       ))}
     </ul>
   );

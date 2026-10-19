@@ -35,7 +35,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
     return (
       <div className="card mx-auto max-w-md text-center">
         <p className="font-bold">Ikke adgang</p>
-        <p className="mt-1 text-sm text-slate/60">
+        <p className="mt-1 text-sm text-slate">
           Denne side er for RacketBuddys egne administratorer.
         </p>
       </div>
@@ -154,7 +154,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
       <section>
         <h2 className="display mb-3 text-2xl">Venter på svar</h2>
         {pending.length === 0 && (
-          <p className="text-slate/60">Ingen klubber venter lige nu.</p>
+          <p className="text-slate">Ingen klubber venter lige nu.</p>
         )}
 
         <ul className="space-y-4">
@@ -169,7 +169,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-lg font-bold">{club.name}</p>
                   <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></select><button className="btn-ghost">Gem løsning</button></form>
-                  <p className="text-sm text-slate/50">
+                  <p className="text-sm text-slate">
                     Oprettet {format(club.createdAt, "d. MMM yyyy", { locale: da })}
                   </p>
                 </div>
@@ -177,22 +177,22 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                 {club.customFeatures && <p className="mt-3 text-sm">Valgte funktioner: {CUSTOM_FEATURES.filter(f=>JSON.parse(club.customFeatures!).includes(f.id)).map(f=>f.label).join(", ") || "Standard klubadministration"}</p>}
                 <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">Adresse</dt>
+                    <dt className="text-slate">Adresse</dt>
                     <dd>{club.address ? `${club.address}, ${club.city}` : club.city}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">Baner</dt>
+                    <dt className="text-slate">Baner</dt>
                     <dd>
                       {club.courts.length} ·{" "}
                       {sports.map((s) => sportLabel(s, "da")).join(", ")}
                     </dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">Pris</dt>
+                    <dt className="text-slate">Pris</dt>
                     <dd>{formatMoney(club.priceHour,club.currency,"da")}/time</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">Model</dt>
+                    <dt className="text-slate">Model</dt>
                     <dd>
                       {club.billingModel === "SUBSCRIPTION"
                         ? `Abonnement ${formatMoney(club.subscriptionKr,club.billingCurrency,"da")}/md`
@@ -201,7 +201,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                   </div>
                   {club.billingModel === "SUBSCRIPTION" && (
                     <div className="flex gap-2">
-                      <dt className="text-slate/50">Betaling</dt>
+                      <dt className="text-slate">Betaling</dt>
                       <dd
                         className={
                           subscriptionIsActive(club) ? "" : "font-bold text-court-dark"
@@ -212,18 +212,18 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">System</dt>
+                    <dt className="text-slate">System</dt>
                     <dd>{club.externalSystem ?? "ikke oplyst"}</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-slate/50">Kontakt</dt>
+                    <dt className="text-slate">Kontakt</dt>
                     <dd>
                       {admin ? `${admin.name} · ${admin.email}` : "ingen admin"}
                     </dd>
                   </div>
                 </dl>
 
-                <p className="mt-3 text-xs text-slate/50">
+                <p className="mt-3 text-xs text-slate">
                   Tjek at klubben findes, at adressen passer, og at kontaktpersonen
                   hører til klubben — helst med et opkald.
                 </p>
@@ -345,7 +345,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
             <li key={club.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm">
               <span className="font-semibold">{club.name}</span>
               <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></select><button className="btn-ghost">Gem løsning</button></form>
-              <span className="text-slate/60">{club.city}</span>
+              <span className="text-slate">{club.city}</span>
               <span
                 className={
                   club.status === "APPROVED" ? "text-ink font-bold" : "text-court font-bold"

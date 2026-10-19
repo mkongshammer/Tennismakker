@@ -73,8 +73,8 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
               {hours.map((h) => {
                 const past = isToday && h < nowParts.hour;
                 return (
-                  <tr key={h} className={past ? "opacity-50" : undefined}>
-                    <th scope="row" className="data pr-2 text-left text-xs font-bold text-slate">{hourLabel(h)}</th>
+                  <tr key={h}>
+                    <th scope="row" className="data pr-2 text-left text-xs font-bold text-slate">{hourLabel(h)}{past && <span className="sr-only"> (past)</span>}</th>
                     {courts.map((c) => {
                       const b = byCell.get(cell(c.id, h));
                       const startsHere = b && wallParts(b.startsAt, timeZone).hour === h;
@@ -109,8 +109,8 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
                       const blocked = blockedSet.has(cell(c.id, h));
                       return (
                         <td key={c.id} className="px-1">
-                          <div className={`rounded-lg px-2 py-1.5 text-xs ${released ? "border border-success/30 bg-success-soft text-success-ink" : blocked ? "border border-slate/20 bg-mist text-slate" : "border border-dashed border-slate/20 text-slate-light"}`}>
-                            {released ? "Released to guests" : blocked ? "Blocked in your system" : "Open"}
+                          <div className={`rounded-lg px-2 py-1.5 text-xs ${past ? "text-slate-light" : released ? "border border-success/30 bg-success-soft text-success-ink" : blocked ? "border border-slate/20 bg-mist text-slate" : "border border-dashed border-slate/20 text-slate"}`}>
+                            {past ? "—" : released ? "Released to guests" : blocked ? "Blocked in your system" : "Open"}
                           </div>
                         </td>
                       );

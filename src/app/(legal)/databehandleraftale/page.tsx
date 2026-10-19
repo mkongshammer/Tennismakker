@@ -11,7 +11,7 @@ export default function DataProcessingAgreementPage() {
       updated="September 2, 2026"
       updatedLabel="Last updated: "
     >
-      <p className="text-slate/70">
+      <p className="text-slate">
         This Data Processing Agreement (the <strong>“DPA”</strong>) is entered into between the club using RacketBuddy (the <strong>“Controller”</strong>) and {COMPANY.name}, a Delaware limited liability company with an address at {COMPANY.address} (the <strong>“Processor”</strong>). It applies whenever RacketBuddy processes personal data on behalf of the club and is intended to satisfy Article 28(3) of the EU General Data Protection Regulation (GDPR).
       </p>
 

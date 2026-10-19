@@ -140,7 +140,7 @@ h3 {
   @apply mb-1.5 block text-sm font-semibold text-slate;
 }
 .hint {
-  @apply mt-1.5 text-xs text-slate-light;
+  @apply mt-1.5 text-xs text-slate;
 }
 .field-error {
   @apply mt-1.5 text-sm font-semibold text-danger;

@@ -137,7 +137,7 @@ export default async function SpillerePage({ searchParams }: Props) {
       {players.length === 0 ? (
         <div className="card text-center">
           <p className="font-bold"><UiText text="Ingen spillere matcher dine filtre endnu."/></p>
-          <p className="mt-2 text-sm text-slate/60"><UiText text="Prøv en anden region eller en anden sportsgren, eller opret et opslag."/></p>
+          <p className="mt-2 text-sm text-slate"><UiText text="Prøv en anden region eller en anden sportsgren, eller opret et opslag."/></p>
           <div className="mt-4">
             <Link href="/makkere/ny" className="btn-court inline-block px-5 py-3"><UiText text="Opret opslag"/></Link>
           </div>
@@ -174,7 +174,7 @@ export default async function SpillerePage({ searchParams }: Props) {
                         </div>
                       </div>
 
-                      <div className="mt-2 text-sm text-slate/60">
+                      <div className="mt-2 text-sm text-slate">
                         {region ? <span>{region}</span> : null}
                         {region && sports ? <span> · </span> : null}
                         {sports ? <span>{sports}</span> : null}

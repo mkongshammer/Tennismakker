@@ -38,7 +38,7 @@ export function ShareRacketBuddy() {
     <div className="card mb-4 flex flex-wrap items-center justify-between gap-3">
       <div>
         <p className="font-bold"><UiText text="Mangler du nogen at spille med?"/></p>
-        <p className="mt-1 text-sm text-slate/60"><UiText text="Invitér en ven til RacketBuddy – jo flere spillere, jo nemmere er det at finde et godt match."/></p>
+        <p className="mt-1 text-sm text-slate"><UiText text="Invitér en ven til RacketBuddy – jo flere spillere, jo nemmere er det at finde et godt match."/></p>
       </div>
       <button type="button" onClick={share} className="btn-court shrink-0 px-4 py-2.5">
         {copied ? <UiText text="Link kopieret ✓"/> : <UiText text="Del RacketBuddy med en ven"/>}

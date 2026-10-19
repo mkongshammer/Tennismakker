@@ -29,7 +29,7 @@ const config: Config = {
         chalk: "#FFFFFF", // lines and cards
         slate: {
           DEFAULT: "#54677E", // secondary text
-          light: "#8496AB",
+          light: "#64768D", // 4.9:1 on white — small secondary text still passes AA
           line: "#D8E0EA",
         },
         success: { DEFAULT: "#15803D", soft: "#DCFCE7", ink: "#14532D" },

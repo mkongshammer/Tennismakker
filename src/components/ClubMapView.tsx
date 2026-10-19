@@ -35,7 +35,7 @@ function pill(club: MapClub, active: boolean, locale: Locale) {
   const scale = active ? 1.12 : 1;
   return L.divIcon({
     className: "tm-pill-wrap",
-    html: `<span class="tm-pill" role="button" tabindex="0" aria-label="${club.name.replace(/"/g, "&quot;")}" style="background:${bg};transform:scale(${scale});">${formatMoney(club.priceHour, club.currency, locale)}</span>`,
+    html: `<span class="tm-pill" style="background:${bg};transform:scale(${scale});">${formatMoney(club.priceHour, club.currency, locale)}</span>`,
     iconSize: [96, 30],
     iconAnchor: [48, 30],
   });
@@ -85,10 +85,11 @@ export default function ClubMapView({ clubs, activeId, onSelect, locale = "en-US
         .on("click", () => select.current(club.id))
         .on("keypress", () => select.current(club.id))
         .addTo(instance);
+      marker.getElement()?.setAttribute("aria-label", `${club.name}, ${formatMoney(club.priceHour, club.currency, locale)} per hour`);
       markers.current.set(club.id, marker);
     }
     originMarker.current?.remove();
-    originMarker.current = origin ? L.marker([origin.latitude, origin.longitude], { icon: originIcon(), interactive: false }).addTo(instance) : null;
+    originMarker.current = origin ? L.marker([origin.latitude, origin.longitude], { icon: originIcon(), interactive: false, keyboard: false }).addTo(instance) : null;
 
     const points = clubs.filter((c) => c.latitude != null && c.longitude != null).map((c) => [c.latitude as number, c.longitude as number] as [number, number]);
     if (origin) points.push([origin.latitude, origin.longitude]);

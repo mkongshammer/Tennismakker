@@ -32,7 +32,7 @@ export default async function BeskederPage() {
       <h1 className="display mb-6 text-3xl">{t("msg.title")}</h1>
 
       {threads.length === 0 ? (
-        <div className="card text-slate/60">
+        <div className="card text-slate">
           {t("msg.emptyList")}{" "}
           <Link href="/makkere" className="font-semibold text-court underline">
             {t("msg.emptyListLink")}
@@ -56,9 +56,9 @@ export default async function BeskederPage() {
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs text-slate/50">{when(thread.lastAt, days)}</span>
+                  <span className="shrink-0 text-xs text-slate">{when(thread.lastAt, days)}</span>
                 </div>
-                <p className="mt-1 line-clamp-1 text-sm text-slate/70">
+                <p className="mt-1 line-clamp-1 text-sm text-slate">
                   {thread.lastBody ?? t("msg.about", { subject: thread.subject })}
                 </p>
               </Link>

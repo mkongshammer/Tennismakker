@@ -128,7 +128,7 @@ export default async function ProfilPage({
         <div className="flex min-w-0 flex-wrap items-center gap-3">
           <h1 className="display max-w-full break-words text-3xl">{user.name}</h1>
           <LevelBadge level={user.level} />
-          {user.area && <span className="max-w-full break-words text-slate/60">{user.area}</span>}
+          {user.area && <span className="max-w-full break-words text-slate">{user.area}</span>}
         </div>
         <div className="flex max-w-full flex-wrap items-center gap-3">
           {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
@@ -144,18 +144,18 @@ export default async function ProfilPage({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="card min-w-0">
             <p className="font-bold"><UiText text="Spillerprofil"/></p>
-            <p className="mt-1 text-sm text-slate/60"><UiText text="Aktiv — find medspillere og book baner."/></p>
+            <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — find medspillere og book baner."/></p>
           </div>
           <div className="card min-w-0">
             <p className="font-bold"><UiText text="Trænerprofil"/></p>
             {user.coachProfile ? (
               <>
-                <p className="mt-1 text-sm text-slate/60"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
+                <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
                 <Link href="/profil/traener" className="btn-ghost mt-4 inline-block text-sm"><UiText text="Administrér trænerprofil"/></Link>
               </>
             ) : (
               <>
-                <p className="mt-1 text-sm text-slate/60"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
+                <p className="mt-1 text-sm text-slate"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
                 <Link href="/profil/traener/opret" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm"><UiText text="Opret trænerprofil"/></Link>
               </>
             )}
@@ -172,7 +172,7 @@ export default async function ProfilPage({
             {toReview.map((r: any) => (
               <li key={r.bookingId} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{r.what}</p>
-                <p className="text-sm text-slate/60">
+                <p className="text-sm text-slate">
                   {formatDate(r.startsAt,prefs.locale,r.timeZone,{day:"numeric",month:"long"})}
                 </p>
                 <ReviewForm bookingId={r.bookingId} what={r.what} />
@@ -198,7 +198,7 @@ export default async function ProfilPage({
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Kommende bookinger"/></h2>
         {bookings.length === 0 && (
-          <p className="max-w-full break-words text-slate/60">
+          <p className="max-w-full break-words text-slate">
             {t("profile.noBookings")}{" "}
             <Link href="/book" className="font-semibold text-court underline">{t("nav.book")}</Link>{" "}
             {t("common.or")}{" "}
@@ -214,7 +214,7 @@ export default async function ProfilPage({
                     ? `${b.court?.club.name} — ${b.court?.name}`
                     : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
-                <p className="break-words text-sm text-slate/60">
+                <p className="break-words text-sm text-slate">
                   {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
                   {t(
                     b.status === "REQUESTED"
@@ -256,7 +256,7 @@ export default async function ProfilPage({
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Dine makker-opslag"/></h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
-          <p className="max-w-full break-words text-slate/60">
+          <p className="max-w-full break-words text-slate">
             {t("profile.noPosts")}{" "}
             <Link href="/makkere/ny" className="font-semibold text-court underline">{t("profile.createOne")}</Link>.
           </p>
@@ -266,7 +266,7 @@ export default async function ProfilPage({
             <li key={r.id} className="card flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3">
               <div className="min-w-0 max-w-full">
                 <p className="break-words">{r.message}</p>
-                <p className="break-words text-sm text-slate/60">
+                <p className="break-words text-sm text-slate">
                   {r.status === "MATCHED" && r.acceptedBy ? (
                     <>
                       {t("profile.matchedWith", { name: r.acceptedBy.name })} —{" "}
@@ -287,7 +287,7 @@ export default async function ProfilPage({
           {myMatches.map((r) => (
             <li key={r.id} className="card min-w-0 max-w-full">
               <p className="break-words"><UiText text="Du slog til på: “"/>{r.message}”</p>
-              <p className="break-words text-sm text-slate/60">
+              <p className="break-words text-sm text-slate">
                 <Link href={`/beskeder/${r.id}`} className="font-semibold text-court underline"><UiText text="Skriv til"/>{" "}{r.requester.name.split(" ")[0]}
                 </Link>{" "}<UiText text="og aftal kampen."/></p>
             </li>
@@ -301,12 +301,12 @@ export default async function ProfilPage({
             <h2 className="display text-2xl"><UiText text="Din trænerkalender"/></h2>
             <Link href="/profil/traener" className="btn-ghost text-sm"><UiText text="Redigér trænerprofil"/></Link>
           </div>
-          {coachBookings.length === 0 && <p className="text-slate/60"><UiText text="Ingen bookede elever endnu."/></p>}
+          {coachBookings.length === 0 && <p className="text-slate"><UiText text="Ingen bookede elever endnu."/></p>}
           <ul className="space-y-3">
             {coachBookings.map((b) => (
               <li key={b.id} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{b.user.name}</p>
-                <p className="break-words text-sm text-slate/60">
+                <p className="break-words text-sm text-slate">
                   {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{" "}<UiText text="(din andel udbetales automatisk)"/></p>
               </li>
             ))}

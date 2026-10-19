@@ -90,7 +90,7 @@ export default async function MakkerePage({
           <div className="mt-3">
             <SportPicker active={prefs.sport} locale={prefs.locale} />
           </div>
-          <p className="text-slate/70">{t("partners.intro")}</p>
+          <p className="text-slate">{t("partners.intro")}</p>
         </div>
         <Link href="/makkere/ny" className="btn-court">{t("partners.createPost")}</Link>
       </div>
@@ -122,7 +122,7 @@ export default async function MakkerePage({
       </form>
 
       {requests.length === 0 && (
-        <div className="card text-center text-slate/60">
+        <div className="card text-center text-slate">
           {t("partners.none")}{" "}
           <Link href="/makkere/ny" className="font-semibold text-court underline">{t("partners.createFirst")}</Link>
         </div>
@@ -140,7 +140,7 @@ export default async function MakkerePage({
                 </span>
               </div>
               <p className="mt-1">{r.message}</p>
-              <p className="mt-1 text-sm text-slate/60">
+              <p className="mt-1 text-sm text-slate">
                 {regionForArea(r.area) ?? r.area} · {formatDistanceToNow(r.createdAt, { addSuffix: true, locale: da })}
               </p>
             </div>
@@ -152,7 +152,7 @@ export default async function MakkerePage({
             ) : !user ? (
               <Link href="/login" className="btn-ghost">{t("partners.loginToRespond")}</Link>
             ) : (
-              <span className="text-sm text-slate/50">{t("partners.yours")}</span>
+              <span className="text-sm text-slate">{t("partners.yours")}</span>
             )}
           </li>
         ))}

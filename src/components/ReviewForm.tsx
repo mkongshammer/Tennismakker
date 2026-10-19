@@ -51,13 +51,13 @@ export function ReviewForm({ bookingId, what }: { bookingId: string; what: strin
 
 export function Stars({ average, count }: { average: number; count: number }) {
   if (count === 0) {
-    return <span className="text-sm text-slate/50"><UiText text="Ingen anmeldelser endnu"/></span>;
+    return <span className="text-sm text-slate"><UiText text="Ingen anmeldelser endnu"/></span>;
   }
   return (
     <span className="text-sm">
       <span className="text-court">{"★".repeat(Math.round(average))}</span>
       <span className="text-slate/25">{"☆".repeat(5 - Math.round(average))}</span>{" "}
-      <span className="text-slate/60">
+      <span className="text-slate">
         {average.toFixed(1)} ({count})
       </span>
     </span>

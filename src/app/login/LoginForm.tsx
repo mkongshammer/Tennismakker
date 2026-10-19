@@ -66,7 +66,7 @@ export function LoginForm({
           {labels.forgot}
         </Link>
       </p>
-      <p className="text-center text-sm text-slate/60">
+      <p className="text-center text-sm text-slate">
         {labels.newHere}{" "}
         <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="font-semibold text-court underline">{labels.signup}</Link>
       </p>

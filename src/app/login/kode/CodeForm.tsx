@@ -39,7 +39,7 @@ export function CodeForm({
       <SubmitButton className="btn-ink w-full" pendingText={labels.checking}>
         {labels.submit}
       </SubmitButton>
-      <p className="text-center text-sm text-slate/60">
+      <p className="text-center text-sm text-slate">
         <Link href="/login" className="font-semibold text-court underline">{labels.back}</Link>
       </p>
     </form>

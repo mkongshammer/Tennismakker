@@ -32,11 +32,11 @@ export default async function SamtalePage({ params }: { params: Promise<{ id: st
 
   return (
     <div id="top" className="mx-auto max-w-2xl scroll-mt-4">
-      <Link href="/beskeder" className="text-sm text-slate/60 hover:underline">
+      <Link href="/beskeder" className="text-sm text-slate hover:underline">
         ← {t("msg.title")}
       </Link>
       <h1 className="display mt-2 text-2xl">{access.otherUser.name}</h1>
-      <p className="text-sm text-slate/60">{t("msg.about", { subject: access.thread.message })}</p>
+      <p className="text-sm text-slate">{t("msg.about", { subject: access.thread.message })}</p>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-court/25 bg-court/5 p-4">
         <div>
@@ -50,7 +50,7 @@ export default async function SamtalePage({ params }: { params: Promise<{ id: st
 
       <div className="my-6 space-y-3">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-slate/50">
+          <p className="text-center text-sm text-slate">
             {t("msg.emptyThread")}
           </p>
         )}

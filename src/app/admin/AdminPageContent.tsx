@@ -73,7 +73,7 @@ export default async function AdminPageContent({
     return (
       <div className="card mx-auto max-w-md text-center">
         <p className="font-bold">{tr("Kun for klub-administratorer")}</p>
-        <p className="mt-1 text-sm text-slate/60">{tr("Din konto er ikke tilknyttet en klub. Kontakt RacketBuddy for at f\xE5 jeres klub med.")}
+        <p className="mt-1 text-sm text-slate">{tr("Din konto er ikke tilknyttet en klub. Kontakt RacketBuddy for at f\xE5 jeres klub med.")}
 
         </p>
       </div>);
@@ -239,7 +239,7 @@ export default async function AdminPageContent({
               }
 <section>
         <h2 className="display mb-3 text-2xl">{tr("Kommende g\xE6stebookinger")}</h2>
-        {upcoming.length === 0 && <p className="text-slate/60">{tr("Ingen bookinger i den kommende uge.")}</p>}
+        {upcoming.length === 0 && <p className="text-slate">{tr("Ingen bookinger i den kommende uge.")}</p>}
         {upcoming.length > 15 && <p className="mb-2 text-xs text-slate">Showing the next 15 of {upcoming.length} bookings this week. Use the schedule above for the full picture.</p>}
         <ul className="space-y-2">
           {upcoming.slice(0, 15).map((b: any) =>
@@ -249,7 +249,7 @@ export default async function AdminPageContent({
                 {b.court?.name}
               </span>
               <span>{b.user.name}</span>
-              <span className="text-slate/60">
+              <span className="text-slate">
                 {formatMoney(b.priceKr, b.currency, prefs.locale)}
                 {b.needsClubEntry && !b.clubEnteredAt &&
                       <span className="ml-2 font-bold text-court">{tr("skal f\xF8res ind")}</span>
@@ -278,18 +278,18 @@ export default async function AdminPageContent({
 {club.integrationType === "MANUAL" &&
               <section>
           <h2 className="display mb-1 text-2xl">{tr("Frigiv tider til g\xE6ster")}</h2>
-          <p className="mb-3 text-sm text-slate/60">{tr("Kun tider, I frigiver her, kan ses og bookes af spillere udefra.")}
+          <p className="mb-3 text-sm text-slate">{tr("Kun tider, I frigiver her, kan ses og bookes af spillere udefra.")}
 
                 </p>
 
           <div className="mb-4 rounded-lg border border-slate/15 bg-white p-4 text-sm">
             <p className="font-bold">{tr("S\xE6lger I ogs\xE5 baner et andet sted?")}</p>
-            <p className="mt-1 text-slate/70">{tr("Bruger I b\xE5de os og en anden platform, kan vi ikke se hinandens bookinger. Frigiv derfor forskellige tider til hver kanal \u2014 eller afs\xE6t en bane til hver. S\xE5 kan den samme time ikke s\xE6lges to gange.")}
+            <p className="mt-1 text-slate">{tr("Bruger I b\xE5de os og en anden platform, kan vi ikke se hinandens bookinger. Frigiv derfor forskellige tider til hver kanal \u2014 eller afs\xE6t en bane til hver. S\xE5 kan den samme time ikke s\xE6lges to gange.")}
 
 
 
                   </p>
-            <p className="mt-2 text-slate/70">{tr("Tag altid tiden ud af jeres eget system, n\xE5r I frigiver den her.")}
+            <p className="mt-2 text-slate">{tr("Tag altid tiden ud af jeres eget system, n\xE5r I frigiver den her.")}
 
                   </p>
           </div>
@@ -379,7 +379,7 @@ export default async function AdminPageContent({
 
           <h3 className="mb-2 mt-6 font-bold">{tr("Frigivne enkelttider")}</h3>
           {guestSlots.length === 0 ?
-                <p className="text-sm text-slate/60">{tr("Ingen tider er frigivet endnu.")}</p> :
+                <p className="text-sm text-slate">{tr("Ingen tider er frigivet endnu.")}</p> :
 
                 <ul className="card divide-y divide-slate/10">
               {guestSlots.map((s: any) =>
@@ -613,7 +613,7 @@ export default async function AdminPageContent({
 
 
                     </p>
-            <p className="mt-1 text-sm text-slate/60">{tr("Fast pris uanset hvor mange bookinger der kommer ind. Vi tager intet af den enkelte booking \u2014 hele bel\xF8bet g\xE5r til jer.")}
+            <p className="mt-1 text-sm text-slate">{tr("Fast pris uanset hvor mange bookinger der kommer ind. Vi tager intet af den enkelte booking \u2014 hele bel\xF8bet g\xE5r til jer.")}
 
 
                     </p>
@@ -648,7 +648,7 @@ export default async function AdminPageContent({
           </>
         </>
         {club.stripeCustomerId && <form action={openClubBillingPortal} className="mt-3"><SubmitButton className="btn-ghost" pendingText={tr("Åbner Stripe…")}>{tr("Kort, fakturaer og opsigelse")}</SubmitButton></form>}
-        <p className="mt-3 text-sm text-slate/60">{tr("Vil I skifte model, s\xE5 skriv til os.")}
+        <p className="mt-3 text-sm text-slate">{tr("Vil I skifte model, s\xE5 skriv til os.")}
 
                 </p>
       </section>
@@ -658,7 +658,7 @@ export default async function AdminPageContent({
 {clubHasFeature(club.solutionMode, club.customFeatures, 'import') && <><ResasportsForm courts={club.courts.map((c) => ({ id: c.id, name: c.name }))} /><ImportForm /></>}
 <section>
         <h2 className="display mb-1 text-2xl">{tr("S\xE5dan finder vi jeres ledige tider")}</h2>
-        <p className="mb-4 text-sm text-slate/60">{tr("I beholder jeres eget bookingsystem. V\xE6lg hvordan vi skal vide, hvad der er ledigt.")}
+        <p className="mb-4 text-sm text-slate">{tr("I beholder jeres eget bookingsystem. V\xE6lg hvordan vi skal vide, hvad der er ledigt.")}
 
                 </p>
         <IntegrationForm
@@ -670,7 +670,7 @@ export default async function AdminPageContent({
         {club.integrationType === "ICAL" &&
                 <div className="card mt-4">
             <p className="font-bold">{tr("Synkronisering")}</p>
-            <p className="mt-1 text-sm text-slate/60">
+            <p className="mt-1 text-sm text-slate">
               {club.lastSyncAt ?
                     tr("Sidst hentet {date}.",{date:formatDate(club.lastSyncAt,prefs.locale,club.timeZone,{dateStyle:"medium",timeStyle:"short"})}) :
                     tr("Feed er ikke hentet endnu.")}

@@ -41,9 +41,9 @@ export function IntegrationForm({
             <span>
               <span className="block font-semibold">
                 {tr(INTEGRATION_LABELS[t])}
-                {t === "API" && <span className="ml-2 text-xs text-slate/50">{tr("(kommer senere)")}</span>}
+                {t === "API" && <span className="ml-2 text-xs text-slate">{tr("(kommer senere)")}</span>}
               </span>
-              <span className="block text-sm text-slate/60">{tr(INTEGRATION_HELP[t])}</span>
+              <span className="block text-sm text-slate">{tr(INTEGRATION_HELP[t])}</span>
             </span>
           </label>
         )}
@@ -74,7 +74,7 @@ export function IntegrationForm({
           defaultValue={icalUrl}
           placeholder={tr("https://...")} />
 
-          <p className="mt-1 text-xs text-slate/50">{tr("Find eksport- eller abonn\xE9r-linket i jeres bookingsystem. Vi l\xE6ser kun fra det \u2014 vi skriver aldrig i jeres kalender.")}
+          <p className="mt-1 text-xs text-slate">{tr("Find eksport- eller abonn\xE9r-linket i jeres bookingsystem. Vi l\xE6ser kun fra det \u2014 vi skriver aldrig i jeres kalender.")}
 
 
         </p>

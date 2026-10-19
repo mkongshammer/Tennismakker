@@ -35,7 +35,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
     return (
       <div className="mx-auto max-w-sm card text-center">
         <p className="font-bold"><UiText text="Reservationen er udløbet"/></p>
-        <p className="mt-1 text-sm text-slate/60"><UiText text="Betalingsfristen er passeret — vælg en ny ledig tid. Har du allerede betalt, så kontakt os, før du betaler igen."/></p>
+        <p className="mt-1 text-sm text-slate"><UiText text="Betalingsfristen er passeret — vælg en ny ledig tid. Har du allerede betalt, så kontakt os, før du betaler igen."/></p>
       </div>
     );
   }
@@ -105,7 +105,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
           <span><UiText text="Pris"/></span>
           <span className="font-bold">{formatMoney(booking.priceKr,booking.currency,locale)}</span>
         </div>
-        <p className="text-xs text-slate/50">
+        <p className="text-xs text-slate">
           {fee > 0
             ? `RacketBuddy: ${formatMoney(fee,booking.currency,locale)} · ${tr(booking.kind === "COURT" ? "Klubben" : "Træneren")}: ${formatMoney(booking.priceKr-fee,booking.currency,locale)}`
             : tr("Hele beløbet udbetales til klubben.")}
@@ -113,7 +113,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
         <form action={pay}>
           <button type="submit" className="btn-court w-full">{tr("Betal")} {formatMoney(booking.priceKr,booking.currency,locale)}{" "}<UiText text="(demo)"/></button>
         </form>
-        <p className="text-center text-xs text-slate/50"><UiText text="Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til"/>{" "}
+        <p className="text-center text-xs text-slate"><UiText text="Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til"/>{" "}
           {booking.holdExpiresAt ? formatDate(booking.holdExpiresAt,locale,booking.timeZone,{hour:"numeric",minute:"2-digit"}) : "—"}.
         </p>
       </div>

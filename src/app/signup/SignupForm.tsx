@@ -123,7 +123,7 @@ export function SignupForm({
 
       <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 
-      <p className="text-center text-sm text-slate/60">{labels.haveAccount}{" "}<Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-semibold text-court underline">{labels.login}</Link></p>
+      <p className="text-center text-sm text-slate">{labels.haveAccount}{" "}<Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-semibold text-court underline">{labels.login}</Link></p>
     </form>
   );
 }
