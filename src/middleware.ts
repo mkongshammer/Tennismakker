@@ -21,6 +21,14 @@ function regionalRedirect(req: NextRequest) {
   // Retain the old EU origin for already signed-in legacy EU customers, so
   // their existing bookings and payments are not silently migrated.
   const legacyEuSession = deployed === "EU" && Boolean(req.cookies.get("tm_session")?.value);
+  // Only the storefront hostnames (the apex and www) send guests to the US
+  // product. Someone who deliberately opened the EU service's own hostname
+  // (eu.racketbuddy.app, the onrender name) wants the EU shard — that is the
+  // only way a legacy European customer or administrator can reach its
+  // sign-in page at all.
+  const host = (req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || "").split(":")[0].toLowerCase();
+  const storefront = host === "racketbuddy.app" || host === "www.racketbuddy.app";
+  if (deployed === "EU" && !storefront) return null;
   const wanted = legacyEuSession ? "EU" : "US";
   if (wanted === deployed) return null;
 
