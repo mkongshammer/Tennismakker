@@ -112,6 +112,7 @@ export async function signup(_prev: unknown, formData: FormData) {
   let location;
   try {location=profileLocation({country:formData.get('country')??'DK',locale:formData.get('locale')??'da',area:formData.get('area')});} catch(e) {return {error:(e as Error).message};}
   const {area,country,locale}=location;
+  if (country !== "US") return { error: "New RacketBuddy accounts are available for the United States only." };
   const market=marketFor(country)!;
   const currency=String(formData.get('currency')??market.currency),timeZone=String(formData.get('timeZone')??market.timeZone);
   const coachPrice=Number(formData.get('priceHour')??(currency==='USD'?53:47));
