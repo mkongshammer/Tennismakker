@@ -1,0 +1,62 @@
+name: Upload RacketBuddy USA iOS build 9
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/submit-usa-ios-build9.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      EXPO_ASC_API_KEY_PATH: /tmp/AuthKey.p8
+      EXPO_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      CI: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Configure existing App Store Connect credentials
+        run: |
+          test -n "$EXPO_TOKEN"
+          test -n "$ASC_KEY_ID"
+          test -n "$ASC_ISSUER_ID"
+          test -n "$ASC_PRIVATE_KEY"
+          printf '%s' "$ASC_PRIVATE_KEY" > /tmp/AuthKey.p8
+          chmod 600 /tmp/AuthKey.p8
+          node - <<'NODE'
+          const fs = require('fs');
+          const p = 'eas.json';
+          const config = JSON.parse(fs.readFileSync(p,'utf8'));
+          config.submit ||= {};
+          config.submit.production ||= {};
+          config.submit.production.ios = {
+            ascAppId: '6820186123',
+            ascApiKeyPath: '/tmp/AuthKey.p8',
+            ascApiKeyIssuerId: process.env.ASC_ISSUER_ID,
+            ascApiKeyId: process.env.ASC_KEY_ID
+          };
+          fs.writeFileSync(p, JSON.stringify(config,null,2)+'\n');
+          NODE
+      - name: Submit exact US build 9 to App Store Connect
+        run: npx --yes eas-cli@latest submit --platform ios --id 9316ea05-1f8a-498f-88e3-ba815072e8d1 --profile production --non-interactive --no-wait
+      - name: Check iOS submissions
+        run: npx --yes eas-cli@latest submit:list --platform ios --limit 5 --json --non-interactive
