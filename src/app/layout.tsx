@@ -1,7 +1,6 @@
 
 import {UiText} from "../components/InternationalProvider";
 import {InternationalProvider} from "../components/InternationalProvider";
-import { CountryPicker } from "../components/CountryPicker";
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -115,14 +114,11 @@ export default async function RootLayout({
                 <Link href="/opret-klub" className="hover:text-ink">{phrase('Til klubber',prefs.locale)}</Link>
                 <Link href="/hjemmeside" className="hover:text-ink">{phrase('Hjemmeside til klubben',prefs.locale)}</Link>
                 <Link href="/app" className="hover:text-ink">App</Link>
-                <Link href="/vilkaar/eu" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · EU / EEA</Link>
                 <Link href="/vilkaar/usa" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · USA</Link>
-                <Link href="/vilkaar/international" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · UK / CH / CA</Link>
                 <Link href="/privatliv" className="hover:text-ink">{phrase('Privatliv',prefs.locale)}</Link>
                 <Link href="/databehandleraftale" className="hover:text-ink">{phrase('Databehandleraftale',prefs.locale)}</Link>
               </div>
               <div className="mt-6 border-t border-slate/10 pt-5 space-y-4">
-                <CountryPicker active={prefs.country} locale={prefs.locale} />
                 <p className="mb-2 text-xs font-bold text-slate">{t("common.language")}</p>
                 <LanguagePicker active={prefs.locale} />
                 <p className="text-xs text-slate-light"><a href="https://db-ip.com" target="_blank" rel="noreferrer">IP Geolocation by DB-IP</a></p>
