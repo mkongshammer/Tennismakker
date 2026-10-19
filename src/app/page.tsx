@@ -13,7 +13,6 @@ import { SPORTS, sportLabel, sportColor } from "../lib/sports";
 import { getSettings } from "../lib/settings";
 import { DiscoverySearch } from "../components/discovery/DiscoverySearch";
 import { parseDiscoveryFilters } from "../lib/discovery";
-import { Ball } from "../components/Ball";
 import { Icon, type IconName } from "../components/ui";
 
 export const dynamic = "force-dynamic";
@@ -131,14 +130,7 @@ export default async function Home() {
           <div className="mt-8">
             <DiscoverySearch filters={filters} compact placeholder="Where do you want to play? City, state or ZIP" />
           </div>
-          <ul className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate">
-            {SPORTS.map((s) => (
-              <li key={s} className="flex items-center gap-2">
-                <Ball sport={s} size={22} />
-                {sportLabel(s, "en-US")}
-              </li>
-            ))}
-          </ul>
+          <p className="mt-4 text-sm text-slate">No account needed to look. Pay only when you reserve · Free cancellation up to 24 hours before</p>
         </div>
         <figure className="relative isolate overflow-hidden rounded-3xl bg-[#e2e9df]">
           <Image src="/images/club-life-hero.webp" alt="Tennis players beside a clubhouse in the afternoon sun" width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[400px] lg:h-[520px]" />

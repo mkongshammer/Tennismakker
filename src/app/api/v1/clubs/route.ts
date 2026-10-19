@@ -14,6 +14,7 @@ export async function OPTIONS() { return preflight(); }
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
+  const origin = (process.env.APP_URL ?? url.origin).replace(/\/+$/, "");
   const query = Object.fromEntries(url.searchParams.entries());
   const filters = parseDiscoveryFilters(query);
   const result = await discoverClubs(filters);
@@ -49,6 +50,8 @@ export async function GET(req: Request) {
       slotsToday: c.slotsToday,
       nextSlotAt: c.nextSlotAt,
       tagline: c.tagline,
+      heroId: c.heroId,
+      heroUrl: c.heroId ? `${origin}/api/billeder/${c.heroId}?w=480` : null,
     })),
   });
 }

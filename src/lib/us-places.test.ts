@@ -26,7 +26,7 @@ test('an ambiguous city picks the best-known one and names the alternatives', as
   const springfield = await resolvePlace('Springfield');
   assert.ok(springfield);
   assert.equal(springfield.kind, 'city');
-  assert.ok(springfield.alternatives && springfield.alternatives.length >= 3, JSON.stringify(springfield.alternatives));
+  assert.ok(springfield.alternatives && springfield.alternatives.length >= 2, JSON.stringify(springfield.alternatives));
   assert.ok(springfield.alternatives!.every((a) => /^Springfield, [A-Z]{2}$/.test(a.label)));
   assert.ok(!springfield.alternatives!.some((a) => a.label === springfield.label));
   // Naming the state removes the ambiguity entirely.
@@ -36,6 +36,10 @@ test('an ambiguous city picks the best-known one and names the alternatives', as
   const portland = await resolvePlace('Portland');
   assert.equal(portland?.state, 'OR');
   assert.ok(portland?.alternatives?.some((a) => a.label === 'Portland, ME'));
+  // A city with namesakes that are all tiny is not ambiguous.
+  const boston = await resolvePlace('Boston');
+  assert.equal(boston?.state, 'MA');
+  assert.equal(boston?.alternatives, undefined, JSON.stringify(boston?.alternatives));
 });
 
 test('a state resolves to an area with bounds, not just a point', async () => {

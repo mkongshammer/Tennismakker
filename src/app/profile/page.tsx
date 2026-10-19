@@ -202,9 +202,9 @@ export default async function ProfilPage({
         {bookings.length === 0 && (
           <p className="max-w-full break-words text-slate">
             {t("profile.noBookings")}{" "}
-            <Link href="/courts" className="font-semibold text-court underline">{t("nav.book")}</Link>{" "}
+            <Link href="/courts" className="font-semibold text-court underline">{prefs.locale === "en-US" ? "reserve a court" : t("nav.book")}</Link>{" "}
             {t("common.or")}{" "}
-            <Link href="/coaches" className="font-semibold text-court underline">{t("nav.coaches")}</Link>.
+            <Link href="/coaches" className="font-semibold text-court underline">{prefs.locale === "en-US" ? "find a coach" : t("nav.coaches")}</Link>.
           </p>
         )}
         <ul className="space-y-3">

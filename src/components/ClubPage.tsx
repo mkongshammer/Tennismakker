@@ -277,7 +277,8 @@ export async function ClubPage({
         <p className="mb-4 text-sm text-slate">
           {club.memberPriceHour != null && !isMember ?
           `${tr("Gæstepris")} ${money(club.priceHour)}. ${tr("Medlemspris")} ${money(club.memberPriceHour)}.` :
-          <UiText text="Tiden holdes i 10 minutter, mens du betaler."/>}
+          <UiText text="Tiden holdes i 10 minutter, mens du betaler."/>}{" "}
+          <UiText text="Gratis aflysning indtil 24 timer før."/>
         </p>
 
         <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">

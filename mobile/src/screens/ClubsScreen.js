@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
 import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { api } from "../lib/api";
@@ -79,7 +79,7 @@ export default function ClubsScreen({ navigation }) {
               <Card style={{ padding: 0, overflow: "hidden" }}>
                 <View style={styles.clubBody}>
                 <View style={styles.thumb}>
-                  <CourtGraphic color={item.color || sportColor(sport)} width={84} height={84} />
+                  {item.heroUrl ? <Image source={{ uri: item.heroUrl }} style={{ width: 84, height: 84 }} accessibilityIgnoresInvertColors /> : <CourtGraphic color={item.color || sportColor(sport)} width={84} height={84} />}
                 </View>
                 <View style={{ flex: 1 }}>
                   <View style={styles.row}>

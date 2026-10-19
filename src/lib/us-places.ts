@@ -170,7 +170,10 @@ export async function resolvePlace(raw: string): Promise<Place | null> {
   const [bestState, bestRows] = ranked[0];
   const center = centroid(bestRows);
   if (!center) return null;
-  const alternatives = ranked.slice(1, 6).map(([st]) => ({ label: `${titleCase(city)}, ${st}`, query: `${titleCase(city)}, ${st}` }));
+  // Only real alternatives: a namesake that is a town in its own right
+  // (three or more ZIP codes — Portland, ME; Springfield, MO), not every
+  // one-ZIP hamlet that shares the name (Boston, GA).
+  const alternatives = ranked.slice(1).filter(([, rows]) => rows.length >= 3).slice(0, 5).map(([st]) => ({ label: `${titleCase(city)}, ${st}`, query: `${titleCase(city)}, ${st}` }));
   return { kind: "city", label: `${titleCase(city)}, ${bestState}`, city: titleCase(city), state: bestState, ...center, ...(alternatives.length ? { alternatives } : {}) };
 }
 

@@ -48,9 +48,11 @@ h3 {
    The color comes from the sport's real surface, so color carries
    information instead of decoration.
    --------------------------------------------------------------- */
+/* An open time. Calm at rest — chalk with the sport's line — and the sport's
+   colour on hover/focus, so a full day reads as a schedule, not a wall of
+   buttons, and the one you are about to pick is unmistakable. */
 .court-tile {
-  @apply relative overflow-hidden rounded-xl text-chalk transition-transform duration-fast;
-  background: var(--sport, #1b62c4);
+  @apply relative overflow-hidden rounded-xl border border-slate-line bg-chalk text-ink shadow-[0_1px_0_rgba(15,33,56,.04)] transition-[transform,background-color,color,border-color,box-shadow] duration-fast ease-out;
 }
 .court-tile::after {
   content: "";
@@ -59,13 +61,29 @@ h3 {
   right: 12px;
   bottom: 7px;
   height: 2px;
-  background: rgba(255, 255, 255, 0.45);
+  border-radius: 2px;
+  background: var(--sport, #1b62c4);
+  opacity: 0.55;
 }
-.court-tile:hover {
+.court-tile:hover,
+.court-tile:focus-visible {
+  background: var(--sport, #1b62c4);
+  border-color: transparent;
+  color: #fff;
   transform: translateY(-1px);
+  box-shadow: 0 8px 20px -10px rgba(15, 33, 56, 0.45);
+  outline: none;
+}
+.court-tile:hover::after,
+.court-tile:focus-visible::after {
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
 }
 .court-tile:active {
   transform: scale(0.98);
+}
+.court-tile .tile-muted {
+  opacity: 0.68;
 }
 
 /* Chalk line as a divider — the court's marking, not a line for its own sake */

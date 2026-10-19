@@ -123,7 +123,7 @@ export function WeeklyCalendar({
           {range.map((hour) => (
             <Fragment key={hour}>
               <span className="pr-1 text-right text-[10px] leading-8 text-slate-light">
-                {hour}
+                {locale === "en-US" ? `${hour % 12 === 0 ? 12 : hour % 12}${hour < 12 ? "a" : "p"}` : hour}
               </span>
               {WEEK_ORDER.map((day) => {
                 const key = `${day}-${hour}`;
@@ -133,7 +133,7 @@ export function WeeklyCalendar({
                     key={key}
                     type="button"
                     aria-pressed={on}
-                    aria-label={`${dayName(day)} ${hour}–${hour + 1}`}
+                    aria-label={`${dayName(day)} ${locale === "en-US" ? `${hour % 12 === 0 ? 12 : hour % 12} ${hour < 12 ? "AM" : "PM"}` : `${hour}–${hour + 1}`}`}
                     onPointerDown={() => {
                       painting.current = !on;
                       set(key, !on);

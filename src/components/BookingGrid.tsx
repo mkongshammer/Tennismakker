@@ -134,7 +134,7 @@ export function BookingGrid({
 
                 <span className="relative z-10">
                   <span className="data block text-xl font-bold">{clock(slot.startsAt)}</span>
-                  <span className="text-sm text-chalk/80">{court.name}</span>
+                  <span className="tile-muted text-sm">{court.name}</span>
                 </span>
                 <span className="data relative z-10 text-lg font-bold">{money(slot.priceKr)}</span>
               </Book>);
@@ -185,7 +185,7 @@ export function BookingGrid({
                       className="court-tile px-3 pb-6 pt-3 text-left">
 
                         <span className="relative z-10 block font-semibold">{court.name}</span>
-                        <span className="relative z-10 block text-xs text-chalk/80">
+                        <span className="tile-muted relative z-10 block text-xs">
                           {surfaceLabel(court.surface, locale)}
                           {court.indoor ? <UiText text=" · indendørs"/> : ""}
                         </span>
@@ -232,7 +232,7 @@ export function BookingGrid({
                     return (
                       <td key={c.id} className="p-1">
                           <div className="rounded-lg bg-mist py-2.5 text-center text-xs text-slate-light">
-                            —
+                            <span aria-hidden="true">—</span><span className="sr-only">Not available</span>
                           </div>
                         </td>);
 
@@ -245,7 +245,7 @@ export function BookingGrid({
                         loggedIn={loggedIn}
                 loginHref={loginHref}
                         style={{ ["--sport" as any]: tint }}
-                        className="court-tile block w-full pb-4 pt-2.5 text-center hover:opacity-90">
+                        className="court-tile block w-full pb-4 pt-2.5 text-center">
 
                           <span className="data relative z-10 text-sm font-bold">
                             {money(slot.priceKr)}

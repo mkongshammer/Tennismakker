@@ -1195,5 +1195,8 @@
   "{p0} har desværre måttet aflyse din time.": "{p0} had to cancel your lesson. We’re sorry about that.",
   "Der er ikke trukket penge.": "Nothing was charged.",
   "Begrundelse: {p0}": "Reason: {p0}",
-  "Trænertime hos {p0} ({p1})": "Lesson with {p0} ({p1})"
+  "Trænertime hos {p0} ({p1})": "Lesson with {p0} ({p1})",
+  "Gratis aflysning indtil 24 timer før.": "Free cancellation until 24 hours before.",
+  "Fortryder du, kan du aflyse gratis indtil 24 timer før starttidspunktet.": "Change of plans? Cancel free of charge until 24 hours before the start time.",
+  "Din trænerside": "Coach dashboard"
 }

@@ -18,6 +18,8 @@ export type MapClub = {
   surfaces: string[];
   color: string;
   tagline?: string | null;
+  /** Approved hero image id, when the club has uploaded one. */
+  heroId?: string | null;
   rating: { average: number; count: number };
   /** Open court-hours left today; null when availability was not checked or could not be read. */
   guestSlotsToday: number | null;

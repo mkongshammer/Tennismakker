@@ -15,7 +15,8 @@ function clock(d: Date) {
 export default async function SamtalePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await getCurrentUser();
-  const t = translator((await getPreferences()).locale);
+  const { locale } = await getPreferences();
+  const t = translator(locale);
   if (!user) redirect("/login");
 
   const access = await loadThread(id, user.id);
@@ -44,7 +45,7 @@ export default async function SamtalePage({ params }: { params: Promise<{ id: st
           <p className="text-sm text-slate">{t("msg.agreedBody")}</p>
         </div>
         <Link href="/courts" className="btn-court">
-          {t("nav.book")}
+          {locale === "en-US" ? "Reserve a court" : t("nav.book")}
         </Link>
       </div>
 

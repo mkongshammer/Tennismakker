@@ -12,7 +12,7 @@ import { sportLabel } from "../../lib/sports";
 import { DiscoverySearch } from "../../components/discovery/DiscoverySearch";
 import { ClubResults } from "../../components/discovery/ClubResults";
 import { InterestForm } from "../../components/discovery/InterestForm";
-import { EmptyState, Icon, PageHeader } from "../../components/ui";
+import { EmptyState, Icon } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -60,9 +60,12 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Reserve a court" title={headline} lead={summary ?? "Search a city, state or ZIP code to see courts, prices and what is open today."} />
-
       <DiscoverySearch filters={filters} radiusApplies={!stateSearch} />
+
+      <header className="min-w-0">
+        <h1 className="display text-title sm:text-display-md">{headline}</h1>
+        <p className="mt-1 text-sm text-slate sm:text-base">{summary ?? "Search a city, state or ZIP code to see courts, prices and what is open today."}</p>
+      </header>
 
       {place?.alternatives?.length ? (
         <p className="-mt-2 text-sm text-slate" role="note">

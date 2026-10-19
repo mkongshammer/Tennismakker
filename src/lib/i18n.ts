@@ -25,7 +25,7 @@ export const T: Dict = {
     de: "Platz buchen",
     sv: "Boka bana",
     no: "Book bane",
-    "en-US": "Reserve a court",
+    "en-US": "Courts",
    fr: "Réserver un terrain", es: "Reservar pista", },
   "nav.coaches": {
     da: "Find træner",
@@ -33,6 +33,7 @@ export const T: Dict = {
     de: "Trainer finden",
     sv: "Hitta tränare",
     no: "Finn trener",
+    "en-US": "Coaches",
    fr: "Trouver un entraîneur", es: "Encontrar entrenador", },
   "nav.players": {
     da: "Find medspiller",
@@ -40,7 +41,7 @@ export const T: Dict = {
     de: "Mitspieler finden",
     sv: "Hitta medspelare",
     no: "Finn medspiller",
-    "en-US": "Find a hitting partner",
+    "en-US": "Players",
    fr: "Trouver un partenaire", es: "Encontrar compañero", },
   "nav.profile": {
     da: "Min profil",
@@ -59,7 +60,7 @@ export const T: Dict = {
 
   // Korte udgaver til bundlinjen på telefon, hvor fire faner skal dele
   // bredden. De lange navne bruges stadig som sidetitler.
-  "tab.book": { da: "Book bane", en: "Book", de: "Buchen", sv: "Boka", no: "Book", "en-US": "Reserve" , fr: "Réserver", es: "Reservar", },
+  "tab.book": { da: "Book bane", en: "Book", de: "Buchen", sv: "Boka", no: "Book", "en-US": "Courts" , fr: "Réserver", es: "Reservar", },
   "tab.coaches": { da: "Trænere", en: "Coaches", de: "Trainer", sv: "Tränare", no: "Trenere" , fr: "Entraîneurs", es: "Entrenadores", },
   "tab.players": {
     da: "Medspillere",

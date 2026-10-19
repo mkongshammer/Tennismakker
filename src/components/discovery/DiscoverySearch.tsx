@@ -29,8 +29,8 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
         go({ q, sport });
       }}
     >
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <label className="relative flex min-h-14 flex-1 items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
+      <div className="flex gap-2">
+        <label className="relative flex min-h-14 min-w-0 flex-1 items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
           <span className="sr-only">Where do you want to play?</span>
           <Icon name="pin" className="mr-3 shrink-0 text-slate" />
           <input
@@ -49,9 +49,9 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
             </button>
           )}
         </label>
-        <button type="submit" className="btn-court min-h-14 rounded-2xl sm:min-w-36" aria-busy={pending}>
+        <button type="submit" className="btn-court min-h-14 w-14 shrink-0 rounded-2xl px-0 sm:w-auto sm:min-w-36 sm:px-5" aria-busy={pending} aria-label={pending ? "Searching" : "Search"}>
           <Icon name="search" />
-          {pending ? "Searching…" : "Search"}
+          <span className="hidden sm:inline">{pending ? "Searching…" : "Search"}</span>
         </button>
       </div>
 
@@ -76,15 +76,16 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
       </div>
 
       {!compact && (
-        <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate/10 pt-3 text-sm">
-          <span className="mr-1 text-xs font-bold uppercase tracking-[0.14em] text-slate">Filters</span>
-          <button type="button" aria-pressed={filters.today} onClick={() => go({ today: !filters.today })} className="pill min-h-9 text-xs">
+        <div className="no-scrollbar -mx-1 mt-3 overflow-x-auto border-t border-slate/10 px-1 pt-3 text-sm">
+        <div className="flex w-max items-center gap-2 sm:w-auto sm:flex-wrap">
+          <span className="mr-1 hidden text-xs font-bold uppercase tracking-[0.14em] text-slate sm:inline">Filters</span>
+          <button type="button" aria-pressed={filters.today} onClick={() => go({ today: !filters.today })} className="pill min-h-9 shrink-0 text-xs">
             <Icon name="clock" size={14} /> Available today
           </button>
-          <button type="button" aria-pressed={filters.indoor} onClick={() => go({ indoor: !filters.indoor })} className="pill min-h-9 text-xs">
+          <button type="button" aria-pressed={filters.indoor} onClick={() => go({ indoor: !filters.indoor })} className="pill min-h-9 shrink-0 text-xs">
             <Icon name="roof" size={14} /> Indoor
           </button>
-          <label className="pill min-h-9 cursor-pointer text-xs">
+          <label className="pill min-h-9 shrink-0 cursor-pointer text-xs">
             <Icon name="dollar" size={14} />
             <span className="sr-only">Maximum price per hour</span>
             <select
@@ -100,7 +101,7 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
             </select>
           </label>
           {filters.q && radiusApplies && (
-            <label className="pill min-h-9 cursor-pointer text-xs">
+            <label className="pill min-h-9 shrink-0 cursor-pointer text-xs">
               <Icon name="map" size={14} />
               <span className="sr-only">Search radius</span>
               <select value={filters.radiusMiles} onChange={(e) => go({ radiusMiles: Number(e.target.value) })} className="bg-transparent text-xs font-semibold outline-none" style={{ fontSize: 16 }}>
@@ -111,10 +112,11 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
             </label>
           )}
           {(filters.today || filters.indoor || filters.maxPrice) && (
-            <button type="button" onClick={() => go({ today: false, indoor: false, maxPrice: null })} className="ml-auto text-xs font-semibold text-slate underline-offset-2 hover:underline">
+            <button type="button" onClick={() => go({ today: false, indoor: false, maxPrice: null })} className="shrink-0 text-xs font-semibold text-slate underline-offset-2 hover:underline sm:ml-auto">
               Clear filters
             </button>
           )}
+        </div>
         </div>
       )}
     </form>

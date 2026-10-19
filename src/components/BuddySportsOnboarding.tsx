@@ -2,33 +2,44 @@
 import {UiText} from "./InternationalProvider";
 
 
+import { useEffect, useId, useState } from "react";
 import { useFormState } from "react-dom";
 import { usePathname, useSearchParams } from "next/navigation";
 import { SPORTS, sportLabel, type Locale } from "../lib/sports";
 import { saveBuddySports } from "../app/onboarding-sports/actions";
 import { SubmitButton } from "./SubmitButton";
 
-// Where asking about sports helps rather than interrupts. Someone in the
-// middle of reserving a court or paying is never stopped by this prompt.
-const PROMPT_PATHS = ["/players", "/matches", "/profile", "/coaches", "/messages"];
+// Where asking about sports helps rather than interrupts: the social
+// features, where sports drive matching. Never on the profile (someone who
+// just paid is reading their confirmation), on the court or coach pages,
+// or on top of a payment result. "Not now" hides it for the rest of the
+// browser session; the next visit asks once more.
+const PROMPT_PATHS = ["/players", "/matches", "/messages"];
+const DISMISS_KEY = "rb_sports_prompt_dismissed";
 
 export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
   const [state, action] = useFormState(saveBuddySports, null);
   const pathname = usePathname();
   const params = useSearchParams();
+  const titleId = useId();
+  const [dismissed, setDismissed] = useState(true); // render nothing until the client has checked storage
+  useEffect(() => {
+    try { setDismissed(sessionStorage.getItem(DISMISS_KEY) === "1"); } catch { setDismissed(false); }
+  }, []);
   const da = locale === "da";
+  if (dismissed) return null;
   if (!PROMPT_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/"))) return null;
-  // Never on top of a payment result.
   if (params.has("betalt") || params.has("betaling") || params.has("afventer")) return null;
+  const notNow = () => { try { sessionStorage.setItem(DISMISS_KEY, "1"); } catch {} setDismissed(true); };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 px-4 py-8 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <form action={action} className="card w-full max-w-lg space-y-5 shadow-2xl">
         <div>
           <p className="text-xs font-bold uppercase tracking-wider text-court">
             {da ? <UiText text="Find din næste buddy"/> : <UiText text="Find your next buddy"/>}
           </p>
-          <h2 className="display mt-2 text-2xl">
+          <h2 id={titleId} className="display mt-2 text-2xl">
             {da ? <UiText text="Hvilke sportsgrene spiller du?"/> : <UiText text="Which sports do you play?"/>}
           </h2>
           <p className="mt-2 text-sm leading-6 text-slate">
@@ -57,6 +68,7 @@ export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
         <SubmitButton className="btn-court w-full" pendingText={da ? "Gemmer…" : "Saving…"}>
           {da ? <UiText text="Gem mine sportsgrene"/> : <UiText text="Save my sports"/>}
         </SubmitButton>
+        <button type="button" onClick={notNow} className="btn-ghost w-full">{da ? "Ikke nu" : "Not now"}</button>
       </form>
     </div>
   );

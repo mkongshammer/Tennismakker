@@ -116,6 +116,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
         <p className="text-center text-xs text-slate"><UiText text="Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til"/>{" "}
           {booking.holdExpiresAt ? formatDate(booking.holdExpiresAt,locale,booking.timeZone,{hour:"numeric",minute:"2-digit"}) : "—"}.
         </p>
+        <p className="text-center text-xs text-slate"><UiText text="Fortryder du, kan du aflyse gratis indtil 24 timer før starttidspunktet."/></p>
       </div>
     </div>
   );

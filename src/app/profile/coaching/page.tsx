@@ -45,7 +45,7 @@ export default function TraenerProfilPage() {
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="display mb-6 text-3xl"><UiText text="Trænerprofil"/></h1>
+      <h1 className="display mb-6 text-3xl"><UiText text="Din trænerside"/></h1>
 
       <div className="card mb-4">
         <p className="font-bold"><UiText text="Udbetalinger"/></p>

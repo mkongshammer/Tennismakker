@@ -90,6 +90,8 @@ export function TabBar({
   const pathname = usePathname();
   const t = translator(locale);
   if (isPublicPage(pathname)) return null;
+  // Club and platform administration have their own navigation; the player tabs only take space there.
+  if (pathname === "/admin" || pathname.startsWith("/admin/") || pathname === "/superadmin" || pathname.startsWith("/superadmin/")) return null;
 
   // Tre punkter, ikke fire. Profilen ligger i hjørnet: den er noget man
   // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det

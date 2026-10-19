@@ -11,6 +11,7 @@ import type { MapClub } from "../clubTypes";
 import { formatMoney, formatDate } from "../../lib/international";
 import { surfaceLabel } from "../../lib/sports";
 import { formatDistance } from "../../lib/us-distance";
+import { imageUrl } from "../../lib/imageUrl";
 import { Icon } from "../ui";
 
 const ClubMapView = dynamic(() => import("../ClubMapView"), {
@@ -55,8 +56,12 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
         onFocus={() => onHover(club.id)}
         className={`card-interactive flex gap-4 rounded-2xl border bg-chalk p-3 sm:p-4 ${active ? "border-court shadow-lift" : "border-slate/10"}`}
       >
-        <div className="h-[72px] w-[108px] shrink-0 overflow-hidden rounded-xl sm:h-[84px] sm:w-[128px]">
-          <CourtGraphic color={club.color} />
+        <div className="h-[72px] w-[108px] shrink-0 overflow-hidden rounded-xl bg-mist sm:h-[84px] sm:w-[128px]">
+          {club.heroId ? (
+            <img src={imageUrl(club.heroId, 320)} srcSet={`${imageUrl(club.heroId, 320)} 320w, ${imageUrl(club.heroId, 480)} 480w`} sizes="128px" alt="" loading="lazy" decoding="async" width={128} height={84} className="h-full w-full object-cover" />
+          ) : (
+            <CourtGraphic color={club.color} />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <div className="pr-9">
