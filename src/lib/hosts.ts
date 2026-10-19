@@ -10,6 +10,9 @@ const OWN_HOSTS = [
   "127.0.0.1",
   "racketbuddy.app",
   "www.racketbuddy.app",
+  // The legacy European service's own hostname. Without it the EU app treats
+  // it as a club's custom domain and 308s every request to the apex.
+  "eu.racketbuddy.app",
   "tennis-makker.onrender.com",
 ];
 
