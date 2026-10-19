@@ -1,12 +1,15 @@
 import { MARKETS, countryLabel } from "./international";
 // Sportsgrene, lande og sprog for RacketBuddy.
 //
+// Rækkefølgen er visningsrækkefølgen: tennis og pickleball først, fordi
+// de er de største i USA og skal kunne ses uden at scrolle filterrækken.
+//
 // Platformen dækker ketsjersport bredt, men tennis er hovedsporet: det er
 // der, banerne, trænerne og efterspørgslen er størst, og det er tennis der
 // afgør, om produktet holder. De øvrige grene skal fungere, men de får ikke
 // lov at trække opsætningen skæv.
 
-export const SPORTS = ["TENNIS", "PADEL", "BADMINTON", "SQUASH", "BORDTENNIS", "PICKLEBALL"] as const;
+export const SPORTS = ["TENNIS", "PICKLEBALL", "PADEL", "BADMINTON", "SQUASH", "BORDTENNIS"] as const;
 export type Sport = (typeof SPORTS)[number];
 
 export const DEFAULT_SPORT: Sport = "TENNIS";

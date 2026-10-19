@@ -49,7 +49,7 @@ export const SURFACES = {
   INDE: "Indendørs",
 };
 
-export const SPORTS = ["TENNIS", "PADEL", "BADMINTON", "SQUASH", "BORDTENNIS", "PICKLEBALL"];
+export const SPORTS = ["TENNIS", "PICKLEBALL", "PADEL", "BADMINTON", "SQUASH", "BORDTENNIS"];
 
 export const SPORT_LABELS = {
   TENNIS: "Tennis",
