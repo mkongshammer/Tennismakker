@@ -5,7 +5,7 @@ import {useFormState} from 'react-dom';
 import {registerClub} from '../../lib/club-onboarding-actions';
 import {CUSTOM_FEATURES} from '../../lib/club-features';
 import {SPORTS,sportLabel,type Locale} from '../../lib/sports';
-import {MARKETS,TIME_ZONES,bookingCurrency,countryLabel,marketFor,formatMoney} from '../../lib/international';
+import {TIME_ZONES,formatMoney} from '../../lib/international';
 import {US_STATES,usStateTimeZone} from '../../../shared/us-address.mjs';
 import {phrase} from '../../lib/phrases';
 import {termsHref} from '../../lib/legal-market';
@@ -15,14 +15,15 @@ const DEFAULT_COURT_PRICE:Record<string,number>={DKK:100,SEK:150,NOK:150,EUR:12,
 
 export function SignupForm({priceBook,locale='da',initialCountry='DK',initialMode='STANDARD'}:{priceBook:PriceBook;locale?:Locale;initialCountry?:string;initialMode?:'STANDARD'|'CUSTOM'}){
  const [mode,setMode]=useState(initialMode),[sports,setSports]=useState<string[]>(['TENNIS']),[state,action]=useFormState(registerClub,null);
- const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(bookingCurrency(initialCountry)),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??'Europe/Copenhagen'),[usState,setUsState]=useState('');
+ const country='US', currency='USD';
+ const [timeZone,setTimeZone]=useState('America/New_York'),[usState,setUsState]=useState('');
  const prices=pricesForCountry(priceBook,country);
  const tr=(value:string)=>phrase(value,locale),price=mode==='CUSTOM'?prices.custom:prices.standard,money=(p:number)=>formatMoney(p,prices.currency,locale);
  const isUS=country==='US';
  return <form action={action} className="space-y-6"><input type="hidden" name="locale" value={locale}/>
  <section className="card space-y-4"><h2 className="display text-2xl">{tr("1. Vælg jeres løsning")}</h2><div className="grid gap-3 sm:grid-cols-2">{[['STANDARD','Standard',prices.standard],['CUSTOM','Custom',prices.custom]].map(([id,label,p])=><label key={id} className={`rounded-2xl border p-4 cursor-pointer ${mode===id?'border-court bg-court/5':'border-slate/20'}`}><input type="radio" name="mode" value={id??''} checked={mode===id} onChange={()=>setMode(id==='CUSTOM'?'CUSTOM':'STANDARD')}/> <strong>{label}</strong><p className="mt-2">{p==null?tr("Pris ikke offentliggjort"):id==='CUSTOM'?`${money(Number(p))} ${tr("én gang")} + ${money(prices.standard)}/${tr("måned")}`:`${money(Number(p))}/${tr("måned")}`}</p><p className="text-sm text-slate mt-1">{id==='STANDARD'?tr("Standard klubadministration med baner, bookinger og betaling."):tr("Standardadministration plus de funktioner, I vælger nedenfor. Engangsprisen er den samme uanset antal funktioner.")}</p></label>)}</div>{mode==='CUSTOM'&&<div className="grid gap-3 sm:grid-cols-2">{CUSTOM_FEATURES.map(feature=><label key={feature.id} className="flex gap-3 rounded-xl border border-slate/15 p-3"><input type="checkbox" name="features" value={feature.id}/>{phrase(feature.label,locale)}</label>)}</div>}<p className="text-sm text-slate">{tr("Klubpriser er ekskl. eventuel moms eller sales tax. Det samlede beløb vises før betaling.")}</p><input type="hidden" name="monthlyQuote" value={prices.standard}/><input type="hidden" name="billingCurrency" value={prices.currency}/><input type="hidden" name="quote" value={price??''}/></section>
  <section className="card space-y-4"><h2 className="display text-2xl">{tr("2. Klub og baner")}</h2><div className="grid gap-4 sm:grid-cols-2">
- <label className="label">{tr("Land")}<select className="input" name="country" autoComplete="country" value={country} onChange={e=>{const next=e.target.value;setCountry(next);const m=marketFor(next)!;setCurrency(bookingCurrency(next));setTimeZone(m.timeZone);setUsState('');}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
+ <label className="label">{tr("Land")}<input type="hidden" name="country" value="US"/><div className="input flex items-center">United States</div></label>
  <label className="label">{tr("Valuta for klubbookinger")}<div className="input flex items-center" aria-label={tr("Valuta for klubbookinger")}>{currency}</div></label>
  <label className="label sm:col-span-2">{tr("Klubbens tidszone")}<select className="input" name="timeZone" value={timeZone} onChange={e=>setTimeZone(e.target.value)}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
  <label className="label">{tr("Klubbens navn")}<input className="input" name="name" autoComplete="organization" required maxLength={150}/></label>
