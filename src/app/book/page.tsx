@@ -1,5 +1,4 @@
 import {dayKey,wallTime,addCalendarDays} from "../../lib/international";
-import {CountryPicker} from "../../components/CountryPicker";
 // "Book bane" — indgangen til baner.
 //
 // Viser kun godkendte klubber i brugerens land, filtreret på den valgte
@@ -25,7 +24,7 @@ export default async function BookPage() {
   const clubs = await db.club.findMany({
     where: {
       status: "APPROVED",
-      country: prefs.country,
+      country: "US",
       courts: { some: { sport: prefs.sport } },
     },
     include: { courts: { where: { sport: prefs.sport } } },
@@ -79,7 +78,7 @@ export default async function BookPage() {
         </p>
       </div>
 
-      <div className="mb-5"><CountryPicker active={prefs.country} locale={prefs.locale}/></div>
+      <p className="mb-5 text-sm font-medium text-slate">Showing courts in the United States only</p>
       <SportPicker active={prefs.sport} locale={prefs.locale} />
 
       {clubs.length === 0 ? (
