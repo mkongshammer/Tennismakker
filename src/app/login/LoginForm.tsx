@@ -12,6 +12,7 @@ export function LoginForm({
   labels,
   errors,
   notice,
+  next,
 }: {
   labels: {
     email: string;
@@ -23,12 +24,15 @@ export function LoginForm({
     forgot: string;
   };
   notice?: string;
+  /** Same-site path to return to after sign-in. */
+  next?: string | null;
   errors: Record<string, string>;
 }) {
   const [state, action] = useFormState(login, null);
 
   return (
     <form action={action} className="card space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
       {notice ? (
         <p className="rounded-xl border border-court/30 p-3 text-sm font-semibold text-court">
           {notice}
@@ -64,7 +68,7 @@ export function LoginForm({
       </p>
       <p className="text-center text-sm text-slate/60">
         {labels.newHere}{" "}
-        <Link href="/signup" className="font-semibold text-court underline">{labels.signup}</Link>
+        <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="font-semibold text-court underline">{labels.signup}</Link>
       </p>
     </form>
   );

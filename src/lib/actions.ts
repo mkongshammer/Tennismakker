@@ -1,4 +1,5 @@
 "use server";
+import { safeReturnPath } from "./return-path";
 import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
 import {phrase} from "./phrases";
@@ -169,7 +170,7 @@ export async function signup(_prev: unknown, formData: FormData) {
   // Videre til det, man kom for. En ny profil er tom, så profilsiden er
   // det mindst interessante sted at lande — bookingsiden er dér, produktet
   // er.
-  redirect("/book");
+  redirect(safeReturnPath(formData.get("next")) ?? "/book");
 }
 
 /**
@@ -214,8 +215,14 @@ export async function login(_prev: unknown, formData: FormData) {
   }
 
   await createSession(user.id);
-  redirect(user.role === "CLUB_ADMIN" ? "/admin" : "/profil");
+  // A same-site path to return to (e.g. the court someone was about to
+  // reserve). Only relative paths are accepted so a crafted link can never
+  // bounce a signed-in user to another site.
+  const next = safeReturnPath(formData.get("next"));
+  redirect(next ?? (user.role === "CLUB_ADMIN" ? "/admin" : "/profil"));
 }
+
+
 
 /** Andet trin: koden fra mailen. */
 export async function verifyLoginCode(_prev: unknown, formData: FormData) {
@@ -577,7 +584,10 @@ export async function bookCourtSlot(formData: FormData) {
     fail("betaling");
   }
 
-  redirect(`/checkout/${booking.id}/start`);
+  // Stripe: the /start route answers with a real HTTP redirect to Stripe's
+  // domain. Mock: go straight to the demo page, so the browser URL matches
+  // the page and its pay form posts to the right place.
+  redirect(stripeOn ? `/checkout/${booking.id}/start` : `/checkout/${booking.id}`);
 }
 
 /** Booker en trænertime. */

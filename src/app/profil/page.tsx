@@ -20,6 +20,7 @@ import { PlayAgain } from "../../components/PlayAgain";
 import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
 import { checkDeletion } from "../../lib/deletion-guards";
 import { ChangePasswordForm } from "./ChangePasswordForm";
+import { BookingConfirmation } from "../../components/BookingConfirmation";
 
 export const dynamic = "force-dynamic";
 
@@ -103,20 +104,14 @@ export default async function ProfilPage({
   // Check the exact booking, not whether *some* recent booking is confirmed.
   // Legacy ?betalt=1 links show pending rather than an unsupported success claim.
   const confirmedPayment = query.betalt && query.betalt !== "1"
-    ? await db.booking.findFirst({ where: { id: query.betalt, userId: user.id, status: "CONFIRMED" }, select: { id: true } })
+    ? await db.booking.findFirst({ where: { id: query.betalt, userId: user.id, status: "CONFIRMED" }, include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } } })
     : null;
   const hasConfirmedBooking = Boolean(confirmedPayment);
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
-      {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
-      {query.betalt && hasConfirmedBooking && (
-        <div className="rounded-2xl border border-court/25 bg-court/5 p-5">
-          <p className="display text-xl">{t("profile.paidTitle")}</p>
-          <p className="mt-1 text-sm text-slate">
-            {t("profile.paidBody", { email: user.email })}
-          </p>
-        </div>
+      {query.betalt && confirmedPayment && (
+        <BookingConfirmation booking={confirmedPayment as any} email={user.email} locale={prefs.locale} />
       )}
 
       {(query.betalt || query.betaling === "afventer") && !hasConfirmedBooking && (
@@ -136,6 +131,7 @@ export default async function ProfilPage({
           {user.area && <span className="max-w-full break-words text-slate/60">{user.area}</span>}
         </div>
         <div className="flex max-w-full flex-wrap items-center gap-3">
+          {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
           <ChangePasswordForm />
           <form action={logout}>
             <button className="btn-ghost"><UiText text="Log ud"/></button>
@@ -218,8 +214,8 @@ export default async function ProfilPage({
                     ? `${b.court?.club.name} — ${b.court?.name}`
                     : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
-                <p className="break-words text-sm capitalize text-slate/60">
-                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
+                <p className="break-words text-sm text-slate/60">
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
                   {t(
                     b.status === "REQUESTED"
                       ? "profile.awaitingCoach"
@@ -310,8 +306,8 @@ export default async function ProfilPage({
             {coachBookings.map((b) => (
               <li key={b.id} className="card min-w-0 max-w-full">
                 <p className="break-words font-bold">{b.user.name}</p>
-                <p className="break-words text-sm capitalize text-slate/60">
-                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{" "}<UiText text="(din andel udbetales automatisk)"/></p>
+                <p className="break-words text-sm text-slate/60">
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{" "}<UiText text="(din andel udbetales automatisk)"/></p>
               </li>
             ))}
           </ul>

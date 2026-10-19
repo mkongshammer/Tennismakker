@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -146,7 +147,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           )}
 
           {user && <TabBar locale={prefs.locale} unread={unread} />}
-          {needsSportsOnboarding && <BuddySportsOnboarding locale={prefs.locale} />}
+          {needsSportsOnboarding && <Suspense><BuddySportsOnboarding locale={prefs.locale} /></Suspense>}
         </InternationalProvider>
       </body>
     </html>

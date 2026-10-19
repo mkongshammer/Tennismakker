@@ -94,11 +94,11 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="mx-auto max-w-sm">
-      <h1 className="display mb-6 text-3xl"><UiText text="Betaling"/></h1>
+      <h1 className="display mb-6 text-3xl">{tr("Gennemgå og betal")}</h1>
       <div className="card space-y-3">
         <p className="font-bold">{what}</p>
-        <p className="text-sm capitalize">
-          {formatDate(booking.startsAt,locale,booking.timeZone,{dateStyle:"full",timeStyle:"short"})} – {formatDate(booking.endsAt,locale,booking.timeZone,{hour:"2-digit",minute:"2-digit"})}
+        <p className="text-sm">
+          {formatDate(booking.startsAt,locale,booking.timeZone,{weekday:"long",month:"long",day:"numeric"})} · {formatDate(booking.startsAt,locale,booking.timeZone,{hour:"numeric",minute:"2-digit"})} – {formatDate(booking.endsAt,locale,booking.timeZone,{hour:"numeric",minute:"2-digit"})}
         </p>
         <div className="chalk-line !bg-none border-t border-dashed border-slate/20" />
         <div className="flex justify-between text-sm">
@@ -108,13 +108,13 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
         <p className="text-xs text-slate/50">
           {fee > 0
             ? `RacketBuddy: ${formatMoney(fee,booking.currency,locale)} · ${tr(booking.kind === "COURT" ? "Klubben" : "Træneren")}: ${formatMoney(booking.priceKr-fee,booking.currency,locale)}`
-            : `Hele beløbet udbetales til klubben.`}
+            : tr("Hele beløbet udbetales til klubben.")}
         </p>
         <form action={pay}>
-          <button className="btn-court w-full">{tr("Betal")} {formatMoney(booking.priceKr,booking.currency,locale)}{" "}<UiText text="(demo)"/></button>
+          <button type="submit" className="btn-court w-full">{tr("Betal")} {formatMoney(booking.priceKr,booking.currency,locale)}{" "}<UiText text="(demo)"/></button>
         </form>
         <p className="text-center text-xs text-slate/50"><UiText text="Demo-tilstand: ingen rigtige penge trækkes. Tiden holdes til"/>{" "}
-          {booking.holdExpiresAt ? formatDate(booking.holdExpiresAt,locale,booking.timeZone,{hour:"2-digit",minute:"2-digit"}) : "—"}.
+          {booking.holdExpiresAt ? formatDate(booking.holdExpiresAt,locale,booking.timeZone,{hour:"numeric",minute:"2-digit"}) : "—"}.
         </p>
       </div>
     </div>

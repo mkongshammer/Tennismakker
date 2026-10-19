@@ -52,18 +52,12 @@ function Book({
   className,
   style,
   children,
-  loggedIn
-
-
-
-
-
-
-
-}: {courtId: string;startsAt: string;className: string;style?: React.CSSProperties;children: React.ReactNode;loggedIn: boolean;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
+  loggedIn,
+  loginHref = "/login"
+}: {courtId: string;startsAt: string;className: string;style?: React.CSSProperties;children: React.ReactNode;loggedIn: boolean;loginHref?: string;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   if (!loggedIn) {
     return (
-      <a href="/login" className={className} style={style}>
+      <a href={loginHref} className={className} style={style}>
         {children}
       </a>);
 
@@ -85,16 +79,13 @@ export function BookingGrid({
   hours,
   loggedIn,
   locale,
-  currency = "DKK", timeZone = "Europe/Copenhagen"
-
-
-
-
-
-
-
-}: {courts: Court[];slots: Slot[];hours: number[];loggedIn: boolean;locale: Locale;currency?: string;timeZone?: string;}) {const { tr } = useWebsiteInternational();
-  const money = (n: number) => formatMoney(n, currency, locale),clock = (iso: string) => formatDate(iso, locale, timeZone, { hour: "2-digit", minute: "2-digit", hour12: false });
+  currency = "DKK", timeZone = "Europe/Copenhagen",
+  loginHref = "/login"
+}: {courts: Court[];slots: Slot[];hours: number[];loggedIn: boolean;locale: Locale;currency?: string;timeZone?: string;loginHref?: string;}) {const { tr } = useWebsiteInternational();
+  // Americans read "8:00 AM"; everyone else keeps the 24-hour clock.
+  const twelveHour = locale === "en-US";
+  const money = (n: number) => formatMoney(n, currency, locale),clock = (iso: string) => formatDate(iso, locale, timeZone, { hour: twelveHour ? "numeric" : "2-digit", minute: "2-digit", hour12: twelveHour });
+  const hourLabel = (hour: number) => twelveHour ? `${hour % 12 === 0 ? 12 : hour % 12}${hour < 12 ? " AM" : " PM"}` : `${String(hour).padStart(2, "0")}:00`;
   const [openHour, setOpenHour] = useState<number | null>(null);
 
   const key = (courtId: string, hour: number) => `${courtId}_${hour}`;
@@ -137,6 +128,7 @@ export function BookingGrid({
                 courtId={slot.courtId}
                 startsAt={slot.startsAt}
                 loggedIn={loggedIn}
+                loginHref={loginHref}
                 style={{ ["--sport" as any]: tint }}
                 className="court-tile flex w-full items-center justify-between px-4 pb-6 pt-4 text-left">
 
@@ -163,7 +155,7 @@ export function BookingGrid({
 
                 <span className="flex-1">
                   <span className="data block text-xl font-bold">
-                    {String(hour).padStart(2, "0")}:00
+                    {hourLabel(hour)}
                   </span>
                   <span className="text-sm text-slate">{free.length}{" " + tr("baner ledige")}</span>
                 </span>
@@ -188,6 +180,7 @@ export function BookingGrid({
                       courtId={slot.courtId}
                       startsAt={slot.startsAt}
                       loggedIn={loggedIn}
+                loginHref={loginHref}
                       style={{ ["--sport" as any]: tint }}
                       className="court-tile px-3 pb-6 pt-3 text-left">
 
@@ -215,9 +208,9 @@ export function BookingGrid({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate/10">
-                <th className="w-20" />
+                <th className="w-20" scope="col"><span className="sr-only">Time</span></th>
                 {courts.map((c) =>
-                <th key={c.id} className="px-2 py-3 text-sm">
+                <th key={c.id} scope="col" className="px-2 py-3 text-sm">
                     <span className="block font-bold text-ink">{c.name}</span>
                     <span className="block text-xs font-normal text-slate">
                       {surfaceLabel(c.surface, locale)}
@@ -230,8 +223,8 @@ export function BookingGrid({
             <tbody>
               {hours.map((hour) =>
               <tr key={hour} className="border-b border-slate/5 last:border-0">
-                  <td className="data py-1.5 pr-3 text-right text-sm font-bold text-slate">
-                    {String(hour).padStart(2, "0")}
+                  <td className="data whitespace-nowrap py-1.5 pr-3 text-right text-xs font-bold text-slate">
+                    {hourLabel(hour)}
                   </td>
                   {courts.map((c) => {
                   const slot = byKey.get(key(c.id, hour));
@@ -250,6 +243,7 @@ export function BookingGrid({
                         courtId={c.id}
                         startsAt={slot.startsAt}
                         loggedIn={loggedIn}
+                loginHref={loginHref}
                         style={{ ["--sport" as any]: tint }}
                         className="court-tile block w-full pb-4 pt-2.5 text-center hover:opacity-90">
 

@@ -25,3 +25,4 @@ export function wallTimeCandidates(key:string,hour?:number,minute?:number,timeZo
 export function wallTime(key: string, hour?: number, minute?: number, timeZone?: string): Date | null;
 export function localInputDate(value: unknown, timeZone?: string): Date;
 export function calendarDays(from: Date, until: Date, timeZone?: string): string[];
+export function timeZoneLabel(timeZone: string, locale?: string): string;

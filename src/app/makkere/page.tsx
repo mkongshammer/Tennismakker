@@ -11,7 +11,7 @@ import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
 import { SportPicker } from "../../components/SportPicker";
 import { translator } from "../../lib/i18n";
-import { LEVELS, MATCH_TYPES } from "../../lib/levels";
+import { LEVELS, LEVELS_EN, MATCH_TYPES } from "../../lib/levels";
 import { DK_REGIONS, regionForArea } from "../../lib/regions";
 
 export const dynamic = "force-dynamic";
@@ -111,7 +111,7 @@ export default async function MakkerePage({
           <select className="input" id="niveau" name="niveau" defaultValue={selectedLevel}>
             <option value=""><UiText text="Alle niveauer"/></option>
             {Object.entries(LEVELS).map(([num, item]) => (
-              <option key={num} value={num}>{num} — {item.label}</option>
+              <option key={num} value={num}>{prefs.locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${item.label}`}</option>
             ))}
           </select>
         </div>

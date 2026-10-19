@@ -3,13 +3,23 @@ import {UiText} from "./InternationalProvider";
 
 
 import { useFormState } from "react-dom";
+import { usePathname, useSearchParams } from "next/navigation";
 import { SPORTS, sportLabel, type Locale } from "../lib/sports";
 import { saveBuddySports } from "../app/onboarding-sports/actions";
 import { SubmitButton } from "./SubmitButton";
 
+// Where asking about sports helps rather than interrupts. Someone in the
+// middle of reserving a court or paying is never stopped by this prompt.
+const PROMPT_PATHS = ["/spillere", "/makkere", "/profil", "/traenere", "/beskeder"];
+
 export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
   const [state, action] = useFormState(saveBuddySports, null);
+  const pathname = usePathname();
+  const params = useSearchParams();
   const da = locale === "da";
+  if (!PROMPT_PATHS.some((path) => pathname === path || pathname.startsWith(path + "/"))) return null;
+  // Never on top of a payment result.
+  if (params.has("betalt") || params.has("betaling") || params.has("afventer")) return null;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/70 px-4 py-8 backdrop-blur-sm">

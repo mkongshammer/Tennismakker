@@ -11273,5 +11273,29 @@
     "no": "Kunstgress",
     "fr": "Gazon synthétique",
     "es": "Césped artificial"
+  },
+  "Klubben lader medlemmer booke {days} dage frem.": {
+    "en": "Members can book up to {days} days ahead at this club.",
+    "de": "Mitglieder können in diesem Club bis zu {days} Tage im Voraus buchen.",
+    "sv": "Medlemmar kan boka upp till {days} dagar framåt i den här klubben.",
+    "no": "Medlemmer kan booke inntil {days} dager frem i denne klubben.",
+    "fr": "Les membres peuvent réserver jusqu’à {days} jours à l’avance dans ce club.",
+    "es": "Los socios pueden reservar hasta {days} días de antelación en este club."
+  },
+  "Gæster kan booke {days} dage frem. Er du medlem, så log ind — medlemmer kan booke længere ud.": {
+    "en": "Guests can book up to {days} days ahead. If you’re a member, sign in — members can book further out.",
+    "de": "Gäste können bis zu {days} Tage im Voraus buchen. Als Mitglied melde dich an – Mitglieder können weiter im Voraus buchen.",
+    "sv": "Gäster kan boka upp till {days} dagar framåt. Är du medlem, logga in – medlemmar kan boka längre fram.",
+    "no": "Gjester kan booke inntil {days} dager frem. Er du medlem, logg inn – medlemmer kan booke lenger frem.",
+    "fr": "Les invités peuvent réserver jusqu’à {days} jours à l’avance. Si vous êtes membre, connectez-vous : les membres peuvent réserver plus loin.",
+    "es": "Los invitados pueden reservar hasta {days} días de antelación. Si eres socio, inicia sesión: los socios pueden reservar con más antelación."
+  },
+  "Du har {count} kommende bookinger i klubben, og klubben tillader {max} ad gangen. Aflys en, eller vent til den er spillet.": {
+    "en": "You have {count} upcoming bookings at this club, and the club allows {max} at a time. Cancel one, or wait until one has been played.",
+    "de": "Du hast {count} bevorstehende Buchungen in diesem Club, und der Club erlaubt {max} gleichzeitig. Storniere eine oder warte, bis eine gespielt wurde.",
+    "sv": "Du har {count} kommande bokningar i klubben, och klubben tillåter {max} åt gången. Avboka en eller vänta tills en är spelad.",
+    "no": "Du har {count} kommende bookinger i klubben, og klubben tillater {max} om gangen. Avlys én, eller vent til én er spilt.",
+    "fr": "Vous avez {count} réservations à venir dans ce club, qui en autorise {max} à la fois. Annulez-en une ou attendez qu’une soit jouée.",
+    "es": "Tienes {count} reservas próximas en este club, y el club permite {max} a la vez. Cancela una o espera a que se juegue una."
   }
 }

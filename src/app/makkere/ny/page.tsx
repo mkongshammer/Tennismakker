@@ -5,7 +5,7 @@ import {UiText} from "../../../components/InternationalProvider";
 import {useWebsiteInternational} from "../../../components/InternationalProvider";
 import { useFormState } from "react-dom";
 import { createMatchRequest } from "./actions";
-import { LEVELS, MATCH_TYPES } from "../../../lib/levels";
+import { LEVELS, LEVELS_EN, MATCH_TYPES } from "../../../lib/levels";
 import { DK_REGIONS } from "../../../lib/regions";
 import { SubmitButton } from "../../../components/SubmitButton";
 
@@ -41,7 +41,7 @@ export default function NytOpslagPage() {
             <label className="label" htmlFor="level"><UiText text="Niveau"/></label>
             <select className="input" id="level" name="level" defaultValue="3">
               {Object.entries(LEVELS).map(([num, l]) => (
-                <option key={num} value={num}>{num} — {l.label}</option>
+                <option key={num} value={num}>{locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${l.label}`}</option>
               ))}
             </select>
           </div>

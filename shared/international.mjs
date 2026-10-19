@@ -124,3 +124,13 @@ export function calendarDays(from, until, timeZone = 'Europe/Copenhagen') {
   for (let key = first; key <= last && out.length <= 370; key = addCalendarDays(key,1)) out.push(key);
   return out;
 }
+
+/** "Eastern Time" instead of "America/New_York" for people, with the IANA zone as fallback. */
+export function timeZoneLabel(timeZone, locale = 'en-US') {
+  try {
+    const parts = new Intl.DateTimeFormat(numberLocale(locale), { timeZone, timeZoneName: 'longGeneric' }).formatToParts(new Date());
+    const name = parts.find(p => p.type === 'timeZoneName')?.value;
+    if (name && !/GMT|UTC/.test(name)) return name;
+  } catch {}
+  return timeZone;
+}
