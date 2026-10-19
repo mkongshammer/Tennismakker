@@ -17,7 +17,7 @@ function splitTerms(sentence: string) {
 }
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const [{ locale,country }, query] = await Promise.all([getPreferences(), searchParams]);
+  const [{ locale,country,sport }, query] = await Promise.all([getPreferences(), searchParams]);
   const next = safeReturnPath(query.next);
   const t = translator(locale);
   const parts = splitTerms(translate("auth.termsNote", locale));
@@ -26,6 +26,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
     <div className="mx-auto max-w-md">
       <h1 className="display mb-6 text-3xl">{t("nav.signup")}</h1>
       <SignupForm
+        defaultSport={sport}
         labels={{
           name: t("auth.name"),
           email: t("auth.email"),

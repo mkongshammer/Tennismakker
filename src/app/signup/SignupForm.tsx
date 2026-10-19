@@ -15,6 +15,7 @@ import { SubmitButton } from "../../components/SubmitButton";
 
 export function SignupForm({
   labels,
+  defaultSport,
   terms,
   locale,
   initialCountry="DK",
@@ -43,6 +44,8 @@ export function SignupForm({
   };
   locale: Locale;
   initialCountry?: string;
+  /** The sport the visitor was just looking at; pre-checked so the common case is one tap fewer. */
+  defaultSport?: string;
   terms: { before: string; middle: string; after: string; termsText: string; privacyText: string };
 }) {
   const [state, action] = useFormState(signup, null);
@@ -101,7 +104,7 @@ export function SignupForm({
         <span className="label">{role === "COACH" ? tr("Hvilke sportsgrene er du træner i og vil tilbyde træning i?") : tr("Hvilke sportsgrene spiller du og vil gerne finde medspillere til?")}</span>
         <p className="mb-3 mt-1 text-xs text-slate">{tr("Du kan vælge flere.")}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {SPORTS.map((s) => <label key={s} className="flex items-center gap-2 text-sm"><input type="checkbox" name="sports" value={s} />{sportLabel(s, locale)}</label>)}
+          {SPORTS.map((s) => <label key={s} className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="sports" value={s} defaultChecked={s === defaultSport} />{sportLabel(s, locale)}</label>)}
         </div>
       </div>
 

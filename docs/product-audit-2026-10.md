@@ -33,7 +33,7 @@ Scope: the live US product (racketbuddy.app → racketbuddy-us.onrender.com), th
 ## Problems ranked by user impact
 
 1. **Nothing to discover.** With zero supply, every player journey ends in an empty state within one click. The empty state must become the product: honest, local, and useful (notify me, find a coach instead, list your club).
-2. **The public site lives on an onrender.com subdomain.** Breaks trust, SEO, link sharing and the app's deep links. (Infrastructure change — flagged for the owner; not fixed in code.)
+2. **The public site lives on an onrender.com subdomain.** Breaks trust, SEO, link sharing and the app's deep links. (Infrastructure change — code is ready and inert; exact DNS/Render/Stripe steps in `docs/domain-cutover.md`.)
 3. **Every page ships ~400 kB of JS**, most of it translation dictionaries nobody in the US uses. Mobile LCP/INP suffer directly.
 4. **Danish leaks through the seams**: route slugs, `lang`-independent defaults (`InternationalProvider` defaults to `da`), error messages thrown in Danish and only translated if registered, 8-language picker in the footer of a US-only product.
 5. **Discovery lacks the three things American players search by**: location (city/state/ZIP), time (available today/this evening) and price.

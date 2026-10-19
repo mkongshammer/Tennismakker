@@ -41,13 +41,13 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
           <p className="mt-1 text-sm text-slate">{booked} of {capacity} court-hours booked · {formatDate(start, locale, timeZone, { weekday: "long", month: "long", day: "numeric" })}</p>
         </div>
         <div className="no-scrollbar -mx-1 max-w-full overflow-x-auto px-1">
-          <div className="flex w-max gap-1.5" role="tablist" aria-label="Day">
+          <nav className="flex w-max gap-1.5" aria-label="Day">
             {Array.from({ length: 7 }, (_, i) => (
               <Link key={i} href={i === 0 ? baseHref : `${baseHref}?dag=${i}`} aria-current={i === dayOffset ? "page" : undefined} className={`pill min-h-9 text-xs ${i === dayOffset ? "is-active" : ""}`}>
                 {i === 0 ? "Today" : formatDate(wallTime(addCalendarDays(today, i), 12, 0, timeZone)!, locale, timeZone, { weekday: "short", day: "numeric" })}
               </Link>
             ))}
-          </div>
+          </nav>
         </div>
       </div>
 
@@ -93,9 +93,9 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
                                       <>
                                         <div className="flex items-center justify-between gap-2">
                                           <span className="min-w-0 truncate font-semibold">{b.user.name}</span>
-                                          <span className="data shrink-0 text-xs opacity-80">{formatMoney(b.priceKr, currency, locale)}</span>
+                                          <span className="data shrink-0 text-xs">{formatMoney(b.priceKr, currency, locale)}</span>
                                         </div>
-                                        <div className="mt-1 flex items-center justify-between gap-2 text-[11px] opacity-85">
+                                        <div className="mt-1 flex items-center justify-between gap-2 text-[11px]">
                                           <span>
                                             {partial || endMin - startMin !== 60 ? `${whenLabel(startMin, endMin)} · ` : ""}
                                             {hold ? "Awaiting payment" : b.needsClubEntry && !b.clubEnteredAt ? "Enter in your system" : paid ? "Paid" : "Confirmed"}
@@ -113,7 +113,7 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
                                         </div>
                                       </>
                                     ) : (
-                                      <span className="text-xs opacity-70">{partial ? `until ${minuteLabel(endMin, locale)}` : "cont."}</span>
+                                      <span className="text-xs">{partial ? `until ${minuteLabel(endMin, locale)}` : "cont."}</span>
                                     )}
                                   </div>
                                 );

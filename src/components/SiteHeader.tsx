@@ -114,12 +114,13 @@ export function SiteHeader({ user, locale }: Props) {
             <>
               <Link
                 href="/profile"
-                aria-label={t("nav.profile")}
+                aria-label={`${initials} · ${t("nav.profile")}`}
+                title={t("nav.profile")}
                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                   active("/profile") ? "bg-court text-chalk" : "bg-ink text-chalk hover:bg-ink-soft"
                 }`}
               >
-                {initials}
+                <span aria-hidden="true">{initials}</span>
               </Link>
             </>
           ) : (
