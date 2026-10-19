@@ -14,6 +14,13 @@ export async function saveClubInternational(_prev: unknown, form: FormData): Pro
     await db.$transaction(async tx => {
       await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${user.clubId} FOR UPDATE`;
       const club = await tx.club.findUniqueOrThrow({where:{id:user.clubId!}});
+      // The only market for new accounts is the US. Preserve the country/currency
+      // of historical clubs, but never let them convert into another public market.
+      if (country !== club.country || currency !== club.currency) {
+        throw Error('Club country and currency cannot be changed. Contact RacketBuddy for an existing contract.');
+      }
+      if (club.country === 'US' && currency !== 'USD') throw Error('US club billing and bookings must use USD.');
+
       if (country !== club.country && club.stripeAccountId) throw Error('Landet på en tilknyttet Stripe-konto kan ikke ændres her. Kontakt RacketBuddy.');
       if (currency !== club.currency) {
         if(!validSalesCurrency(currency))throw Error('Choose EUR or USD.');
