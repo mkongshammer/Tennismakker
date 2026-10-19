@@ -1189,5 +1189,11 @@
   "Spiller holdkampe eller turneringer": "Plays league matches or tournaments",
   "Øverste rækker i klubben": "Top of the club ladder",
   "Konkurrerer på højt niveau": "Competes at a high level",
-  "Rangliste / tidligere elite": "Ranked or former elite"
+  "Rangliste / tidligere elite": "Ranked or former elite",
+  "Klubben": "The club",
+  "{p0} har desværre måttet aflyse din booking.": "{p0} had to cancel your booking. We’re sorry about that.",
+  "{p0} har desværre måttet aflyse din time.": "{p0} had to cancel your lesson. We’re sorry about that.",
+  "Der er ikke trukket penge.": "Nothing was charged.",
+  "Begrundelse: {p0}": "Reason: {p0}",
+  "Trænertime hos {p0} ({p1})": "Lesson with {p0} ({p1})"
 }

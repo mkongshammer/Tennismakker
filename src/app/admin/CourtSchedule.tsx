@@ -1,39 +1,37 @@
 // The club's day at a glance: courts across, hours down, every booking in
 // its cell. Read it like a whiteboard behind the front desk.
+//
+// Geometry comes from src/lib/schedule-grid.ts (pure, unit-tested): half-hour
+// starts, 90-minute lessons, bookings outside opening hours and DST days all
+// render where a manager expects them.
 import Link from "next/link";
 import { db } from "../../lib/db";
 import { dayKey, wallTime, addCalendarDays, wallParts, formatDate, formatMoney } from "../../lib/international";
-import { adminCancelBooking } from "../../lib/club-schedule-actions";
-import { Icon } from "../../components/ui";
+import { layoutDay, cellKey, dayBounds, minuteLabel } from "../../lib/schedule-grid";
+import { CancelBookingDialog } from "./CancelBookingDialog";
 
 type Court = { id: string; name: string; sport: string; indoor: boolean };
 
 export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZone, currency, locale, dayOffset, baseHref }: { clubId: string; courts: Court[]; openHour: number; closeHour: number; timeZone: string; currency: string; locale: string; dayOffset: number; baseHref: string }) {
   const today = dayKey(new Date(), timeZone);
   const key = addCalendarDays(today, dayOffset);
-  const start = wallTime(key, 0, 0, timeZone)!;
-  const end = wallTime(addCalendarDays(key, 1), 0, 0, timeZone)!;
+  const { start, end } = dayBounds(key, timeZone, wallTime);
   const courtIds = courts.map((c) => c.id);
   const [bookings, released, blocks] = await Promise.all([
-    db.booking.findMany({ where: { courtId: { in: courtIds }, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { gte: start, lt: end } }, include: { user: { select: { name: true } } }, orderBy: { startsAt: "asc" } }),
+    // Overlap, not "starts today": a lesson that began at 11 PM yesterday still occupies this morning's first cell.
+    db.booking.findMany({ where: { courtId: { in: courtIds }, status: { in: ["HOLD", "CONFIRMED"] }, startsAt: { lt: end }, endsAt: { gt: start } }, include: { user: { select: { name: true } }, payment: { select: { status: true } } }, orderBy: { startsAt: "asc" } }),
     db.guestSlot.findMany({ where: { courtId: { in: courtIds }, startsAt: { gte: start, lt: end } }, select: { courtId: true, startsAt: true } }),
     db.systemBlock.findMany({ where: { clubId, startsAt: { gte: start, lt: end } }, select: { courtId: true, startsAt: true, status: true } }),
   ]);
-  const cell = (courtId: string, hour: number) => `${courtId}:${hour}`;
-  const byCell = new Map<string, (typeof bookings)[number]>();
-  for (const b of bookings) {
-    const from = wallParts(b.startsAt, timeZone).hour;
-    const hours = Math.max(1, Math.round((b.endsAt.getTime() - b.startsAt.getTime()) / 3600000));
-    for (let h = from; h < from + hours; h++) byCell.set(cell(b.courtId!, h), b);
-  }
-  const releasedSet = new Set(released.map((r) => cell(r.courtId, wallParts(r.startsAt, timeZone).hour)));
-  const blockedSet = new Set(blocks.filter((b) => b.status !== "FAILED").map((b) => cell(b.courtId, wallParts(b.startsAt, timeZone).hour)));
-  const hours = Array.from({ length: Math.max(0, closeHour - openHour) }, (_, i) => openHour + i);
-  const hourLabel = (h: number) => (locale === "en-US" ? `${h % 12 === 0 ? 12 : h % 12} ${h < 12 ? "AM" : "PM"}` : `${String(h).padStart(2, "0")}:00`);
+  const grid = layoutDay({ bookings: bookings.map((b) => ({ ...b, courtId: b.courtId! })), key, timeZone, openHour, closeHour });
+  const releasedSet = new Set(released.map((r) => cellKey(r.courtId, wallParts(r.startsAt, timeZone).hour)));
+  const blockedSet = new Set(blocks.filter((b) => b.status !== "FAILED").map((b) => cellKey(b.courtId, wallParts(b.startsAt, timeZone).hour)));
+  const extra = new Set(grid.extraHours);
   const nowParts = wallParts(new Date(), timeZone);
   const isToday = dayOffset === 0;
   const booked = bookings.filter((b) => b.status === "CONFIRMED").length;
-  const capacity = hours.length * courts.length;
+  const capacity = Math.max(0, closeHour - openHour) * courts.length;
+  const whenLabel = (startMin: number, endMin: number) => `${minuteLabel(startMin, locale)}–${minuteLabel(endMin, locale)}`;
 
   return (
     <section className="card-flat min-w-0" aria-labelledby="schedule-title">
@@ -43,7 +41,7 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
           <p className="mt-1 text-sm text-slate">{booked} of {capacity} court-hours booked · {formatDate(start, locale, timeZone, { weekday: "long", month: "long", day: "numeric" })}</p>
         </div>
         <div className="no-scrollbar -mx-1 max-w-full overflow-x-auto px-1">
-          <div className="flex w-max gap-1.5">
+          <div className="flex w-max gap-1.5" role="tablist" aria-label="Day">
             {Array.from({ length: 7 }, (_, i) => (
               <Link key={i} href={i === 0 ? baseHref : `${baseHref}?dag=${i}`} aria-current={i === dayOffset ? "page" : undefined} className={`pill min-h-9 text-xs ${i === dayOffset ? "is-active" : ""}`}>
                 {i === 0 ? "Today" : formatDate(wallTime(addCalendarDays(today, i), 12, 0, timeZone)!, locale, timeZone, { weekday: "short", day: "numeric" })}
@@ -70,47 +68,66 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
               </tr>
             </thead>
             <tbody>
-              {hours.map((h) => {
+              {grid.hours.map((h) => {
                 const past = isToday && h < nowParts.hour;
+                const outside = extra.has(h);
                 return (
                   <tr key={h}>
-                    <th scope="row" className="data pr-2 text-left text-xs font-bold text-slate">{hourLabel(h)}{past && <span className="sr-only"> (past)</span>}</th>
+                    <th scope="row" className={`data pr-2 text-left text-xs font-bold ${outside ? "text-slate-light" : "text-slate"}`}>
+                      {minuteLabel(h * 60, locale)}
+                      {past && <span className="sr-only"> (past)</span>}
+                      {outside && <span className="sr-only"> (outside opening hours)</span>}
+                    </th>
                     {courts.map((c) => {
-                      const b = byCell.get(cell(c.id, h));
-                      const startsHere = b && wallParts(b.startsAt, timeZone).hour === h;
-                      if (b) {
+                      const placements = grid.cells.get(cellKey(c.id, h)) ?? [];
+                      if (placements.length) {
                         return (
-                          <td key={c.id} className="px-1">
-                            <div className={`rounded-lg px-2 py-1.5 ${b.status === "HOLD" ? "border border-dashed border-warning/60 bg-warning-soft text-warning-ink" : "bg-court text-chalk"}`}>
-                              {startsHere ? (
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="min-w-0 truncate font-semibold">{b.user.name}</span>
-                                  <span className="data shrink-0 text-xs opacity-80">{formatMoney(b.priceKr, currency, locale)}</span>
-                                </div>
-                              ) : (
-                                <span className="text-xs opacity-70">cont.</span>
-                              )}
-                              {startsHere && (
-                                <div className="mt-1 flex items-center justify-between gap-2 text-[11px] opacity-85">
-                                  <span>{b.status === "HOLD" ? "Awaiting payment" : b.needsClubEntry && !b.clubEnteredAt ? "Enter in your system" : "Paid"}</span>
-                                  {!past && (
-                                    <form action={adminCancelBooking}>
-                                      <input type="hidden" name="id" value={b.id} />
-                                      <button className="rounded-md px-1.5 py-0.5 hover:bg-white/15" title="Cancel this booking (refund rules apply)"><Icon name="x" size={12} /></button>
-                                    </form>
-                                  )}
-                                </div>
-                              )}
+                          <td key={c.id} className="px-1 align-top">
+                            <div className="space-y-1">
+                              {placements.map(({ booking: b, startMin, endMin, startsInThisHour, partial }) => {
+                                const hold = b.status === "HOLD";
+                                const paid = b.payment?.status === "PAID";
+                                return (
+                                  <div key={b.id} className={`rounded-lg px-2 py-1.5 ${hold ? "border border-dashed border-warning/60 bg-warning-soft text-warning-ink" : "bg-court text-chalk"}`}>
+                                    {startsInThisHour ? (
+                                      <>
+                                        <div className="flex items-center justify-between gap-2">
+                                          <span className="min-w-0 truncate font-semibold">{b.user.name}</span>
+                                          <span className="data shrink-0 text-xs opacity-80">{formatMoney(b.priceKr, currency, locale)}</span>
+                                        </div>
+                                        <div className="mt-1 flex items-center justify-between gap-2 text-[11px] opacity-85">
+                                          <span>
+                                            {partial || endMin - startMin !== 60 ? `${whenLabel(startMin, endMin)} · ` : ""}
+                                            {hold ? "Awaiting payment" : b.needsClubEntry && !b.clubEnteredAt ? "Enter in your system" : paid ? "Paid" : "Confirmed"}
+                                          </span>
+                                          {!past && (
+                                            <CancelBookingDialog
+                                              bookingId={b.id}
+                                              playerName={b.user.name}
+                                              when={`${formatDate(b.startsAt, locale, timeZone, { weekday: "short", month: "short", day: "numeric" })} ${whenLabel(startMin, endMin)} · ${c.name}`}
+                                              amountLabel={formatMoney(b.priceKr, currency, locale)}
+                                              paid={paid}
+                                              dark={!hold}
+                                            />
+                                          )}
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs opacity-70">{partial ? `until ${minuteLabel(endMin, locale)}` : "cont."}</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </td>
                         );
                       }
-                      const released = releasedSet.has(cell(c.id, h));
-                      const blocked = blockedSet.has(cell(c.id, h));
+                      const released = releasedSet.has(cellKey(c.id, h));
+                      const blocked = blockedSet.has(cellKey(c.id, h));
                       return (
-                        <td key={c.id} className="px-1">
-                          <div className={`rounded-lg px-2 py-1.5 text-xs ${past ? "text-slate-light" : released ? "border border-success/30 bg-success-soft text-success-ink" : blocked ? "border border-slate/20 bg-mist text-slate" : "border border-dashed border-slate/20 text-slate"}`}>
-                            {past ? "—" : released ? "Released to guests" : blocked ? "Blocked in your system" : "Open"}
+                        <td key={c.id} className="px-1 align-top">
+                          <div className={`rounded-lg px-2 py-1.5 text-xs ${past || outside ? "text-slate-light" : released ? "border border-success/30 bg-success-soft text-success-ink" : blocked ? "border border-slate/20 bg-mist text-slate" : "border border-dashed border-slate/20 text-slate"}`}>
+                            {past ? "—" : outside ? "Closed" : released ? "Released to guests" : blocked ? "Blocked in your system" : "Open"}
                           </div>
                         </td>
                       );
@@ -122,7 +139,7 @@ export async function CourtSchedule({ clubId, courts, openHour, closeHour, timeZ
           </table>
         </div>
       )}
-      <p className="mt-3 text-xs text-slate">Blue is paid. Dashed amber is a hold awaiting payment (released automatically after 10 minutes). Cancelling from here refunds the player when the start is more than 24 hours away.</p>
+      <p className="mt-3 text-xs text-slate">Blue is paid. Dashed amber is a hold awaiting payment (released automatically after 10 minutes). When you cancel from here the player is always refunded in full — the 24-hour rule only applies when players cancel themselves.</p>
     </section>
   );
 }

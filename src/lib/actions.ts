@@ -579,7 +579,7 @@ export async function bookCourtSlot(formData: FormData) {
     // Reservationen må ikke blive hængende og blokere tiden for andre.
     await db.booking.update({
       where: { id: booking.id },
-      data: { status: "CANCELLED" },
+      data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "SYSTEM", cancelReason: "Club cannot accept payments yet" },
     });
     fail("betaling");
   }
@@ -696,7 +696,7 @@ export async function cancelBooking(formData: FormData) {
   });
   if (!booking) return;
 
-  await cancelAndRefund(id);
+  await cancelAndRefund(id, { by: "PLAYER", actorUserId: user.id });
   revalidatePath("/profil");
 }
 
@@ -1242,7 +1242,7 @@ export async function declineCoachBooking(formData: FormData) {
   });
   if (!booking) redirect("/profil/traener");
 
-  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED" } });
+  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "COACH", cancelledByUserId: coach.userId } });
 
   await sendMail(
     coachDecision({

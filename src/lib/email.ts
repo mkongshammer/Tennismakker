@@ -226,23 +226,42 @@ export function cancellationNotice(opts: {
   name: string;
   what: string;
   startsAt: Date;
+  /** Amount refunded in major units; null when nothing was refunded. */
   refundKr: number | null;
+  /** Whether the customer had actually paid. False for holds/requests. */
+  charged?: boolean;
+  cancelledBy?: "PLAYER" | "CLUB" | "COACH" | "SYSTEM";
+  /** Club or coach name, used when they are the ones cancelling. */
+  counterparty?: string;
+  reason?: string;
   currency?:string;locale?:string;timeZone?:string;
 }): Mail {
+  const locale=opts.locale??'da';
+  const by=opts.cancelledBy??'PLAYER';
+  const charged=opts.charged ?? opts.refundKr!==null;
+  const who=opts.counterparty??'';
+  const intro=
+    by==='CLUB' ? phrase("{p0} har desværre måttet aflyse din booking.",locale,{p0:who||phrase("Klubben",locale)})
+    : by==='COACH' ? phrase("{p0} har desværre måttet aflyse din time.",locale,{p0:who||phrase("Træneren",locale)})
+    : phrase("Din booking er aflyst.",locale);
+  const money=
+    !charged ? phrase("Der er ikke trukket penge.",locale)
+    : opts.refundKr !== null
+      ? phrase("Du får {p0} retur. Beløbet er typisk på din konto inden for 5-10 hverdage.",locale,{p0:formatMoney(opts.refundKr,opts.currency??"DKK",locale)})
+      : phrase("Aflysningen skete mindre end 24 timer før spilletidspunktet, så beløbet refunderes ikke.",locale);
   return {
     to: opts.to,
-    subject: phrase("Aflyst: {p0}",opts.locale??'da',{p0:opts.what}),
+    subject: phrase("Aflyst: {p0}",locale,{p0:opts.what}),
     body: [
-      phrase("Hej {p0}",opts.locale??'da',{p0:opts.name}),
+      phrase("Hej {p0}",locale,{p0:opts.name}),
       ``,
-      phrase("Din booking er aflyst.",opts.locale??'da'),
+      intro,
+      ...(opts.reason && by!=='PLAYER' ? [``, phrase("Begrundelse: {p0}",locale,{p0:opts.reason})] : []),
       ``,
       `${opts.what}`,
-      `${formatDate(opts.startsAt,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
+      `${formatDate(opts.startsAt,locale,opts.timeZone??"Europe/Copenhagen",{dateStyle:"long",timeStyle:"short"})}`,
       ``,
-      opts.refundKr !== null
-        ? phrase("Du får {p0} retur. Beløbet er typisk på din konto inden for 5-10 hverdage.",opts.locale??'da',{p0:formatMoney(opts.refundKr,opts.currency??"DKK",opts.locale??"da")})
-        : phrase("Aflysningen skete mindre end 24 timer før spilletidspunktet, så beløbet refunderes ikke.",opts.locale??'da'),
+      money,
       ``,
       `RacketBuddy`,
     ].join("\n"),

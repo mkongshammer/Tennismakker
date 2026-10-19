@@ -401,6 +401,14 @@ model Booking {
   needsClubEntry Boolean   @default(false)
   clubEnteredAt  DateTime?
 
+  // Audit trail for cancellations: who (PLAYER | CLUB | COACH | SYSTEM),
+  // which signed-in user acted, when, and the reason shown to the customer.
+  // Refund rules depend on `cancelledBy` — see src/lib/cancellation-policy.ts.
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  cancelledByUserId String?
+  cancelReason      String?
+
   userId String
   user   User   @relation(fields: [userId], references: [id])
 

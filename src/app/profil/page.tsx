@@ -12,7 +12,9 @@ import { translator } from "../../lib/i18n";
 import { DeleteAccount } from "../../components/DeleteAccount";
 import { CoachRequests } from "../../components/CoachRequests";
 import { RepeatLessons } from "../../components/RepeatLessons";
-import { cancelBooking, closeMatchRequest, logout } from "../../lib/actions";
+import { closeMatchRequest, logout } from "../../lib/actions";
+import { CancelBookingButton } from "../../components/CancelBookingButton";
+import { refundDecision, REFUND_WINDOW_HOURS } from "../../lib/cancellation-policy";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
 import { pendingReviews } from "../../lib/reviews";
@@ -69,7 +71,7 @@ export default async function ProfilPage({
         status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
         startsAt: { gte: new Date() },
       },
-      include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } },
+      include: { court: { include: { club: true } }, coachProfile: { include: { user: true } }, payment: { select: { status: true } } },
       orderBy: { startsAt: "asc" },
     }),
     db.matchRequest.findMany({
@@ -243,10 +245,15 @@ export default async function ProfilPage({
                 {b.status === "HOLD" && (
                   <a href={`/checkout/${b.id}/start`} className="btn-court text-sm"><UiText text="Betal nu"/></a>
                 )}
-                <form action={cancelBooking}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <button className="btn-ghost text-sm"><UiText text="Aflys"/></button>
-                </form>
+                <CancelBookingButton
+                  bookingId={b.id}
+                  what={b.kind === "COURT" ? `${b.court?.club.name} — ${b.court?.name}` : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
+                  when={formatDate(b.startsAt, prefs.locale, b.timeZone, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                  refundable={refundDecision({ by: "PLAYER", startsAt: b.startsAt }).refund}
+                  charged={b.status === "CONFIRMED" && (b.payment?.status === "PAID" || b.walletPaidOre > 0)}
+                  amountLabel={formatMoney(b.priceKr, b.currency, prefs.locale)}
+                  deadlineLabel={formatDate(new Date(b.startsAt.getTime() - REFUND_WINDOW_HOURS * 3600000), prefs.locale, b.timeZone, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                />
               </div>
             </li>
           ))}

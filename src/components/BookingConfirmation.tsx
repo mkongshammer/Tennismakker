@@ -2,7 +2,7 @@
 // what, when, where, how to get in, how to cancel, and a calendar file.
 import Link from "next/link";
 import { formatDate, formatMoney, timeZoneLabel } from "../lib/international";
-import { REFUND_WINDOW_HOURS } from "../lib/payments";
+import { REFUND_WINDOW_HOURS } from "../lib/cancellation-policy";
 import { Icon } from "./ui";
 
 type Booking = {
