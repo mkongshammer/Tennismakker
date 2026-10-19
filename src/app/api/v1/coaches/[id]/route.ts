@@ -17,7 +17,7 @@ export async function GET(
     where: { id },
     include: { user: true, packages: { where: { active: true } } },
   });
-  if (!coach) return apiError("Træneren findes ikke.", 404);
+  if (!coach || coach.country !== "US") return apiError("Coach not found.", 404);
 
   const [ratings, reviews] = await Promise.all([
     coachRatings([coach.id]),
