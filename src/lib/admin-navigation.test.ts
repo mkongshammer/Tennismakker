@@ -41,6 +41,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
     '../../lib/db': {db}, '../../lib/session': {getCurrentUser:async()=>role ? {role,clubId:'club-a'} : null},
     '../../lib/settings': {getSettings:async()=>({commissionPct:0.1})},
     '../../lib/stripe': {stripeEnabled:async()=>true}, '../../lib/billing': {subscriptionIsActive:()=>true},
+    '../../lib/club-dashboard': {loadClubDashboard:async()=>({club:{...club,courts:[]},today:{bookings:0,hours:0,utilization:0,hoursElapsed:0,remaining:[],revenueKr:0},week:{bookings:0,bookingsChange:0,utilization:0,utilizationLastWeek:0,paidOutKr:0,paidOutChange:0,days:[],trend:[]},upcoming:[],tasks:[],members:0,stripeOn:true})},
     '../../lib/integrations/types': {INTEGRATION_LABELS:{MANUAL:'Manual'}},
     '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
     'next/navigation': {redirect:(path:string)=>{throw Error(`redirect:${path}`);}},
