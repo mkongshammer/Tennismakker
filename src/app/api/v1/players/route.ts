@@ -1,6 +1,5 @@
 import { db } from "../../../../lib/db";
 import { json, preflight, requireUser } from "../../../../lib/api/helpers";
-import { isDanishRegion, regionForArea } from "../../../../lib/regions";
 import { blockedUserIds } from "../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +12,7 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
-  const selectedRegion = auth.user.country==="DK" ? (isDanishRegion(rawRegion) ? rawRegion : regionForArea(rawRegion) ?? "") : rawRegion;
+  const selectedRegion = rawRegion;
   const sport = url.searchParams.get("sport")?.trim().toUpperCase();
   const blocked = await blockedUserIds(auth.user.id);
 
@@ -21,7 +20,7 @@ export async function GET(req: Request) {
     where: {
       id: { notIn: [auth.user.id, ...blocked] },
       role: { in: ["PLAYER", "COACH"] },
-      country: auth.user.country,
+      country: "US",
       ...(sport ? { sports: { contains: sport, mode: "insensitive" } } : {}),
     },
     select: {
@@ -39,7 +38,7 @@ export async function GET(req: Request) {
   });
 
   const filtered = selectedRegion
-    ? users.filter((user) => auth.user.country==="DK" ? regionForArea(user.area) === selectedRegion : user.area?.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
+    ? users.filter((user) => user.area?.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
     : users;
 
   return json({
@@ -47,7 +46,7 @@ export async function GET(req: Request) {
       id: u.id,
       name: u.name,
       level: u.level,
-      area: auth.user.country==="DK" ? regionForArea(u.area) ?? u.area : u.area,
+      area: u.area,
       bio: u.bio,
       sports: u.sports.split(",").map((s) => s.trim()).filter(Boolean),
       isCoach: u.role === "COACH",
