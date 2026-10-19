@@ -25,7 +25,7 @@ export default async function TraenerePage({
 
   const allCoaches = await db.coachProfile.findMany({
     where: {
-      sports: { contains: prefs.sport },country:prefs.country,
+      sports: { contains: prefs.sport },country:"US",
     },
     include: {
       user: true,
