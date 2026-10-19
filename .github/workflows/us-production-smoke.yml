@@ -1,0 +1,40 @@
+name: Verify USA production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/us-production-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Confirm public US endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
+            'https://racketbuddy-us.onrender.com/api/health' -o /tmp/health.json
+          node -e 'const v=require("/tmp/health.json"); if(!v || v.ok !== true) process.exit(1)'
+          curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
+            'https://racketbuddy-us.onrender.com/api/v1/location' -o /tmp/location.json
+          node -e 'const l=require("/tmp/location.json"); if(l.country!=="US" || l.needsChoice!==false) {console.error(l); process.exit(1)}'
+          curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
+            'https://racketbuddy-us.onrender.com/api/v1/clubs?land=DK' -o /tmp/clubs.json
+          node -e 'const j=require("/tmp/clubs.json"); if(!Array.isArray(j.clubs) || j.clubs.some(c=>c.country!=="US")) process.exit(1); console.log("US club records:",j.clubs.length)'
+      - name: Confirm canonical site routes guests into US region
+        shell: bash
+        run: |
+          set -euo pipefail
+          result=$(curl -sS -L --retry 4 --retry-delay 3 --retry-all-errors --max-time 40 \
+            -o /tmp/racketbuddy-book.html -w '%{http_code} %{url_effective}' \
+            'https://racketbuddy.app/book')
+          echo "$result"
+          [[ "$result" == 200\ https://racketbuddy-us.onrender.com/* ]]
+          grep -qi "United States" /tmp/racketbuddy-book.html
