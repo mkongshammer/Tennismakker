@@ -1,6 +1,5 @@
-import { marketFor } from "../../../../lib/international";
 import { db } from "../../../../lib/db";
-import { apiError, json, preflight } from "../../../../lib/api/helpers";
+import { json, preflight } from "../../../../lib/api/helpers";
 import { clubRatings } from "../../../../lib/reviews";
 
 export const dynamic = "force-dynamic";
@@ -9,8 +8,7 @@ export async function OPTIONS() { return preflight(); }
 /** GET /api/v1/clubs?land=DK&sport=TENNIS — kun godkendte klubber. */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const country = url.searchParams.get("land")?.toUpperCase() || "DK";
-  if(!marketFor(country)) return apiError("Unsupported country.");
+  const country = "US"; // Never trust the client-provided market for public discovery.
   const sport = url.searchParams.get("sport")?.toUpperCase();
 
   const clubs = await db.club.findMany({
