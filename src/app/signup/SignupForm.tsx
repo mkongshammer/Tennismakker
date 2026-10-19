@@ -1,6 +1,6 @@
 "use client";
 import {UiText} from "../../components/InternationalProvider";
-import { MARKETS,SALES_CURRENCIES,TIME_ZONES,countryLabel,marketFor } from "../../lib/international";
+import { SALES_CURRENCIES,TIME_ZONES } from "../../lib/international";
 import {US_STATES,usStateTimeZone} from '../../../shared/us-address.mjs';
 import {phrase} from "../../lib/phrases";
 import Link from "next/link";
@@ -47,14 +47,15 @@ export function SignupForm({
   const [state, action] = useFormState(signup, null);
   const [role, setRole] = useState("PLAYER");
   const tr=(value:string)=>phrase(value,locale);
-  const [country,setCountry]=useState(initialCountry),[currency,setCurrency]=useState(marketFor(initialCountry)?.currency??"EUR"),[timeZone,setTimeZone]=useState(marketFor(initialCountry)?.timeZone??"Europe/Copenhagen"),[usState,setUsState]=useState('');
+  const country="US",currency="USD";
+  const [timeZone,setTimeZone]=useState("America/New_York"),[usState,setUsState]=useState('');
   const isUS=country==='US';
 
   const engagementLabel = tr("Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.");
 
   return (
     <form action={action} className="card space-y-4"><input type="hidden" name="locale" value={locale}/>
-      <label className="label block">{tr("Land")}<select className="input" name="country" autoComplete="country" value={country} onChange={e=>{const next=e.target.value;setCountry(next);const m=marketFor(next)!;setCurrency(m.currency);setTimeZone(m.timeZone);setUsState('');}}>{MARKETS.map(m=><option key={m.code} value={m.code}>{countryLabel(m.code,locale)}</option>)}</select></label>
+      <label className="label block">{tr("Land")}<input type="hidden" name="country" value="US"/><div className="input flex items-center">United States</div></label>
       <div>
         <label className="label" htmlFor="name">{labels.name}</label>
         <input className="input" id="name" name="name" autoComplete="name" required />
