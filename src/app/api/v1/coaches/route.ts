@@ -1,6 +1,5 @@
-import { marketFor } from "../../../../lib/international";
 import { db } from "../../../../lib/db";
-import { apiError, json, preflight } from "../../../../lib/api/helpers";
+import { json, preflight } from "../../../../lib/api/helpers";
 import { coachRatings } from "../../../../lib/reviews";
 import { isDanishRegion, regionForArea } from "../../../../lib/regions";
 
@@ -10,8 +9,7 @@ export async function OPTIONS() { return preflight(); }
 /** GET /api/v1/coaches?region=&sport=TENNIS */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const country=url.searchParams.get("land")?.toUpperCase()||"DK";
-  if(!marketFor(country))return apiError("Unsupported country.");
+  const country="US"; // Public coach discovery is US-only.
   const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
   const selectedRegion = country==="DK" ? (isDanishRegion(rawRegion) ? rawRegion : regionForArea(rawRegion) ?? "") : rawRegion;
   const sport = url.searchParams.get("sport")?.toUpperCase() || "TENNIS";
