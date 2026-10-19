@@ -16,9 +16,13 @@ export function InterestForm({ q, sport, kind = "COURTS", label }: { q: string; 
     );
   }
   return (
-    <form action={action} className="w-full max-w-md text-left">
+    <form action={action} className="relative w-full max-w-md text-left">
       <input type="hidden" name="kind" value={kind} />
       <input type="hidden" name="sport" value={sport} />
+      {/* Honeypot for bots; hidden from people and assistive tech. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
+      </div>
       <label className="label" htmlFor="interest-q">Where should we look?</label>
       <input id="interest-q" name="q" defaultValue={q} placeholder="City, state or ZIP" className="input" maxLength={120} required />
       <label className="label mt-3" htmlFor="interest-email">Email me when {kind === "COURTS" ? "courts" : "coaches"} open up{label ? ` near ${label}` : ""}</label>
@@ -29,7 +33,7 @@ export function InterestForm({ q, sport, kind = "COURTS", label }: { q: string; 
         </SubmitButton>
       </div>
       {state?.error && <p className="field-error" role="alert">{state.error}</p>}
-      <p className="hint">One email when it happens. No newsletter.</p>
+      <p className="hint">We’ll ask you to confirm your email. One email when it happens, unsubscribe link included — no newsletter.</p>
     </form>
   );
 }

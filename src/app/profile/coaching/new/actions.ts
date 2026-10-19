@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { notifyInterestForCoach } from "../../../../lib/market-interest";
 import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
 import { normaliseBuddySports } from "../../../../lib/buddy-sports";
@@ -29,7 +30,7 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
   }
   if (sports.length === 0) return { error: "Vælg mindst én sportsgren, du vil tilbyde træning i." };
 
-  await db.coachProfile.create({
+  const coachProfile = await db.coachProfile.create({
     data: {
       userId: user.id,country,currency,timeZone,
       headline,
@@ -39,6 +40,8 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
       area,
     },
   });
+  // Players waiting for a coach in this area get their one e-mail.
+  await notifyInterestForCoach(coachProfile.id);
 
   // Rollen ændres ikke. En spiller kan dermed fortsat bruge sin spillerprofil
   // samtidig med, at den samme konto også har en trænerprofil.

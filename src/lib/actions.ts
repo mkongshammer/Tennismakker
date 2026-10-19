@@ -55,6 +55,7 @@ import { detectBookingSystem, testFeed } from "./detect";
 import { store as storeImage, remove as removeImage } from "./images";
 import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from "./connect";
 import { rebookLesson, rebookSameSlot } from "./rebook";
+import { notifyInterestForClub, notifyInterestForCoach } from "./market-interest";
 
 // ---------------- Auth ----------------
 
@@ -150,7 +151,7 @@ export async function signup(_prev: unknown, formData: FormData) {
     const priceHour = coachPrice;
     const headline = String(formData.get("headline") ?? "").trim();
 
-    await db.coachProfile.create({
+    const coachProfile = await db.coachProfile.create({
       data: {
         userId: user.id,
         country,currency,timeZone,
@@ -164,6 +165,8 @@ export async function signup(_prev: unknown, formData: FormData) {
 
     // Trænerens egne sportsgrene gælder også som spiller.
     await db.user.update({ where: { id: user.id }, data: { sports: sports.join(",") } });
+    // Players waiting for a coach in this area get their one e-mail.
+    await notifyInterestForCoach(coachProfile.id);
   }
 
   await createSession(user.id);
@@ -1770,6 +1773,9 @@ export async function approveClub(formData: FormData) {
   if(candidate.signupManaged){
     await approvePaidSignup(id);
   }else await db.club.update({where:{id},data:{status:'APPROVED',approvedAt:new Date(),reviewNote:null}});
+
+  // Players who asked to be told when courts open near this club get their one e-mail.
+  await notifyInterestForClub(id);
 
   revalidatePath("/superadmin", "layout");
   revalidatePath("/courts");

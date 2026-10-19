@@ -20,7 +20,7 @@ export function NotifyMe({ sport, q, kind = "COURTS" }) {
     setError(null);
     try {
       const result = await api.marketInterest({ email: email.trim(), sport, q: place.trim(), kind });
-      setDone(result.label);
+      setDone(result);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -31,7 +31,9 @@ export function NotifyMe({ sport, q, kind = "COURTS" }) {
   if (done) {
     return (
       <Card style={styles.card}>
-        <Text style={styles.done}>✓ {tr("Got it.")} {tr("We’ll email you when")} {kind === "COURTS" ? tr("courts") : tr("coaches")} {tr("open up near")} {done}.</Text>
+        <Text style={styles.done}>
+          ✓ {done.alreadyConfirmed ? tr("You’re already on the list for") : done.confirmationSent ? tr("Check your inbox — confirm your email and we’ll let you know when") : tr("Saved. We’ll let you know when")} {kind === "COURTS" ? tr("courts") : tr("coaches")} {tr("open up near")} {done.label}.
+        </Text>
       </Card>
     );
   }
@@ -43,7 +45,7 @@ export function NotifyMe({ sport, q, kind = "COURTS" }) {
       <TextInput value={email} onChangeText={setEmail} placeholder="you@example.com" placeholderTextColor={colors.slateLight} autoCapitalize="none" autoComplete="email" keyboardType="email-address" style={styles.input} accessibilityLabel={tr("Email")} />
       {error && <Text style={styles.error} accessibilityRole="alert">{tr(error)}</Text>}
       <Button title={tr("Notify me")} onPress={submit} loading={busy} disabled={!email.includes("@") || !place.trim()} />
-      <Text style={styles.hint}>{tr("One email when it happens. No newsletter.")}</Text>
+      <Text style={styles.hint}>{tr("We’ll ask you to confirm your email. One email when it happens, unsubscribe link included — no newsletter.")}</Text>
     </Card>
   );
 }

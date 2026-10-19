@@ -34,6 +34,7 @@ export default function PrivacyPage() {
           <li>Your bookings and payment history</li>
           <li>Content you create on the platform</li>
           <li>Technical information such as IP address and login timestamps</li>
+          <li>If you ask to be told when courts or coaches open in an area: your email address, the sport and place you asked about, and a one-way, salted fingerprint of your network address used only to detect abuse. We send one confirmation email, one notification when matching supply goes live, and nothing else. Every email carries an unsubscribe link that deletes the record.</li>
         </ul>
         <p>
           We do not store your payment card details. Payments are handled by Stripe, Inc., which acts as an independent controller for payment data where applicable.
@@ -79,6 +80,7 @@ export default function PrivacyPage() {
           Booking and payment records may be retained for five years after the end of the relevant financial year where required by accounting law.
         </p>
         <p>Closed player posts may be deleted after 12 months.</p>
+        <p>Court and coach notification requests that are never confirmed are deleted after 30 days; confirmed requests are deleted 180 days after the notification has been sent, or immediately when you unsubscribe.</p>
       </Section>
 
       <Section n="7" title="Children and young people">

@@ -134,6 +134,44 @@ async function main(){
    const p1=await search('');const last=await search('',{page:String(Math.ceil(p1.total/p1.pageSize))});
    assert.equal(p1.page,1);assert.ok(last.clubs.length>0);assert.ok(last.page*last.pageSize>=last.total);
   }
+  // Market interest: register → confirm → notify on club approval → unsubscribe → prune.
+  const mails:any[]=[];
+  const interest=loadIsolatedModule('src/lib/market-interest.ts',{'./db':{db},'./settings':{getSettings:async()=>({appUrl:'https://racketbuddy.test'})},'./email':{sendMail:async(m:any)=>{mails.push(m);return true;}},'./us-places':usPlaces,'./discovery':{placeKey:discovery.placeKey},'./sports':sports,'./market-interest-core':await import('../src/lib/market-interest-core')});
+  const core=await import('../src/lib/market-interest-core');
+  const headers=new Headers({'x-forwarded-for':'203.0.113.5'});
+  let out=await interest.registerInterest({email:'Fan@Example.com',sport:'tennis',q:'Burlington, VT'},{headers,source:'web'});
+  assert.ok(out.ok&&out.confirmationSent&&!out.alreadyConfirmed,JSON.stringify(out));
+  assert.equal(mails.length,1);assert.match(mails[0].subject,/Confirm/);assert.match(mails[0].body,/\/api\/v1\/market-interest\/confirm\?id=/);
+  out=await interest.registerInterest({email:'fan@example.com',sport:'TENNIS',q:'burlington vt'},{headers,source:'api'});
+  assert.ok(out.ok&&!out.confirmationSent,'same person, same place: no second mail within the hour');
+  assert.equal(await db.marketInterest.count(),1,'idempotent per email/kind/sport/place');
+  assert.equal(await interest.notifyInterestForClub((await db.club.create({data:{slug:'vt-club',name:'Burlington Tennis',city:'Burlington',country:'US',currency:'USD',timeZone:'America/New_York',status:'APPROVED',latitude:44.4759,longitude:-73.2121,address:'1 Lake St, Burlington, VT 05401',sports:'TENNIS'}})).id),0,'unconfirmed sign-ups are never notified');
+  const row=await db.marketInterest.findFirstOrThrow();
+  assert.equal(await interest.confirmInterest(row.id,'bad-token'),'invalid');
+  assert.equal(await interest.confirmInterest(row.id,core.interestToken(row.id,'confirm')),'confirmed');
+  assert.equal(await interest.confirmInterest(row.id,core.interestToken(row.id,'confirm')),'already');
+  const far=await db.club.create({data:{slug:'far-club',name:'Far Away Tennis',city:'Austin',country:'US',currency:'USD',timeZone:'America/Chicago',status:'APPROVED',latitude:30.27,longitude:-97.74,address:'1 Congress Ave, Austin, TX 78701',sports:'TENNIS'}});
+  assert.equal(await interest.notifyInterestForClub(far.id),0,'a club 1,500 miles away does not notify');
+  const padel=await db.club.create({data:{slug:'vt-padel',name:'Burlington Padel',city:'Burlington',country:'US',currency:'USD',timeZone:'America/New_York',status:'APPROVED',latitude:44.47,longitude:-73.21,address:'2 Lake St, Burlington, VT 05401',sports:'PADEL'}});
+  assert.equal(await interest.notifyInterestForClub(padel.id),0,'another sport does not notify');
+  const near=await db.club.findUniqueOrThrow({where:{slug:'vt-club'}});
+  mails.length=0;
+  assert.equal(await interest.notifyInterestForClub(near.id),1);
+  assert.match(mails[0].subject,/now bookable near Burlington, VT/);assert.match(mails[0].body,/\/clubs\/vt-club/);assert.match(mails[0].body,/unsubscribe\?id=/);
+  assert.equal(await interest.notifyInterestForClub(near.id),0,'notified once, never twice');
+  assert.equal((await db.marketInterest.findUniqueOrThrow({where:{id:row.id}})).notifiedAbout,near.id);
+  // Rate limit: the 9th distinct place for one e-mail within the hour is refused.
+  for(const city of ['Austin, TX','Denver, CO','Miami, FL','Chicago, IL','Seattle, WA','Phoenix, AZ'])assert.ok((await interest.registerInterest({email:'fan@example.com',sport:'TENNIS',q:city},{headers:new Headers(),source:'web'})).ok);
+  const refused=await interest.registerInterest({email:'fan@example.com',sport:'TENNIS',q:'Atlanta, GA'},{headers:new Headers(),source:'web'});
+  assert.equal(refused.ok,false);assert.equal((refused as any).status,429);
+  const bad=await interest.registerInterest({email:'someone@example.com',sport:'TENNIS',q:'Atlantis, ZZ'},{headers:new Headers(),source:'web'});assert.equal(bad.ok,false);assert.equal((bad as any).status,400);
+  assert.ok(await interest.unsubscribeInterest(row.id,core.interestToken(row.id,'unsubscribe')));
+  assert.equal(await db.marketInterest.findUnique({where:{id:row.id}}),null,'unsubscribe deletes the row');
+  assert.equal(await interest.unsubscribeInterest(row.id,core.interestToken(row.id,'unsubscribe')),true,'a second click is harmless');
+  await db.marketInterest.updateMany({data:{createdAt:new Date(Date.now()-40*86400000)}});
+  const pruned=await interest.pruneInterest();assert.equal(pruned.unconfirmedDeleted,6);assert.equal(await db.marketInterest.count(),0);
+  const summary=await interest.marketInterestSummary();assert.deepEqual(summary,[]);
+  check('Market interest: confirm-before-count, radius+sport matching, notify once, rate limit, unsubscribe deletes, retention prunes');
   console.log(report.join('\n'));
   check('Discovery stays bounded at 10, 100, 500 and 1,000 clubs: one indexed query, availability only for the page');
   console.log(`PASS ${checks} discovery checks.`);

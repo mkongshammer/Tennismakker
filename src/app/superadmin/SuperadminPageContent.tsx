@@ -12,6 +12,7 @@ import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
 import { Overblik } from "./Overblik";
 import { Aktivitet } from "./Aktivitet";
+import { Demand } from "./Demand";
 import { CoachPhotos } from "./CoachPhotos";
 import { Oekonomi } from "./Oekonomi";
 import { getSettings } from "../../lib/settings";
@@ -86,6 +87,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
       </>}
       {section === 'traenere' && <CoachPhotos />}
       {section === 'aktivitet' && <Aktivitet />}
+      {section === 'efterspoergsel' && <Demand />}
       {section === 'oekonomi' && <Oekonomi />}
       {section === 'adgang' && <SuperadminAccess />}
 

@@ -1,30 +1,26 @@
 "use server";
-import { db } from "./db";
+import { headers } from "next/headers";
 import { getCurrentUser } from "./session";
-import { SPORTS } from "./sports";
-import { placeKey } from "./discovery";
-import { resolvePlace } from "./us-places";
+import { registerInterest } from "./market-interest";
 
 export type MarketInterestState = { ok?: string; error?: string } | null;
 
 /**
  * "Tell me when courts open near me." One row per person, sport, place and
  * kind; repeats are idempotent so a double submit never duplicates demand.
+ * The confirmation e-mail is what turns a submission into real demand.
  */
 export async function registerMarketInterest(_prev: MarketInterestState, form: FormData): Promise<MarketInterestState> {
-  const email = String(form.get("email") ?? "").trim().toLowerCase();
-  const kind = String(form.get("kind") ?? "COURTS").toUpperCase();
-  const sport = String(form.get("sport") ?? "").toUpperCase();
-  const query = String(form.get("q") ?? "").trim();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) return { error: "Enter a valid email address." };
-  if (!["COURTS", "COACHES"].includes(kind) || !(SPORTS as readonly string[]).includes(sport)) return { error: "Choose a sport first." };
-  const place = await resolvePlace(query);
-  if (!place) return { error: "Enter a US city, state or ZIP code so we know where to look." };
+  // Honeypot: a field no person sees. Bots fill it; we say thanks and store nothing.
+  if (String(form.get("website") ?? "").trim()) return { ok: "Thanks — you’re on the list." };
   const user = await getCurrentUser();
-  await db.marketInterest.upsert({
-    where: { email_kind_sport_placeKey: { email, kind, sport, placeKey: placeKey(place) } },
-    create: { email, kind, sport, placeKey: placeKey(place), label: place.label, latitude: place.latitude, longitude: place.longitude, userId: user?.id ?? null },
-    update: { label: place.label, userId: user?.id ?? undefined },
-  });
-  return { ok: `Got it. We’ll email ${email} when ${kind === "COURTS" ? "courts" : "coaches"} open up near ${place.label}.` };
+  const result = await registerInterest(
+    { email: form.get("email"), kind: form.get("kind"), sport: form.get("sport"), q: form.get("q") },
+    { headers: await headers(), userId: user?.id ?? null, source: "web" }
+  );
+  if (!result.ok) return { error: result.error };
+  const what = String(form.get("kind") ?? "COURTS").toUpperCase() === "COACHES" ? "coaches" : "courts";
+  if (result.alreadyConfirmed) return { ok: `You’re already on the list for ${what} near ${result.label}. We’ll email you once when something opens.` };
+  if (result.confirmationSent) return { ok: `Check your inbox — confirm your email and we’ll let you know when ${what} open near ${result.label}.` };
+  return { ok: `Saved for ${what} near ${result.label}. We could not send the confirmation email right now; we’ll retry when you submit again.` };
 }
