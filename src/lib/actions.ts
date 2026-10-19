@@ -1075,7 +1075,7 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
         priceHour: 0,
         integrationType: "MANUAL",
         billingModel: "SUBSCRIPTION",
-        country: "DK",currency:"EUR",billingCurrency:"EUR",subscriptionKr:(await clubSignupPrices()).standard,
+        country: "US",currency:"USD",billingCurrency:"USD",timeZone:"America/New_York",subscriptionKr:(await clubSignupPrices("US")).standard,
         status: privateSetup ? "PENDING" : "APPROVED",
         approvedAt: privateSetup ? null : new Date(),
       },
@@ -1089,6 +1089,9 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
         passwordHash,
         role: "CLUB_ADMIN",
         clubId: created.id,
+        country: "US",
+        locale: "en-US",
+        countryChosen: true,
         area: city,
       },
     });
@@ -1830,14 +1833,14 @@ export async function updatePreferences(formData: FormData) {
   const locale = String(formData.get("locale") ?? "da");
   const sport = String(formData.get("sport") ?? "TENNIS");
 
-  if (!COUNTRIES.some(c=>c.code===country) || !(LOCALES as readonly string[]).includes(locale) || !(SPORTS as readonly string[]).includes(sport)) return;
+  if (country !== "US" || !(LOCALES as readonly string[]).includes(locale) || !(SPORTS as readonly string[]).includes(sport)) return;
   await setPreferenceCookies({ country, locale: locale as any, sport: sport as any });
 
   const user = await getCurrentUser();
   if (user) {
     await db.user.update({
       where: { id: user.id },
-      data: { country, locale, countryChosen: true },
+      data: { locale },
     });
   }
 
@@ -1857,7 +1860,7 @@ export async function setCountry(formData: FormData) {
   const country = COUNTRIES.find((c) => c.code === code);
   // Ikke bare "findes landet", men "sælger vi der". Ellers kan man sætte
   // sig selv til et marked, hvor der ikke findes en eneste bane.
-  if (!country?.live) return;
+  if (code !== "US" || !country?.live) return;
 
   const jar = await cookies();
   const alreadyPickedLanguage = Boolean(jar.get("rb_prefs_locale")?.value);
@@ -1871,9 +1874,7 @@ export async function setCountry(formData: FormData) {
     await db.user.update({
       where: { id: user.id },
       data: {
-        country: country.code,
-        countryChosen: true,
-        ...(user.country !== country.code ? {area:null} : {}),
+        // Browsing in the US market must not change the region of an old account.
         ...(locale ? { locale } : {}),
       },
     });
