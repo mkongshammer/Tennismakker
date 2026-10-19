@@ -10821,11 +10821,19 @@
   },
   "{count} timer": {
     "fr": "{count} heures",
-    "es": "{count} horas"
+    "es": "{count} horas",
+    "en": "{count} hours",
+    "de": "{count} Stunden",
+    "sv": "{count} timmar",
+    "no": "{count} timer"
   },
   "1 time": {
     "fr": "1 heure",
-    "es": "1 hora"
+    "es": "1 hora",
+    "en": "1 hour",
+    "de": "1 Stunde",
+    "sv": "1 timme",
+    "no": "1 time"
   },
   "Adgang til anlægget:": {
     "fr": "Accès aux installations :",

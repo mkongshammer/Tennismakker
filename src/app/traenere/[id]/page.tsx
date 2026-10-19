@@ -1,10 +1,8 @@
-
-import {UiText} from "../../../components/InternationalProvider";
-import {formatMoney,formatDate} from "../../../lib/international";
+// A coach's public profile: who they are, what a lesson costs, when they
+// are free, and how booking works (request → coach confirms → you pay).
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
-import { da } from "date-fns/locale";
 import { db } from "../../../lib/db";
 import { getCurrentUser } from "../../../lib/session";
 import { CoachSlotButton } from "../../../components/CoachSlotButton";
@@ -19,204 +17,215 @@ import { imageUrl } from "../../../lib/imageUrl";
 import { buyPackage } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
-import { Stars } from "../../../components/ReviewForm";
 import { contactPlayer } from "../../spillere/actions";
+import { formatDate, formatMoney, timeZoneLabel } from "../../../lib/international";
+import { sportLabel, sportColor, parseSports } from "../../../lib/sports";
+import { Icon } from "../../../components/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function TraenerPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ fejl?: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const coach = await db.coachProfile.findUnique({ where: { id }, include: { user: { select: { name: true } } } });
+  if (!coach) return { title: "Coach" };
+  return { title: `${coach.user.name} · ${parseSports(coach.sports).map((s) => sportLabel(s, "en-US")).join(", ")} coach in ${coach.area}`, description: coach.headline };
+}
+
+export default async function CoachPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fejl?: string }> }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const coach = await db.coachProfile.findUnique({
-    where: { id },
-    include: { user: true, packages: { where: { active: true } } },
-  });
+  const coach = await db.coachProfile.findUnique({ where: { id }, include: { user: true, packages: { where: { active: true } } } });
   if (!coach || coach.country !== "US") notFound();
 
   const user = await getCurrentUser();
   await releaseExpiredHolds();
 
-  const [ratings, reviews] = await Promise.all([
-    coachRatings([coach.id]),
-    recentReviews({ coachProfileId: coach.id }),
-  ]);
+  const [ratings, reviews, free, prefs, photoId] = await Promise.all([coachRatings([coach.id]), recentReviews({ coachProfileId: coach.id }), freeSlots(coach), getPreferences(), approvedCoachPhotoId(coach.id)]);
   const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
-
-  const free = await freeSlots(coach);
-  const prefs=await getPreferences(),t=translator(prefs.locale),money=(n:number)=>formatMoney(n,coach.currency,prefs.locale),date=(d:Date,options:Intl.DateTimeFormatOptions)=>formatDate(d,prefs.locale,coach.timeZone,options);
+  const t = translator(prefs.locale);
+  const money = (n: number) => formatMoney(n, coach.currency, prefs.locale);
+  const date = (d: Date, options: Intl.DateTimeFormatOptions) => formatDate(d, prefs.locale, coach.timeZone, options);
   const credits = user ? await creditsWith(user.id, coach.id) : [];
-  const photoId = await approvedCoachPhotoId(coach.id);
   const lessonPrice = lessonPriceKr(coach.priceHour, coach.lessonMinutes);
-  const length = describeLength(coach.lessonMinutes,prefs.locale);
+  const length = describeLength(coach.lessonMinutes, prefs.locale);
+  const sports = parseSports(coach.sports);
+  const returnTo = `/traenere/${coach.id}`;
+  const loginHref = `/login?next=${encodeURIComponent(returnTo)}`;
 
-  // Gruppér pr. dag
   const byDay = new Map<string, Date[]>();
   for (const s of free) {
-    const key = date(s,{weekday:"long",day:"numeric",month:"long"});
+    const key = date(s, { weekday: "long", month: "long", day: "numeric" });
     byDay.set(key, [...(byDay.get(key) ?? []), s]);
   }
 
+  const errorKey = query.fejl === "betaling" ? "coach.errNoPayout" : query.fejl === "egen" ? "coach.errSelf" : query.fejl === "passeret" ? "coach.errPast" : query.fejl === "ikke-ledig" ? "coach.errNotOffered" : query.fejl ? "coach.errTaken" : null;
+
   return (
-    <div className="mx-auto max-w-2xl">
-      {query.fejl && (
-        <p className="mb-4 rounded-xl border border-court/25 bg-court/5 p-4 text-sm">
-          {t(
-            query.fejl === "betaling"
-              ? "coach.errNoPayout"
-              : query.fejl === "egen"
-                ? "coach.errSelf"
-                : query.fejl === "passeret"
-                  ? "coach.errPast"
-                  : query.fejl === "ikke-ledig"
-                    ? "coach.errNotOffered"
-                    : "coach.errTaken"
+    <div className="mx-auto max-w-3xl space-y-8">
+      {errorKey && (
+        <p role="alert" className="rounded-xl border border-warning/30 bg-warning-soft p-4 text-sm font-semibold text-warning-ink">{t(errorKey)}</p>
+      )}
+
+      <header className="card-flat sm:p-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+          {photoId ? (
+            <img src={imageUrl(photoId)} alt={`${coach.user.name}`} className="h-28 w-28 shrink-0 rounded-3xl object-cover" />
+          ) : (
+            <span aria-hidden="true" className="flex h-28 w-28 shrink-0 items-center justify-center rounded-3xl bg-mist text-3xl font-bold text-slate">
+              {coach.user.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+            </span>
           )}
-        </p>
-      )}
-
-      <p className="mb-3 text-sm text-slate">{prefs.locale==="da"?<UiText text="Lokal tid"/>:<UiText text="Venue time"/>}: {coach.timeZone}</p>
-      <div className="card">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {photoId ? (
-              <img
-                src={imageUrl(photoId)}
-                alt=""
-                className="h-20 w-20 shrink-0 rounded-full object-cover"
-              />
-            ) : null}
-            <h1 className="display text-3xl">{coach.user.name}</h1>
-          </div>
-          <p className="display text-2xl text-court">{money(coach.priceHour)}/h</p>
-        </div>
-        <div className="mt-2">
-          <Stars average={rating.average} count={rating.count} />
-        </div>
-        <p className="mt-2">{coach.headline}</p>
-        <p className="mt-1 text-sm text-slate/60">{coach.area}</p>
-
-        {user && user.id !== coach.user.id ? (
-          <form action={contactPlayer} className="mt-4">
-            <input type="hidden" name="playerId" value={coach.user.id} />
-            <button type="submit" className="btn-court px-5 py-3"><UiText text="Skriv til træneren"/></button>
-          </form>
-        ) : !user ? (
-          <Link href="/login" className="btn-court mt-4 inline-block px-5 py-3"><UiText text="Log ind for at skrive"/></Link>
-        ) : null}
-      </div>
-
-      {reviews.length > 0 && (
-        <div className="mt-6">
-          <h2 className="display mb-3 text-xl"><UiText text="Hvad elever siger"/></h2>
-          <ul className="space-y-3">
-            {reviews.map((r: any) => (
-              <li key={r.id} className="card">
-                <p className="text-court">{"\u2605".repeat(r.rating)}</p>
-                <p className="mt-1">{r.comment}</p>
-                <p className="mt-1 text-sm text-slate/50">{r.author.name}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {coach.packages.length > 0 && (
-        <div className="mt-6">
-          <h2 className="display mb-1 text-xl">{t("coach.packages")}</h2>
-          <p className="mb-3 text-sm text-slate/60">
-            {t("coach.packagesBuyNote")}
-          </p>
-
-          {credits.map((c) => (
-            <p key={c.purchaseId} className="mb-3 rounded-xl bg-court/10 p-3 text-sm font-semibold text-court">
-              {t("coach.creditsLeft", { n: c.left, name: c.name })}
-            </p>
-          ))}
-          <ul className="space-y-3">
-            {coach.packages.map((p: any) => (
-              <li key={p.id} className="card">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="font-bold">{p.name}</p>
-                  <p className="display text-xl text-court">{money(p.priceKr)}</p>
-                </div>
-                <p className="text-sm text-slate/60">
-                  {p.sessions}{" "}<UiText text="timer ·"/>{" "}{money(Math.round(p.priceKr/p.sessions))}/h
-                  {p.priceKr < coach.priceHour * p.sessions && (
-                    <>
-                      {" · "}
-                      <span className="font-bold text-court"><UiText text="spar"/>{" "}{money(coach.priceHour*p.sessions-p.priceKr)}
-                      </span>
-                    </>
-                  )}
-                </p>
-                {p.description && <p className="mt-2 text-sm">{p.description}</p>}
-                {user ? (
-                  <form action={buyPackage} className="mt-3">
-                    <input type="hidden" name="packageId" value={p.id} />
-                    <input type="hidden" name="coachProfileId" value={coach.id} />
-                    <SubmitButton pendingText="Åbner betaling…">
-                      {t("coach.buyPackage")}
-                    </SubmitButton>
-                  </form>
-                ) : (
-                  <Link href="/login" className="btn-ghost mt-3 inline-block">
-                    {t("coach.loginToBuy")}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <h2 className="display mb-1 mt-8 text-2xl">{t("coach.timesTitle", { days: BOOKING_WINDOW_DAYS })}</h2>
-      <p className="mb-3 text-sm text-slate">
-        {t("coach.lessonLine", { length, price: lessonPrice })}{" "}
-        {t("coach.requestNote")}
-      </p>
-
-      {byDay.size === 0 && (
-        <div className="card text-slate/60">
-          {t("coach.noTimes")} {t("coach.noTimesNote")}
-        </div>
-      )}
-
-      <div className="space-y-5">
-        {Array.from(byDay.entries()).map(([day, daySlots]) => (
-          <div key={day}>
-            <p className="mb-2 font-bold capitalize">{day}</p>
-            <div className="flex flex-wrap gap-2">
-              {daySlots.map((s) =>
-                user ? (
-                  <CoachSlotButton
-                    key={s.toISOString()}
-                    coachProfileId={coach.id}
-                    startsAt={s.toISOString()}
-                    time={date(s,{hour:"2-digit",minute:"2-digit",hour12:false})}
-                  />
-                ) : (
-                  <Link key={s.toISOString()} href="/login"
-                    className="rounded-md border border-slate/20 px-3 py-1.5 text-sm text-slate/50">
-                    {date(s,{hour:"2-digit",minute:"2-digit",hour12:false})}
-                  </Link>
-                )
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap gap-1.5">
+              {sports.map((s) => (
+                <span key={s} className="badge-neutral"><span aria-hidden="true" className="h-2 w-2 rounded-full" style={{ backgroundColor: sportColor(s) }} />{sportLabel(s, prefs.locale)}</span>
+              ))}
+            </div>
+            <h1 className="display mt-2 text-display-md sm:text-display-lg">{coach.user.name}</h1>
+            <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate">
+              <span className="inline-flex items-center gap-1"><Icon name="pin" size={14} /> {coach.area}</span>
+              {rating.count > 0 ? (
+                <span><span className="text-court">★</span> {rating.average.toFixed(1)} · {rating.count} {rating.count === 1 ? "review" : "reviews"}</span>
+              ) : (
+                <span className="badge-neutral">New on RacketBuddy</span>
               )}
+            </p>
+            <p className="mt-3 leading-relaxed">{coach.headline}</p>
+            {coach.specialties && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {coach.specialties.split(",").filter(Boolean).map((s) => <span key={s} className="badge-court">{s.trim()}</span>)}
+              </div>
+            )}
+          </div>
+          <div className="shrink-0 rounded-2xl bg-mist p-4 text-center sm:min-w-40">
+            <p className="display text-display-md text-court">{money(lessonPrice)}</p>
+            <p className="text-xs text-slate">per {length} lesson</p>
+            {coach.lessonMinutes !== 60 && <p className="mt-1 text-xs text-slate-light">{money(coach.priceHour)} / hour</p>}
+            {user && user.id !== coach.user.id ? (
+              <form action={contactPlayer} className="mt-3">
+                <input type="hidden" name="playerId" value={coach.user.id} />
+                <button type="submit" className="btn-ghost btn-sm w-full">Message</button>
+              </form>
+            ) : !user ? (
+              <Link href={loginHref} className="btn-ghost btn-sm mt-3 w-full">Sign in to message</Link>
+            ) : null}
+          </div>
+        </div>
+      </header>
+
+      <section aria-labelledby="times-title">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 id="times-title" className="display text-display-md">Open times</h2>
+            <p className="mt-1 text-sm text-slate">Next {BOOKING_WINDOW_DAYS} days · all times in {timeZoneLabel(coach.timeZone, prefs.locale)}</p>
+          </div>
+          <p className="max-w-sm text-xs leading-relaxed text-slate">Pick a time to send a request. {coach.user.name.split(" ")[0]} confirms, then you pay {money(lessonPrice)}. Nothing is charged before that.</p>
+        </div>
+
+        {byDay.size === 0 ? (
+          <div className="card-flat mt-4 text-sm text-slate">
+            <p className="font-semibold text-ink">No open times in the next {BOOKING_WINDOW_DAYS} days.</p>
+            <p className="mt-1">{coach.user.name.split(" ")[0]} hasn’t released more hours yet. Send a message to arrange a lesson outside the regular schedule.</p>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-5">
+            {Array.from(byDay.entries()).map(([day, daySlots]) => (
+              <div key={day}>
+                <p className="mb-2 text-sm font-bold">{day}</p>
+                <div className="flex flex-wrap gap-2">
+                  {daySlots.map((s) =>
+                    user ? (
+                      <CoachSlotButton key={s.toISOString()} coachProfileId={coach.id} startsAt={s.toISOString()} time={date(s, { hour: "numeric", minute: "2-digit" })} />
+                    ) : (
+                      <Link key={s.toISOString()} href={loginHref} className="pill min-h-10">
+                        {date(s, { hour: "numeric", minute: "2-digit" })}
+                      </Link>
+                    )
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!user && byDay.size > 0 && (
+          <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate/15 bg-chalk p-4 text-sm sm:flex-row sm:items-center">
+            <p className="flex-1 text-slate">Sign in or create a free account to request a lesson. You pay only after the coach confirms.</p>
+            <div className="flex gap-2">
+              <Link href={loginHref} className="btn-ghost btn-sm flex-1">Sign in</Link>
+              <Link href={`/signup?next=${encodeURIComponent(returnTo)}`} className="btn-court btn-sm flex-1">Create account</Link>
             </div>
           </div>
-        ))}
-      </div>
-      {!user && (
-        <p className="mt-4 text-sm text-slate/60">
-          <Link href="/login" className="font-semibold text-court underline">
-            {t("coach.loginToBook")}
-          </Link>
-        </p>
+        )}
+      </section>
+
+      {coach.packages.length > 0 && (
+        <section aria-labelledby="packages-title">
+          <h2 id="packages-title" className="display text-display-md">{t("coach.packages")}</h2>
+          <p className="mt-1 text-sm text-slate">{t("coach.packagesBuyNote")}</p>
+          {credits.map((c) => (
+            <p key={c.purchaseId} className="mt-3 rounded-xl bg-court-tint p-3 text-sm font-semibold text-court-dark">{t("coach.creditsLeft", { n: c.left, name: c.name })}</p>
+          ))}
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {coach.packages.map((p) => {
+              const saving = coach.priceHour * p.sessions - p.priceKr;
+              return (
+                <li key={p.id} className="card-flat flex flex-col">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="font-bold">{p.name}</p>
+                    <p className="display text-title text-court">{money(p.priceKr)}</p>
+                  </div>
+                  <p className="mt-1 text-sm text-slate">
+                    {p.sessions} lessons · {money(Math.round(p.priceKr / p.sessions))} each
+                    {saving > 0 && <span className="ml-2 badge-success">Save {money(saving)}</span>}
+                  </p>
+                  {p.description && <p className="mt-2 text-sm">{p.description}</p>}
+                  <div className="mt-auto pt-4">
+                    {user ? (
+                      <form action={buyPackage}>
+                        <input type="hidden" name="packageId" value={p.id} />
+                        <input type="hidden" name="coachProfileId" value={coach.id} />
+                        <SubmitButton className="btn-court btn-sm w-full" pendingText="Opening checkout…">{t("coach.buyPackage")}</SubmitButton>
+                      </form>
+                    ) : (
+                      <Link href={loginHref} className="btn-ghost btn-sm w-full">{t("coach.loginToBuy")}</Link>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
+
+      {reviews.length > 0 && (
+        <section aria-labelledby="reviews-title">
+          <h2 id="reviews-title" className="display text-display-md">What students say</h2>
+          <ul className="mt-4 space-y-3">
+            {reviews.map((r: any) => (
+              <li key={r.id} className="card-flat">
+                <p className="text-court" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}</p>
+                <p className="mt-1">{r.comment}</p>
+                <p className="mt-1 text-sm text-slate-light">{r.author.name}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className="rounded-3xl bg-mist p-6">
+        <h2 className="display text-title">How booking a lesson works</h2>
+        <ol className="mt-4 grid gap-4 sm:grid-cols-3">
+          {[
+            ["Request a time", "Pick an open hour above. The time is held while the coach reviews it."],
+            ["Coach confirms", `${coach.user.name.split(" ")[0]} accepts the request — usually the same day.`],
+            ["Pay and play", `You pay ${money(lessonPrice)} securely. Cancel at least 24 hours before for a full refund.`],
+          ].map(([title, body], index) => (
+            <li key={title} className="flex gap-3">
+              <span className="data shrink-0 text-sm font-bold text-court">0{index + 1}</span>
+              <span><span className="block font-semibold">{title}</span><span className="block text-sm text-slate">{body}</span></span>
+            </li>
+          ))}
+        </ol>
+      </section>
     </div>
   );
 }
