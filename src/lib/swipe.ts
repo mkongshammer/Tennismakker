@@ -34,6 +34,7 @@ export async function nextCandidates(userId: string, take = 10) {
     where: {
       id: { notIn: skip },
       role: { in: ["PLAYER", "COACH"] },
+      country: "US",
       level: { gte: me.level - LEVEL_SPREAD, lte: me.level + LEVEL_SPREAD },
       ...(me.area ? { area: { contains: me.area.split(" ")[0], mode: "insensitive" } } : {}),
     },
