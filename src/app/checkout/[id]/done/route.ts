@@ -27,7 +27,7 @@ export async function GET(
   const user = await getCurrentUser();
   // A native app Bearer session is not a browser cookie. The signed webhook
   // still confirms payment; show a neutral return page instead of forcing login.
-  if (!user) redirect("/checkout/retur");
+  if (!user) redirect("/checkout/return");
 
   const booking = await db.booking.findUnique({ where: { id } });
   if (!booking || booking.userId !== user.id) redirect("/profile");

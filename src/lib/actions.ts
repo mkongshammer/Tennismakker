@@ -214,7 +214,7 @@ export async function login(_prev: unknown, formData: FormData) {
       maxAge: 15 * 60,
       path: "/",
     });
-    redirect("/login/kode");
+    redirect("/login/code");
   }
 
   await createSession(user.id);
@@ -279,7 +279,7 @@ export async function submitNewPassword(_prev: unknown, formData: FormData) {
     return { error: result.reason === "kort" ? "auth.errShort" : "auth.errBadLink" };
   }
 
-  redirect("/login?nulstillet=1");
+  redirect("/login?reset=1");
 }
 
 /**

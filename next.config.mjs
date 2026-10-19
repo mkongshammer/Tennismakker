@@ -37,6 +37,11 @@ const nextConfig = {
       ["/vilkaar/eu", "/terms/eu"],
       ["/vilkaar/international", "/terms/international"],
       ["/databehandleraftale", "/dpa"],
+      ["/checkout/retur", "/checkout/return"],
+      ["/checkout/:id/faerdig", "/checkout/:id/done"],
+      ["/login/glemt", "/login/forgot"],
+      ["/login/kode", "/login/code"],
+      ["/login/nulstil", "/login/reset"],
     ];
     return legacy.map(([source, destination]) => ({ source, destination, permanent: true }));
   },

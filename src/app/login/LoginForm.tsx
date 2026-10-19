@@ -71,7 +71,7 @@ export function LoginForm({
         {labels.submit}
       </SubmitButton>
       <p className="text-center text-sm">
-        <Link href="/login/glemt" className="font-semibold text-court underline">
+        <Link href="/login/forgot" className="font-semibold text-court underline">
           {labels.forgot}
         </Link>
       </p>

@@ -231,7 +231,7 @@ sat på webservicen, bruges `CRON_SECRET` som fallback.
 
 ## Juridiske dokumenter
 
-Ligger på `/terms`, `/privacy` og `/databehandleraftale`.
+Ligger på `/terms`, `/privacy` og `/dpa`.
 
 **De er udkast.** Alle tre viser en tydelig advarsel øverst, og felter der mangler rigtige oplysninger er markeret med firkantede parenteser. De skal gennemgås af en advokat, og advarslen fjernes ved at sætte `draft={false}` i den enkelte side.
 
@@ -503,7 +503,7 @@ Uden variablen svarer siden "Ikke fundet" — samme svar som ved forkert token, 
 
 ## Glemt adgangskode
 
-`/login/glemt` sender et link til kontoens mail. Linket er beviset: kan man læse postkassen, må man gerne sætte en ny adgangskode. Det er den samme antagelse, login i to trin hviler på, så der er ikke noget at vinde ved at kræve begge dele.
+`/login/forgot` sender et link til kontoens mail. Linket er beviset: kan man læse postkassen, må man gerne sætte en ny adgangskode. Det er den samme antagelse, login i to trin hviler på, så der er ikke noget at vinde ved at kræve begge dele.
 
 - **Tokenet er 32 tilfældige bytes**, gemt som SHA-256. Vi skal kunne slå rækken op ud fra linket, og det kan man ikke med bcrypt — men der er intet at gætte, og hashen i databasen kan ikke bruges til at bygge linket igen.
 - **En time, én gang.** Længe nok til at nå at åbne mailen, kort nok til at et link, der bliver liggende i en indbakke, ikke er en nøgle for evigt.

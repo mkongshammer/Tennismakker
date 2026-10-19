@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ nulstillet?: string; next?: string }>;
+  searchParams: Promise<{ reset?: string; next?: string }>;
 }) {
   const query = await searchParams;
   const t = translator((await getPreferences()).locale);
@@ -34,7 +34,7 @@ export default async function LoginPage({
           signup: t("nav.signup"),
           forgot: t("auth.forgot"),
         }}
-        notice={query.nulstillet ? t("auth.resetDone") : undefined}
+        notice={query.reset ? t("auth.resetDone") : undefined}
         errors={{
           "auth.errWrong": t("auth.errWrong"),
           "auth.errTooMany": t("auth.errTooMany"),

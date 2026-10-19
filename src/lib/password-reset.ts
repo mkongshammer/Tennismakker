@@ -51,7 +51,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
       locale: user.locale,
       to: user.email,
       name: user.name,
-      url: `${appUrl}/login/nulstil?token=${token}`,
+      url: `${appUrl}/login/reset?token=${token}`,
       minutes: LIFETIME_MINUTES,
     })
   );

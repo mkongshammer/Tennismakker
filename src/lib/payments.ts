@@ -169,7 +169,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
     // til profilen. Den spørger Stripe, om betalingen faktisk gik igennem,
     // og bekræfter bookingen med det samme — så oplevelsen ikke afhænger
     // af, at webhooken når frem først.
-    success_url: `${base}/checkout/${bookingId}/faerdig?session={CHECKOUT_SESSION_ID}`,
+    success_url: `${base}/checkout/${bookingId}/done?session={CHECKOUT_SESSION_ID}`,
     cancel_url: `${base}/profile`,
     // Stripe requires at least 30 minutes. Five extra minutes allow creation
     // retries; this exact timestamp is also persisted as the local deadline.
