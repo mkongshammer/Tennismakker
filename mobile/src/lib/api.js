@@ -160,7 +160,8 @@ export const api = {
   savePreferences:payload=>request("/me",{method:"POST",body:payload}),
   deleteAccount:()=>request("/me",{method:"DELETE"}),
 
-  clubs:(sport="TENNIS",country=getInternational().country)=>request(`/clubs?sport=${sport}&land=${country}`,{auth:false,country}),
+  clubs:(sport="TENNIS",country=getInternational().country,q="")=>request(`/clubs?sport=${sport}&land=${country}${q?`&q=${encodeURIComponent(q)}`:""}`,{auth:false,country}),
+  marketInterest:(body)=>request(`/market-interest`,{method:"POST",body,auth:false}),
   club:(slug,days=7)=>request(`/clubs/${slug}?dage=${days}`,{auth:false}),
   coaches:(sport="TENNIS",area,country=getInternational().country)=>{const q=new URLSearchParams({sport,land:country});if(area)q.set("omraade",area);return request(`/coaches?${q}`,{auth:false,country});},
   coach:id=>request(`/coaches/${id}`,{auth:false}),

@@ -62,9 +62,9 @@ export default function MatchesScreen({ navigation }) {useInternational();
       <Card>
           <View style={styles.row}>
             <Text style={styles.name}>{item.requesterName}</Text>
-            <Badge>{`${item.level} · ${LEVELS[item.level] ?? ""}`}</Badge>
+            <Badge>{`${item.level} · ${tr(LEVELS[item.level] ?? "")}`}</Badge>
           </View>
-          <Text style={styles.type}>{MATCH_TYPES[item.matchType] ?? item.matchType}</Text>
+          <Text style={styles.type}>{tr(MATCH_TYPES[item.matchType] ?? item.matchType)}</Text>
           <Text style={styles.message}>{item.message}</Text>
           <Text style={styles.meta}>{item.area}</Text>
           {item.isMine ?

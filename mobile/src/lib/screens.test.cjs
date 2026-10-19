@@ -218,37 +218,44 @@ test('club login is a separate choice below login and submits in club-only mode'
   }finally{await act(()=>tree.unmount());}
 });
 
-test('club search filters real names and cities, can clear, and preserves selected-club navigation', async () => {
-  const navigations = []; let tree;
+test('club discovery searches the server by place, shows distance, and captures interest when a market is empty', async () => {
+  const navigations = []; let tree; const fetchers=[];
   const clubs = [
-    { id: 'c1', slug: 'lyngby', name: 'Lyngby Tennis', city: 'Lyngby', courtCount: 4, priceHour: 100 },
-    { id: 'c2', slug: 'valby', name: 'Valby Klub', city: 'København', courtCount: 3, priceHour: 120 },
+    { id: 'c1', slug: 'brookline', name: 'Brookline Racquet Club', city: 'Brookline', state: 'MA', country: 'US', distanceMiles: 4.4, courtCount: 4, indoorCount: 0, priceHour: 38, currency: 'USD', slotsToday: 6, bookable: true },
+    { id: 'c2', slug: 'austin', name: 'Austin Tennis Center', city: 'Austin', state: 'TX', country: 'US', distanceMiles: 1700, courtCount: 12, indoorCount: 0, priceHour: 22, currency: 'USD', slotsToday: 0, bookable: true },
   ];
+  let response={clubs,place:{label:'Boston, MA'},placeUnresolved:false};
   const {default:Clubs} = loadSource('../screens/ClubsScreen.js', {
     'react-native': { FlatList:'FlatList', Pressable:'Pressable', RefreshControl:'RefreshControl', StyleSheet:{create:x=>x}, Text:'Text', TextInput:'TextInput', View:'View' },
-    '../lib/api': {api:{}},
+    '../lib/api': {api:{clubs:(sport,country,q)=>({sport,country,q})}},
     '../lib/ui': Object.fromEntries(['AppHeading','Card','Empty','ErrorMessage','Loading'].map(x=>[x,x])),
     '../lib/theme': {colors:{}, pageContent:{}, SPORT_LABELS:{TENNIS:'Tennis'},sportColor:()=> '#1B62C4'},
     '../lib/SportPicker': {SportPicker:'SportPicker',useSport:()=>['TENNIS',()=>{}]},
     '../lib/CourtGraphic': {CourtGraphic:'CourtGraphic'}, '../lib/CourtScene': {CourtScene:'CourtScene'},
-    '../lib/useScreenData': {useScreenData:()=>({data:{clubs},loading:false,refreshing:false,refresh(){}})},
+    '../lib/NotifyMe': {NotifyMe:'NotifyMe'},
+    '../lib/useScreenData': {useScreenData:(fetcher)=>{fetchers.push(fetcher);return {data:response,loading:false,refreshing:false,refresh(){}};}},
   });
   await act(async()=>{tree=create(React.createElement(Clubs,{navigation:{navigate:(...a)=>navigations.push(a)}}));});
   try {
     const list=()=>tree.root.findByType('FlatList');
-    // FlatList renders its header; host mocks explicitly mount that supplied header.
+    assert.deepEqual(list().props.data.map(x=>x.id),['c1','c2'],'the server decides what is in range; the app does not filter by name');
+    let card; await act(async()=>{card=create(list().props.renderItem({item:clubs[0]}));});
+    const flat=node=>typeof node==='string'?node:Array.isArray(node)?node.map(flat).join(''):node?flat(node.children):'';
+    const text=flat(card.toJSON());
+    assert.match(text,/4\.4 mi/);assert.match(text,/6 open today/);assert.match(text,/Brookline, MA/);
+    list().props.renderItem({item:clubs[1]}).props.onPress();
+    assert.deepEqual(navigations,[['Klub',{slug:'austin',name:'Austin Tennis Center'}]]);
     function ViewList() {return React.createElement(React.Fragment,null, list().props.ListHeaderComponent);}
     let header; await act(async()=>{header=create(React.createElement(ViewList));});
     const search=()=>header.root.findByType('TextInput');
-    await act(async()=>search().props.onChangeText('KØBENHAVN'));
-    assert.deepEqual(list().props.data.map(x=>x.id),['c2']);
-    await act(async()=>header.update(React.createElement(ViewList)));
-    const result=list().props.renderItem({item:list().props.data[0]});
-    result.props.onPress();assert.deepEqual(navigations,[['Klub',{slug:'valby',name:'Valby Klub'}]]);
-    await act(async()=>search().props.onChangeText('No match'));
-    assert.deepEqual(list().props.data,[]);assert.equal(list().props.ListEmptyComponent.props.title,'Ingen klubber matcher');
-    await act(async()=>list().props.ListEmptyComponent.props.onAction());
-    assert.equal(list().props.data.length,2);
+    await act(async()=>{search().props.onChangeText('Denver');});
+    await act(async()=>{await new Promise(r=>setTimeout(r,450));});
+    assert.deepEqual(fetchers.at(-1)(),{sport:'TENNIS',country:'DK',q:'Denver'},'a pause in typing sends the place to the API');
+    response={clubs:[],place:{label:'Denver, CO'},placeUnresolved:false};
+    await act(async()=>tree.update(React.createElement(Clubs,{navigation:{navigate:()=>{}}})));
+    let emptyTree; await act(async()=>{emptyTree=create(list().props.ListEmptyComponent);});
+    const empty=JSON.stringify(emptyTree.toJSON());
+    assert.match(empty,/No clubs near Denver, CO/);assert.match(empty,/NotifyMe/);
     await act(()=>header.unmount());
   }finally{await act(()=>tree.unmount());}
 });
@@ -266,7 +273,7 @@ test('country and language persist without converting venue prices, and sport la
   assert.match(international.money(80,'EUR'),/EUR\s*80/);
   assert.equal(international.tr('Log ind på klubben'),'Log in to your club');
   await international.setInternational({country:'ZZ',locale:'bad'});
-  assert.deepEqual(international.getInternational(),{country:'US',locale:'en-US',countryChosen:false,languageChosen:false});
+  assert.deepEqual(international.getInternational(),{country:'US',locale:'en-US',countryChosen:true,languageChosen:false});
   const {SportPicker} = loadSource('./SportPicker.js', {
     'react-native': {Pressable:'Pressable',Text:'Text',View:'View',StyleSheet:{create:x=>x}},
     '@react-native-async-storage/async-storage': {setItem:async()=>{}},
@@ -281,7 +288,7 @@ test('country and language persist without converting venue prices, and sport la
   assert.equal(tree.root.findByType('Text').props.children,'Bordtennis');
   await act(()=>tree.unmount());
   await international.restoreInternational();
-  assert.deepEqual(international.getInternational(),{country:'US',locale:'da',countryChosen:false,languageChosen:false});
+  assert.equal(international.getInternational().country,'US');assert.equal(international.getInternational().locale,'da');
 });
 
 test('mobile booking dates group by venue day and clock rather than device zone', () => {
@@ -289,38 +296,23 @@ test('mobile booking dates group by venue day and clock rather than device zone'
   dates.setDateLocale('en-US');
   const instant=new Date('2027-01-04T01:00:00Z');
   assert.equal(dates.isoDay(instant,'America/Los_Angeles'),'2027-01-03');
-  assert.equal(dates.time(instant,'America/Los_Angeles'),'17:00');
+  assert.equal(dates.time(instant,'America/Los_Angeles'),'5:00 PM');
+  dates.setDateLocale('en');assert.equal(dates.time(instant,'America/Los_Angeles'),'17:00');dates.setDateLocale('en-US');
   const grouped=dates.groupByDay([instant,new Date('2027-01-04T07:00:00Z')],x=>x,'America/Los_Angeles');
   assert.equal(grouped.length,1);assert.match(dates.dayLong(instant,'America/Los_Angeles'),/Sunday/);
 });
 
-test('country onboarding automatically applies a known IP country and preserves saved choices',async()=>{
- let prefs={country:'DK',locale:'da',countryChosen:false,languageChosen:false},calls=0,tree;
+test('country onboarding never asks: the app serves the US marketplace only',async()=>{
+ let calls=0,tree;
  const {CountryOnboarding}=loadSource('./CountryOnboarding.js',{
   'react-native':{Modal:'Modal',View:'View',Text:'Text',ScrollView:'ScrollView',Linking:{}},
   'react-native-safe-area-context':{SafeAreaView:'SafeAreaView'},
   './auth':{useAuth:()=>({user:null,loading:false})},
-  './api':{api:{location:async()=>{calls++;return {country:'US',needsChoice:false};}}},
-  './international':{useInternational:()=>({...prefs,t:x=>x}),getInternational:()=>prefs,setInternational:async v=>{prefs={...prefs,...v};},marketFor:code=>({defaultLocale:code==='US'?'en-US':'da'})},
+  './api':{api:{location:async()=>{calls++;return {country:null,needsChoice:true};}}},
+  './international':{useInternational:()=>({country:'US',locale:'en-US',t:x=>x}),getInternational:()=>({country:'US'}),setInternational:async()=>{},marketFor:()=>({defaultLocale:'en-US'})},
   './PreferencesPicker':{PreferencesPicker:'PreferencesPicker'},'./ui':{Button:'Button'},'./theme':{colors:{}},
  });
  await act(async()=>{tree=create(React.createElement(CountryOnboarding));});
- assert.equal(calls,1);assert.equal(prefs.country,'US');assert.equal(prefs.locale,'en-US');assert.ok(prefs.countryChosen);assert.equal(tree.root.findByType('Modal').props.visible,false);
+ assert.equal(calls,0,'no geolocation request is made');assert.equal(tree.toJSON(),null,'nothing is rendered');
  await act(()=>tree.unmount());
- await act(async()=>{tree=create(React.createElement(CountryOnboarding));});assert.equal(calls,1);await act(()=>tree.unmount());
-});
-
-test('country onboarding asks in a modal on uncertain location and saves the selected country',async()=>{
- let prefs={country:'DK',locale:'en',countryChosen:false,languageChosen:true},tree;
- const {CountryOnboarding}=loadSource('./CountryOnboarding.js',{
-  'react-native':{Modal:'Modal',View:'View',Text:'Text',ScrollView:'ScrollView',Linking:{}},'react-native-safe-area-context':{SafeAreaView:'SafeAreaView'},
-  './auth':{useAuth:()=>({user:null,loading:false})},'./api':{api:{location:async()=>({country:null,suggestedCountry:'SE',needsChoice:true})}},
-  './international':{useInternational:()=>({...prefs,t:x=>x}),getInternational:()=>prefs,setInternational:async v=>{prefs={...prefs,...v};},marketFor:()=>({defaultLocale:'sv'})},
-  './PreferencesPicker':{PreferencesPicker:'PreferencesPicker'},'./ui':{Button:'Button'},'./theme':{colors:{}},
- });
- await act(async()=>{tree=create(React.createElement(CountryOnboarding));});assert.equal(tree.root.findByType('Modal').props.visible,true);assert.equal(prefs.country,'DK');
- assert.equal(tree.root.findByType('PreferencesPicker').props.locale,'en');
- await act(async()=>tree.root.findByType('PreferencesPicker').props.onChange({country:'SE',locale:'sv'}));
- await act(async()=>tree.root.findAllByType('Button').find(n=>n.props.title===phrases.translatePhrase('Fortsæt','sv')).props.onPress());
- assert.equal(prefs.country,'SE');assert.equal(prefs.locale,'sv');assert.ok(prefs.countryChosen);assert.equal(tree.root.findByType('Modal').props.visible,false);await act(()=>tree.unmount());
 });

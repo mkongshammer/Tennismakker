@@ -29,7 +29,7 @@ function CourtTile({ slot, onPress, loading, disabled }) {useInternational();
       onPress={onPress}
       disabled={disabled || loading}
       accessibilityRole="button"
-      accessibilityLabel={`${slot.courtName}, ${time(slot.start, slot.timeZone)}, ${money(slot.priceKr, slot.currency)}oner. Se og vælg tid`}
+      accessibilityLabel={`${slot.courtName}, ${time(slot.start, slot.timeZone)}, ${money(slot.priceKr, slot.currency)}. ${tr("Reserve this time")}`}
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
       styles.tile,
@@ -39,7 +39,7 @@ function CourtTile({ slot, onPress, loading, disabled }) {useInternational();
       <View style={{ flex: 1 }}>
         <Text style={styles.tileTime}>{time(slot.start, slot.timeZone)}</Text>
         <Text style={styles.tileMeta}>
-          {slot.courtName} · {SURFACES[slot.surface] ?? slot.surface}
+          {slot.courtName} · {tr(SURFACES[slot.surface] ?? slot.surface)}
         </Text>
       </View>
       <Text style={styles.tilePrice}>{loading ? "…" : `${money(slot.priceKr, slot.currency)}`}</Text>

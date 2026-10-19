@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
 import { PreferencesPicker } from "../lib/PreferencesPicker";
@@ -9,6 +9,13 @@ import { SportPicker, useSport } from "../lib/SportPicker";
 import { CourtGraphic } from "../lib/CourtGraphic";
 import { useScreenData } from "../lib/useScreenData";
 import { CourtScene } from "../lib/CourtScene";
+import { NotifyMe } from "../lib/NotifyMe";
+
+function distanceLabel(miles) {
+  if (miles == null) return null;
+  if (miles < 0.95) return tr("under 1 mi");
+  return miles < 10 ? `${miles.toFixed(1)} mi` : `${Math.round(miles)} mi`;
+}
 
 function Stars({ average, count }) {useInternational();
   if (!count) return <Text style={styles.newBadge}>{tr("Ny p\xE5 RacketBuddy")}</Text>;
@@ -24,10 +31,16 @@ export default function ClubsScreen({ navigation }) {
   const { country } = useInternational();
   const [sport, setSport] = useSport();
   const [query, setQuery] = useState("");
-  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport, country), [sport, country]));
+  // The server resolves a city, state or ZIP and returns distance; the
+  // request waits for a short pause in typing so every keystroke does not
+  // hit the API.
+  const [search, setSearch] = useState("");
+  useEffect(() => { const id = setTimeout(() => setSearch(query.trim()), 400); return () => clearTimeout(id); }, [query]);
+  const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport, country, search), [sport, country, search]));
   const state = { loading, error, clubs: data?.clubs ?? [] };
-  const needle = query.trim().toLocaleLowerCase("da-DK");
-  const clubs = state.clubs.filter((c) => c.country === 'US' && `${c.name} ${c.city} ${c.address ?? ''}`.toLocaleLowerCase('en-US').includes(needle));
+  const needle = search;
+  const clubs = state.clubs.filter((c) => c.country === 'US');
+  const place = data?.place ?? null;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
@@ -42,8 +55,8 @@ export default function ClubsScreen({ navigation }) {
             </View>
             <Text style={styles.label}>{tr("Hvad spiller du?")}</Text>
             <SportPicker value={sport} onChange={setSport} />
-            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("S\xF8g klub eller by")} placeholder={tr("S\xF8g klub eller by")} placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
-            <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
+            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("City, state or ZIP")} placeholder={tr("City, state or ZIP")} autoComplete="postal-code" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
+            <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}
         keyExtractor={(c) => c.id}
@@ -54,12 +67,12 @@ export default function ClubsScreen({ navigation }) {
 
         }
         ListEmptyComponent={
-        state.loading ? <Loading label={tr("Finder klubber\u2026")} /> : error && !data ? null : <Empty title={needle ? tr("Ingen klubber matcher") : tr("Flere baner p\xE5 vej")} icon="⌕" action={needle ? tr("Ryd s\xF8gning") : undefined} onAction={() => setQuery("")}>{needle ? tr("Pr\xF8v et andet klubnavn eller en anden by.") : tr("Der er ingen klubber for denne sportsgren endnu. Pr\xF8v en anden sportsgren ovenfor.")}</Empty>
+        state.loading ? <Loading label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /></View>
         }
         renderItem={({ item }) =>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Se ledige tider hos ${item.name}`}
+          accessibilityLabel={`${tr("See available times at")} ${item.name}`}
           style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
           onPress={() => navigation.navigate("Klub", { slug: item.slug, name: item.name })}>
 
@@ -73,10 +86,11 @@ export default function ClubsScreen({ navigation }) {
                     <Text style={styles.name}>{item.name}</Text>
                     <Stars average={item.rating?.average ?? 0} count={item.rating?.count ?? 0} />
                   </View>
-                  <Text style={styles.meta}>{item.city}</Text>
+                  <Text style={styles.meta}>{item.city}{item.state ? `, ${item.state}` : ""}{item.distanceMiles != null ? ` · ${distanceLabel(item.distanceMiles)}` : ""}</Text>
                   <Text style={styles.meta}>
-                    {item.courtCount}{tr("baner")}
+                    {item.courtCount} {tr("baner")}{item.indoorCount ? ` · ${item.indoorCount} ${tr("indoor")}` : ""}
                 </Text>
+                  {item.bookable === false ? <Text style={styles.newBadge}>{tr("Not bookable yet")}</Text> : item.slotsToday > 0 ? <Text style={styles.openBadge}>{item.slotsToday} {tr("open today")}</Text> : null}
                 </View>
                 </View>
                 <View style={styles.cardFoot}><Text style={styles.price}>{tr("Fra") + " "}{money(item.priceHour, item.currency)} <Text style={styles.meta}>{tr("/ time")}</Text></Text><View style={styles.cardAction}><Text style={styles.actionText}>{tr("Se tider")}</Text><Text style={styles.arrow}>↗</Text></View></View>
@@ -96,6 +110,7 @@ const styles = StyleSheet.create({
   price: { fontWeight: "800", marginTop: 4, color: colors.ink },
   rating: { fontSize: 12, color: colors.ink, fontWeight: "700" },
   newBadge: { fontSize: 13, color: colors.slate },
+  openBadge: { fontSize: 12, fontWeight: "700", color: colors.success, marginTop: 4 },
   hero: { backgroundColor: colors.ink, borderRadius: 24, marginBottom: 24, flexDirection: "row", overflow: "hidden", alignItems: "center" },
   heroCopy: { flex: 1, padding: 22, paddingRight: 0, zIndex: 1 },
   heroEyebrow: { fontSize: 10, color: colors.optic, fontWeight: "800", letterSpacing: 1.5, marginBottom: 10 },

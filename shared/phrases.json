@@ -354,7 +354,7 @@
   "E-mailen er allerede registreret. Log ind eller brug en anden e-mail.": "This email is already registered. Log in or use another email.",
   "Klubben kunne ikke oprettes.": "The club could not be created.",
   "Begynder": "Beginner",
-  "Let øvet": "Improver",
+  "Let øvet": "Advanced beginner",
   "Øvet": "Intermediate",
   "Meget øvet": "Advanced",
   "Turneringsspiller": "Tournament player",
@@ -1177,5 +1177,17 @@
   "Klubhjemmeside og kontaktpersoner": "Club website and contacts",
   "Klubnyheder": "Club news",
   "Faste og gentagne banebookinger": "Recurring reservations",
-  "Import og flytning fra andre systemer": "Import from another system"
+  "Import og flytning fra andre systemer": "Import from another system",
+  "Nybegynder": "Beginner",
+  "Klubspiller": "Club player",
+  "Stærk klubspiller": "Strong club player",
+  "Divisionsspiller": "Tournament player",
+  "Træningsmakker": "Practice partner",
+  "Har spillet få gange": "Has played a few times",
+  "Kan holde en rally kørende": "Can keep a rally going",
+  "Spiller jævnligt, stabil grundslag": "Plays regularly with steady groundstrokes",
+  "Spiller holdkampe eller turneringer": "Plays league matches or tournaments",
+  "Øverste rækker i klubben": "Top of the club ladder",
+  "Konkurrerer på højt niveau": "Competes at a high level",
+  "Rangliste / tidligere elite": "Ranked or former elite"
 }

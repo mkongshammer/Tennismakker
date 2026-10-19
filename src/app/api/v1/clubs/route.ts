@@ -1,48 +1,50 @@
-import { db } from "../../../../lib/db";
 import { json, preflight } from "../../../../lib/api/helpers";
-import { clubRatings } from "../../../../lib/reviews";
+import { discoverClubs, parseDiscoveryFilters } from "../../../../lib/discovery";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
-/** GET /api/v1/clubs?land=DK&sport=TENNIS — kun godkendte klubber. */
+/**
+ * GET /api/v1/clubs?sport=TENNIS&q=Boston&indoor=1&today=1&max=40&radius=50
+ *
+ * Approved US clubs only, with the same search the website uses: a city,
+ * state or ZIP resolves to a point and results carry distance in miles.
+ * The `land` parameter from older apps is ignored — public discovery is
+ * never driven by a client-provided market.
+ */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const country = "US"; // Never trust the client-provided market for public discovery.
-  const sport = url.searchParams.get("sport")?.toUpperCase();
-
-  const clubs = await db.club.findMany({
-    where: {
-      // Ikke-godkendte og afviste klubber må aldrig kunne ses udefra —
-      // hverken her eller på websitet. Det var netop det, den manuelle
-      // godkendelse skulle sikre.
-      status: "APPROVED",
-      country,
-      ...(sport ? { courts: { some: { sport } } } : {}),
-    },
-    include: {
-      courts: sport ? { where: { sport } } : true,
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const ratings = await clubRatings(clubs.map((c: any) => c.id));
+  const query = Object.fromEntries(url.searchParams.entries());
+  const filters = parseDiscoveryFilters(query);
+  const result = await discoverClubs(filters);
 
   return json({
-    clubs: clubs.map((c: any) => ({
+    place: result.place ? { label: result.place.label, latitude: result.place.latitude, longitude: result.place.longitude, kind: result.place.kind } : null,
+    placeUnresolved: result.placeUnresolved,
+    totalForSport: result.totalForSport,
+    clubs: result.clubs.map((c) => ({
       id: c.id,
       slug: c.slug,
       name: c.name,
       city: c.city,
+      state: c.state,
       address: c.address,
       latitude: c.latitude,
       longitude: c.longitude,
+      distanceMiles: c.distanceMiles,
       color: c.color,
-      priceHour: c.priceHour,
-      country:c.country,currency:c.currency,timeZone:c.timeZone,
-      courtCount: c.courts.length,
-      surfaces: Array.from(new Set(c.courts.map((court: any) => court.surface))),
-      rating: ratings.get(c.id) ?? { average: 0, count: 0 },
+      priceHour: c.priceFrom,
+      country: c.country,
+      currency: c.currency,
+      timeZone: c.timeZone,
+      courtCount: c.courtCount,
+      indoorCount: c.indoorCount,
+      surfaces: c.surfaces,
+      rating: c.rating,
+      bookable: c.bookable,
+      slotsToday: c.slotsToday,
+      nextSlotAt: c.nextSlotAt,
+      tagline: c.tagline,
     })),
   });
 }
