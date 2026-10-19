@@ -3,7 +3,6 @@
 // Indlogget bruger: gemt på profilen. Gæst: en cookie, så valget overlever
 // et sideskift. Første besøg bruger IP-land eller beder om et valg.
 
-import { marketFor } from "./international";
 import { type CountryDetection } from './geo';
 import { cookies } from "next/headers";
 import { getCurrentUser } from "./session";
@@ -31,14 +30,14 @@ export async function getPreferences(): Promise<Preferences> {
       ? (cookieSport as Sport)
       : DEFAULT_SPORT;
 
-  if (user?.countryChosen && marketFor(user.country)) {
+  // Public discovery is always US-only, including for existing accounts.
+  // Account country remains stored unchanged for existing contracts and payments.
+  if (user) {
     return {
-      country: user.country ?? "DK",
-      locale: (LOCALES as readonly string[]).includes(user.locale)
-        ? (user.locale as Locale)
-        : "da",
+      country: "US",
+      locale: "en-US",
       sport,
-      countryChosen: user.countryChosen,
+      countryChosen: true,
     };
   }
 
