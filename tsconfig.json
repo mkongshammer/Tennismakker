@@ -41,6 +41,7 @@
     "mobile",
     "scripts/test-club-database.ts",
     "scripts/test-club-control.ts",
-    "scripts/test-club-onboarding.ts"
+    "scripts/test-club-onboarding.ts",
+    "scripts/test-discovery.ts"
   ]
 }
