@@ -81,15 +81,12 @@ export default async function BookPage() {
       <p className="mb-5 text-sm font-medium text-slate">Showing courts in the United States only</p>
       <SportPicker active={prefs.sport} locale={prefs.locale} />
 
-      {clubs.length === 0 ? (
-        <div className="card text-center text-slate/60">
-          <p>{t("book.noClubs")}</p>
-          <Link href="/opret-klub" className="btn-court mt-4">
-            {t("club.signup")}
-          </Link>
+      <ClubExplorer clubs={data} country="US" locale={prefs.locale} />
+      {clubs.length === 0 && (
+        <div className="card mt-5 text-center text-slate/60">
+          <p>US clubs will appear here after their accounts are approved.</p>
+          <Link href="/opret-klub" className="btn-court mt-4">List your US club</Link>
         </div>
-      ) : (
-        <ClubExplorer clubs={data} country={prefs.country} locale={prefs.locale} />
       )}
 
       <div className="card mt-10 border-court/30 bg-court/5">
