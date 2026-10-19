@@ -1,6 +1,5 @@
-import { detectCountryFromHeaders } from '../../../../lib/geo';
 import { json, preflight, requireUser, publicUser, requireRegionalCountry } from '../../../../lib/api/helpers';
-import {marketFor,validLocale} from '../../../../lib/international';
+import {validLocale} from '../../../../lib/international';
 import {dataRegionForCountry, regionalShardingActive} from '../../../../lib/region';
 import {db} from '../../../../lib/db';
 export const runtime = 'nodejs';
