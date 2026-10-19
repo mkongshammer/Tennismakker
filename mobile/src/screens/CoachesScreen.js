@@ -18,7 +18,7 @@ export default function CoachesScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
         <FlatList
         contentContainerStyle={pageContent}
-        data={loading ? [] : state.coaches}
+        data={loading ? [] : state.coaches.filter(coach => coach.country === 'US')}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         ListHeaderComponent={<><PreferencesPicker /><AppHeading eyebrow={tr("L\xD8FT DIT SPIL")} title={tr("Et skridt videre.")} subtitle={tr("Find en tr\xE6ner, der passer til din sport og dit niveau.")} /><SportPicker value={sport} onChange={setSport} />{error && <ErrorMessage message={error} onRetry={refresh} />}</>}
         keyExtractor={(c) => c.id}
