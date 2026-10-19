@@ -59,14 +59,14 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
           <CourtGraphic color={club.color} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-3 pr-9">
-            <p className="truncate text-base font-bold leading-tight">{club.name}</p>
+          <div className="pr-9">
+            <p className="line-clamp-2 text-base font-bold leading-tight">{club.name}</p>
             {club.rating.count > 0 ? (
-              <span className="shrink-0 text-sm">
-                <span className="text-court">★</span> {club.rating.average.toFixed(1)} <span className="text-slate-light">({club.rating.count})</span>
+              <span className="mt-0.5 block text-sm">
+                <span className="text-court">★</span> {club.rating.average.toFixed(1)} <span className="text-slate">({club.rating.count})</span>
               </span>
             ) : (
-              <span className="badge-neutral shrink-0">New</span>
+              <span className="badge-neutral mt-1">New</span>
             )}
           </div>
           <p className="mt-0.5 truncate text-sm text-slate">
@@ -160,7 +160,7 @@ export function ClubResults({ clubs, origin }: { clubs: MapClub[]; origin: { lat
         <div className="sticky top-24 h-[calc(100vh-9rem)] overflow-hidden rounded-2xl border border-slate/10">{map}</div>
       </div>
 
-      <div className="lg:hidden">
+      <div className="pb-14 lg:hidden">
         {showMap ? <div className="h-[70vh] overflow-hidden rounded-2xl border border-slate/10">{map}</div> : list}
         <div className="sticky bottom-[max(1.25rem,calc(var(--tab-bar-h)+env(safe-area-inset-bottom)+0.75rem))] mt-5 flex justify-center">
           <button onClick={() => setShowMap((v) => !v)} className="btn-ink btn-pill shadow-pop">
