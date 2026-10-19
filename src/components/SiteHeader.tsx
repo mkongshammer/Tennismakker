@@ -124,10 +124,10 @@ export function SiteHeader({ user, locale }: Props) {
             </>
           ) : (
             <>
-              <Link href="/login" className="btn-ghost btn-sm">
+              <Link href="/login" className={`btn-ghost btn-sm whitespace-nowrap ${marketingPage ? "!hidden sm:!inline-flex" : ""}`}>
                 {t("nav.login")}
               </Link>
-              <Link href={marketingPage ? "/opret-klub" : "/signup"} className="btn-court btn-sm hidden sm:inline-flex">
+              <Link href={marketingPage ? "/opret-klub" : "/signup"} className="btn-court btn-sm whitespace-nowrap">
                 {marketingPage ? "List your club" : t("nav.signup")}
               </Link>
             </>
@@ -153,9 +153,10 @@ export function SiteHeader({ user, locale }: Props) {
                     </Link>
                   ))}
                   {!user && (
-                    <Link href="/signup" className="mt-1 flex min-h-11 items-center rounded-xl bg-court px-3 font-semibold text-chalk">
-                      {t("nav.signup")}
-                    </Link>
+                    <>
+                      <Link href="/login" className="flex min-h-11 items-center rounded-xl px-3 font-semibold text-ink hover:bg-mist">{t("nav.login")}</Link>
+                      <Link href="/signup" className="mt-1 flex min-h-11 items-center rounded-xl bg-court px-3 font-semibold text-chalk">{t("nav.signup")}</Link>
+                    </>
                   )}
                 </div>
               )}
