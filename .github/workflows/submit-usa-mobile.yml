@@ -1,0 +1,41 @@
+name: Submit USA mobile builds
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/submit-usa-mobile.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Check connected Expo account
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::EXPO_TOKEN is not configured as a repository secret. Cannot submit mobile builds."
+            exit 1
+          fi
+          npx --yes eas-cli@latest whoami --non-interactive
+      - name: Queue production builds and automatic store submissions
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          CI: '1'
+        run: npx --yes eas-cli@latest build --platform all --profile production --auto-submit --non-interactive --no-wait
