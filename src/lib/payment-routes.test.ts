@@ -82,18 +82,18 @@ test("retur fra mobilbetaling kræver ikke en separat browser-login", async () =
   assert.deepEqual(f.counts(), { confirmations: 0, retrieved: 0 });
 });
 test("betalt-returlink peger på den præcise bekræftede booking", async () => {
-  const f = returnFixture(); await assert.rejects(f.run(), /REDIRECT:\/profil\?betalt=booking-1$/);
+  const f = returnFixture(); await assert.rejects(f.run(), /REDIRECT:\/profile\?betalt=booking-1$/);
   assert.equal(f.counts().confirmations, 1);
 });
 test("en anden bookings betalingssession må ikke give succesbesked", async t => {
   t.mock.method(console, "error", () => {});
   const f = returnFixture({ ...paid, metadata: { bookingId: "other" } });
-  await assert.rejects(f.run(), /REDIRECT:\/profil\?betaling=afventer$/);
+  await assert.rejects(f.run(), /REDIRECT:\/profile\?betaling=afventer$/);
   assert.equal(f.counts().confirmations, 0);
 });
 test("ubetalt retur må ikke give succesbesked", async t => {
   t.mock.method(console, "error", () => {});
   const f = returnFixture({ ...paid, payment_status: "unpaid" });
-  await assert.rejects(f.run(), /REDIRECT:\/profil\?betaling=afventer$/);
+  await assert.rejects(f.run(), /REDIRECT:\/profile\?betaling=afventer$/);
   assert.equal(f.counts().confirmations, 0);
 });

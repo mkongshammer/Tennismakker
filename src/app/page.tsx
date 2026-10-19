@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 
 const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; body: string; points: string[]; cta: string }[] = [
   {
-    href: "/book",
+    href: "/courts",
     icon: "court",
     tint: "bg-court-tint text-court-dark",
     title: "Players",
@@ -34,7 +34,7 @@ const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; bod
     cta: "Reserve a court",
   },
   {
-    href: "/traenere",
+    href: "/coaches",
     icon: "coach",
     tint: "bg-[#edf3e6] text-grass",
     title: "Coaches",
@@ -43,7 +43,7 @@ const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; bod
     cta: "Find a coach",
   },
   {
-    href: "/opret-klub",
+    href: "/list-your-club",
     icon: "members",
     tint: "bg-[#fff0e5] text-clay",
     title: "Clubs",
@@ -100,7 +100,7 @@ export default async function Home() {
         "@type": "WebSite",
         name: "RacketBuddy",
         url: settings.appUrl,
-        potentialAction: { "@type": "SearchAction", target: `${settings.appUrl}/book?q={search_term_string}`, "query-input": "required name=search_term_string" },
+        potentialAction: { "@type": "SearchAction", target: `${settings.appUrl}/courts?q={search_term_string}`, "query-input": "required name=search_term_string" },
       },
       {
         "@type": "SoftwareApplication",
@@ -221,7 +221,7 @@ export default async function Home() {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 lg:justify-end">
-            <Link href="/opret-klub" className="btn bg-white text-ink hover:bg-mist">
+            <Link href="/list-your-club" className="btn bg-white text-ink hover:bg-mist">
               Set up your club
               <Icon name="arrow" />
             </Link>
@@ -257,7 +257,7 @@ export default async function Home() {
               <span className="ml-1 text-sm text-slate">/month</span>
             </p>
             <p className="mt-4 flex-1 leading-relaxed text-slate">Courts, hours, pricing, guest and member booking, Stripe payouts, receipts and your public club page.</p>
-            <Link href="/opret-klub?plan=STANDARD" className="btn-ghost mt-7">Start with Standard</Link>
+            <Link href="/list-your-club?plan=STANDARD" className="btn-ghost mt-7">Start with Standard</Link>
           </div>
           <div className="relative flex flex-col rounded-3xl border-2 border-court bg-chalk p-6 sm:p-8">
             <span className="absolute -top-3 left-6 badge-court">Most complete</span>
@@ -270,7 +270,7 @@ export default async function Home() {
             )}
             <p className="mt-2 text-sm font-semibold text-court">plus {monthly}/month</p>
             <p className="mt-4 flex-1 leading-relaxed text-slate">Everything in Standard plus the Custom features your club picks: memberships, teams, lights and door access, wallet and pricing rules, club website, recurring reservations and data import. One setup price however many you choose.</p>
-            <Link href="/opret-klub?plan=CUSTOM" className="btn-court mt-7">Choose Custom</Link>
+            <Link href="/list-your-club?plan=CUSTOM" className="btn-court mt-7">Choose Custom</Link>
           </div>
         </div>
         <p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate">RacketBuddy serves US clubs and bills in USD. Applicable sales tax, card processing fees, hardware and third-party services may be extra. Your total is shown before you pay.</p>
@@ -323,8 +323,8 @@ export default async function Home() {
         <h2 className="display mx-auto max-w-3xl text-display-md sm:text-display-lg">A home for your club. More room for your game.</h2>
         <p className="mx-auto mt-4 max-w-xl text-slate">Set up your club in minutes, or find a court, a coach or a partner for your next hour on court.</p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
-          <Link href="/opret-klub" className="btn-ink">List your club</Link>
-          <Link href="/book" className="btn-ghost">Reserve a court</Link>
+          <Link href="/list-your-club" className="btn-ink">List your club</Link>
+          <Link href="/courts" className="btn-ghost">Reserve a court</Link>
         </div>
         <div className="mt-8 flex flex-wrap justify-center gap-2" aria-hidden="true">
           {SPORTS.map((s) => (

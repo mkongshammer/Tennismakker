@@ -49,22 +49,22 @@ export const viewport: Viewport = {
 
 const FOOTER_LINKS = {
   Players: [
-    { href: "/book", label: "Reserve a court" },
-    { href: "/traenere", label: "Find a coach" },
-    { href: "/spillere", label: "Find a hitting partner" },
+    { href: "/courts", label: "Reserve a court" },
+    { href: "/coaches", label: "Find a coach" },
+    { href: "/players", label: "Find a hitting partner" },
     { href: "/app", label: "Get the app" },
   ],
   Clubs: [
-    { href: "/opret-klub", label: "List your club" },
+    { href: "/list-your-club", label: "List your club" },
     { href: "/#pricing", label: "Pricing" },
-    { href: "/hjemmeside", label: "Club website" },
+    { href: "/website", label: "Club website" },
     { href: "/login", label: "Club sign in" },
   ],
   Company: [
-    { href: "/vilkaar/usa", label: "Terms of service" },
+    { href: "/terms/us", label: "Terms of service" },
     { href: "/privacy", label: "Privacy" },
-    { href: "/databehandleraftale", label: "Data processing agreement" },
-    { href: "/slet-konto", label: "Delete your account" },
+    { href: "/dpa", label: "Data processing agreement" },
+    { href: "/delete-account", label: "Delete your account" },
   ],
 } as const;
 

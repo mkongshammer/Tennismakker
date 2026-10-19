@@ -10,6 +10,8 @@ export type DiscoveryFilters = {
   today: boolean;
   maxPrice: number | null;
   radiusMiles: number;
+  /** 1-based page of results. */
+  page: number;
 };
 
 export type DiscoveredClub = {
@@ -34,7 +36,8 @@ export type DiscoveredClub = {
   heroId: string | null;
   rating: { average: number; count: number };
   bookable: boolean;
-  slotsToday: number;
+  /** Open court-hours left today, or null when availability was not checked or could not be read in time. */
+  slotsToday: number | null;
   nextSlotAt: string | null;
 };
 
@@ -42,14 +45,23 @@ export type DiscoveryResult = {
   filters: DiscoveryFilters;
   place: Place | null;
   placeUnresolved: boolean;
+  /** The clubs on this page, in display order. */
   clubs: DiscoveredClub[];
-  /** Clubs that matched the sport but were excluded by filters or radius. */
+  /** Matching clubs across all pages. */
+  total: number;
+  page: number;
+  pageSize: number;
+  /** Clubs that offer the sport but were excluded by place, radius or filters. */
   hidden: number;
+  /** All approved US clubs offering the sport, regardless of place. */
   totalForSport: number;
+  /** How many candidates had live availability checked (the "today" filter is bounded). */
+  availabilityChecked: number;
 };
 
 export const DEFAULT_RADIUS_MILES = 50;
 export const MAX_RADIUS_MILES = 250;
+export const DISCOVERY_PAGE_SIZE = 24;
 
 export function parseDiscoveryFilters(query: Record<string, string | string[] | undefined>, fallbackSport: Sport = DEFAULT_SPORT): DiscoveryFilters {
   const one = (key: string) => {
@@ -60,17 +72,19 @@ export function parseDiscoveryFilters(query: Record<string, string | string[] | 
   const sport = (SPORTS as readonly string[]).includes(sportRaw) ? (sportRaw as Sport) : fallbackSport;
   const maxPriceRaw = Number(one("max"));
   const radiusRaw = Number(one("radius"));
+  const pageRaw = Number(one("page"));
   return {
     q: String(one("q") ?? "").slice(0, 120).trim(),
     sport,
     indoor: one("indoor") === "1",
     today: one("today") === "1",
-    maxPrice: Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? Math.round(maxPriceRaw) : null,
+    maxPrice: Number.isFinite(maxPriceRaw) && maxPriceRaw > 0 ? Math.min(10_000, Math.round(maxPriceRaw)) : null,
     radiusMiles: Number.isFinite(radiusRaw) && radiusRaw > 0 ? Math.min(MAX_RADIUS_MILES, Math.round(radiusRaw)) : DEFAULT_RADIUS_MILES,
+    page: Number.isInteger(pageRaw) && pageRaw > 1 ? Math.min(1_000, pageRaw) : 1,
   };
 }
 
-export function discoveryHref(filters: Partial<DiscoveryFilters>, base = "/book") {
+export function discoveryHref(filters: Partial<DiscoveryFilters>, base = "/courts") {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.sport && filters.sport !== DEFAULT_SPORT) params.set("sport", filters.sport);
@@ -78,7 +92,7 @@ export function discoveryHref(filters: Partial<DiscoveryFilters>, base = "/book"
   if (filters.today) params.set("today", "1");
   if (filters.maxPrice) params.set("max", String(filters.maxPrice));
   if (filters.radiusMiles && filters.radiusMiles !== DEFAULT_RADIUS_MILES) params.set("radius", String(filters.radiusMiles));
+  if (filters.page && filters.page > 1) params.set("page", String(filters.page));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
-

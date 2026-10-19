@@ -34,5 +34,5 @@ export async function saveBuddySports(_prev: unknown, formData: FormData) {
 export async function saveSportsAndContinue(formData: FormData) {
   const result = await persistSports(formData);
   if (result.error) redirect(`/onboarding-sports?fejl=${encodeURIComponent(result.error)}`);
-  redirect("/profil");
+  redirect("/profile");
 }

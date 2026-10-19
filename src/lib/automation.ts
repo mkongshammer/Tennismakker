@@ -107,7 +107,7 @@ export async function reserveInClubSystem(opts: {
 
   let result: BookResult;
   try {
-    result = await call<BookResult>("/book", {
+    result = await call<BookResult>("/courts", {
       ...login,
       court: opts.courtName,
       date: opts.date,

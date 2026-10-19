@@ -15,14 +15,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   return [
     { url: `${appUrl}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: `${appUrl}/book`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    ...SPORTS.filter((s) => s !== "TENNIS").map((sport) => ({ url: `${appUrl}/book?sport=${sport}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
-    { url: `${appUrl}/traenere`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
-    { url: `${appUrl}/spillere`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
-    { url: `${appUrl}/opret-klub`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${appUrl}/vilkaar/usa`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${appUrl}/courts`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    ...SPORTS.filter((s) => s !== "TENNIS").map((sport) => ({ url: `${appUrl}/courts?sport=${sport}`, lastModified: now, changeFrequency: "daily" as const, priority: 0.7 })),
+    { url: `${appUrl}/coaches`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${appUrl}/players`, lastModified: now, changeFrequency: "daily", priority: 0.6 },
+    { url: `${appUrl}/list-your-club`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${appUrl}/terms/us`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${appUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    ...clubs.map((c) => ({ url: `${appUrl}/klub/${c.slug}`, lastModified: c.createdAt, changeFrequency: "daily" as const, priority: 0.8 })),
-    ...coaches.map((c) => ({ url: `${appUrl}/traenere/${c.id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 })),
+    ...clubs.map((c) => ({ url: `${appUrl}/clubs/${c.slug}`, lastModified: c.createdAt, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...coaches.map((c) => ({ url: `${appUrl}/coaches/${c.id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 })),
   ];
 }

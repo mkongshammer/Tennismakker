@@ -39,4 +39,4 @@ Discovery preferences never change club or coach Stripe country, prices, booking
 
 Tests do not send email, contact real payment providers, execute hardware commands or create production customer records. PGlite tests do not establish multi-session PostgreSQL concurrency guarantees.
 
-The owner-only `/superadmin/salg` page distinguishes configured services from verified live payment evidence. Tax settings alone do not establish tax registrations or compliance. A real payment, signed webhook, approval and invoice remain a separate acceptance exercise. UK, Switzerland and Canada use `/vilkaar/international`; EU/EEA and US markets retain their respective terms.
+The owner-only `/superadmin/salg` page distinguishes configured services from verified live payment evidence. Tax settings alone do not establish tax registrations or compliance. A real payment, signed webhook, approval and invoice remain a separate acceptance exercise. UK, Switzerland and Canada use `/terms/international`; EU/EEA and US markets retain their respective terms.

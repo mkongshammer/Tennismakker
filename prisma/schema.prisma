@@ -224,6 +224,11 @@ model Club {
   images          Image[]
   control         ClubControl?
   controlEvents   ClubControlEvent[]
+
+  // Discovery: approved US clubs narrowed by a bounding box before anything
+  // else is loaded (src/lib/discovery.ts). Both indexes are additive.
+  @@index([country, status])
+  @@index([latitude, longitude])
 }
 
 // ---------- Billeder ----------

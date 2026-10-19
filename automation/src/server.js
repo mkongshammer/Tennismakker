@@ -271,7 +271,7 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.url === "/inspect") return json(res, 200, await inspect(body));
-    if (req.url === "/block" || req.url === "/book") {
+    if (req.url === "/block" || req.url === "/courts") {
       for (const k of ["court", "date", "time"]) {
         if (!body[k]) return json(res, 400, { error: `Mangler: ${k}` });
       }

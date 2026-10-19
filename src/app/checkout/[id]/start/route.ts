@@ -26,13 +26,13 @@ export async function GET(
     include: { court: { include: { club: true } } },
   });
 
-  if (!booking || booking.userId !== user.id) redirect("/profil");
-  if (booking.status === "CONFIRMED") redirect(`/profil?betalt=${encodeURIComponent(id)}`);
-  if (booking.status === "CANCELLED") redirect("/profil");
+  if (!booking || booking.userId !== user.id) redirect("/profile");
+  if (booking.status === "CONFIRMED") redirect(`/profile?betalt=${encodeURIComponent(id)}`);
+  if (booking.status === "CANCELLED") redirect("/profile");
   // En anmodning kan ikke betales, før træneren har sagt ja. Uden denne
   // vagt kunne man åbne adressen direkte og betale for en time, træneren
   // aldrig har godkendt — og så var hele godkendelsen ingenting værd.
-  if (booking.status === "REQUESTED") redirect("/profil?afventer=1");
+  if (booking.status === "REQUESTED") redirect("/profile?afventer=1");
 
   // Mock-tilstand: den gamle checkout-side håndterer flowet selv
   if ((await getSettings()).paymentProvider !== "stripe") {
@@ -45,7 +45,7 @@ export async function GET(
   } catch (err) {
     console.error("Kunne ikke starte betaling:", err);
     const slug = booking.court?.club.slug;
-    redirect(slug ? `/klub/${slug}?fejl=betaling` : "/profil");
+    redirect(slug ? `/clubs/${slug}?fejl=betaling` : "/profile");
   }
 
   // 302 til Stripe. Browseren følger den, uanset hvordan siden blev åbnet.

@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
 /**
- * GET /api/v1/clubs?sport=TENNIS&q=Boston&indoor=1&today=1&max=40&radius=50
+ * GET /api/v1/clubs?sport=TENNIS&q=Boston&indoor=1&today=1&max=40&radius=50&page=1
  *
  * Approved US clubs only, with the same search the website uses: a city,
  * state or ZIP resolves to a point and results carry distance in miles.
@@ -19,9 +19,13 @@ export async function GET(req: Request) {
   const result = await discoverClubs(filters);
 
   return json({
-    place: result.place ? { label: result.place.label, latitude: result.place.latitude, longitude: result.place.longitude, kind: result.place.kind } : null,
+    place: result.place ? { label: result.place.label, latitude: result.place.latitude, longitude: result.place.longitude, kind: result.place.kind, state: result.place.state, alternatives: result.place.alternatives ?? [] } : null,
     placeUnresolved: result.placeUnresolved,
     totalForSport: result.totalForSport,
+    total: result.total,
+    page: result.page,
+    pageSize: result.pageSize,
+    hasMore: result.page * result.pageSize < result.total,
     clubs: result.clubs.map((c) => ({
       id: c.id,
       slug: c.slug,

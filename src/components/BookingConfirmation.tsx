@@ -73,7 +73,7 @@ export function BookingConfirmation({ booking, email, locale }: { booking: Booki
             <Icon name="calendar" /> Add to calendar
           </a>
           {club && (
-            <Link href={`/klub/${club.slug}`} className="btn-ghost justify-start">
+            <Link href={`/clubs/${club.slug}`} className="btn-ghost justify-start">
               <Icon name="court" /> Book another time here
             </Link>
           )}

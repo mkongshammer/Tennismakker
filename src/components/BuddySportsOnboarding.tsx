@@ -10,7 +10,7 @@ import { SubmitButton } from "./SubmitButton";
 
 // Where asking about sports helps rather than interrupts. Someone in the
 // middle of reserving a court or paying is never stopped by this prompt.
-const PROMPT_PATHS = ["/spillere", "/makkere", "/profil", "/traenere", "/beskeder"];
+const PROMPT_PATHS = ["/players", "/matches", "/profile", "/coaches", "/messages"];
 
 export function BuddySportsOnboarding({ locale }: { locale: Locale }) {
   const [state, action] = useFormState(saveBuddySports, null);

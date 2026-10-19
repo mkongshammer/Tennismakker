@@ -119,7 +119,7 @@ export function SignupForm({
 
       <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate"><input type="checkbox" name="engagementEmails" className="mt-1" /><span>{engagementLabel}</span></label>
 
-      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
+      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privacy" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
 
       <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 

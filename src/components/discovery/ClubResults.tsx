@@ -51,7 +51,7 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
   return (
     <div onMouseEnter={() => onHover(club.id)} onMouseLeave={() => onHover(null)} className="relative">
       <Link
-        href={`/klub/${club.slug}`}
+        href={`/clubs/${club.slug}`}
         onFocus={() => onHover(club.id)}
         className={`card-interactive flex gap-4 rounded-2xl border bg-chalk p-3 sm:p-4 ${active ? "border-court shadow-lift" : "border-slate/10"}`}
       >
@@ -86,6 +86,8 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
             </span>
             {!club.bookable ? (
               <span className="badge-neutral">Not bookable yet</span>
+            ) : club.guestSlotsToday == null ? (
+              <span className="badge-neutral">See times on the club page</span>
             ) : club.guestSlotsToday > 0 ? (
               <span className="badge-success">
                 {club.guestSlotsToday} open today{next ? ` · next ${formatDate(next, "en-US", club.timeZone ?? "America/New_York", { hour: "numeric", minute: "2-digit" })}` : ""}

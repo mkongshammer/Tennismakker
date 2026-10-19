@@ -5,7 +5,7 @@ import { SPORTS, type Sport } from './sports';
 
 export async function exploreFromHome(form: FormData) {
   const country = String(form.get('country') ?? ''), sport = String(form.get('sport') ?? '');
-  const destinations: Record<string, string> = { courts: '/book', coaches: '/traenere', players: '/spillere' };
+  const destinations: Record<string, string> = { courts: '/courts', coaches: '/coaches', players: '/players' };
   const destination = destinations[String(form.get('kind'))];
   if (country !== 'US' || !(SPORTS as readonly string[]).includes(sport) || !destination) redirect('/');
   // Browsing US venues must never silently migrate an existing account's data region.

@@ -30,10 +30,10 @@ export async function GET(
   if (!user) redirect("/checkout/retur");
 
   const booking = await db.booking.findUnique({ where: { id } });
-  if (!booking || booking.userId !== user.id) redirect("/profil");
+  if (!booking || booking.userId !== user.id) redirect("/profile");
 
   // Allerede bekræftet af webhooken? Så er der intet at gøre.
-  if (booking.status === "CONFIRMED") redirect(`/profil?betalt=${encodeURIComponent(id)}`);
+  if (booking.status === "CONFIRMED") redirect(`/profile?betalt=${encodeURIComponent(id)}`);
 
   const sessionId = new URL(req.url).searchParams.get("session");
 
@@ -53,5 +53,5 @@ export async function GET(
     }
   }
 
-  redirect(confirmed ? `/profil?betalt=${encodeURIComponent(id)}` : "/profil?betaling=afventer");
+  redirect(confirmed ? `/profile?betalt=${encodeURIComponent(id)}` : "/profile?betaling=afventer");
 }

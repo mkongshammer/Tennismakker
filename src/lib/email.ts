@@ -115,7 +115,7 @@ export function bookingReceipt(opts: {
       phrase("Betalt: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
       ...accessLines,
       ``,
-      phrase("Se dine bookinger: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
+      phrase("Se dine bookinger: {p0}/profile",opts.locale??'da',{p0:baseUrl()}),
       ``,
       phrase("Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.",opts.locale??'da'),
       ``,
@@ -190,7 +190,7 @@ export function coachBookingNotice(opts: {
       phrase("Elev: {p0} ({p1})",opts.locale??'da',{p0:opts.playerName,p1:opts.playerEmail}),
       phrase("Beløb: {p0} — din andel udbetales automatisk",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}),
       ``,
-      phrase("Din kalender: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
+      phrase("Din kalender: {p0}/profile",opts.locale??'da',{p0:baseUrl()}),
       ``,
       `RacketBuddy`,
     ].join("\n"),
@@ -214,7 +214,7 @@ export function matchAcceptedNotice(opts: {locale?:string;
       `"${opts.message}"`,
       ``,
       phrase("Skriv sammen og aftal tid og sted her:",opts.locale??'da'),
-      `${baseUrl()}/beskeder/${opts.threadId}`,
+      `${baseUrl()}/messages/${opts.threadId}`,
       ``,
       `RacketBuddy`,
     ].join("\n"),
@@ -358,7 +358,7 @@ export function coachDecision(opts: {
         "",
         phrase("Der er ikke trukket penge, og der er ikke brugt et klip.",opts.locale??'da'),
         "",
-        phrase("Find en anden tid: {p0}/traenere",opts.locale??'da',{p0:baseUrl()}),
+        phrase("Find en anden tid: {p0}/coaches",opts.locale??'da',{p0:baseUrl()}),
       ].join("\n"),
     };
   }
@@ -374,7 +374,7 @@ export function coachDecision(opts: {
         "",
         phrase("Der er brugt et klip fra dit pakkeforløb, så der er ingenting at betale.",opts.locale??'da'),
         "",
-        phrase("Se den her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
+        phrase("Se den her: {p0}/profile",opts.locale??'da',{p0:baseUrl()}),
       ].join("\n"),
     };
   }
@@ -424,7 +424,7 @@ export function coachRequestNotice(opts: {
       "",
       phrase("Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",opts.locale??'da'),
       "",
-      phrase("Godkend eller afvis her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
+      phrase("Godkend eller afvis her: {p0}/profile",opts.locale??'da',{p0:baseUrl()}),
     ].join("\n"),
   };
 }
@@ -464,7 +464,7 @@ export function membershipReceipt(opts: {
       opts.priceKr > 0 ? phrase("Betalt: {p0}",opts.locale??'da',{p0:formatMoney(opts.priceKr,opts.currency??"DKK",opts.locale??"da")}) : phrase("Pris: gratis",opts.locale??'da'),
       "",
       phrase("Du kan nu booke klubbens baner til medlemspris. Se dine bookinger",opts.locale??'da'),
-      phrase("her: {p0}/profil",opts.locale??'da',{p0:baseUrl()}),
+      phrase("her: {p0}/profile",opts.locale??'da',{p0:baseUrl()}),
       "",
       phrase("Denne mail er din kvittering. Gem den til dit eget regnskab.",opts.locale??'da'),
     ].join("\n"),
@@ -504,7 +504,7 @@ export function renewalNotice(opts: {
       phrase("Trækkes: {p0}",opts.locale??'da',{p0:formatDate(opts.chargeDate,opts.locale??"da",opts.timeZone??"Europe/Copenhagen",{dateStyle:"long"})}),
       "",
       phrase("Skal det ikke fornyes, kan du slå det fra her — så sker der ingenting:",opts.locale??'da'),
-      `${baseUrl()}/profil`,
+      `${baseUrl()}/profile`,
       "",
       phrase("Du kan slå det fra indtil dagen før.",opts.locale??'da'),
     ].join("\n"),
@@ -531,7 +531,7 @@ export function renewalFailed(opts: {locale?:string;
       phrase("Årsag: {p0}",opts.locale??'da',{p0:opts.reason}),
       "",
       phrase("Der er ikke trukket noget. Vil du stadig være medlem, kan du tilmelde",opts.locale??'da'),
-      phrase("dig her: {p0}/klub/{p1}",opts.locale??'da',{p0:baseUrl(),p1:opts.clubSlug}),
+      phrase("dig her: {p0}/clubs/{p1}",opts.locale??'da',{p0:baseUrl(),p1:opts.clubSlug}),
     ].join("\n"),
   };
 }

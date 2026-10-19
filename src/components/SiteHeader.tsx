@@ -21,10 +21,10 @@ type Props = {
 };
 
 const MARKETING_LINKS = [
-  { href: "/book", label: "Courts" },
-  { href: "/traenere", label: "Coaches" },
-  { href: "/spillere", label: "Players" },
-  { href: "/opret-klub", label: "For clubs" },
+  { href: "/courts", label: "Courts" },
+  { href: "/coaches", label: "Coaches" },
+  { href: "/players", label: "Players" },
+  { href: "/list-your-club", label: "For clubs" },
   { href: "/#pricing", label: "Pricing" },
 ];
 
@@ -70,14 +70,14 @@ export function SiteHeader({ user, locale }: Props) {
   }, [menuOpen]);
 
   const productLinks = [
-    { href: "/book", label: t("nav.book") },
-    { href: "/traenere", label: t("nav.coaches") },
-    { href: "/spillere", label: t("nav.players") },
-    { href: "/beskeder", label: t("nav.messages") },
+    { href: "/courts", label: t("nav.book") },
+    { href: "/coaches", label: t("nav.coaches") },
+    { href: "/players", label: t("nav.players") },
+    { href: "/messages", label: t("nav.messages") },
     ...(user?.role === "CLUB_ADMIN"
       ? [{ href: "/admin", label: t("nav.admin") }]
       : user?.role === "COACH"
-        ? [{ href: "/profil/traener", label: "Coach dashboard" }]
+        ? [{ href: "/profile/coaching", label: "Coach dashboard" }]
         : []),
   ];
   const links = marketingPage ? MARKETING_LINKS : productLinks;
@@ -113,10 +113,10 @@ export function SiteHeader({ user, locale }: Props) {
           {user ? (
             <>
               <Link
-                href="/profil"
+                href="/profile"
                 aria-label={t("nav.profile")}
                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold transition-colors ${
-                  active("/profil") ? "bg-court text-chalk" : "bg-ink text-chalk hover:bg-ink-soft"
+                  active("/profile") ? "bg-court text-chalk" : "bg-ink text-chalk hover:bg-ink-soft"
                 }`}
               >
                 {initials}
@@ -127,7 +127,7 @@ export function SiteHeader({ user, locale }: Props) {
               <Link href="/login" className={`btn-ghost btn-sm whitespace-nowrap ${marketingPage ? "!hidden sm:!inline-flex" : ""}`}>
                 {t("nav.login")}
               </Link>
-              <Link href={marketingPage ? "/opret-klub" : "/signup"} className="btn-court btn-sm whitespace-nowrap">
+              <Link href={marketingPage ? "/list-your-club" : "/signup"} className="btn-court btn-sm whitespace-nowrap">
                 {marketingPage ? "List your club" : t("nav.signup")}
               </Link>
             </>

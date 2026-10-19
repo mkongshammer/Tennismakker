@@ -7,7 +7,7 @@ import { rebookNextWeek } from "../lib/actions";
 import { getCurrentUser } from "../lib/session";
 import { userProfilePhotoId } from "../lib/profile-images";
 import { imageUrl } from "../lib/imageUrl";
-import { uploadProfilePhoto, deleteProfilePhoto } from "../app/profil/photo-actions";
+import { uploadProfilePhoto, deleteProfilePhoto } from "../app/profile/photo-actions";
 import { SubmitButton } from "./SubmitButton";
 
 // "Spil igen": gentag en tid, man allerede har spillet.

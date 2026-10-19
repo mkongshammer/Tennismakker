@@ -24,7 +24,7 @@ export function PushLifecycle() {
         pending=()=>{
           if(disposed)return;
           if(data.screen==='thread' && typeof data.threadId==='string') navigationRef.navigate('MainTabs',{screen:'BeskederTab',params:{screen:'Samtale',params:{id:data.threadId}}});
-          else if(data.screen==='coach') Linking.openURL('https://racketbuddy.app/profil/traener').catch(()=>{});
+          else if(data.screen==='coach') Linking.openURL('https://racketbuddy.app/profile/coaching').catch(()=>{});
           else navigationRef.navigate('Profil');
         };
         flushPushNavigation();

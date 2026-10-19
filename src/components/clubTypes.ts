@@ -19,7 +19,8 @@ export type MapClub = {
   color: string;
   tagline?: string | null;
   rating: { average: number; count: number };
-  guestSlotsToday: number;
+  /** Open court-hours left today; null when availability was not checked or could not be read. */
+  guestSlotsToday: number | null;
   nextSlotAt?: string | null;
   bookable?: boolean;
 };

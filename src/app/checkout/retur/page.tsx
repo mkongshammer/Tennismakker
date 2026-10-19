@@ -11,7 +11,7 @@ export default function ReturnToAppPage() {
         <p className="text-sm text-slate"><UiText text="En gennemført betaling registreres automatisk. Der kan gå et øjeblik. Er beløbet trukket, men bookingen stadig ikke bekræftet, så kontakt RacketBuddy, før du betaler igen."/></p>
         <a className="btn-court block" href="racketbuddy://"><UiText text="Åbn RacketBuddy-appen"/></a>
         <Link className="btn-ghost block" href="/app/index.html"><UiText text="Åbn browserdemoen"/></Link>
-        <Link className="block text-sm underline" href="/profil"><UiText text="Se profil på websitet"/></Link>
+        <Link className="block text-sm underline" href="/profile"><UiText text="Se profil på websitet"/></Link>
       </div>
     </div>
   );

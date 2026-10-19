@@ -31,7 +31,7 @@ export async function startPackageCheckout(userId:string,packageId:string):Promi
   const settings=await getSettings();
   const fee=commissionAt(pack.priceKr,settings.commissionPct);
   const purchase=await db.packagePurchase.create({data:{userId,coachProfileId:pack.coachProfileId,packageId:pack.id,name:pack.name,sessions:pack.sessions,priceKr:pack.priceKr,currency:pack.coachProfile.currency,platformFee:fee}});
-  if(settings.paymentProvider!=="stripe"){await confirmPackagePurchase(purchase.id);return "/profil?pakke=ok";}
+  if(settings.paymentProvider!=="stripe"){await confirmPackagePurchase(purchase.id);return "/profile?pakke=ok";}
 
   const account=await (await stripe()).accounts.retrieve(pack.coachProfile.stripeAccountId??"").catch(()=>null);
   if(!account?.charges_enabled){await db.packagePurchase.update({where:{id:purchase.id},data:{status:"CANCELLED"}});throw new Error("Træneren kan ikke tage imod betaling endnu.");}
@@ -39,7 +39,7 @@ export async function startPackageCheckout(userId:string,packageId:string):Promi
   const platformCountry=await platformAccountCountry();
   const sameCountry=Boolean(platformCountry&&account.country&&platformCountry===account.country);
   const region=dataRegionForCountry(pack.coachProfile.country);
-  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",line_items:[{price_data:{currency:pack.coachProfile.currency.toLowerCase(),product_data:{name:`${pack.name} hos ${pack.coachProfile.user.name}`,description:`${pack.sessions} timer, betalt på én gang`},unit_amount:pack.priceKr*100},quantity:1}],payment_intent_data:{application_fee_amount:fee*100,transfer_data:{destination:account.id},...(sameCountry?{}:{}),metadata:{purchaseId:purchase.id,region}},metadata:{purchaseId:purchase.id,region},success_url:`${settings.appUrl}/profil?pakke=ok`,cancel_url:`${settings.appUrl}/traenere/${pack.coachProfileId}?fejl=afbrudt`});
+  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",line_items:[{price_data:{currency:pack.coachProfile.currency.toLowerCase(),product_data:{name:`${pack.name} hos ${pack.coachProfile.user.name}`,description:`${pack.sessions} timer, betalt på én gang`},unit_amount:pack.priceKr*100},quantity:1}],payment_intent_data:{application_fee_amount:fee*100,transfer_data:{destination:account.id},...(sameCountry?{}:{}),metadata:{purchaseId:purchase.id,region}},metadata:{purchaseId:purchase.id,region},success_url:`${settings.appUrl}/profile?pakke=ok`,cancel_url:`${settings.appUrl}/coaches/${pack.coachProfileId}?fejl=afbrudt`});
   if(!session.url)throw new Error("Stripe returnerede ingen betalingsside.");
   return session.url;
 }

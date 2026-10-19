@@ -45,8 +45,8 @@ export async function generateMetadata({ params }: {params: {slug: string;};}) {
 /**
  * Klubbens side, uafhængigt af hvilken adresse man kom ind ad.
  *
- * Ligger for sig selv, fordi den vises to steder: på /klub/<slug> og på
- * klubbens eget domæne. Før omdirigerede domænet til /klub/<slug>, og så
+ * Ligger for sig selv, fordi den vises to steder: på /clubs/<slug> og på
+ * klubbens eget domæne. Før omdirigerede domænet til /clubs/<slug>, og så
  * stod der racketbuddy.app i adresselinjen et sekund efter — klubben havde
  * betalt for en hjemmeside, der sendte deres besøgende videre til vores.
  */
@@ -107,7 +107,7 @@ export async function ClubPage({
   // A club with several sports shows one grid at a time; the sport lives in
   // the URL so a shared link opens on the right courts.
   const activeSport = sports.includes(String(searchParams.sport ?? "").toUpperCase()) ? String(searchParams.sport).toUpperCase() : sports[0];
-  const pageHref = (dag: number, sport = activeSport) => `/klub/${club.slug}?${new URLSearchParams({ ...(dag ? { dag: String(dag) } : {}), ...(sports.length > 1 && sport !== sports[0] ? { sport } : {}) }).toString()}`.replace(/\?$/, "");
+  const pageHref = (dag: number, sport = activeSport) => `/clubs/${club.slug}?${new URLSearchParams({ ...(dag ? { dag: String(dag) } : {}), ...(sports.length > 1 && sport !== sports[0] ? { sport } : {}) }).toString()}`.replace(/\?$/, "");
   const loginHref = `/login?next=${encodeURIComponent(pageHref(dayOffset))}`;
 
 
@@ -525,7 +525,7 @@ export async function ClubPage({
               {club.membershipInfo}
             </p>
         }
-          <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">{tr("Indl\xF8s kode")}
+          <Link href={`/clubs/${club.slug}/medlem`} className="btn-court mt-5">{tr("Indl\xF8s kode")}
 
         </Link>
         </section>

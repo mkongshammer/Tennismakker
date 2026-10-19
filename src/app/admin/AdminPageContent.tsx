@@ -188,7 +188,7 @@ export default async function AdminPageContent({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/klub/${club.slug}`} className="btn-ghost btn-sm">View public page</Link>
+          <Link href={`/clubs/${club.slug}`} className="btn-ghost btn-sm">View public page</Link>
           {club.status === "APPROVED" ? <span className="badge-success self-center">Live</span> : <span className="badge-warning self-center">{club.status === "PENDING" ? "Awaiting approval" : club.status}</span>}
         </div>
       </div>
@@ -707,7 +707,7 @@ export default async function AdminPageContent({
 <section>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="display text-2xl">{tr("Jeres side")}</h2>
-          <Link href={`/klub/${club.slug}`} className="text-sm font-semibold text-court underline">{tr("Se den som g\xE6sterne g\xF8r")}
+          <Link href={`/clubs/${club.slug}`} className="text-sm font-semibold text-court underline">{tr("Se den som g\xE6sterne g\xF8r")}
 
                   </Link>
         </div>

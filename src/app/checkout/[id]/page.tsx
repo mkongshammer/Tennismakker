@@ -39,10 +39,10 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
       </div>
     );
   }
-  if (booking.status === "CONFIRMED") redirect(`/profil?betalt=${encodeURIComponent(id)}`);
+  if (booking.status === "CONFIRMED") redirect(`/profile?betalt=${encodeURIComponent(id)}`);
   // Samme vagt som i start-ruten: en time, træneren ikke har godkendt, kan
   // ikke betales.
-  if (booking.status === "REQUESTED") redirect("/profil?afventer=1");
+  if (booking.status === "REQUESTED") redirect("/profile?afventer=1");
 
   // Stripe er slået til: denne side er kun en gennemgangsstation. Den
   // egentlige betaling foregår hos Stripe, aldrig her.
@@ -89,7 +89,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ id: s
     const currentUser = await getCurrentUser();
     if (!currentUser) redirect("/login");
     await confirmBookingPayment(id, { provider: "mock", userId: currentUser.id });
-    redirect(`/profil?betalt=${encodeURIComponent(id)}`);
+    redirect(`/profile?betalt=${encodeURIComponent(id)}`);
   }
 
   return (

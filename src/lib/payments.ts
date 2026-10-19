@@ -107,7 +107,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   if (!booking) throw new Error("Booking findes ikke");
   if (!bookingCanBePaid(booking)) throw new Error("Reservationen er udløbet eller kan ikke betales.");
   if (booking.checkoutParams) return resumeBookingCheckout(booking);
-  if (await useWalletIfCovered(booking.userId,booking.id)) return "/profil?wallet=1";
+  if (await useWalletIfCovered(booking.userId,booking.id)) return "/profile?wallet=1";
   if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
@@ -170,7 +170,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
     // og bekræfter bookingen med det samme — så oplevelsen ikke afhænger
     // af, at webhooken når frem først.
     success_url: `${base}/checkout/${bookingId}/faerdig?session={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/profil`,
+    cancel_url: `${base}/profile`,
     // Stripe requires at least 30 minutes. Five extra minutes allow creation
     // retries; this exact timestamp is also persisted as the local deadline.
     expires_at: Math.floor(Date.now() / 1000) + 35 * 60,

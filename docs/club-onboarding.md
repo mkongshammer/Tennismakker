@@ -1,6 +1,6 @@
 # Self-service club onboarding
 
-Clubs register at `/opret-klub`, choose Standard or Custom and selected modules,
+Clubs register at `/list-your-club`, choose Standard or Custom and selected modules,
 create credentials, and pay the monthly subscription through Stripe Checkout.
 The club remains private until a superadmin approves its verified payment.
 Approval does not send email. Club admins can log in using the mobile Klublogin

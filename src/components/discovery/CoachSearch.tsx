@@ -17,7 +17,7 @@ export function CoachSearch({ q: initial, sport: initialSport }: { q: string; sp
       const s = next.sport ?? sport;
       if (query) params.set("q", query);
       if (s !== "TENNIS") params.set("sport", s);
-      router.push(`/traenere${params.toString() ? `?${params}` : ""}`);
+      router.push(`/coaches${params.toString() ? `?${params}` : ""}`);
     });
 
   return (

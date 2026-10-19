@@ -55,13 +55,13 @@
     "fr": "Sports et",
     "es": "Deportes y"
   },
-  "Klubside: /klub/": {
-    "en": "Club page: /klub/",
-    "de": "Clubseite: /klub/",
-    "sv": "Klubbsida: /klub/",
-    "no": "Klubbside: /klub/",
-    "fr": "Page du club : /klub/",
-    "es": "Página del club: /klub/"
+  "Klubside: /clubs/": {
+    "en": "Club page: /clubs/",
+    "de": "Clubseite: /clubs/",
+    "sv": "Klubbsida: /clubs/",
+    "no": "Klubbside: /clubs/",
+    "fr": "Page du club : /clubs/",
+    "es": "Página del club: /clubs/"
   },
   "Gæstebookinger": {
     "en": "Guest bookings",
@@ -10859,9 +10859,9 @@
     "fr": "Payé : {p0}",
     "es": "Pagado: {p0}"
   },
-  "Se dine bookinger: {p0}/profil": {
-    "fr": "Consultez vos réservations : {p0}/profil",
-    "es": "Consulta tus reservas: {p0}/profil"
+  "Se dine bookinger: {p0}/profile": {
+    "fr": "Consultez vos réservations : {p0}/profile",
+    "es": "Consulta tus reservas: {p0}/profile"
   },
   "Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.": {
     "fr": "Un empêchement ? Annulez au moins 24 heures avant pour être remboursé.",
@@ -10911,9 +10911,9 @@
     "fr": "Montant : {p0} — votre part est versée automatiquement",
     "es": "Importe: {p0} — tu parte se transfiere automáticamente"
   },
-  "Din kalender: {p0}/profil": {
-    "fr": "Votre calendrier : {p0}/profil",
-    "es": "Tu calendario: {p0}/profil"
+  "Din kalender: {p0}/profile": {
+    "fr": "Votre calendrier : {p0}/profile",
+    "es": "Tu calendario: {p0}/profile"
   },
   "{p0} vil spille med dig": {
     "fr": "{p0} souhaite jouer avec vous",
@@ -10927,9 +10927,9 @@
     "fr": "Échangez pour convenir d’un lieu et d’une heure ici :",
     "es": "Escribíos para acordar lugar y hora aquí:"
   },
-  "{p0}/beskeder/{p1}": {
-    "fr": "{p0}/beskeder/{p1}",
-    "es": "{p0}/beskeder/{p1}"
+  "{p0}/messages/{p1}": {
+    "fr": "{p0}/messages/{p1}",
+    "es": "{p0}/messages/{p1}"
   },
   "Aflyst: {p0}": {
     "fr": "Annulé : {p0}",
@@ -10999,9 +10999,9 @@
     "fr": "Aucun montant n’a été prélevé et aucun crédit n’a été utilisé.",
     "es": "No se ha cobrado nada ni se ha usado ningún crédito."
   },
-  "Find en anden tid: {p0}/traenere": {
-    "fr": "Choisissez un autre créneau : {p0}/traenere",
-    "es": "Busca otro horario: {p0}/traenere"
+  "Find en anden tid: {p0}/coaches": {
+    "fr": "Choisissez un autre créneau : {p0}/coaches",
+    "es": "Busca otro horario: {p0}/coaches"
   },
   "Timen {p0} er bekræftet": {
     "fr": "Le cours du {p0} est confirmé",
@@ -11015,9 +11015,9 @@
     "fr": "Un crédit de votre forfait a été utilisé ; vous n’avez rien à payer.",
     "es": "Se ha usado un crédito de tu bono, por lo que no tienes nada que pagar."
   },
-  "Se den her: {p0}/profil": {
-    "fr": "Consultez-le ici : {p0}/profil",
-    "es": "Consúltala aquí: {p0}/profil"
+  "Se den her: {p0}/profile": {
+    "fr": "Consultez-le ici : {p0}/profile",
+    "es": "Consúltala aquí: {p0}/profile"
   },
   "{p0} har sagt ja — betal for timen {p1}": {
     "fr": "{p0} a accepté — réglez le cours du {p1}",
@@ -11047,9 +11047,9 @@
     "fr": "Le créneau est bloqué jusqu’à votre réponse. Aucun montant n’a encore été prélevé.",
     "es": "El horario está bloqueado hasta que respondas. Aún no se ha cobrado nada."
   },
-  "Godkend eller afvis her: {p0}/profil": {
-    "fr": "Acceptez ou refusez ici : {p0}/profil",
-    "es": "Acepta o rechaza aquí: {p0}/profil"
+  "Godkend eller afvis her: {p0}/profile": {
+    "fr": "Acceptez ou refusez ici : {p0}/profile",
+    "es": "Acepta o rechaza aquí: {p0}/profile"
   },
   "Kontingent i {p0} — {p1}": {
     "fr": "Cotisation à {p0} — {p1}",
@@ -11079,9 +11079,9 @@
     "fr": "Vous pouvez désormais réserver les terrains du club au tarif membre. Consultez vos réservations",
     "es": "Ya puedes reservar las pistas del club a precio de socio. Consulta tus reservas"
   },
-  "her: {p0}/profil": {
-    "fr": "ici : {p0}/profil",
-    "es": "aquí: {p0}/profil"
+  "her: {p0}/profile": {
+    "fr": "ici : {p0}/profile",
+    "es": "aquí: {p0}/profile"
   },
   "Denne mail er din kvittering. Gem den til dit eget regnskab.": {
     "fr": "Ce message fait office de reçu. Conservez-le pour votre comptabilité.",
@@ -11111,9 +11111,9 @@
     "fr": "Si vous ne souhaitez pas renouveler, désactivez le renouvellement ici pour éviter tout prélèvement :",
     "es": "Si no quieres renovar, desactiva la renovación aquí para que no se cobre nada:"
   },
-  "{p0}/profil": {
-    "fr": "{p0}/profil",
-    "es": "{p0}/profil"
+  "{p0}/profile": {
+    "fr": "{p0}/profile",
+    "es": "{p0}/profile"
   },
   "Du kan slå det fra indtil dagen før.": {
     "fr": "Vous pouvez le désactiver jusqu’à la veille.",
@@ -11135,9 +11135,9 @@
     "fr": "Aucun montant n’a été prélevé. Si vous souhaitez rester membre, inscrivez-vous",
     "es": "No se ha cobrado nada. Si quieres seguir siendo socio, inscríbete"
   },
-  "dig her: {p0}/klub/{p1}": {
-    "fr": "ici : {p0}/klub/{p1}",
-    "es": "aquí: {p0}/klub/{p1}"
+  "dig her: {p0}/clubs/{p1}": {
+    "fr": "ici : {p0}/clubs/{p1}",
+    "es": "aquí: {p0}/clubs/{p1}"
   },
   "Du får {p0} retur. Beløbet er typisk på din konto inden for 5-10 hverdage.": {
     "fr": "Vous serez remboursé de {p0}. Le montant apparaît généralement sur votre compte sous 5 à 10 jours ouvrés.",

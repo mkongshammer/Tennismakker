@@ -6,14 +6,14 @@ Scope: the live US product (racketbuddy.app → racketbuddy-us.onrender.com), th
 
 | Area | State | Evidence |
 |---|---|---|
-| Marketplace supply | **Zero** approved US clubs, zero US coaches | `GET /api/v1/clubs` returns `{"clubs":[]}`; `/book` renders "0 clubs in the United States" |
+| Marketplace supply | **Zero** approved US clubs, zero US coaches | `GET /api/v1/clubs` returns `{"clubs":[]}`; `/courts` renders "0 clubs in the United States" |
 | Public domain | Guests are 302-redirected from racketbuddy.app to **racketbuddy-us.onrender.com** | `middleware.ts` regional redirect; CI smoke test asserts the onrender URL |
-| Language | US-only product built on a **Danish source language**: Danish route names (`/klub`, `/traenere`, `/spillere`, `/beskeder`, `/opret-klub`, `/vilkaar`), Danish string keys translated at render time, Danish comments and error messages | `src/app/*`, `shared/phrases.json`, `phrase()` |
+| Language | US-only product built on a **Danish source language**: Danish route names (`/klub`, `/coaches`, `/players`, `/messages`, `/list-your-club`, `/terms`), Danish string keys translated at render time, Danish comments and error messages | `src/app/*`, `shared/phrases.json`, `phrase()` |
 | Client payload | **371–413 kB First Load JS on every page.** An 839 kB (uncompressed) chunk carries all eight language dictionaries to the browser | `next build` output; `.next/static/chunks/4692-*.js` |
 | Tests | 232 unit tests pass; `tsc` clean; `npm run test:database` and `npm run test:onboarding` **failed at HEAD** (unmocked modules and assertions left behind by the US-only change); 4 of 28 mobile tests failed for the same reason | run locally with PGlite |
 | Design | Solid foundation (hard-court palette, Bricolage/Inter Tight/Martian Mono, court-tile signature). Executed inconsistently: dense inline Tailwind, minified JSX, no shared primitives beyond `.btn/.card/.input` | `globals.css`, `tailwind.config.ts`, component files |
 | Discovery | Alphabetical list of clubs for one sport; free-text filter on name/city; map on desktop. No ZIP/state search, no distance, no availability or price filters, no favorites | `src/app/book/page.tsx`, `ClubExplorer.tsx` |
-| Empty state | "No US clubs match your search" + a Danish-market explainer ("clubs keep their own booking system") that contradicts the US positioning | `/book` live |
+| Empty state | "No US clubs match your search" + a Danish-market explainer ("clubs keep their own booking system") that contradicts the US positioning | `/courts` live |
 | Booking | Court grid is strong (per-court tiles, member/guest pricing, 10-minute hold, hold expiry, SQL overlap guard). Weak around it: no sticky summary, no "what happens next", checkout copy is Danish-sourced | `BookingGrid.tsx`, `checkout/[id]` |
 | Coaches | Profiles exist with sport, price, specialties, weekly availability, packages. Listing is a two-column card list with a free-text "Region" input; no photos by default | `traenere/page.tsx` |
 | Club admin | 13 sections already cover bookings, released times, members, teams, news, courts, lighting/access, pricing, billing, integrations, website, admins. The **overview is four stat tiles** (courts, guest bookings, revenue, paid out) and nothing operational: no today view, no utilization, no tasks | `AdminPageContent.tsx` |

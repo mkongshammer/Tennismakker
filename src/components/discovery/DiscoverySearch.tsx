@@ -1,7 +1,7 @@
 "use client";
 
 // Court search. A plain GET form so every search is a shareable URL and
-// the back button works: /book?q=Boston&sport=PICKLEBALL&today=1.
+// the back button works: /courts?q=Boston&sport=PICKLEBALL&today=1.
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SPORTS, sportColor, sportLabel, type Sport } from "../../lib/sports";
@@ -10,13 +10,14 @@ import { Icon } from "../ui";
 
 const PRICE_STEPS = [25, 40, 60, 100] as const;
 
-export function DiscoverySearch({ filters, compact = false, action = "/book", placeholder = "City, state or ZIP" }: { filters: DiscoveryFilters; compact?: boolean; action?: string; placeholder?: string }) {
+export function DiscoverySearch({ filters, compact = false, action = "/courts", placeholder = "City, state or ZIP", radiusApplies = true }: { filters: DiscoveryFilters; compact?: boolean; action?: string; placeholder?: string; /** False for a whole-state search, where distance is not the filter. */ radiusApplies?: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [q, setQ] = useState(filters.q);
   const [sport, setSport] = useState<Sport>(filters.sport);
 
-  const go = (next: Partial<DiscoveryFilters>) => start(() => router.push(discoveryHref({ ...filters, q, sport, ...next }, action)));
+  // Any change to the search resets paging; page 3 of a different query is meaningless.
+  const go = (next: Partial<DiscoveryFilters>) => start(() => router.push(discoveryHref({ ...filters, q, sport, page: 1, ...next }, action)));
 
   return (
     <form
@@ -98,7 +99,7 @@ export function DiscoverySearch({ filters, compact = false, action = "/book", pl
               ))}
             </select>
           </label>
-          {filters.q && (
+          {filters.q && radiusApplies && (
             <label className="pill min-h-9 cursor-pointer text-xs">
               <Icon name="map" size={14} />
               <span className="sr-only">Search radius</span>

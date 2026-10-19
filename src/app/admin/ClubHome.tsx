@@ -126,7 +126,7 @@ export function ClubHome({ data, locale }: { data: ClubDashboard; locale: string
               { href: "/admin/tider", icon: "clock" as const, label: "Release times to guests", body: "Weekly rules or single hours" },
               { href: "/admin/bookinger", icon: "calendar" as const, label: "Add a recurring reservation", body: "Same court, same weekday" },
               { href: "/admin/baner", icon: "court" as const, label: "Courts and pricing", body: `${club.courts.length} ${club.courts.length === 1 ? "court" : "courts"} · from ${money(Math.min(club.priceHour, ...club.courts.map((c) => c.priceHour ?? club.priceHour)))}/hr` },
-              { href: `/klub/${club.slug}`, icon: "website" as const, label: "View your public page", body: `racketbuddy.app/klub/${club.slug}` },
+              { href: `/clubs/${club.slug}`, icon: "website" as const, label: "View your public page", body: `racketbuddy.app/klub/${club.slug}` },
             ].map((a) => (
               <Link key={a.href} href={a.href} className="flex min-w-0 items-center gap-3 rounded-xl border border-slate/15 px-3 py-3 transition-colors hover:border-ink">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-mist text-court-dark"><Icon name={a.icon} size={18} /></span>

@@ -13,7 +13,7 @@ export default async function AppPage() {
         <p className="mt-5 text-sm text-slate">{tr("Indtil da virker hele RacketBuddy direkte i din mobilbrowser.")}</p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
           <a href="/app/index.html" className="btn-court px-5 py-3">{tr("Prøv app-demoen")}</a>
-          <Link href="/spillere" className="btn-court px-5 py-3">{tr("Find medspillere")}</Link>
+          <Link href="/players" className="btn-court px-5 py-3">{tr("Find medspillere")}</Link>
           <Link href="/" className="btn-ghost px-5 py-3">{tr("Til forsiden")}</Link>
         </div>
       </div>

@@ -5,7 +5,7 @@
 // det er dig, der hæfter for, hvad der står på siden.
 import { db } from "../../lib/db";
 import { imageUrl } from "../../lib/imageUrl";
-import { reviewCoachPhoto } from "../profil/traener/billede/actions";
+import { reviewCoachPhoto } from "../profile/coaching/photo/actions";
 import { SubmitButton } from "../../components/SubmitButton";
 
 export async function CoachPhotos() {

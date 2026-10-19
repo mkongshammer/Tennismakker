@@ -1,0 +1,341 @@
+
+import {UiText} from "../../components/InternationalProvider";
+import {formatMoney,formatDate} from "../../lib/international";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { format } from "date-fns";
+import { da } from "date-fns/locale";
+import { db } from "../../lib/db";
+import { getCurrentUser } from "../../lib/session";
+import { getPreferences } from "../../lib/preferences";
+import { translator } from "../../lib/i18n";
+import { DeleteAccount } from "../../components/DeleteAccount";
+import { CoachRequests } from "../../components/CoachRequests";
+import { RepeatLessons } from "../../components/RepeatLessons";
+import { closeMatchRequest, logout } from "../../lib/actions";
+import { CancelBookingButton } from "../../components/CancelBookingButton";
+import { refundDecision, REFUND_WINDOW_HOURS } from "../../lib/cancellation-policy";
+import { LevelBadge } from "../../components/LevelBadge";
+import { ReviewForm } from "../../components/ReviewForm";
+import { pendingReviews } from "../../lib/reviews";
+import { PlayAgain } from "../../components/PlayAgain";
+import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
+import { checkDeletion } from "../../lib/deletion-guards";
+import { ChangePasswordForm } from "./ChangePasswordForm";
+import { BookingConfirmation } from "../../components/BookingConfirmation";
+
+export const dynamic = "force-dynamic";
+
+export default async function ProfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ betalt?: string; betaling?: string }>;
+}) {
+  const query = await searchParams;
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  const prefs=await getPreferences(),t=translator(prefs.locale);
+
+  const coachRequests = user!.coachProfile
+    ? await db.booking.findMany({
+        where: {
+          coachProfileId: user!.coachProfile.id,
+          status: "REQUESTED",
+          endsAt: { gt: new Date() },
+        },
+        include: { user: true },
+        orderBy: { startsAt: "asc" },
+      })
+    : [];
+
+  const requestCredits = new Map<string, number>();
+  if (coachRequests.length > 0) {
+    const playerIds = Array.from(new Set(coachRequests.map((r: any) => r.userId as string)));
+    const purchases = await db.packagePurchase.findMany({
+      where: { coachProfileId: user!.coachProfile!.id, status: "PAID", userId: { in: playerIds } },
+      select: { userId: true, sessions: true, sessionsUsed: true },
+    });
+    const leftByPlayer = new Map<string, number>();
+    for (const p of purchases) {
+      leftByPlayer.set(p.userId, (leftByPlayer.get(p.userId) ?? 0) + (p.sessions - p.sessionsUsed));
+    }
+    for (const r of coachRequests) {
+      requestCredits.set(r.id, leftByPlayer.get(r.userId) ?? 0);
+    }
+  }
+
+  const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
+    db.booking.findMany({
+      where: {
+        userId: user.id,
+        status: { in: ["REQUESTED", "HOLD", "CONFIRMED"] },
+        startsAt: { gte: new Date() },
+      },
+      include: { court: { include: { club: true } }, coachProfile: { include: { user: true } }, payment: { select: { status: true } } },
+      orderBy: { startsAt: "asc" },
+    }),
+    db.matchRequest.findMany({
+      where: { requesterId: user.id, status: { in: ["OPEN", "MATCHED"] } },
+      include: { acceptedBy: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.matchRequest.findMany({
+      where: { acceptedById: user.id, status: "MATCHED" },
+      include: { requester: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    user.coachProfile
+      ? db.booking.findMany({
+          where: { coachProfileId: user.coachProfile.id, status: "CONFIRMED", startsAt: { gte: new Date() } },
+          include: { user: true },
+          orderBy: { startsAt: "asc" },
+        })
+      : Promise.resolve([]),
+    pendingReviews(user.id),
+    getRepeatableLessons(user!.id),
+    checkDeletion(user!.id),
+  ]);
+
+  const repeatable = (await getRepeatableBookings(user.id)).map((r) => ({
+    bookingId: r.bookingId,
+    what: r.what,
+    startsAt: r.startsAt,
+    withName: null,
+  }));
+
+  // Check the exact booking, not whether *some* recent booking is confirmed.
+  // Legacy ?betalt=1 links show pending rather than an unsupported success claim.
+  const confirmedPayment = query.betalt && query.betalt !== "1"
+    ? await db.booking.findFirst({ where: { id: query.betalt, userId: user.id, status: "CONFIRMED" }, include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } } })
+    : null;
+  const hasConfirmedBooking = Boolean(confirmedPayment);
+
+  return (
+    <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
+      {query.betalt && confirmedPayment && (
+        <BookingConfirmation booking={confirmedPayment as any} email={user.email} locale={prefs.locale} />
+      )}
+
+      {(query.betalt || query.betaling === "afventer") && !hasConfirmedBooking && (
+        <div className="rounded-2xl border border-slate/25 bg-mist p-5">
+          <p className="display text-xl">{t("profile.pendingTitle")}</p>
+          <p className="mt-1 text-sm text-slate">
+            {t("profile.pendingBody")}
+          </p>
+          <p className="mt-2 text-sm text-slate"><UiText text="Er beløbet allerede trukket, så kontakt os, før du betaler igen."/></p>
+        </div>
+      )}
+
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
+          <h1 className="display max-w-full break-words text-3xl">{user.name}</h1>
+          <LevelBadge level={user.level} />
+          {user.area && <span className="max-w-full break-words text-slate">{user.area}</span>}
+        </div>
+        <div className="flex max-w-full flex-wrap items-center gap-3">
+          {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
+          <ChangePasswordForm />
+          <form action={logout}>
+            <button className="btn-ghost"><UiText text="Log ud"/></button>
+          </form>
+        </div>
+      </div>
+
+      <section className="min-w-0">
+        <h2 className="display mb-3 text-2xl"><UiText text="Dine profiler"/></h2>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="card min-w-0">
+            <p className="font-bold"><UiText text="Spillerprofil"/></p>
+            <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — find medspillere og book baner."/></p>
+          </div>
+          <div className="card min-w-0">
+            <p className="font-bold"><UiText text="Trænerprofil"/></p>
+            {user.coachProfile ? (
+              <>
+                <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
+                <Link href="/profile/coaching" className="btn-ghost mt-4 inline-block text-sm"><UiText text="Administrér trænerprofil"/></Link>
+              </>
+            ) : (
+              <>
+                <p className="mt-1 text-sm text-slate"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
+                <Link href="/profile/coaching/new" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm"><UiText text="Opret trænerprofil"/></Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <PlayAgain items={repeatable} />
+
+      {toReview.length > 0 && (
+        <section className="min-w-0">
+          <h2 className="display mb-3 text-2xl"><UiText text="Hvordan gik det?"/></h2>
+          <ul className="space-y-3">
+            {toReview.map((r: any) => (
+              <li key={r.bookingId} className="card min-w-0 max-w-full">
+                <p className="break-words font-bold">{r.what}</p>
+                <p className="text-sm text-slate">
+                  {formatDate(r.startsAt,prefs.locale,r.timeZone,{day:"numeric",month:"long"})}
+                </p>
+                <ReviewForm bookingId={r.bookingId} what={r.what} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {(user.role === "CLUB_ADMIN" || user.role === "SUPERADMIN") && (
+        <section className="flex max-w-full flex-wrap gap-3">
+          {user.role === "CLUB_ADMIN" && (
+            <Link href="/admin" className="btn-ghost"><UiText text="Klub-administration"/></Link>
+          )}
+          {user.role === "SUPERADMIN" && (
+            <Link href="/superadmin" className="btn-ghost">Superadmin</Link>
+          )}
+        </section>
+      )}
+
+      <CoachRequests requests={coachRequests as any} credits={requestCredits} />
+
+      <section className="min-w-0">
+        <h2 className="display mb-3 text-2xl"><UiText text="Kommende bookinger"/></h2>
+        {bookings.length === 0 && (
+          <p className="max-w-full break-words text-slate">
+            {t("profile.noBookings")}{" "}
+            <Link href="/courts" className="font-semibold text-court underline">{t("nav.book")}</Link>{" "}
+            {t("common.or")}{" "}
+            <Link href="/coaches" className="font-semibold text-court underline">{t("nav.coaches")}</Link>.
+          </p>
+        )}
+        <ul className="space-y-3">
+          {bookings.map((b: any) => (
+            <li key={b.id} className="card flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 max-w-full">
+                <p className="break-words font-bold">
+                  {b.kind === "COURT"
+                    ? `${b.court?.club.name} — ${b.court?.name}`
+                    : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
+                </p>
+                <p className="break-words text-sm text-slate">
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
+                  {t(
+                    b.status === "REQUESTED"
+                      ? "profile.awaitingCoach"
+                      : b.status === "HOLD"
+                        ? "profile.awaitingPayment"
+                        : "profile.confirmed"
+                  )}
+                </p>
+                {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
+                  <div className="mt-2 max-w-full break-words rounded-lg bg-court/5 p-2.5 text-sm">
+                    <span className="font-semibold"><UiText text="Adgang:"/>{" "}</span>
+                    {b.court.club.accessCode && (
+                      <span className="data">{b.court.club.accessCode}</span>
+                    )}
+                    {b.court.club.accessInstructions && (
+                      <span className="text-slate">
+                        {b.court.club.accessCode ? " · " : ""}
+                        {b.court.club.accessInstructions}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex max-w-full flex-wrap gap-2">
+                {b.status === "HOLD" && (
+                  <a href={`/checkout/${b.id}/start`} className="btn-court text-sm"><UiText text="Betal nu"/></a>
+                )}
+                <CancelBookingButton
+                  bookingId={b.id}
+                  what={b.kind === "COURT" ? `${b.court?.club.name} — ${b.court?.name}` : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
+                  when={formatDate(b.startsAt, prefs.locale, b.timeZone, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                  refundable={refundDecision({ by: "PLAYER", startsAt: b.startsAt }).refund}
+                  charged={b.status === "CONFIRMED" && (b.payment?.status === "PAID" || b.walletPaidOre > 0)}
+                  amountLabel={formatMoney(b.priceKr, b.currency, prefs.locale)}
+                  deadlineLabel={formatDate(new Date(b.startsAt.getTime() - REFUND_WINDOW_HOURS * 3600000), prefs.locale, b.timeZone, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="min-w-0">
+        <h2 className="display mb-3 text-2xl"><UiText text="Dine makker-opslag"/></h2>
+        {myRequests.length === 0 && myMatches.length === 0 && (
+          <p className="max-w-full break-words text-slate">
+            {t("profile.noPosts")}{" "}
+            <Link href="/matches/new" className="font-semibold text-court underline">{t("profile.createOne")}</Link>.
+          </p>
+        )}
+        <ul className="space-y-3">
+          {myRequests.map((r) => (
+            <li key={r.id} className="card flex min-w-0 max-w-full flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0 max-w-full">
+                <p className="break-words">{r.message}</p>
+                <p className="break-words text-sm text-slate">
+                  {r.status === "MATCHED" && r.acceptedBy ? (
+                    <>
+                      {t("profile.matchedWith", { name: r.acceptedBy.name })} —{" "}
+                      <Link href={`/messages/${r.id}`} className="font-semibold text-court underline"><UiText text="skriv til"/>{" "}{r.acceptedBy.name.split(" ")[0]}
+                      </Link>
+                    </>
+                  ) : (
+                    <UiText text="Åbent — venter på svar"/>
+                  )}
+                </p>
+              </div>
+              <form action={closeMatchRequest}>
+                <input type="hidden" name="id" value={r.id} />
+                <button className="btn-ghost text-sm"><UiText text="Luk opslag"/></button>
+              </form>
+            </li>
+          ))}
+          {myMatches.map((r) => (
+            <li key={r.id} className="card min-w-0 max-w-full">
+              <p className="break-words"><UiText text="Du slog til på: “"/>{r.message}”</p>
+              <p className="break-words text-sm text-slate">
+                <Link href={`/messages/${r.id}`} className="font-semibold text-court underline"><UiText text="Skriv til"/>{" "}{r.requester.name.split(" ")[0]}
+                </Link>{" "}<UiText text="og aftal kampen."/></p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {user.coachProfile && (
+        <section className="min-w-0">
+          <div className="mb-3 flex max-w-full flex-wrap items-center justify-between gap-2">
+            <h2 className="display text-2xl"><UiText text="Din trænerkalender"/></h2>
+            <Link href="/profile/coaching" className="btn-ghost text-sm"><UiText text="Redigér trænerprofil"/></Link>
+          </div>
+          {coachBookings.length === 0 && <p className="text-slate"><UiText text="Ingen bookede elever endnu."/></p>}
+          <ul className="space-y-3">
+            {coachBookings.map((b) => (
+              <li key={b.id} className="card min-w-0 max-w-full">
+                <p className="break-words font-bold">{b.user.name}</p>
+                <p className="break-words text-sm text-slate">
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{" "}<UiText text="(din andel udbetales automatisk)"/></p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <RepeatLessons
+        lessons={pastLessons as any}
+        labels={{
+          title: t("profile.lessonsPast"),
+          button: t("profile.lessonAgain"),
+          note: t("profile.lessonAgainNote"),
+        }}
+      />
+
+      <p className="max-w-full break-words text-sm">
+        <a href="/profile/receipts" className="font-semibold text-court underline"><UiText text="Se dine kvitteringer"/></a>
+        <span className="text-slate">{" "}<UiText text="— alt du har betalt, til dit eget regnskab."/></span>
+      </p>
+
+      <DeleteAccount blockers={deletion.blockers} canDelete={deletion.canDelete} />
+    </div>
+  );
+}

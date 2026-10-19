@@ -1,10 +1,10 @@
 // Klubbens side, når den vises på klubbens eget domæne.
 //
 // Middleware har omskrevet værtsnavnet til denne sti. Vi slår klubben op og
-// renderer den samme side som på /klub/<slug> — samme komponent, ét sted at
+// renderer den samme side som på /clubs/<slug> — samme komponent, ét sted at
 // vedligeholde.
 //
-// Den omdirigerede før til /klub/<slug>. Det betød, at en besøgende på
+// Den omdirigerede før til /clubs/<slug>. Det betød, at en besøgende på
 // klubbens domæne blev sendt videre til racketbuddy.app et sekund efter, og
 // klubben havde altså betalt for en hjemmeside, der afleverede deres trafik
 // hos os. Nu bliver adressen stående.

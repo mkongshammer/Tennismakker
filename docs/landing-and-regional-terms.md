@@ -6,9 +6,9 @@ Standard and Custom are labelled separately. Prices come from the same configure
 
 ## Legal pages
 
-- `/vilkaar/eu`: EU/EEA terms in Danish or English, with an explicit language toggle.
-- `/vilkaar/usa`: United States terms in English.
-- `/vilkaar`: saved-country routing for EU/EEA and US, otherwise an explicit region selector. IP/language is not represented as proof of applicable law.
+- `/terms/eu`: EU/EEA terms in Danish or English, with an explicit language toggle.
+- `/terms/us`: United States terms in English.
+- `/terms`: saved-country routing for EU/EEA and US, otherwise an explicit region selector. IP/language is not represented as proof of applicable law.
 - Signup terms links follow the country currently selected in the form. The footer exposes both documents.
 
 The document version is 2026-10-01. The terms describe the actual monthly start at payment, pending club approval, fixed Custom setup fee, billing portal/email cancellation, booking confirmation and checkout deadline, 24-hour ordinary booking policy, wallet/pass distinctions, provider responsibilities and hardware prerequisites. They preserve mandatory consumer remedies and avoid mandatory arbitration or class-action waivers. The old ODR link is removed.
