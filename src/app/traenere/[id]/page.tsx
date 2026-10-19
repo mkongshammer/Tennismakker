@@ -36,7 +36,7 @@ export default async function TraenerPage({
     where: { id },
     include: { user: true, packages: { where: { active: true } } },
   });
-  if (!coach) notFound();
+  if (!coach || coach.country !== "US") notFound();
 
   const user = await getCurrentUser();
   await releaseExpiredHolds();
