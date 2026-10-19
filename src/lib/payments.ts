@@ -17,6 +17,7 @@
 //    MobilePay slås til som payment method i Stripe Dashboard.
 // 3. Betalte checkout-events kalder confirmBookingPayment() nedenfor.
 
+import { messageLocale } from "./mail-locale";
 import { useWalletIfCovered, cancelWalletBooking } from "./wallet";
 import { refundDecision, REFUND_WINDOW_HOURS, type CancellationContext } from "./cancellation-policy";
 import { db } from "./db";
@@ -273,7 +274,7 @@ function bookingLabel(booking: any): string {
   if (booking.kind === "COURT") {
     return `${booking.court?.club.name} — ${booking.court?.name}`;
   }
-  const locale = (booking.user?.locale ?? "da") as any;
+  const locale = messageLocale(booking.user?.locale) as any;
   return phrase("Trænertime hos {p0} ({p1})", locale, {
     p0: booking.coachProfile?.user.name,
     p1: describeLength(lessonMinutesOf(booking), locale),

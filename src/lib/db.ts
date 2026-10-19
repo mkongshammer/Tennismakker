@@ -47,8 +47,8 @@ if (!globalForPrisma.messageEmailMiddlewareInstalled) {
           const thread = await prisma.matchRequest.findUnique({
             where: { id: data.matchRequestId },
             include: {
-              requester: { select: { id: true, name: true, email: true } },
-              acceptedBy: { select: { id: true, name: true, email: true } },
+              requester: { select: { id: true, name: true, email: true, locale: true } },
+              acceptedBy: { select: { id: true, name: true, email: true, locale: true } },
             },
           });
 
@@ -67,17 +67,18 @@ if (!globalForPrisma.messageEmailMiddlewareInstalled) {
               const raw = String(data.body ?? "").trim();
               const preview = raw.length > 240 ? `${raw.slice(0, 237)}...` : raw;
 
+              const english = (await import("./mail-locale")).messageLocale(recipient.locale) !== "da";
               await sendMail({
                 to: recipient.email,
-                subject: `Ny besked fra ${sender.name} på RacketBuddy`,
+                subject: english ? `New message from ${sender.name} on RacketBuddy` : `Ny besked fra ${sender.name} på RacketBuddy`,
                 body: [
-                  `Hej ${recipient.name}`,
+                  english ? `Hi ${recipient.name},` : `Hej ${recipient.name}`,
                   "",
-                  `${sender.name} har sendt dig en besked på RacketBuddy.`,
+                  english ? `${sender.name} sent you a message on RacketBuddy.` : `${sender.name} har sendt dig en besked på RacketBuddy.`,
                   "",
                   preview ? `“${preview}”` : "",
                   "",
-                  `Læs og svar her: ${appUrl}/messages/${thread.id}`,
+                  english ? `Read and reply: ${appUrl}/messages/${thread.id}` : `Læs og svar her: ${appUrl}/messages/${thread.id}`,
                   "",
                   "RacketBuddy",
                 ]

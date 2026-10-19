@@ -39,10 +39,19 @@ async function ensureOwner() {
   if (!OWNER_EMAIL.includes("@")) { console.log("OWNER_EMAIL er ikke sat — springer ejerkontoen over."); return; }
   const existing = await db.user.findUnique({ where: { email: OWNER_EMAIL } });
   if (!existing) {
-    await db.user.create({ data: { email: OWNER_EMAIL,name:"RacketBuddy",role:"SUPERADMIN",passwordHash:await bcrypt.hash(crypto.randomBytes(32).toString("hex"),10),level:3,countryChosen:true } });
+    await db.user.create({ data: { email: OWNER_EMAIL,name:"RacketBuddy",role:"SUPERADMIN",passwordHash:await bcrypt.hash(crypto.randomBytes(32).toString("hex"),10),level:3,countryChosen:true,...(REGION==="US"?{locale:"en-US",country:"US"}:{}) } });
     console.log(`Ejerkonto oprettet: ${OWNER_EMAIL}. Brug "Glemt adgangskode".`); return;
   }
   if (existing.role !== "SUPERADMIN") { await db.user.update({ where:{id:existing.id},data:{role:"SUPERADMIN"} }); console.log(`Ejerkonto fik superadmin: ${OWNER_EMAIL}`); }
+}
+
+// The US shard serves only the United States. Accounts there created without
+// an explicit language got the schema default "da" and saw Danish e-mails and
+// pages. Idempotent: only rows still on the Danish default are touched.
+async function ensureUsEnglish() {
+  if (REGION !== "US") return;
+  const { count } = await db.user.updateMany({ where: { locale: "da" }, data: { locale: "en-US" } });
+  if (count) console.log(`US shard: ${count} account(s) moved from Danish to American English.`);
 }
 
 async function ensureAppleReview() {
@@ -83,6 +92,7 @@ async function logRegionalSummary(){
 async function main() {
   if (process.env.RESET_TO_PRODUCTION === "1") { console.log("RESET_TO_PRODUCTION er sat — tømmer databasen for demo-data."); await wipe(); console.log("Databasen er tom. Fjern RESET_TO_PRODUCTION igen."); }
   await ensureOwner();
+  await ensureUsEnglish();
   await ensureAppleReview();
   try { console.log("Private club provisioning:", await provisionPrivateClub(db, process.env.PRIVATE_CLUB_PROVISION)); }
   catch { console.error("Private club provisioning failed; existing accounts were not changed."); }
