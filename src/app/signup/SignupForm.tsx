@@ -11,7 +11,6 @@ import { signup } from "./actions";
 import { LEVELS } from "../../lib/levels";
 import { SPORTS, sportLabel } from "../../lib/sports";
 import type { Locale } from "../../lib/sports";
-import { DK_REGIONS } from "../../lib/regions";
 import { SubmitButton } from "../../components/SubmitButton";
 
 export function SignupForm({
@@ -49,7 +48,6 @@ export function SignupForm({
   const tr=(value:string)=>phrase(value,locale);
   const country="US",currency="USD";
   const [timeZone,setTimeZone]=useState("America/New_York"),[usState,setUsState]=useState('');
-  const isUS=country==='US';
 
   const engagementLabel = tr("Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.");
 
@@ -84,13 +82,7 @@ export function SignupForm({
             ))}
           </select>
         </div>
-        {country==="DK"?<div>
-          <label className="label" htmlFor="area"><UiText text="Region"/></label>
-          <select className="input" id="area" name="area" defaultValue="" required>
-            <option value="" disabled>{tr("Vælg region")}</option>
-            {DK_REGIONS.map((region) => <option key={region} value={region}>{region}</option>)}
-          </select>
-        </div>:isUS?<>
+        <>
           <div className="sm:col-span-2">
             <label className="label" htmlFor="streetAddress">Street address <span className="font-normal text-slate">(optional)</span></label>
             <input className="input" id="streetAddress" name="streetAddress" autoComplete="street-address" maxLength={150} placeholder="123 Main St"/>
@@ -100,10 +92,7 @@ export function SignupForm({
           <div><label className="label" htmlFor="state">State</label><select className="input" id="state" name="state" autoComplete="address-level1" required value={usState} onChange={e=>{setUsState(e.target.value);if(e.target.value)setTimeZone(usStateTimeZone(e.target.value));}}><option value="" disabled>Select state</option>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}</select></div>
           <div><label className="label" htmlFor="postalCode">ZIP code</label><input className="input" id="postalCode" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108"/></div>
           <div className="self-end pb-3 text-xs text-slate">Your public location is limited to city and state. ZIP and street address stay private.</div>
-        </>:<div>
-          <label className="label" htmlFor="area">{tr("By / område")}</label>
-          <input key={country} className="input" id="area" name="area" autoComplete="address-level2" required minLength={2} maxLength={100}/>
-        </div>}
+        </>
       </div>
 
       <div className="rounded-xl border border-court/25 bg-court/5 p-4">
