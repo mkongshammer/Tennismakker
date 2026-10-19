@@ -115,7 +115,7 @@ async function main(){
      const signup=await fetch(origin+'/list-your-club?plan=CUSTOM',{headers}),signupHtml=await signup.text();assert.equal(signup.status,200);
      for(const label of ['Kom i gang med jeres klub','1. Vælg jeres løsning','2. Klub og baner','3. Opret klublogin','Valuta for klubbookinger','Antal baner','Opret klub og fortsæt til betaling'])assert.ok(signupHtml.includes(phrase(label,locale)),`${locale}: signup ${label}`);
     }check('Retired club page redirects to pricing and club signup renders in all eight language choices');
-    for(const [country,currency,monthly,setup,website] of [['DK','EUR','27','1.999','669'],['US','USD','30','2,249','749'],['CA','USD','30','2,249','749']]){
+    for(const [country,currency,monthly,setup,website] of [['DK','EUR','27','1.999','669'],['US','USD','50','','749'],['CA','USD','50','','749']]){
      const locale=country==='DK'?'da':'en';const headers={Cookie:`rb_prefs_country=${country}; rb_prefs_locale=${locale}`};
      for(const path of ['/','/list-your-club','/website']){const res=await fetch(origin+path,{headers}),html=await res.text();assert.equal(res.status,200);assert.ok(html.includes(currency),`${country} ${path} currency`);assert.ok(!html.includes('DKK'),`${country} ${path} legacy currency`);assert.ok(html.includes(path==='/website'?website:monthly));if(path==='/list-your-club')assert.match(html,new RegExp(`name="billingCurrency" value="${currency}"`));}
     }check('Public prices, signup quotes and website service use EUR in Denmark and USD in US/Canada');

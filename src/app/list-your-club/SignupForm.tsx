@@ -29,11 +29,9 @@ const FEATURE_EN: Record<string, { label: string; body: string }> = {
   import: { label: "Import from another system", body: "Members and bookings via CSV." },
 };
 
-const STEPS = ["Plan", "Facility", "Courts", "Account"] as const;
+const STEPS = ["Price", "Facility", "Courts", "Account"] as const;
 
-export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDARD" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM" }) {
-  const [mode, setMode] = useState(initialMode);
-  const [features, setFeatures] = useState<string[]>([]);
+export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM" }) {
   const [sports, setSports] = useState<Sport[]>(["TENNIS"]);
   const [counts, setCounts] = useState<Record<string, number>>({ TENNIS: 2 });
   const [state, action] = useFormState(registerClub, null);
@@ -47,7 +45,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDAR
 
   const prices = pricesForCountry(priceBook, "US");
   const money = (p: number) => formatMoney(p, prices.currency, "en-US");
-  const price = mode === "CUSTOM" ? prices.custom : prices.standard;
+  const price = prices.standard;
   const tr = (value: string) => phrase(value, locale);
 
   const courtTotal = useMemo(() => sports.reduce((s, sport) => s + (counts[sport] ?? 1), 0), [sports, counts]);
@@ -77,7 +75,8 @@ export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDAR
       <input type="hidden" name="country" value="US" />
       <input type="hidden" name="monthlyQuote" value={prices.standard} />
       <input type="hidden" name="billingCurrency" value={prices.currency} />
-      <input type="hidden" name="quote" value={price ?? ""} />
+      <input type="hidden" name="quote" value={price} />
+      <input type="hidden" name="mode" value="CUSTOM" />
 
       <div className="min-w-0 space-y-5">
         <ol className="flex flex-wrap gap-2" aria-label="Steps">
@@ -90,40 +89,35 @@ export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDAR
           ))}
         </ol>
 
-        {/* Step 1: plan */}
-        <div ref={(el) => { panels.current[0] = el; }} hidden={step !== 0} className="card-flat space-y-4">
+        {/* Step 1: the plan — there is exactly one */}
+        <div ref={(el) => { panels.current[0] = el; }} hidden={step !== 0} className="card-flat space-y-5">
           <div>
-            <h2 className="display text-display-md">Choose your plan</h2>
-            <p className="mt-1 text-sm text-slate">Both plans include courts, hours, pricing, guest and member booking, Stripe payouts and your public club page.</p>
+            <h2 className="display text-display-md">One plan. The whole system.</h2>
+            <p className="mt-1 text-sm text-slate">Every club gets everything. No setup fee, no contract — you pay from the day you start and can cancel any month.</p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {([["STANDARD", "Standard", prices.standard, "Everything a club needs to take bookings and get paid."], ["CUSTOM", "Custom", prices.custom, "Standard plus the Custom features you pick below. One setup price, however many you choose."]] as const).map(([id, label, p, body]) => (
-              <label key={id} className={`cursor-pointer rounded-2xl border-2 p-4 transition-colors ${mode === id ? "border-court bg-court-tint/40" : "border-slate/15 hover:border-slate/40"}`}>
-                <input type="radio" name="mode" value={id} checked={mode === id} onChange={() => setMode(id)} className="sr-only" />
-                <span className="flex items-center justify-between"><strong>{label}</strong>{mode === id && <Icon name="check" className="text-court" />}</span>
-                <span className="mt-2 block">
-                  {p == null ? <span className="text-sm text-slate">Price not published yet</span> : id === "CUSTOM" ? <><span className="display text-title">{money(Number(p))}</span> <span className="text-sm text-slate">one-time + {money(prices.standard)}/month</span></> : <><span className="display text-title">{money(Number(p))}</span><span className="text-sm text-slate">/month</span></>}
-                </span>
-                <span className="mt-2 block text-sm text-slate">{body}</span>
-              </label>
+          <div className="flex flex-wrap items-end justify-between gap-4 rounded-2xl border-2 border-court bg-court-tint/40 p-5">
+            <div>
+              <p className="eyebrow text-court-dark">RacketBuddy for clubs</p>
+              <p className="mt-1"><span className="display text-display-lg">{money(prices.standard)}</span><span className="text-slate"> / month</span></p>
+              <p className="mt-1 text-sm text-slate">Billed monthly from today · cancel anytime · 0% commission on court bookings</p>
+            </div>
+            <Icon name="check" size={28} className="text-court" />
+          </div>
+          <ul className="grid gap-2 text-sm sm:grid-cols-2">
+            {[
+              ["Court calendar and online booking", "Courts, hours, pricing, guest and member booking."],
+              ["Payments and payouts", "Stripe Connect to your club’s own account. Receipts and refunds built in."],
+              ...CUSTOM_FEATURES.map((f) => [FEATURE_EN[f.id]?.label ?? tr(f.label), FEATURE_EN[f.id]?.body ?? ""] as const),
+              ["Public club page", "Listed in court search, with your photos, hours and news."],
+            ].map(([label, body]) => (
+              <li key={label} className="flex gap-2 rounded-xl border border-slate/10 p-3">
+                <Icon name="check" size={16} className="mt-0.5 shrink-0 text-success" />
+                <span><span className="block font-semibold">{label}</span>{body && <span className="block text-xs text-slate">{body}</span>}</span>
+              </li>
             ))}
-          </div>
-          {mode === "CUSTOM" && (
-            <fieldset>
-              <legend className="label">Custom features</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {CUSTOM_FEATURES.map((feature) => (
-                  <label key={feature.id} className={`flex cursor-pointer gap-3 rounded-xl border p-3 ${features.includes(feature.id) ? "border-court bg-court-tint/40" : "border-slate/15"}`}>
-                    <input type="checkbox" name="features" value={feature.id} checked={features.includes(feature.id)} onChange={(e) => setFeatures(e.target.checked ? [...features, feature.id] : features.filter((f) => f !== feature.id))} className="mt-1" />
-                    <span><span className="block text-sm font-semibold">{FEATURE_EN[feature.id]?.label ?? tr(feature.label)}</span><span className="block text-xs text-slate">{FEATURE_EN[feature.id]?.body}</span></span>
-                  </label>
-                ))}
-              </div>
-              {features.length === 0 && <p className="hint">Pick at least one Custom feature, or switch to Standard.</p>}
-            </fieldset>
-          )}
-          <p className="text-xs text-slate">Prices exclude any applicable sales tax. The total is shown before you pay.</p>
-          <div className="flex justify-end"><button type="button" onClick={() => { if (mode === "CUSTOM" && features.length === 0) return; next(); }} className="btn-court">Continue <Icon name="arrow" /></button></div>
+          </ul>
+          <p className="text-xs text-slate">Prices exclude any applicable sales tax. The total is shown before you pay. Players and coaches use RacketBuddy for free; coaches pay 10% on lessons booked through the platform — clubs never pay commission.</p>
+          <div className="flex justify-end"><button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>
         </div>
 
         {/* Step 2: facility */}
@@ -197,16 +191,14 @@ export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDAR
             <input className="mt-1" type="checkbox" name="terms" required />
             <span>
               I’m authorized to register this club and accept the <a className="underline" href={termsHref("US")} target="_blank" rel="noreferrer">terms of service</a> and the <a className="underline" href="/dpa" target="_blank" rel="noreferrer">data processing agreement</a>.{" "}
-              {mode === "CUSTOM" && price != null && <>Custom costs {money(price)} once, however many features are selected. </>}
-              The {money(prices.standard)}/month subscription starts at payment and renews monthly until cancelled. The club goes public after RacketBuddy’s review.
+              The {money(prices.standard)}/month subscription starts at payment and renews monthly until you cancel — no setup fee, no minimum term. The club goes public after RacketBuddy’s review.
             </span>
           </label>
           {state?.error && <p role="alert" className="field-error">{phrase(state.error, locale)}</p>}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <button type="button" onClick={() => setStep(2)} className="btn-ghost">Back</button>
-            <SubmitButton className="btn-court" disabled={price == null || (mode === "CUSTOM" && features.length === 0)} pendingText="Creating your club…">Create club and continue to payment</SubmitButton>
+            <SubmitButton className="btn-court" pendingText="Creating your club…">Create club and continue to payment</SubmitButton>
           </div>
-          {price == null && <p className="hint">The Custom price has to be published by RacketBuddy before you can sign up for it.</p>}
         </div>
       </div>
 
@@ -222,16 +214,13 @@ export function SignupForm({ priceBook, locale = "en-US", initialMode = "STANDAR
             <p className="mt-2 text-sm"><span className="font-bold">from {money(priceHour)}</span><span className="text-slate"> / hour</span></p>
             <div className="mt-3 flex flex-wrap gap-1.5">
               <span className="badge-success">Open today</span>
-              {mode === "CUSTOM" && features.includes("lys-adgang") && <span className="badge-neutral">Lights & access</span>}
-              {mode === "CUSTOM" && features.includes("medlemmer") && <span className="badge-neutral">Memberships</span>}
             </div>
           </div>
         </div>
         <div className="mt-4 rounded-2xl bg-mist p-4 text-sm">
           <p className="font-bold">Your plan</p>
-          <p className="mt-1 text-slate">{mode === "CUSTOM" ? "Custom" : "Standard"} · {money(prices.standard)}/month{mode === "CUSTOM" && price != null ? ` + ${money(price)} once` : ""}</p>
-          {mode === "CUSTOM" && features.length > 0 && <p className="mt-1 text-xs text-slate">{features.map((f) => FEATURE_EN[f]?.label ?? f).join(" · ")}</p>}
-          <p className="mt-2 text-xs text-slate">No commission on court bookings. Payouts to your Stripe account.</p>
+          <p className="mt-1 text-slate">RacketBuddy for clubs · {money(prices.standard)}/month · cancel anytime</p>
+          <p className="mt-2 text-xs text-slate">Everything included. No commission on court bookings. Payouts to your Stripe account.</p>
         </div>
       </aside>
     </form>

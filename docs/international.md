@@ -8,7 +8,7 @@ New club and coach prices use EUR or USD: European markets, including Denmark, u
 
 Bookings, payments, memberships, team purchases, passes, packages and wallet deposits store currency snapshots. Payment confirmation checks amount, currency and order identity. A club with bookings, credit or catalog prices cannot change currency through the settings form. Receipts retain purchase currency and financial reports show a separate total for each currency.
 
-New RacketBuddy subscriptions cost **EUR 27/month** with **EUR 1,999 once** for Custom, or **USD 30/month** with **USD 2,249 once** for Custom. Module count does not change the tariff. Stripe Adaptive Pricing is disabled on new checkout sessions to preserve the quoted currency. Existing agreements retain their stored price.
+US clubs pay **USD 50/month** for one plan that includes the whole system — no setup fee, no minimum term, charged from the day the subscription starts and cancellable at any time (owner decision 2026-10-19; `CLUB_MONTHLY_USD`, settings key `clubSignupPricesV4`). Players and coaches are free; RacketBuddy keeps 10% of coaching sessions booked through the platform and nothing from clubs' court bookings. The EUR 27/month + EUR 1,999 Custom tariff remains only for existing European agreements. Stripe Adaptive Pricing is disabled on new checkout sessions to preserve the quoted currency. Existing agreements retain their stored price.
 
 Stripe Connect onboarding uses the club or coach account country, independently of the customer's discovery preference. A configured destination account with active capabilities is still required. Exporting the app does not verify country-specific Stripe account eligibility or execute an international payment.
 

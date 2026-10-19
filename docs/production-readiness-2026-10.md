@@ -48,7 +48,7 @@ environment does not have.
 
 ## 4. What could prevent a safe launch (owner decisions)
 
-1. **Custom price default.** The code's fallback price book says USD **2,249** for Custom (so do `docs/international.md` and `docs/club-onboarding.md`, from before this PR); the brief says **2,250**. The live price comes from the `clubSignupPricesV3` setting, which the superadmin can edit and which I could not read. Decide which number is right; if 2,250, change `DEFAULT_PRICE_BOOK` in `src/lib/platform-pricing.ts`, the two docs and the two tests that pin 2249 — a two-line change I have left untouched because it is a price.
+1. ~~Custom price default (2,249 vs 2,250).~~ **Resolved by the owner on 2026-10-19:** one plan, USD 50/month, everything included, no setup fee, no contract; players and coaches free; 10% on coach lessons, 0% on court bookings. Implemented (`CLUB_MONTHLY_USD`, settings key bumped to `clubSignupPricesV4` so the stored V3 override no longer applies). Remaining owner action: existing paying clubs, if any, keep their stored Stripe price until their subscription item is updated in Stripe — the audit found no live US club subscriptions, so this is expected to be empty.
 2. **Domain cutover** (`docs/domain-cutover.md`): DNS and Render custom-domain changes, a second Stripe webhook endpoint, OAuth origins. Code is ready and inert.
 3. **Refund policy sign-off.** Club-initiated cancellations now always refund in full and reverse the club's payout and our fee. This is the customer-fair default and the one the brief asked me to verify; it is also a commercial rule clubs will notice.
 

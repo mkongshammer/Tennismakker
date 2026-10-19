@@ -42,5 +42,5 @@ Each step is a complete, tested increment on `racketbuddy/product-transformation
 ## Not in scope (owner decisions)
 
 - Moving the public origin off `racketbuddy-us.onrender.com` (DNS/Render change).
-- Any pricing change. Standard remains USD 30/month; Custom remains the configured one-time setup price.
+- Pricing is an owner decision. On 2026-10-19 the owner set it: one plan, USD 50/month, everything included, no setup fee, no contract; players and coaches free; 10% on coach lessons, 0% on court bookings.
 - Removing legacy EU data or routes that existing contracts depend on.

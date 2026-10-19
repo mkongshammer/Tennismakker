@@ -10,10 +10,10 @@ button and use the existing authenticated administration portal.
 
 In `/superadmin/opsaetning`, save the monthly subscription and Custom setup price with
 “Gem priser og klargør Stripe”. This also configures the required Stripe webhook
-events. Stripe credentials must already be configured. Owner-confirmed pricing:
-new European clubs pay EUR 27/month, with EUR 1,999 once for Custom; US and Canadian clubs pay USD 30/month, with USD 2,249 once for Custom. First Custom checkout is EUR 2,026 or USD 2,279 before applicable tax. Later invoices contain the monthly subscription only. Existing agreements retain their stored price rather than being
+events. Stripe credentials must already be configured. Owner-confirmed pricing (2026-10-19):
+US clubs pay USD 50/month for one plan with everything included — no setup fee, no minimum term; the first invoice is charged at checkout and the subscription renews monthly until cancelled. Every new club is created with `solutionMode = CUSTOM` and all modules enabled. The EUR 27/month + EUR 1,999 Custom tariff remains only for existing European agreements. Existing agreements retain their stored price rather than being
 silently repriced. Previously paid setup is not charged again upon restarting.
-Pricing uses the V2 settings key to avoid interpreting legacy monthly Custom
+Pricing uses the V4 settings key (`PRICE_BOOK_SETTING_KEY`) to avoid interpreting legacy monthly Custom
 prices as setup fees. Approval also verifies initial setup payment.
 
 ## Payment and permissions

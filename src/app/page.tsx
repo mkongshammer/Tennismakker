@@ -47,7 +47,7 @@ const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; bod
     tint: "bg-[#fff0e5] text-clay",
     title: "Clubs",
     body: "Run the whole facility from one place — bookings, members, payments, even the lights.",
-    points: ["Self-serve setup, live the same day", "Stripe payouts to your club’s own account", "$30/month, no commission on court bookings"],
+    points: ["Self-serve setup, live the same day", "Stripe payouts to your club’s own account", "One plan, $50/month, no commission on court bookings"],
     cta: "List your club",
   },
 ];
@@ -59,13 +59,13 @@ const HOW = [
   { step: "04", title: "Play", body: "Confirmation and access details land in your inbox and on your profile." },
 ];
 
-const CLUB_FEATURES: { icon: IconName; title: string; body: string; plan: "Standard" | "Custom" }[] = [
-  { icon: "calendar", title: "Court calendar", body: "Hours, courts, surfaces and prices. Release times to guests, keep members first.", plan: "Standard" },
-  { icon: "dollar", title: "Payments", body: "Stripe Connect payouts to the club’s own account. Receipts, refunds and reporting built in.", plan: "Standard" },
-  { icon: "members", title: "Members and memberships", body: "Plans, seasons, renewals and member pricing. Import from your current system.", plan: "Custom" },
-  { icon: "access", title: "Lights and door access", body: "Bookings switch on court lights and open the door for the right person at the right time.", plan: "Custom" },
-  { icon: "website", title: "Club website", body: "A clean public page on your own domain with news, photos and booking built in.", plan: "Custom" },
-  { icon: "sparkle", title: "Recurring reservations", body: "Fixed weekly courts, teams and clinics, without re-entering them every week.", plan: "Custom" },
+const CLUB_FEATURES: { icon: IconName; title: string; body: string }[] = [
+  { icon: "calendar", title: "Court calendar", body: "Hours, courts, surfaces and prices. Release times to guests, keep members first." },
+  { icon: "dollar", title: "Payments", body: "Stripe Connect payouts to the club’s own account. Receipts, refunds and reporting built in." },
+  { icon: "members", title: "Members and memberships", body: "Plans, seasons, renewals and member pricing. Import from your current system." },
+  { icon: "access", title: "Lights and door access", body: "Bookings switch on court lights and open the door for the right person at the right time." },
+  { icon: "website", title: "Club website", body: "A clean public page on your own domain with news, photos and booking built in." },
+  { icon: "sparkle", title: "Recurring reservations", body: "Fixed weekly courts, teams and clinics, without re-entering them every week." },
 ];
 
 function CourtTiles() {
@@ -88,7 +88,6 @@ export default async function Home() {
   const [prefs, settings] = await Promise.all([getPreferences(), getSettings()]);
   const prices = await clubSignupPrices("US");
   const monthly = formatMoney(prices.standard, prices.currency, "en-US");
-  const setup = prices.custom == null ? null : formatMoney(prices.custom, prices.currency, "en-US");
   const filters = parseDiscoveryFilters({}, prefs.sport);
 
   const jsonLd = {
@@ -225,7 +224,7 @@ export default async function Home() {
             <div key={f.title}>
               <div className="flex items-center gap-3">
                 <span className="text-optic"><Icon name={f.icon} size={24} /></span>
-                <span className="text-xs font-semibold text-white/60">{f.plan}</span>
+                <span className="text-xs font-semibold text-white/60">Included</span>
               </div>
               <h3 className="mt-4 text-lg">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-white/70">{f.body}</p>
@@ -239,30 +238,31 @@ export default async function Home() {
         <div className="max-w-2xl">
           <p className="eyebrow text-slate">Pricing</p>
           <h2 id="pricing-title" className="display mt-3 text-display-md sm:text-display-lg">One simple price. No commission on court bookings.</h2>
-          <p className="mt-3 text-slate">Court revenue goes to your club’s own Stripe account. Coaches pay a small platform fee per lesson; clubs don’t.</p>
+          <p className="mt-3 text-slate">Clubs pay one flat monthly price for the whole system. Players and coaches use RacketBuddy for free; coaches pay 10% on lessons booked through it, clubs pay no commission at all.</p>
         </div>
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col rounded-3xl border border-slate/20 bg-chalk p-6 sm:p-8">
-            <h3 className="text-title">Standard</h3>
+        <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+          <div className="relative flex flex-col rounded-3xl border-2 border-court bg-chalk p-6 sm:p-8">
+            <span className="absolute -top-3 left-6 badge-court">Everything included</span>
+            <h3 className="text-title">RacketBuddy for clubs</h3>
             <p className="mt-5">
               <span className="display text-display-lg">{monthly}</span>
               <span className="ml-1 text-sm text-slate">/month</span>
             </p>
-            <p className="mt-4 flex-1 leading-relaxed text-slate">Courts, hours, pricing, guest and member booking, Stripe payouts, receipts and your public club page.</p>
-            <Link href="/list-your-club?plan=STANDARD" className="btn-ghost mt-7">Start with Standard</Link>
+            <p className="mt-2 text-sm font-semibold text-court">No setup fee · no contract · cancel any month</p>
+            <p className="mt-4 flex-1 leading-relaxed text-slate">The whole system: court calendar and online booking, Stripe payouts to your own account, members and memberships, teams and clinics, lights and door access, wallet and pricing rules, recurring reservations, club website and data import. Billed from the day you start.</p>
+            <Link href="/list-your-club" className="btn-court mt-7">Start today</Link>
           </div>
-          <div className="relative flex flex-col rounded-3xl border-2 border-court bg-chalk p-6 sm:p-8">
-            <span className="absolute -top-3 left-6 badge-court">Most complete</span>
-            <h3 className="text-title">Custom</h3>
-            {setup && (
-              <p className="mt-5">
-                <span className="display text-display-lg">{setup}</span>
-                <span className="ml-2 text-sm text-slate">one-time setup</span>
-              </p>
-            )}
-            <p className="mt-2 text-sm font-semibold text-court">plus {monthly}/month</p>
-            <p className="mt-4 flex-1 leading-relaxed text-slate">Everything in Standard plus the Custom features your club picks: memberships, teams, lights and door access, wallet and pricing rules, club website, recurring reservations and data import. One setup price however many you choose.</p>
-            <Link href="/list-your-club?plan=CUSTOM" className="btn-court mt-7">Choose Custom</Link>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-1 flex-col rounded-3xl border border-slate/20 bg-chalk p-6">
+              <h3 className="text-title">Players</h3>
+              <p className="mt-3"><span className="display text-display-md">Free</span></p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-slate">You pay the club’s court price or the coach’s lesson price. Nothing is added at checkout.</p>
+            </div>
+            <div className="flex flex-1 flex-col rounded-3xl border border-slate/20 bg-chalk p-6">
+              <h3 className="text-title">Coaches</h3>
+              <p className="mt-3"><span className="display text-display-md">Free</span><span className="ml-2 text-sm text-slate">· 10% per booked lesson</span></p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-slate">No subscription. RacketBuddy keeps 10% of lessons booked through the platform; the rest is paid out to you automatically.</p>
+            </div>
           </div>
         </div>
         <p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate">RacketBuddy serves US clubs and bills in USD. Applicable sales tax, card processing fees, hardware and third-party services may be extra. Your total is shown before you pay.</p>
@@ -273,7 +273,7 @@ export default async function Home() {
         <h2 id="steps-title" className="display text-display-md sm:text-display-lg">Live before lunch.</h2>
         <ol className="mt-8 grid gap-6 md:grid-cols-4">
           {[
-            { title: "Choose a plan", body: "Standard, or Custom with the features you need." },
+            { title: "Create your account", body: "One plan, everything included. Pay from today, cancel any month." },
             { title: "Add your facility", body: "Address, sports, courts, hours and prices. Autofill does most of it." },
             { title: "Connect payments", body: "Stripe onboarding takes about ten minutes. Payouts go to your account." },
             { title: "Publish", body: "After a quick review, your club page and booking calendar go live." },
@@ -295,6 +295,7 @@ export default async function Home() {
             { q: "Is RacketBuddy only for clubs?", a: "No. Players reserve courts, book coaches and find hitting partners. Clubs get the tools to run the facility and get found." },
             { q: "Do I need a membership to book?", a: "That depends on the club. Each club decides what members and guests can book and at what price. You see the price and availability before you reserve." },
             { q: "What does it cost a player?", a: "Nothing beyond the club’s court price or the coach’s lesson price. There are no booking fees added at checkout." },
+            { q: "What does it cost a club or a coach?", a: "Clubs pay $50 a month for the whole system — no setup fee, no contract, cancel any month — and keep 100% of their court revenue. Coaches pay nothing up front; RacketBuddy keeps 10% of each lesson booked through the platform." },
             { q: "How do refunds work?", a: "Cancel at least 24 hours before your start time and you get a full refund to your card. Later than that, the club keeps the booking." },
             { q: "Which sports?", a: SPORTS.map((s) => sportLabel(s, "en-US")).join(", ") + "." },
             { q: "Is there an app?", a: "Yes — RacketBuddy for iPhone and Android uses the same account, bookings and messages as the website." },

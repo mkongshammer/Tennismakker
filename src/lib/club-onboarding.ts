@@ -3,6 +3,7 @@ import {db} from './db';
 import {stripe} from './stripe';
 import {getSettings} from './settings';
 import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry} from './platform-pricing';
+import {PRICE_BOOK_SETTING_KEY} from './platform-pricing';
 import {marketFor,validCurrency} from './international';
 import {addFailureDay,consecutiveFailureDays,localFailureDay,parseFailureDays,shouldPauseAfterFailures} from './subscription-grace';
 import {regionalSharedConfig} from './regional-config';
@@ -11,7 +12,7 @@ import {dataRegionForCountry,deploymentRegion,regionalShardingActive} from './re
 const failureKey=(clubId:string)=>`clubPaymentFailuresV1:${clubId}`;
 
 export async function clubSignupPriceBook(){
- const row=await db.platformSetting.findUnique({where:{key:'clubSignupPricesV3'}}).catch(()=>null);
+ const row=await db.platformSetting.findUnique({where:{key:PRICE_BOOK_SETTING_KEY}}).catch(()=>null);
  if(row)return parsePriceBook(row.value);
  const shared=await regionalSharedConfig();
  if(shared?.clubSignupPriceBook)return parsePriceBook(JSON.stringify(shared.clubSignupPriceBook));
@@ -56,7 +57,7 @@ export async function startOnboardingCheckout(clubId:string,preferredLocale?:str
   if(taxEnabled&&(await client.tax.settings.retrieve()).status!=='active')throw Error('Tax setup is not ready. Please contact RacketBuddy.');
   let customer=c.stripeCustomerId;
   if(!customer){const created=await client.customers.create({name:c.name,email:c.contactEmail??undefined,metadata:{clubId,region}},{idempotencyKey:`club-signup-customer:${clubId}`});customer=created.id;}
-  const session=await client.checkout.sessions.create({adaptive_pricing:{enabled:false},automatic_tax:{enabled:taxEnabled},mode:'subscription',customer,locale,billing_address_collection:'required',tax_id_collection:{enabled:true},customer_update:{name:'auto',address:'auto'},payment_method_types:['card'],client_reference_id:clubId,metadata:{clubId,region},subscription_data:{metadata:{clubId,region}},line_items:[...(c.signupSetupKr>0&&!c.signupSetupPaidAt?[{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.signupSetupKr*100,product_data:{name:'RacketBuddy Custom'}}}]:[]),{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.subscriptionKr*100,recurring:{interval:'month'},product_data:{name:`RacketBuddy ${c.solutionMode==='CUSTOM'?'Custom':'Standard'} – ${c.name}`}}}],success_url:`${settings.appUrl}/club-start?betaling=kontroller`,cancel_url:`${settings.appUrl}/club-start?betaling=afbrudt`},{idempotencyKey:`club-signup-checkout:${clubId}:${attempt}`});
+  const session=await client.checkout.sessions.create({adaptive_pricing:{enabled:false},automatic_tax:{enabled:taxEnabled},mode:'subscription',customer,locale,billing_address_collection:'required',tax_id_collection:{enabled:true},customer_update:{name:'auto',address:'auto'},payment_method_types:['card'],client_reference_id:clubId,metadata:{clubId,region},subscription_data:{metadata:{clubId,region}},line_items:[...(c.signupSetupKr>0&&!c.signupSetupPaidAt?[{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.signupSetupKr*100,product_data:{name:'RacketBuddy Custom'}}}]:[]),{quantity:1,price_data:{tax_behavior:taxEnabled?'exclusive':undefined,currency,unit_amount:c.subscriptionKr*100,recurring:{interval:'month'},product_data:{name:`RacketBuddy for clubs – ${c.name}`}}}],success_url:`${settings.appUrl}/club-start?betaling=kontroller`,cancel_url:`${settings.appUrl}/club-start?betaling=afbrudt`},{idempotencyKey:`club-signup-checkout:${clubId}:${attempt}`});
   if(!session.url)throw Error('Betalingssiden kunne ikke oprettes. Prøv igen.');
   await tx.club.update({where:{id:clubId},data:{stripeCustomerId:customer,signupCheckoutId:session.id,signupCheckoutAttempt:attempt}});return session.url;
  },{timeout:60000,maxWait:10000});

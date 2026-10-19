@@ -9,5 +9,5 @@ export function termsHref(country?: string | null): string {
   // The US document lives at /terms/us (the route), while the content region stays 'usa'.
   return region ? `/terms/${region === 'usa' ? 'us' : region}` : '/terms';
 }
-export const TERMS_VERSION = '2026-10-02';
+export const TERMS_VERSION = '2026-10-19';
 export const INTERNATIONAL_TERMS_VERSION = '2026-10-03';

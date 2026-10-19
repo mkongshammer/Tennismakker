@@ -28,7 +28,7 @@ test('landing and every regional terms paragraph translate while keeping links a
   const home=landingCopy(locale);for(const value of Object.values(home))assert.ok(value);
   assert.notEqual(home.title,landingCopy('en').title);
   for(const region of ['eu','usa','international'] as const){
-   const prices={standard:region==='usa'?30:27,custom:region==='usa'?2249:1999,currency:region==='usa'?'USD':'EUR'};
+   const prices={standard:region==='usa'?50:27,custom:region==='usa'?null:1999,currency:region==='usa'?'USD':'EUR'};
    const english=termsContent(region,'en',prices),translated=termsContent(region,locale,prices);
    assert.deepEqual(translated.map(s=>s.id),english.map(s=>s.id));
    translated.forEach((s,i)=>{assert.notEqual(s.title,english[i].title);s.paragraphs.forEach((p,j)=>{assert.notEqual(p,english[i].paragraphs[j],`${locale}: ${region}: ${s.id}`);assert.ok(!/\{\w+\}/.test(p));});assert.equal(s.link?.href,english[i].link?.href);});

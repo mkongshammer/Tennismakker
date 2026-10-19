@@ -38,7 +38,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ b
   const features: string[] = club.customFeatures ? (JSON.parse(club.customFeatures) as string[]) : [];
 
   const steps = [
-    { title: "Club and login created", done: true, body: `${club.solutionMode === "CUSTOM" ? "Custom" : "Standard"} · ${money(club.subscriptionKr)}/month${club.signupSetupKr > 0 ? ` + ${money(club.signupSetupKr)} once${club.signupSetupPaidAt ? " (paid)" : ""}` : ""}` },
+    { title: "Club and login created", done: true, body: `RacketBuddy for clubs · ${money(club.subscriptionKr)}/month, cancel anytime${club.signupSetupKr > 0 ? ` + ${money(club.signupSetupKr)} once${club.signupSetupPaidAt ? " (paid)" : ""}` : ""}` },
     { title: "Subscription paid", done: paid, body: paid ? "Payment confirmed." : query.betaling === "afbrudt" ? "Payment was cancelled. Nothing was charged." : "Secure checkout by Stripe. The total, including any sales tax, is shown before you pay." },
     { title: "Club reviewed and live", done: approved, body: approved ? "Your club is public and bookable." : club.status === "REJECTED" ? club.reviewNote ?? "Contact RacketBuddy about your registration." : "We review every new club, usually within one business day, and switch it on." },
     { title: "Payouts connected", done: club.stripeChargesEnabled, body: club.stripeChargesEnabled ? "Guests can pay you." : "Connect Stripe from Payments in the admin so bookings can be paid out to the club." },
@@ -69,8 +69,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ b
         ))}
       </ol>
 
-      {features.length > 0 && (
-        <p className="text-sm text-slate"><span className="font-semibold text-ink">Custom features:</span> {CUSTOM_FEATURES.filter((f) => features.includes(f.id)).map((f) => phrase(f.label, locale)).join(" · ")}</p>
+      {features.length > 0 && features.length < CUSTOM_FEATURES.length && (
+        <p className="text-sm text-slate"><span className="font-semibold text-ink">Included modules:</span> {CUSTOM_FEATURES.filter((f) => features.includes(f.id)).map((f) => phrase(f.label, locale)).join(" · ")}</p>
       )}
 
       <div className="flex flex-wrap gap-2">
