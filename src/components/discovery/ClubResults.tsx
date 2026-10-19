@@ -10,7 +10,7 @@ import Link from "next/link";
 import type { MapClub } from "../clubTypes";
 import { formatMoney, formatDate } from "../../lib/international";
 import { surfaceLabel } from "../../lib/sports";
-import { formatDistance } from "../../lib/us-places";
+import { formatDistance } from "../../lib/us-distance";
 import { Icon } from "../ui";
 
 const ClubMapView = dynamic(() => import("../ClubMapView"), {
