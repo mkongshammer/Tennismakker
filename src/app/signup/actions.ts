@@ -22,7 +22,8 @@ const US_SIGNUP_ERRORS: Record<string, string> = {
 export async function signup(prev: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const locale = String(formData.get("locale") ?? "da");
-  const country = String(formData.get("country") ?? "DK").toUpperCase();
+  const country = String(formData.get("country") ?? "US").toUpperCase();
+  if (country !== "US") return { error: "RacketBuddy is currently available for new US accounts only." };
   const usEnglish = locale === "en-US";
   const optedIn = formData.get("engagementEmails") === "on";
   const sports = normaliseBuddySports(formData.getAll("sports").map(String));
