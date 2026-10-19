@@ -2,7 +2,6 @@ import {validArea} from "../../../../lib/profile-location";
 import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { userFromRequest } from "../../../../lib/session";
-import { isDanishRegion, regionForArea } from "../../../../lib/regions";
 import { blockedUserIds } from "../../../../lib/moderation";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +16,7 @@ export async function GET(req: Request) {
   const level = levelParam ? Number(levelParam) : null;
   const me = await userFromRequest(req);
   const country="US"; // Match discovery is always limited to US player profiles.
-  const selectedRegion=country==="DK"?(isDanishRegion(rawRegion)?rawRegion:regionForArea(rawRegion)??""):rawRegion;
+  const selectedRegion=rawRegion;
   const blocked = me ? await blockedUserIds(me.id) : [];
 
   const requests = await db.matchRequest.findMany({
@@ -33,14 +32,14 @@ export async function GET(req: Request) {
   });
 
   const filtered = selectedRegion
-    ? requests.filter((request) => country==="DK" ? regionForArea(request.area) === selectedRegion : request.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
+    ? requests.filter((request) => request.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
     : requests;
 
   return json({
     matches: filtered.map((r: any) => ({
       id: r.id,
       message: r.message,
-      area: country==="DK" ? regionForArea(r.area) ?? r.area : r.area,
+      area: r.area,
       level: r.level,
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
