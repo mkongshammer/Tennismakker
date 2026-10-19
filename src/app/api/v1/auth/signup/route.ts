@@ -16,7 +16,8 @@ export async function POST(req: Request) {
   const password = String(body.password ?? "");
   const name = String(body.name ?? "").trim();
   const level = Number(body.level ?? 3);
-  const country = String(body.country ?? "DK").toUpperCase();
+  const country = String(body.country ?? "US").toUpperCase();
+  if (country !== "US") return apiError("New accounts are currently available in the United States only.");
   const regionError = requireRegionalCountry(country);
   if (regionError) return regionError;
   if (country === "US") {

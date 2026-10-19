@@ -18,7 +18,7 @@ export async function GET(
   });
   // Samme regel som klublisten: en klub der venter på godkendelse eller
   // er afvist, må ikke kunne slås op — heller ikke direkte ved slug.
-  if (!club || club.status !== "APPROVED") return apiError("Klubben findes ikke.", 404);
+  if (!club || club.status !== "APPROVED" || club.country !== "US") return apiError("Klubben findes ikke.", 404);
 
   const url = new URL(req.url);
   const days = Math.min(14, Math.max(1, Number(url.searchParams.get("dage") ?? 7)));

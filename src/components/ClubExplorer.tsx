@@ -49,9 +49,12 @@ function Rating({ average, count }: {average: number;count: number;}) {const { t
 export function ClubExplorer({ clubs, country = "DK", locale = "da" }: {clubs: MapClub[];country?: string;locale?: import("../lib/sports").Locale;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false); // kun mobil
+  const [search, setSearch] = useState("");
   const cardRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
-  const mappable = clubs.filter((c) => c.latitude != null && c.longitude != null);
+  const needle = search.trim().toLocaleLowerCase('en-US');
+  const visibleClubs = clubs.filter(c => c.country === 'US' && `${c.name} ${c.city} ${c.address ?? ''}`.toLocaleLowerCase('en-US').includes(needle));
+  const mappable = visibleClubs.filter((c) => c.latitude != null && c.longitude != null);
 
   // Vælges en klub på kortet, skal kortet i listen også være synligt
   useEffect(() => {
@@ -66,7 +69,7 @@ export function ClubExplorer({ clubs, country = "DK", locale = "da" }: {clubs: M
 
   const list =
   <ul className="space-y-4">
-      {clubs.map((club) => {
+      {visibleClubs.map((club) => {
       const active = club.id === activeId;
       return (
         <li
@@ -120,6 +123,12 @@ export function ClubExplorer({ clubs, country = "DK", locale = "da" }: {clubs: M
 
   return (
     <>
+      <div className="mb-5">
+        <label htmlFor="us-court-search" className="mb-2 block text-sm font-semibold text-slate">Search US clubs, cities or addresses</label>
+        <input id="us-court-search" value={search} onChange={event => setSearch(event.target.value)} placeholder="e.g. Boston, New York, Miami" maxLength={120} className="input w-full" type="search" />
+        <p className="mt-2 text-xs text-slate">{visibleClubs.length} clubs in the United States</p>
+      </div>
+      {visibleClubs.length === 0 && <p className="card text-center text-slate">No US clubs match your search. Try another city or club.</p>}
       {/* Bred skærm: listen til venstre, kortet bliver hængende til højre */}
       <div className="hidden gap-6 lg:grid lg:grid-cols-[minmax(0,1fr)_1.1fr]">
         <div>{list}</div>

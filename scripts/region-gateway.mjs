@@ -1,7 +1,8 @@
 import http from 'node:http';
 import https from 'node:https';
 
-const upstream = new URL(process.env.UPSTREAM_URL || 'https://racketbuddy.app');
+// The US gateway must reach the US data core, not proxy back to the EU website.
+const upstream = new URL(process.env.UPSTREAM_URL || 'https://racketbuddy-us-core.onrender.com');
 const region = String(process.env.RACKETBUDDY_REGION || 'US').toUpperCase();
 const port = Number(process.env.PORT || 10000);
 

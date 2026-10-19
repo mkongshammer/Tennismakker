@@ -126,7 +126,8 @@ export async function POST(req: Request) {
     }, 409);
   }
 
-  const country = String(body.country ?? "DK").toUpperCase();
+  const country = String(body.country ?? "US").toUpperCase();
+  if (country !== "US") return apiError("New accounts are currently supported for the United States only.");
   const regionError = requireRegionalCountry(country);
   if (regionError) return regionError;
 

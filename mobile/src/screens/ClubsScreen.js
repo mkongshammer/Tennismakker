@@ -27,7 +27,7 @@ export default function ClubsScreen({ navigation }) {
   const { data, loading, error, refreshing, refresh } = useScreenData(useCallback(() => api.clubs(sport, country), [sport, country]));
   const state = { loading, error, clubs: data?.clubs ?? [] };
   const needle = query.trim().toLocaleLowerCase("da-DK");
-  const clubs = state.clubs.filter((c) => `${c.name} ${c.city}`.toLocaleLowerCase("da-DK").includes(needle));
+  const clubs = state.clubs.filter((c) => c.country === 'US' && `${c.name} ${c.city} ${c.address ?? ''}`.toLocaleLowerCase('en-US').includes(needle));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>

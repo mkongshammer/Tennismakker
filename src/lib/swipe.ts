@@ -34,6 +34,7 @@ export async function nextCandidates(userId: string, take = 10) {
     where: {
       id: { notIn: skip },
       role: { in: ["PLAYER", "COACH"] },
+      country: "US",
       level: { gte: me.level - LEVEL_SPREAD, lte: me.level + LEVEL_SPREAD },
       ...(me.area ? { area: { contains: me.area.split(" ")[0], mode: "insensitive" } } : {}),
     },
@@ -59,6 +60,13 @@ export async function recordSwipe(
 ): Promise<SwipeResult> {
   if (fromUserId === toUserId) return { matched: false };
   if (await isBlockedBetween(fromUserId, toUserId)) return { matched: false };
+
+  // Do not create new cross-market swipe connections when discovery is US-only.
+  const [from, to] = await Promise.all([
+    db.user.findUnique({where:{id:fromUserId},select:{country:true}}),
+    db.user.findUnique({where:{id:toUserId},select:{country:true}}),
+  ]);
+  if (from?.country !== "US" || to?.country !== "US") return { matched: false };
 
   await db.swipe.upsert({
     where: { fromUserId_toUserId: { fromUserId, toUserId } },

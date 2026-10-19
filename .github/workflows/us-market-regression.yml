@@ -1,0 +1,34 @@
+name: US marketplace regression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'mobile/src/**'
+      - 'shared/**'
+      - 'scripts/region-gateway.mjs'
+      - 'package.json'
+      - '.github/workflows/us-market-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-us-market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - name: Type-check web and API
+        run: npx tsc --noEmit
+      - name: Run backend unit tests
+        run: npm test
+      - name: Verify mobile internationalization and request utilities
+        run: node --test mobile/src/lib/*.test.mjs

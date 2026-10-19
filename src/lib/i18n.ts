@@ -135,23 +135,25 @@ export const T: Dict = {
   "common.level": { da: "Niveau", en: "Level", de: "Niveau", sv: "Nivå", no: "Nivå" , fr: "Niveau", es: "Nivel", },
   "common.price": { da: "Pris", en: "Price", de: "Preis", sv: "Pris", no: "Pris" , fr: "Prix", es: "Precio", },
 
-  // Vi starter i Danmark og åbner flere lande senere. Sætningen står to
-  // steder: i hero'ens overlinje, hvor den møder en ny besøgende, og i
-  // footeren, hvor den bliver stående uanset hvor man er på sitet.
+  // Only US clubs appear in public discovery.
   "availability.now": {
-    da: "Klubber i Europa og Nordamerika",
-    en: "Clubs in Europe and North America",
-    de: "Clubs in Europa und Nordamerika",
-    sv: "Klubbar i Europa och Nordamerika",
-    no: "Klubber i Europa og Nord-Amerika",
-   fr: "Clubs en Europe et en Amérique du Nord", es: "Clubes de Europa y Norteamérica", },
+    da: "Klubber i USA",
+    en: "Clubs in the United States",
+    de: "Clubs in den USA",
+    sv: "Klubbar i USA",
+    no: "Klubber i USA",
+    fr: "Clubs aux États-Unis", es: "Clubes en Estados Unidos",
+    "en-US": "Clubs in the United States",
+  },
   "availability.soon": {
-    da: "Spil på tværs af Europa og Nordamerika",
-    en: "Play across Europe and North America",
-    de: "Spiele in Europa und Nordamerika",
-    sv: "Spela i Europa och Nordamerika",
-    no: "Spill i Europa og Nord-Amerika",
-   fr: "Jouez en Europe et en Amérique du Nord", es: "Juega en Europa y Norteamérica", },
+    da: "Find dit næste spil i USA",
+    en: "Find your next game in the United States",
+    de: "Finde dein nächstes Spiel in den USA",
+    sv: "Hitta ditt nästa spel i USA",
+    no: "Finn ditt neste spill i USA",
+    fr: "Trouvez votre prochain match aux États-Unis", es: "Encuentra tu próximo partido en Estados Unidos",
+    "en-US": "Find your next game across the US",
+  },
 
   // Book bane
   "book.title": {

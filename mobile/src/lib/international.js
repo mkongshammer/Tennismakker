@@ -7,15 +7,15 @@ export {MARKETS,CURRENCIES,TIME_ZONES,LANGUAGES,LANGUAGE_NAMES,marketFor,country
 const KEY='rb_international_v1';
 const language=Intl.DateTimeFormat().resolvedOptions().locale;
 const initialLocale=validLocale(language)?language:validLocale(language.split('-')[0])?language.split('-')[0]:'en';
-let preferences={country:'DK',locale:initialLocale,countryChosen:false,languageChosen:false};
-setDateLocale(initialLocale);
+let preferences={country:'US',locale:'en-US',countryChosen:true,languageChosen:false};
+setDateLocale('en-US');
 const listeners=new Set();
 export function getInternational(){return preferences;}
 export function tr(text,params){return translatePhrase(text,preferences.locale,params);}
 export function money(amount,currency='DKK'){return formatMoney(amount,currency,preferences.locale);}
 export function date(instant,timeZone='Europe/Copenhagen',options){return formatDate(instant,preferences.locale,timeZone,options);}
 function apply(value){
-  const next={country:marketFor(value.country)?.code??preferences.country,locale:validLocale(value.locale)?value.locale:preferences.locale,countryChosen:value.countryChosen??preferences.countryChosen,languageChosen:value.languageChosen??(value.id&&value.countryChosen?true:preferences.languageChosen)};
+  const next={country:'US',locale:validLocale(value.locale)?value.locale:preferences.locale,countryChosen:true,languageChosen:value.languageChosen??(value.id&&value.countryChosen?true:preferences.languageChosen)};
   if(Object.keys(next).some(key=>next[key]!==preferences[key])){preferences=next;setDateLocale(next.locale);listeners.forEach(listener=>listener());}
 }
 export async function restoreInternational(){try{const stored=await AsyncStorage.getItem(KEY);if(stored){const value=JSON.parse(stored);apply({...value,countryChosen:value.countryChosen??!!marketFor(value.country),languageChosen:value.languageChosen??!!value.locale});}}catch{}}

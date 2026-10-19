@@ -29,7 +29,7 @@ test('the installed offline IP database resolves a Danish and American network',
  assert.equal(lookupIpCountry('80.160.0.1'),'DK');assert.equal(lookupIpCountry('8.8.8.8'),'US');
  assert.equal(lookupIpCountry('not an address'),null);
 });
-test('saved country and language choices take precedence over IP; first visits inherit the country language',async()=>{
+test('US-only discovery overrides legacy stored countries and never geolocates visitors',async()=>{
  let user:any=null,values:Record<string,string>={},detections=0;
  const prefs=loadIsolatedModule('src/lib/preferences.ts',{
   'next/headers':{headers:async()=>new Headers({'accept-language':'da-DK'}),cookies:async()=>({get:(key:string)=>values[key]?{value:values[key]}:undefined})},
@@ -37,9 +37,9 @@ test('saved country and language choices take precedence over IP; first visits i
   './sports':sports,
   './geo':{detectCountry:async()=>{detections++;return {country:'US',suggestedCountry:'US',needsChoice:false,source:'ip'};}},
  });
- const automatic=await prefs.getPreferences();assert.equal(automatic.country,'US');assert.equal(automatic.locale,'en-US');assert.equal(automatic.countryChosen,false);
+ const automatic=await prefs.getPreferences();assert.equal(automatic.country,'US');assert.equal(automatic.locale,'en-US');assert.equal(automatic.countryChosen,true);
  values={'rb_prefs_country':'SE','rb_prefs_locale':'de'};detections=0;
- const manual=await prefs.getPreferences();assert.equal(manual.country,'SE');assert.equal(manual.locale,'de');assert.ok(manual.countryChosen);assert.equal(detections,0);
+ const manual=await prefs.getPreferences();assert.equal(manual.country,'US');assert.equal(manual.locale,'de');assert.ok(manual.countryChosen);assert.equal(detections,0);
  user={country:'NO',locale:'en',countryChosen:true};values={};
- const profile=await prefs.getPreferences();assert.equal(profile.country,'NO');assert.equal(profile.locale,'en');assert.equal(detections,0);
+ const profile=await prefs.getPreferences();assert.equal(profile.country,'US');assert.equal(profile.locale,'en-US');assert.equal(detections,0);
 });

@@ -8,7 +8,6 @@ import { db } from "../../lib/db";
 import { LevelBadge } from "../../components/LevelBadge";
 import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
-import { DK_REGIONS, regionForArea } from "../../lib/regions";
 import { contactPlayer } from "./actions";
 import { ShareRacketBuddy } from "./ShareRacketBuddy";
 
@@ -56,7 +55,7 @@ export default async function SpillerePage({ searchParams }: Props) {
       where: {
         id: { not: user.id },
         role: { in: ["PLAYER", "COACH"] },
-        country: user.country,
+        country: "US",
       },
       select: {
         id: true,
@@ -86,7 +85,7 @@ export default async function SpillerePage({ searchParams }: Props) {
           (sport) => sport.toLocaleLowerCase("da") === selectedSport.toLocaleLowerCase("da"),
         )
       : true;
-    const regionMatches = selectedRegion ? (user.country==="DK"?regionForArea(player.area)===selectedRegion:player.area?.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase())) : true;
+    const regionMatches = selectedRegion ? player.area?.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()) : true;
     return sportMatches && regionMatches;
   });
 
@@ -118,16 +117,13 @@ export default async function SpillerePage({ searchParams }: Props) {
           </select>
         </label>
 
-        <label className="min-w-0 text-sm font-semibold"><UiText text="Region"/><select
+        <label className="min-w-0 text-sm font-semibold">US city or state<input
             name="region"
             defaultValue={selectedRegion}
+            placeholder="Boston, MA"
+            maxLength={100}
             className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
-          >
-            <option value=""><UiText text="Hele Danmark"/></option>
-            {DK_REGIONS.map((region) => (
-              <option key={region} value={region}>{region}</option>
-            ))}
-          </select>
+          />
         </label>
 
         <div className="flex flex-wrap gap-2 sm:col-span-2">
@@ -156,7 +152,7 @@ export default async function SpillerePage({ searchParams }: Props) {
                 .map((n) => n[0])
                 .slice(0, 2)
                 .join("");
-              const region = regionForArea(player.area);
+              const region = player.area;
 
               return (
                 <div key={player.id} className="card">

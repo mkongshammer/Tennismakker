@@ -3,9 +3,7 @@
 // Indlogget bruger: gemt på profilen. Gæst: en cookie, så valget overlever
 // et sideskift. Første besøg bruger IP-land eller beder om et valg.
 
-import { headers } from "next/headers";
-import { marketFor } from "./international";
-import { detectCountry, type CountryDetection } from './geo';
+import { type CountryDetection } from './geo';
 import { cookies } from "next/headers";
 import { getCurrentUser } from "./session";
 import { DEFAULT_SPORT, type Locale, type Sport, SPORTS, LOCALES } from "./sports";
@@ -32,34 +30,27 @@ export async function getPreferences(): Promise<Preferences> {
       ? (cookieSport as Sport)
       : DEFAULT_SPORT;
 
-  if (user?.countryChosen && marketFor(user.country)) {
+  // Public discovery is always US-only, including for existing accounts.
+  // Account country remains stored unchanged for existing contracts and payments.
+  if (user) {
     return {
-      country: user.country ?? "DK",
-      locale: (LOCALES as readonly string[]).includes(user.locale)
-        ? (user.locale as Locale)
-        : "da",
+      country: "US",
+      locale: "en-US",
       sport,
-      countryChosen: user.countryChosen,
+      countryChosen: true,
     };
   }
 
-  const cookieCountry = jar.get(`${COOKIE}_country`)?.value;
+  // US-only acquisition: new visitors always browse the US market.
+  // Data and contractual records retain their original stored country.
   const cookieLocale = jar.get(`${COOKIE}_locale`)?.value;
-
-  const accepted=(await headers()).get("accept-language") ?? "en";
-  const preferred=accepted.split(",").map(v=>v.trim().split(";")[0]).map(v=>/^en-us$/i.test(v)?'en-US':v.split("-")[0].toLowerCase()).map(v=>['nb','nn'].includes(v)?'no':v).find(v=>(LOCALES as readonly string[]).includes(v));
-  const chosen=Boolean(marketFor(cookieCountry));
-  const countryDetection=chosen?undefined:await detectCountry();
-  const country=chosen?cookieCountry!:countryDetection?.country??(marketFor(user?.country)?user!.country:'DK');
   return {
-    country,
-    locale:
-      cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
-        ? (cookieLocale as Locale)
-        : (countryDetection?.country ? marketFor(country)!.defaultLocale : preferred ?? "en") as Locale,
+    country: "US",
+    locale: cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
+      ? (cookieLocale as Locale)
+      : "en-US",
     sport,
-    countryChosen: chosen,
-    countryDetection,
+    countryChosen: true,
   };
 }
 

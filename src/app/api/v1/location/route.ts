@@ -1,13 +1,13 @@
-import { detectCountryFromHeaders } from '../../../../lib/geo';
 import { json, preflight, requireUser, publicUser, requireRegionalCountry } from '../../../../lib/api/helpers';
-import {marketFor,validLocale} from '../../../../lib/international';
+import {validLocale} from '../../../../lib/international';
 import {dataRegionForCountry, regionalShardingActive} from '../../../../lib/region';
 import {db} from '../../../../lib/db';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export async function OPTIONS() { return preflight(); }
 export async function GET(req: Request) {
-  const response = json(detectCountryFromHeaders(req.headers));
+  // Discovery is USA-only regardless of the visitor's physical location.
+  const response = json({country:'US',suggestedCountry:'US',needsChoice:false,source:'market'});
   response.headers.set('Cache-Control','private, no-store');
   return response;
 }
@@ -15,7 +15,7 @@ export async function GET(req: Request) {
 export async function POST(req:Request){
  const auth=await requireUser(req);if('response' in auth)return auth.response;
  const body=await req.json().catch(()=>({})),country=String(body.country??'').toUpperCase(),locale=String(body.locale??'');
- if(!marketFor(country)||!validLocale(locale))return json({error:'Choose a valid country and language.'},400);
+ if(country!=='US'||!validLocale(locale))return json({error:'RacketBuddy is available for US discovery only.'},400);
  const regionError=requireRegionalCountry(country);if(regionError)return regionError;
  if(regionalShardingActive()&&dataRegionForCountry(country)!==dataRegionForCountry(auth.user.country)){
    return json({error:'Changing between US and EU data regions requires an account migration.',code:'REGION_MIGRATION_REQUIRED'},409);
