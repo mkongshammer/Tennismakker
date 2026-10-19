@@ -11,7 +11,6 @@ test('every fixed club administration phrase has complete supported-language tra
  const dictionary:Record<string,Record<string,string>>={...Object.fromEntries(Object.values(T).map(v=>[v.da,v])),...localized};
  const values=new Set<string>([...ADMIN_PAGES.flatMap(p=>[p.label,p.description,p.group]),...CLUB_MODULES.flatMap(p=>[p.label,p.description])]);
  const files=readdirSync('src/app/admin').filter(f=>f.endsWith('.tsx')).map(f=>'src/app/admin/'+f);
- files.push('src/components/CountryLocation.tsx');
  files.push('src/components/BlockedFirst.tsx');
  files.push('src/app/admin/custom/page.tsx');
  for(const file of files){const source=ts.createSourceFile(file,readFileSync(file,'utf8'),99,true,ts.ScriptKind.TSX);function visit(n:ts.Node){if(ts.isCallExpression(n)&&['tr','phrase'].includes(n.expression.getText(source))&&ts.isStringLiteral(n.arguments[0]))values.add(n.arguments[0].text);ts.forEachChild(n,visit);}visit(source);}

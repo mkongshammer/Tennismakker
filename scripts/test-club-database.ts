@@ -14,6 +14,7 @@ import {loadIsolatedModule} from '../src/lib/testing/isolated-module';
 import * as importCore from '../src/lib/club-import-core';
 import * as features from '../src/lib/club-features';
 import * as walletPolicy from '../src/lib/wallet-policy';
+import * as region from '../src/lib/region';
 import {phrase} from '../src/lib/phrases';
 import type {Locale} from '../src/lib/sports';
 
@@ -40,7 +41,7 @@ async function main(){
   const start=new Date(Date.now()+3*86400000);start.setMinutes(0,0,0);const end=new Date(+start+3600000);
   const data={courtId:court.id,userId:member.id,kind:'COURT',startsAt:start,endsAt:end,priceKr:100,status:'HOLD',holdExpiresAt:new Date(Date.now()+600000)};
   const booking=await reservation.createCourtReservation({data});await assert.rejects(reservation.createCourtReservation({data:{...data,startsAt:new Date(+start+1800000),endsAt:new Date(+end+1800000)}}),/optaget/);check('SQL reservation rejects partial overlap');
-  const wallet=loadIsolatedModule('src/lib/wallet.ts',{'./db':{db},'./stripe':{stripe:()=>{throw Error('External payments forbidden in local test');}},'./billing':{},'./settings':{},'./memberships':{},'./wallet-policy':walletPolicy});
+  const wallet=loadIsolatedModule('src/lib/wallet.ts',{'./db':{db},'./stripe':{stripe:()=>{throw Error('External payments forbidden in local test');}},'./billing':{},'./settings':{},'./memberships':{},'./wallet-policy':walletPolicy,'./region':region});
   const w=await db.clubWallet.create({data:{userId:member.id,clubId:club.id,balanceOre:200000}});
   await wallet.payBookingWithWallet(member.id,booking.id);await wallet.payBookingWithWallet(member.id,booking.id);
   assert.equal((await db.clubWallet.findUniqueOrThrow({where:{id:w.id}})).balanceOre,190000);assert.equal(await db.walletEntry.count({where:{walletId:w.id}}),1);assert.equal(await db.payment.count({where:{bookingId:booking.id}}),1);check('Wallet payment and retry debit exactly once');
@@ -71,7 +72,7 @@ async function main(){
   const usAdmin=await db.user.create({data:{email:'us-admin@example.invalid',name:'US admin',passwordHash:'unusable',country:'US',locale:'en',clubId:usClub.id,role:'CLUB_ADMIN'}});
   const settings=loadIsolatedModule('src/lib/international-actions.ts',{'./db':{db},'next/cache':{revalidatePath(){}},'./session':{getCurrentUser:async()=>usAdmin}});
   const internationalForm=new FormData();for(const [key,value] of Object.entries({country:'US',currency:'EUR',timeZone:'America/New_York',priceHour:'25',reviewedPrices:'on'}))internationalForm.set(key,value);
-  assert.match((await settings.saveClubInternational(null,internationalForm)).error,/Valutaen er låst/);assert.equal((await db.club.findUniqueOrThrow({where:{id:usClub.id}})).currency,'USD');check('Club currency cannot relabel existing bookings or wallet credit');
+  assert.match((await settings.saveClubInternational(null,internationalForm)).error,/cannot be changed|Valutaen er låst/);assert.equal((await db.club.findUniqueOrThrow({where:{id:usClub.id}})).currency,'USD');check('Club currency cannot relabel existing bookings or wallet credit');
   const dkPurchase=await db.booking.create({data:{...data,userId:usMember.id,status:'CONFIRMED',holdExpiresAt:null}});await db.payment.create({data:{bookingId:dkPurchase.id,amountKr:100,platformFee:10,currency:'DKK',status:'PAID',provider:'mock'}});
   const receiptModule=loadIsolatedModule('src/lib/receipts.ts',{'./db':{db}});const usReceipts=await receiptModule.receiptsFor(usMember.id,'en');assert.deepEqual(new Set(usReceipts.map((r:any)=>r.currency)),new Set(['USD','DKK']));
   const analytics=loadIsolatedModule('src/lib/analytics.ts',{'./db':{db}});const economy=await analytics.economy();const allAmounts=economy.rows[1].values.at(-1);assert.match(allAmounts,/25.*USD/);assert.match(allAmounts,/100.*DKK/);check('Receipts retain purchase currency and financial reports keep USD and DKK totals separate');

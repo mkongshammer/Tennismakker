@@ -1,7 +1,4 @@
-import romance from './romance-translations.json' with {type:'json'};
-import localized from './localized-phrases.json' with {type:'json'};
-import english from './phrases.json' with {type:'json'};
-import translations from './translations.json' with {type:'json'};
+import {romance,localized,english,translations} from './dictionaries.mjs';
 const byDanish=new Map(Object.values(translations).map(entry=>[entry.da,entry]));
 // Server actions also return messages with names and counts already inserted.
 // Only recognise registered, complete templates; leave arbitrary text alone.

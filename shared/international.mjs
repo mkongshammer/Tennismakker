@@ -60,7 +60,10 @@ export function countryLabel(code, locale = 'en') {
 export function numberLocale(locale = 'da') { return locale === 'no' ? 'nb-NO' : locale; }
 export function formatMoney(amount, currency = 'DKK', locale = 'da') {
   if (!validCurrency(currency) || !Number.isFinite(Number(amount))) return '—';
-  return new Intl.NumberFormat(numberLocale(locale), { style: 'currency', currency, currencyDisplay: 'code', minimumFractionDigits: Number.isInteger(Number(amount)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(amount));
+  // Americans read "$38", not "USD 38". Every other currency keeps its ISO
+  // code so a Danish receipt and a US booking can never be confused.
+  const currencyDisplay = locale === 'en-US' && currency === 'USD' ? 'symbol' : 'code';
+  return new Intl.NumberFormat(numberLocale(locale), { style: 'currency', currency, currencyDisplay, minimumFractionDigits: Number.isInteger(Number(amount)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(amount));
 }
 export function toMinor(amount, currency = 'DKK') {
   if (!validCurrency(currency) || !Number.isFinite(amount) || amount < 0) throw Error('Invalid amount or currency.');

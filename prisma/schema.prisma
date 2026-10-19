@@ -1271,3 +1271,25 @@ model BookingImport {
   bookingId String  @unique
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 }
+
+// ---------- Demand capture for empty markets ----------
+// When a player searches a city where no club or coach is live yet, the
+// honest answer is "not yet" — and the useful one is "tell me when". Each
+// row is one person, one sport, one place, so sales can see where demand
+// is and players can be told the moment supply opens there.
+model MarketInterest {
+  id         String    @id @default(cuid())
+  email      String
+  kind       String // "COURTS" | "COACHES"
+  sport      String
+  placeKey   String // "zip:02108" | "city:boston,ma" | "state:ma"
+  label      String // "Boston, MA 02108"
+  latitude   Float?
+  longitude  Float?
+  userId     String?
+  createdAt  DateTime  @default(now())
+  notifiedAt DateTime?
+
+  @@unique([email, kind, sport, placeKey])
+  @@index([placeKey, kind])
+}

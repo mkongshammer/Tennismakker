@@ -2,22 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Skrifterne hentes i browseren, ikke ved bygning — så et fejlende
-   font-CDN aldrig kan vælte et deploy. Se <link> i layout.tsx. */
+/* Fonts load in the browser, not at build time, so a failing font CDN can
+   never break a deploy. See <link> in layout.tsx. */
 
 :root {
   --tab-bar-h: 68px;
+  --page-gutter: 16px;
 }
 
 body {
   @apply bg-mist text-ink font-body antialiased;
   -webkit-tap-highlight-color: transparent;
+  overflow-wrap: break-word;
 }
 
 /* ---------------------------------------------------------------
-   Typografi
-   Display er bred og lidt egensindig; brødtekst er stram og neutral;
-   tal står i mono, fordi tider og priser skal kunne skimmes i kolonne.
+   Typography
+   Display is wide and a little opinionated; body is tight and neutral;
+   numbers sit in mono so times and prices can be scanned in a column.
    --------------------------------------------------------------- */
 .display {
   @apply font-display font-extrabold tracking-[-0.02em];
@@ -25,25 +27,31 @@ body {
 .data {
   @apply font-data tabular-nums tracking-[-0.04em];
 }
-
 h1,
 h2,
 h3 {
   @apply font-display font-extrabold tracking-[-0.02em];
 }
+.eyebrow {
+  @apply text-xs font-bold uppercase tracking-[0.14em];
+}
+.lead {
+  @apply text-lg leading-relaxed text-slate;
+}
+.prose-tight p + p {
+  margin-top: 0.75rem;
+}
 
 /* ---------------------------------------------------------------
-   Signatur: banefeltet
-   Hver bookbar tid er en flise med en kridtlinje tværs over — et
-   stykke bane. Farven kommer fra sportsgrenens rigtige underlag,
-   så farve bærer information i stedet for at pynte.
+   Signature: the court tile
+   Every bookable time is a tile with a chalk baseline — a piece of court.
+   The color comes from the sport's real surface, so color carries
+   information instead of decoration.
    --------------------------------------------------------------- */
 .court-tile {
-  @apply relative overflow-hidden rounded-xl text-chalk transition-transform;
+  @apply relative overflow-hidden rounded-xl text-chalk transition-transform duration-fast;
   background: var(--sport, #1b62c4);
 }
-/* Linjen ligger som en baglinje langs bunden. Tidligere lå den midt i
-   flisen og skar tværs gennem prisen, så beløbet så overstreget ud. */
 .court-tile::after {
   content: "";
   position: absolute;
@@ -53,11 +61,14 @@ h3 {
   height: 2px;
   background: rgba(255, 255, 255, 0.45);
 }
+.court-tile:hover {
+  transform: translateY(-1px);
+}
 .court-tile:active {
   transform: scale(0.98);
 }
 
-/* Kridtlinje som skillelinje — banens markering, ikke en streg for stregens skyld */
+/* Chalk line as a divider — the court's marking, not a line for its own sake */
 .chalk-line {
   height: 2px;
   background: repeating-linear-gradient(90deg, #fff 0 44px, transparent 44px 52px);
@@ -65,11 +76,15 @@ h3 {
 }
 
 /* ---------------------------------------------------------------
-   Komponenter
+   Controls
    --------------------------------------------------------------- */
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-5 py-3 font-semibold transition-colors;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 font-semibold transition-colors duration-fast;
   min-height: 48px;
+}
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  @apply cursor-not-allowed opacity-50;
 }
 .btn-court {
   @apply btn bg-court text-chalk hover:bg-court-dark;
@@ -80,59 +95,113 @@ h3 {
 .btn-ghost {
   @apply btn border border-slate/25 bg-chalk text-ink hover:border-ink;
 }
+.btn-soft {
+  @apply btn bg-court-tint text-court-dark hover:bg-court/15;
+}
+.btn-danger {
+  @apply btn bg-danger text-chalk hover:bg-danger-ink;
+}
+.btn-sm {
+  @apply px-4 py-2 text-sm;
+  min-height: 40px;
+}
+.btn-lg {
+  @apply px-6 py-4 text-base;
+  min-height: 56px;
+}
+.btn-pill {
+  @apply rounded-full;
+}
 
 .card {
   @apply rounded-2xl border border-slate/10 bg-chalk p-5 shadow-card;
 }
+.card-flat {
+  @apply rounded-2xl border border-slate/15 bg-chalk p-5;
+}
+.card-dark {
+  @apply rounded-2xl bg-ink p-5 text-chalk;
+}
+.card-interactive {
+  @apply transition-[box-shadow,border-color,transform] duration-fast hover:-translate-y-0.5 hover:border-slate/25 hover:shadow-lift;
+}
 
 .input {
-  @apply w-full rounded-xl border border-slate/25 bg-chalk px-4 py-3 text-ink outline-none;
+  @apply w-full rounded-xl border border-slate/25 bg-chalk px-4 py-3 text-ink outline-none transition-[border-color,box-shadow] duration-fast;
   min-height: 48px;
 }
 .input:focus {
-  @apply border-court ring-4 ring-court/15;
+  @apply border-court shadow-ring;
+}
+.input[aria-invalid="true"] {
+  @apply border-danger;
 }
 .label {
   @apply mb-1.5 block text-sm font-semibold text-slate;
 }
-
-/* Etiket over en overskrift: fortæller hvor man er, ikke hvad man skal føle.
-   Klassen sætter bevidst ikke en farve. Den stod før på court-blå, og fordi
-   komponentklasserne her ligger uden for Tailwinds lag, vandt de over et
-   text-chalk skrevet i markup'en — så etiketten blev blå på en grøn bane og
-   var næsten ikke til at læse. Farven afhænger af baggrunden og hører
-   derfor til på det sted, hvor baggrunden bestemmes. */
-.eyebrow {
-  @apply text-xs font-bold uppercase tracking-[0.14em];
+.hint {
+  @apply mt-1.5 text-xs text-slate-light;
+}
+.field-error {
+  @apply mt-1.5 text-sm font-semibold text-danger;
 }
 
-/* Synligt fokus overalt — man skal kunne se hvor man er uden mus */
+.badge {
+  @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold leading-none;
+}
+.badge-court {
+  @apply badge bg-court-tint text-court-dark;
+}
+.badge-success {
+  @apply badge bg-success-soft text-success-ink;
+}
+.badge-warning {
+  @apply badge bg-warning-soft text-warning-ink;
+}
+.badge-danger {
+  @apply badge bg-danger-soft text-danger-ink;
+}
+.badge-neutral {
+  @apply badge bg-mist text-slate;
+}
+.badge-ink {
+  @apply badge bg-ink text-chalk;
+}
+
+.pill {
+  @apply inline-flex min-h-10 items-center gap-2 rounded-full border border-slate/20 bg-chalk px-4 text-sm font-semibold text-ink transition-colors duration-fast hover:border-ink;
+}
+.pill[aria-pressed="true"],
+.pill.is-active {
+  @apply border-ink bg-ink text-chalk;
+}
+
+/* Skeletons: shimmer in the page color, never a spinner for layout. */
+.skeleton {
+  @apply animate-shimmer rounded-lg bg-mist-deep;
+  background-image: linear-gradient(90deg, #e6ecf3 0%, #f3f6fa 40%, #e6ecf3 80%);
+  background-size: 200% 100%;
+}
+
+/* Visible focus everywhere — you should see where you are without a mouse */
 :focus-visible {
   outline: 3px solid #1b62c4;
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* iOS zoomer på felter under 16px */
+/* iOS zooms on fields under 16px */
 input,
 select,
 textarea {
   font-size: 16px;
 }
 
-body {
-  overflow-wrap: break-word;
-}
-
-/* Plads til bundlinjen på telefon */
+/* Room for the tab bar on phones */
 .has-tabbar {
   padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
 }
 
-/* scroll-snap-type: mandatory blev fjernet herfra: på korte rækker
-   (sportsvælger, dagsvælger) kunne det sidste punkt blive "fanget" i et
-   snap-hop, der aldrig lander — bl.a. Pickleball var umulig at nå på
-   telefon. Ren fri scroll er mere pålideligt for korte filterrækker. */
 .no-scrollbar {
   scrollbar-width: none;
 }
@@ -140,7 +209,14 @@ body {
   display: none;
 }
 
-/* Kortmarkører */
+/* Section rhythm on long marketing pages */
+.section {
+  @apply py-12 md:py-20;
+}
+
+/* ---------------------------------------------------------------
+   Map markers
+   --------------------------------------------------------------- */
 .tm-pill-wrap {
   background: none !important;
   border: none !important;
@@ -165,14 +241,9 @@ body {
 .tm-pill:hover {
   transform: scale(1.1) !important;
 }
-
 .leaflet-container {
   font-family: var(--font-body, system-ui);
 }
-/* Almindelige OpenStreetMap-fliser er fulde af farve og tekst.
-   CARTOs dæmpede fliser krævede indtil for nylig ingen nøgle, men det
-   ændrede sig i slutningen af august 2026 (se ClubMapView.tsx). Dette
-   filter giver et lignende, roligt udtryk uden en nøgle. */
 .leaflet-tile-pane {
   filter: grayscale(35%) brightness(1.06) contrast(0.92) saturate(0.85);
 }
@@ -181,6 +252,9 @@ body {
   font-size: 10px !important;
 }
 
+/* ---------------------------------------------------------------
+   Landing search (kept for the discovery picker)
+   --------------------------------------------------------------- */
 .landing-search {
   position: relative;
   z-index: 20;

@@ -1,116 +1,118 @@
 "use client";
 
-// Kortet i klub-udforskeren.
+// The map in court discovery.
 //
-// To designvalg der er værd at kende:
+// Markers are price bubbles, not pins. A pin only says "something is
+// here"; a bubble with the price answers the question people actually have
+// before they click. The active bubble turns court-blue and sits on top.
+// Tiles are muted with a CSS filter (see .leaflet-tile-pane) so the
+// bubbles stay the loudest thing on the map.
 //
-// 1. Markørerne er prisbobler, ikke nåle. En nål fortæller kun "her ligger
-//    noget"; en boble med prisen svarer på det spørgsmål, folk faktisk har,
-//    før de klikker. Boblen er formet som en scoretavle-brik — mørkegrøn
-//    som vindskærmen, og lergrus-rød når den er valgt.
-//
-// 2. Flisene er dæmpede (CARTO Positron). Standardfliserne fra
-//    OpenStreetMap er fulde af farve og tekst, og så forsvinder boblerne i
-//    støjen. Et roligt underlag lader indholdet træde frem.
+// Plain Leaflet rather than react-leaflet: the map is created in one
+// effect and removed in its cleanup, which keeps React 18 strict mode and
+// fast refresh from initialising the same container twice.
 
-import {formatMoney,marketFor} from "../lib/international";
-import type {Locale} from "../lib/sports";
-import { useEffect, useMemo } from "react";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { formatMoney } from "../lib/international";
+import type { Locale } from "../lib/sports";
+import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { MapClub } from "./clubTypes";
 
 type Props = {
   clubs: MapClub[];
-  country?:string;locale?:Locale;
+  locale?: Locale;
   activeId: string | null;
   onSelect: (id: string | null) => void;
+  /** Where the visitor searched from, drawn as a soft ring. */
+  origin?: { latitude: number; longitude: number; label: string } | null;
 };
 
-function pill(club: MapClub, active: boolean,locale:Locale) {
-  const bg = active ? "#B4491E" : "#1E3D2F";
+const US_CENTER: [number, number] = [39.5, -98];
+
+function pill(club: MapClub, active: boolean, locale: Locale) {
+  const bg = active ? "#1B62C4" : "#0F2138";
   const scale = active ? 1.12 : 1;
   return L.divIcon({
     className: "tm-pill-wrap",
-    html: `
-      <span class="tm-pill" style="
-        background:${bg};
-        transform:scale(${scale});
-      ">${formatMoney(club.priceHour,club.currency,locale)}</span>
-    `,
+    html: `<span class="tm-pill" role="button" tabindex="0" aria-label="${club.name.replace(/"/g, "&quot;")}" style="background:${bg};transform:scale(${scale});">${formatMoney(club.priceHour, club.currency, locale)}</span>`,
     iconSize: [96, 30],
     iconAnchor: [48, 30],
   });
 }
 
-/** Holder alle klubber i billedet, og zoomer ind på den valgte. */
-function Viewport({ clubs, activeId,country }: { clubs: MapClub[]; activeId: string | null;country:string }) {
-  const map = useMap();
+const originIcon = () =>
+  L.divIcon({
+    className: "tm-pill-wrap",
+    html: `<span style="display:block;width:18px;height:18px;border-radius:999px;background:#1B62C4;border:3px solid #fff;box-shadow:0 0 0 6px rgba(27,98,196,.2)"></span>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  });
 
+export default function ClubMapView({ clubs, activeId, onSelect, locale = "en-US", origin = null }: Props) {
+  const container = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
+  const markers = useRef(new Map<string, L.Marker>());
+  const originMarker = useRef<L.Marker | null>(null);
+  const select = useRef(onSelect);
+  select.current = onSelect;
+
+  // Create and destroy the map with the component.
   useEffect(() => {
-    if (clubs.length === 0) {
-      const center=marketFor(country)?.center??[56,10.6];
-      map.setView(center as [number,number],country==='US'||country==='CA'?4:6);
-      return;
+    if (!container.current) return;
+    const instance = L.map(container.current, { center: US_CENTER, zoom: 4, zoomControl: false, scrollWheelZoom: true });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(instance);
+    map.current = instance;
+    return () => {
+      instance.remove();
+      map.current = null;
+      markers.current.clear();
+      originMarker.current = null;
+    };
+  }, []);
+
+  // Markers follow the club list; the viewport keeps everything in frame.
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance) return;
+    for (const marker of markers.current.values()) marker.remove();
+    markers.current.clear();
+    for (const club of clubs) {
+      if (club.latitude == null || club.longitude == null) continue;
+      const marker = L.marker([club.latitude, club.longitude], { icon: pill(club, club.id === activeId, locale), zIndexOffset: club.id === activeId ? 1000 : 0 })
+        .on("click", () => select.current(club.id))
+        .on("keypress", () => select.current(club.id))
+        .addTo(instance);
+      markers.current.set(club.id, marker);
     }
-    map.fitBounds(
-      L.latLngBounds(
-        clubs.map((c) => [c.latitude as number, c.longitude as number] as [number, number])
-      ),
-      { padding: [56, 56], maxZoom: 14 }
-    );
-  }, [clubs, map,country]);
+    originMarker.current?.remove();
+    originMarker.current = origin ? L.marker([origin.latitude, origin.longitude], { icon: originIcon(), interactive: false }).addTo(instance) : null;
 
+    const points = clubs.filter((c) => c.latitude != null && c.longitude != null).map((c) => [c.latitude as number, c.longitude as number] as [number, number]);
+    if (origin) points.push([origin.latitude, origin.longitude]);
+    if (points.length === 0) instance.setView(US_CENTER, 4);
+    else if (points.length === 1) instance.setView(points[0], 12);
+    else instance.fitBounds(L.latLngBounds(points), { padding: [56, 56], maxZoom: 13 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clubs, origin, locale]);
+
+  // Highlight and pan to the active club without rebuilding every marker.
   useEffect(() => {
-    if (!activeId) return;
-    const club = clubs.find((c) => c.id === activeId);
-    if (!club) return;
-    map.panTo([club.latitude as number, club.longitude as number], {
-      animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    });
-  }, [activeId, clubs, map]);
+    const instance = map.current;
+    if (!instance) return;
+    for (const club of clubs) {
+      const marker = markers.current.get(club.id);
+      if (!marker) continue;
+      marker.setIcon(pill(club, club.id === activeId, locale));
+      marker.setZIndexOffset(club.id === activeId ? 1000 : 0);
+    }
+    const active = clubs.find((c) => c.id === activeId);
+    if (active && active.latitude != null && active.longitude != null) {
+      instance.panTo([active.latitude, active.longitude], { animate: !window.matchMedia("(prefers-reduced-motion: reduce)").matches });
+    }
+  }, [activeId, clubs, locale]);
 
-  return null;
-}
-
-export default function ClubMapView({ clubs, activeId, onSelect,country="DK",locale="da" }: Props) {
-  const center = useMemo<[number, number]>(() => {
-    if (clubs.length === 0) return (marketFor(country)?.center??[56.0,10.6]) as [number,number];
-    return [clubs[0].latitude as number, clubs[0].longitude as number];
-  }, [clubs,country]);
-
-  return (
-    <MapContainer
-      center={center}
-      zoom={clubs.length?11:country==='US'||country==='CA'?4:6}
-      scrollWheelZoom
-      zoomControl={false}
-      style={{ height: "100%", width: "100%", background: "#EDEBE5" }}
-    >
-      <TileLayer
-        // CARTOs dæmpede fliser krævede indtil for nylig ingen nøgle, men
-        // CARTO indførte i slutningen af august 2026 et krav om API-nøgle
-        // for netop den flisetype. Almindelige OpenStreetMap-fliser er
-        // stadig gratis uden nøgle; det dæmpede udseende laves i stedet
-        // med et CSS-filter (se .leaflet-tile-pane i globals.css).
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Viewport clubs={clubs} activeId={activeId} country={country} />
-
-      {clubs.map((club) => (
-        <Marker
-          key={club.id}
-          position={[club.latitude as number, club.longitude as number]}
-          icon={pill(club, club.id === activeId,locale)}
-          zIndexOffset={club.id === activeId ? 1000 : 0}
-          eventHandlers={{
-            click: () => onSelect(club.id),
-            keypress: () => onSelect(club.id),
-          }}
-        />
-      ))}
-    </MapContainer>
-  );
+  return <div ref={container} role="region" aria-label="Map of clubs" style={{ height: "100%", width: "100%", background: "#EDEBE5" }} />;
 }

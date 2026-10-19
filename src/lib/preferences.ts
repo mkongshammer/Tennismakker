@@ -6,7 +6,7 @@
 import { type CountryDetection } from './geo';
 import { cookies } from "next/headers";
 import { getCurrentUser } from "./session";
-import { DEFAULT_SPORT, type Locale, type Sport, SPORTS, LOCALES } from "./sports";
+import { DEFAULT_SPORT, type Locale, type Sport, SPORTS } from "./sports";
 
 export type Preferences = {
   country: string;
@@ -41,14 +41,13 @@ export async function getPreferences(): Promise<Preferences> {
     };
   }
 
-  // US-only acquisition: new visitors always browse the US market.
-  // Data and contractual records retain their original stored country.
-  const cookieLocale = jar.get(`${COOKIE}_locale`)?.value;
+  // US-only acquisition: new visitors always browse the US market in
+  // American English. Data and contractual records retain their original
+  // stored country; the full dictionaries stay available on the server for
+  // receipts and e-mails to legacy accounts.
   return {
     country: "US",
-    locale: cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
-      ? (cookieLocale as Locale)
-      : "en-US",
+    locale: "en-US",
     sport,
     countryChosen: true,
   };
