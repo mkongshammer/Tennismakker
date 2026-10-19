@@ -1,0 +1,63 @@
+"use client";
+import {UiText} from "../../../components/InternationalProvider";
+
+
+import {useWebsiteInternational} from "../../../components/InternationalProvider";
+import { useFormState } from "react-dom";
+import { createMatchRequest } from "./actions";
+import { LEVELS, LEVELS_EN, MATCH_TYPES } from "../../../lib/levels";
+import { DK_REGIONS } from "../../../lib/regions";
+import { SubmitButton } from "../../../components/SubmitButton";
+
+export default function NytOpslagPage() {
+  const {country,locale,tr}=useWebsiteInternational();
+  const [state, action] = useFormState(createMatchRequest, null);
+
+  return (
+    <div className="mx-auto max-w-md">
+      <h1 className="display mb-6 text-3xl"><UiText text="Opret opslag"/></h1>
+      <form action={action} className="card space-y-4">
+        <div>
+          <label className="label" htmlFor="message"><UiText text="Hvad søger du?"/></label>
+          <textarea
+            className="input"
+            id="message"
+            name="message"
+            rows={3}
+            placeholder={tr("fx: Søger single-modstander tirsdag eller torsdag aften")}
+            required
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="matchType"><UiText text="Type"/></label>
+            <select className="input" id="matchType" name="matchType" defaultValue="SINGLE">
+              {Object.entries(MATCH_TYPES).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="level"><UiText text="Niveau"/></label>
+            <select className="input" id="level" name="level" defaultValue="3">
+              {Object.entries(LEVELS).map(([num, l]) => (
+                <option key={num} value={num}>{locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${l.label}`}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="area"><UiText text="Region"/></label>
+          {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
+            <option value="" disabled><UiText text="Vælg region"/></option>
+            {DK_REGIONS.map((region) => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
+        </div>
+        {state?.error && <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p>}
+        <SubmitButton className="btn-court w-full" pendingText="Slår op…"><UiText text="Slå op"/></SubmitButton>
+      </form>
+    </div>
+  );
+}

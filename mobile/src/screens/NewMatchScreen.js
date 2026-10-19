@@ -79,7 +79,7 @@ export default function NewMatchScreen({ navigation }) {useInternational();
           <Pressable
             key={n}
             accessibilityRole="button"
-            accessibilityLabel={`${n}: ${LEVELS[n]}`}
+            accessibilityLabel={`${n}: ${tr(LEVELS[n])}`}
             accessibilityState={{ selected: level === Number(n), disabled: busy }}
             disabled={busy}
             onPress={() => setLevel(Number(n))}

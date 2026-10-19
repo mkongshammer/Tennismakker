@@ -18,7 +18,9 @@
 // 3. Betalte checkout-events kalder confirmBookingPayment() nedenfor.
 
 import { useWalletIfCovered, cancelWalletBooking } from "./wallet";
+import { refundDecision, REFUND_WINDOW_HOURS, type CancellationContext } from "./cancellation-policy";
 import { db } from "./db";
+import { translatePhrase as phrase } from "../../shared/phrase-translation.mjs";
 import { toMinor } from "./international";
 import { platformAccountCountry, stripe } from "./stripe";
 import { ensureSettings, getSettings } from "./settings";
@@ -105,7 +107,7 @@ export async function startCheckout(bookingId: string): Promise<string> {
   if (!booking) throw new Error("Booking findes ikke");
   if (!bookingCanBePaid(booking)) throw new Error("Reservationen er udløbet eller kan ikke betales.");
   if (booking.checkoutParams) return resumeBookingCheckout(booking);
-  if (await useWalletIfCovered(booking.userId,booking.id)) return "/profil?wallet=1";
+  if (await useWalletIfCovered(booking.userId,booking.id)) return "/profile?wallet=1";
   if (settings.paymentProvider !== "stripe") return `/checkout/${bookingId}`;
 
   const kind: RecipientKind = booking.kind === "COACH" ? "COACH" : "CLUB";
@@ -167,8 +169,8 @@ export async function startCheckout(bookingId: string): Promise<string> {
     // til profilen. Den spørger Stripe, om betalingen faktisk gik igennem,
     // og bekræfter bookingen med det samme — så oplevelsen ikke afhænger
     // af, at webhooken når frem først.
-    success_url: `${base}/checkout/${bookingId}/faerdig?session={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${base}/profil`,
+    success_url: `${base}/checkout/${bookingId}/done?session={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${base}/profile`,
     // Stripe requires at least 30 minutes. Five extra minutes allow creation
     // retries; this exact timestamp is also persisted as the local deadline.
     expires_at: Math.floor(Date.now() / 1000) + 35 * 60,
@@ -271,9 +273,11 @@ function bookingLabel(booking: any): string {
   if (booking.kind === "COURT") {
     return `${booking.court?.club.name} — ${booking.court?.name}`;
   }
-  return `Trænertime hos ${booking.coachProfile?.user.name} (${describeLength(
-    lessonMinutesOf(booking)
-  )})`;
+  const locale = (booking.user?.locale ?? "da") as any;
+  return phrase("Trænertime hos {p0} ({p1})", locale, {
+    p0: booking.coachProfile?.user.name,
+    p1: describeLength(lessonMinutesOf(booking), locale),
+  });
 }
 
 function lessonMinutesOf(booking: any): number {
@@ -352,15 +356,28 @@ export async function notifyBookingConfirmed(booking: any) {
   }
 }
 
-/** Timer før spilletidspunktet hvor aflysning stadig giver pengene retur. */
-export const REFUND_WINDOW_HOURS = 24;
+export { REFUND_WINDOW_HOURS };
 
 /**
- * Aflyser en booking og refunderer, hvis den ligger mere end 24 timer ude
- * i fremtiden. Returnerer det refunderede beløb, eller null hvis fristen
- * var overskredet.
+ * Cancels a booking and refunds the customer according to
+ * `cancellation-policy.ts`: a player who cancels late keeps nothing, while a
+ * cancellation by the club, the coach or the system always refunds in full.
+ *
+ * Returns the refunded amount in major units, or null when nothing was
+ * refunded (late player cancellation, or nothing had been paid).
+ *
+ * Safety properties:
+ * - The status flip is a compare-and-set on (status, checkoutParams), so two
+ *   concurrent cancellations cannot both proceed to the refund.
+ * - The Stripe refund carries an idempotency key derived from the booking,
+ *   so a retry after a crash between Stripe and our database cannot refund
+ *   twice.
+ * - Who cancelled, when and why is written on the booking row.
  */
-export async function cancelAndRefund(bookingId: string): Promise<number | null> {
+export async function cancelAndRefund(
+  bookingId: string,
+  context: CancellationContext = { by: "PLAYER" }
+): Promise<number | null> {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     include: {
@@ -372,19 +389,23 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   });
   if (!booking) throw new Error("Booking findes ikke");
 
-  if (booking.walletPaidOre > 0) return cancelWalletBooking(booking.userId,booking.id);
+  if (booking.walletPaidOre > 0) return cancelWalletBooking(booking.userId, booking.id, context);
   await ensureSettings();
   if (booking.status === "CANCELLED") return null;
 
-  const hoursUntil =
-    (booking.startsAt.getTime() - Date.now()) / (1000 * 60 * 60);
-  const eligible = hoursUntil >= REFUND_WINDOW_HOURS;
+  const decision = refundDecision({ by: context.by, startsAt: booking.startsAt });
   const paid = booking.payment?.status === "PAID";
 
   if (booking.status === "HOLD") await closeBookingCheckout(booking);
   const cancelled = await db.booking.updateMany({
     where: { id: bookingId, status: booking.status, checkoutParams: booking.checkoutParams },
-    data: { status: "CANCELLED" },
+    data: {
+      status: "CANCELLED",
+      cancelledAt: new Date(),
+      cancelledBy: context.by,
+      cancelledByUserId: context.actorUserId ?? null,
+      cancelReason: context.reason ?? null,
+    },
   });
   if (!cancelled.count) throw new Error("Bookingen er ændret. Opdatér siden før aflysning.");
 
@@ -406,17 +427,21 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   }
 
   let refunded: number | null = null;
-  if (paid && eligible) {
+  if (paid && decision.refund) {
     if (booking.payment?.provider === "stripe" && booking.payment.providerRef) {
       // reverse_transfer trækker pengene tilbage fra klubbens/trænerens
       // konto (destination charge sender dem derud automatisk ved betaling).
       // refund_application_fee giver også vores egen andel tilbage — vi har
       // jo ikke leveret noget, når bookingen aflyses.
-      await (await stripe()).refunds.create({
-        payment_intent: booking.payment.providerRef,
-        reverse_transfer: true,
-        refund_application_fee: true,
-      });
+      await (await stripe()).refunds.create(
+        {
+          payment_intent: booking.payment.providerRef,
+          reverse_transfer: true,
+          refund_application_fee: true,
+          metadata: { bookingId: booking.id, cancelledBy: context.by },
+        },
+        { idempotencyKey: `booking-refund-v1-${booking.id}` }
+      );
     }
     await db.payment.update({
       where: { bookingId },
@@ -426,6 +451,8 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
   }
 
   const what = bookingLabel(booking);
+  const counterparty =
+    booking.kind === "COURT" ? booking.court?.club.name : booking.coachProfile?.user.name;
 
   await sendMail(
     cancellationNotice({
@@ -433,7 +460,14 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
       name: booking.user.name,
       what,
       startsAt: booking.startsAt,
-      refundKr: paid ? refunded : 0,
+      refundKr: paid ? refunded : null,
+      charged: paid,
+      cancelledBy: context.by,
+      counterparty: counterparty ?? undefined,
+      reason: context.reason ?? undefined,
+      currency: booking.currency,
+      locale: booking.user?.locale,
+      timeZone: booking.timeZone,
     })
   );
 
@@ -444,7 +478,7 @@ export async function cancelAndRefund(bookingId: string): Promise<number | null>
 export async function releaseExpiredHolds() {
   await db.booking.updateMany({
     where: { status: "HOLD", checkoutParams: null, holdExpiresAt: { lt: new Date() } },
-    data: { status: "CANCELLED" },
+    data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "SYSTEM", cancelReason: "Hold expired" },
   });
   const pending = await db.booking.findMany({
     where: { status: "HOLD", checkoutParams: { not: null }, holdExpiresAt: { lt: new Date() } },
@@ -458,7 +492,7 @@ export async function releaseExpiredHolds() {
       } else if (session.status === "expired") {
         await db.booking.updateMany({
           where: { id: booking.id, status: "HOLD", checkoutSessionId: session.id },
-          data: { status: "CANCELLED" },
+          data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "SYSTEM", cancelReason: "Checkout expired" },
         });
       }
       // Complete but unpaid means an asynchronous payment is still resolving.

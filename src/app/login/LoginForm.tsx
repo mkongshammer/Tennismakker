@@ -12,6 +12,8 @@ export function LoginForm({
   labels,
   errors,
   notice,
+  next,
+  legacyOrigin,
 }: {
   labels: {
     email: string;
@@ -23,12 +25,17 @@ export function LoginForm({
     forgot: string;
   };
   notice?: string;
+  /** Same-site path to return to after sign-in. */
+  next?: string | null;
+  /** Shown under a failed sign-in when legacy European accounts live on another origin. */
+  legacyOrigin?: string | null;
   errors: Record<string, string>;
 }) {
   const [state, action] = useFormState(login, null);
 
   return (
     <form action={action} className="card space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
       {notice ? (
         <p className="rounded-xl border border-court/30 p-3 text-sm font-semibold text-court">
           {notice}
@@ -54,17 +61,23 @@ export function LoginForm({
           {errors[state.error] ?? state.error}
         </p>
       )}
+      {state?.error === "auth.errWrong" && legacyOrigin && (
+        <p className="text-xs text-slate">
+          Created your account in Europe before October 2026? Those accounts live on our European site:{" "}
+          <a href={`${legacyOrigin}/login`} className="font-semibold text-court underline">sign in there</a>.
+        </p>
+      )}
       <SubmitButton className="btn-ink w-full" pendingText={labels.pending}>
         {labels.submit}
       </SubmitButton>
       <p className="text-center text-sm">
-        <Link href="/login/glemt" className="font-semibold text-court underline">
+        <Link href="/login/forgot" className="font-semibold text-court underline">
           {labels.forgot}
         </Link>
       </p>
-      <p className="text-center text-sm text-slate/60">
+      <p className="text-center text-sm text-slate">
         {labels.newHere}{" "}
-        <Link href="/signup" className="font-semibold text-court underline">{labels.signup}</Link>
+        <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="font-semibold text-court underline">{labels.signup}</Link>
       </p>
     </form>
   );

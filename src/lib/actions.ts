@@ -1,4 +1,5 @@
 "use server";
+import { safeReturnPath } from "./return-path";
 import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
 import {phrase} from "./phrases";
@@ -54,6 +55,7 @@ import { detectBookingSystem, testFeed } from "./detect";
 import { store as storeImage, remove as removeImage } from "./images";
 import { ensureConnectAccount, createOnboardingLink, refreshAccountStatus } from "./connect";
 import { rebookLesson, rebookSameSlot } from "./rebook";
+import { notifyInterestForClub, notifyInterestForCoach } from "./market-interest";
 
 // ---------------- Auth ----------------
 
@@ -149,7 +151,7 @@ export async function signup(_prev: unknown, formData: FormData) {
     const priceHour = coachPrice;
     const headline = String(formData.get("headline") ?? "").trim();
 
-    await db.coachProfile.create({
+    const coachProfile = await db.coachProfile.create({
       data: {
         userId: user.id,
         country,currency,timeZone,
@@ -163,13 +165,15 @@ export async function signup(_prev: unknown, formData: FormData) {
 
     // Trænerens egne sportsgrene gælder også som spiller.
     await db.user.update({ where: { id: user.id }, data: { sports: sports.join(",") } });
+    // Players waiting for a coach in this area get their one e-mail.
+    await notifyInterestForCoach(coachProfile.id);
   }
 
   await createSession(user.id);
   // Videre til det, man kom for. En ny profil er tom, så profilsiden er
   // det mindst interessante sted at lande — bookingsiden er dér, produktet
   // er.
-  redirect("/book");
+  redirect(safeReturnPath(formData.get("next")) ?? "/courts");
 }
 
 /**
@@ -210,12 +214,18 @@ export async function login(_prev: unknown, formData: FormData) {
       maxAge: 15 * 60,
       path: "/",
     });
-    redirect("/login/kode");
+    redirect("/login/code");
   }
 
   await createSession(user.id);
-  redirect(user.role === "CLUB_ADMIN" ? "/admin" : "/profil");
+  // A same-site path to return to (e.g. the court someone was about to
+  // reserve). Only relative paths are accepted so a crafted link can never
+  // bounce a signed-in user to another site.
+  const next = safeReturnPath(formData.get("next"));
+  redirect(next ?? (user.role === "CLUB_ADMIN" ? "/admin" : "/profile"));
 }
+
+
 
 /** Andet trin: koden fra mailen. */
 export async function verifyLoginCode(_prev: unknown, formData: FormData) {
@@ -269,7 +279,7 @@ export async function submitNewPassword(_prev: unknown, formData: FormData) {
     return { error: result.reason === "kort" ? "auth.errShort" : "auth.errBadLink" };
   }
 
-  redirect("/login?nulstillet=1");
+  redirect("/login?reset=1");
 }
 
 /**
@@ -377,8 +387,8 @@ export async function createMatchRequest(_prev: unknown, formData: FormData) {
       requesterId: user.id,
     },
   });
-  revalidatePath("/makkere");
-  redirect("/makkere");
+  revalidatePath("/matches");
+  redirect("/matches");
 }
 
 export async function acceptMatchRequest(formData: FormData) {
@@ -409,8 +419,8 @@ export async function acceptMatchRequest(formData: FormData) {
     );
   }
 
-  revalidatePath("/makkere");
-  redirect(`/beskeder/${request.id}`);
+  revalidatePath("/matches");
+  redirect(`/messages/${request.id}`);
 }
 
 export async function closeMatchRequest(formData: FormData) {
@@ -421,8 +431,8 @@ export async function closeMatchRequest(formData: FormData) {
     where: { id, requesterId: user.id },
     data: { status: "CLOSED" },
   });
-  revalidatePath("/makkere");
-  revalidatePath("/profil");
+  revalidatePath("/matches");
+  revalidatePath("/profile");
 }
 
 // ---------------- Booking (bane + træner) ----------------
@@ -448,13 +458,13 @@ export async function bookCourtSlot(formData: FormData) {
     where: { id: courtId },
     include: { club: true },
   });
-  if (!court) redirect("/book");
+  if (!court) redirect("/courts");
 
   const slug = court.club.slug;
   // Fejl vises som en besked på klubbens egen side, ikke som en rå
   // serverfejlside. En bruger der har trykket på en bane, skal kunne se
   // hvad der gik galt og prøve en anden tid — ikke ramme en blank fejl.
-  const fail = (reason: string) => redirect(`/klub/${slug}?fejl=${reason}`);
+  const fail = (reason: string) => redirect(`/clubs/${slug}?fejl=${reason}`);
 
   if (startsAt < new Date()) fail("passeret");
 
@@ -497,7 +507,7 @@ export async function bookCourtSlot(formData: FormData) {
   if (clubRules) {
     const allowed = await mayBook(clubRules, user.id, user.clubId ?? null, startsAt);
     if (!allowed.ok) {
-      redirect(`/klub/${slug}?afvist=${encodeURIComponent(allowed.reason)}`);
+      redirect(`/clubs/${slug}?afvist=${encodeURIComponent(allowed.reason)}`);
     }
   }
 
@@ -536,7 +546,7 @@ export async function bookCourtSlot(formData: FormData) {
       await notifyBookingConfirmed(confirmed).catch((err) =>
         console.error("Kunne ikke sende kvittering for klip:", err)
       );
-      redirect("/profil?klip=1");
+      redirect("/profile?klip=1");
     }
   }
 
@@ -554,7 +564,7 @@ export async function bookCourtSlot(formData: FormData) {
     await notifyBookingConfirmed(confirmed).catch((err) =>
       console.error("Kunne ikke sende kvittering for gratis booking:", err)
     );
-    redirect("/profil?gratis=1");
+    redirect("/profile?gratis=1");
   }
 
   // Bekræft at betalingen kan startes, FØR brugeren sendes videre — så en
@@ -572,12 +582,15 @@ export async function bookCourtSlot(formData: FormData) {
     // Reservationen må ikke blive hængende og blokere tiden for andre.
     await db.booking.update({
       where: { id: booking.id },
-      data: { status: "CANCELLED" },
+      data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "SYSTEM", cancelReason: "Club cannot accept payments yet" },
     });
     fail("betaling");
   }
 
-  redirect(`/checkout/${booking.id}/start`);
+  // Stripe: the /start route answers with a real HTTP redirect to Stripe's
+  // domain. Mock: go straight to the demo page, so the browser URL matches
+  // the page and its pay form posts to the right place.
+  redirect(stripeOn ? `/checkout/${booking.id}/start` : `/checkout/${booking.id}`);
 }
 
 /** Booker en trænertime. */
@@ -594,7 +607,7 @@ export async function buyPackage(formData: FormData) {
     return null;
   });
 
-  if (!url) redirect(`/traenere/${coachId}?fejl=betaling`);
+  if (!url) redirect(`/coaches/${coachId}?fejl=betaling`);
   redirect(url);
 }
 
@@ -606,14 +619,14 @@ export async function bookCoachSlot(formData: FormData) {
   const startsAt = new Date(String(formData.get("startsAt")));
 
   const coach = await db.coachProfile.findUnique({ where: { id: coachProfileId } });
-  if (!coach) redirect("/traenere");
+  if (!coach) redirect("/coaches");
 
   const endsAt = lessonEnd(startsAt, coach!.lessonMinutes);
 
   // Samme princip som ved banebooking: vis en læsbar besked på trænerens
   // side i stedet for en rå serverfejl.
   const fail = (reason: string) =>
-    redirect(`/traenere/${coachProfileId}?fejl=${reason}`);
+    redirect(`/coaches/${coachProfileId}?fejl=${reason}`);
 
   if (coach!.userId === user.id) fail("egen");
   if (startsAt < new Date()) fail("passeret");
@@ -672,7 +685,7 @@ export async function bookCoachSlot(formData: FormData) {
     );
   }
 
-  redirect("/profil?anmodet=1");
+  redirect("/profile?anmodet=1");
 }
 
 export async function cancelBooking(formData: FormData) {
@@ -686,8 +699,8 @@ export async function cancelBooking(formData: FormData) {
   });
   if (!booking) return;
 
-  await cancelAndRefund(id);
-  revalidatePath("/profil");
+  await cancelAndRefund(id, { by: "PLAYER", actorUserId: user.id });
+  revalidatePath("/profile");
 }
 
 // ---------------- Trænerprofil ----------------
@@ -721,8 +734,8 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
       weeklySlots,
     },
   });
-  revalidatePath("/traenere");
-  redirect("/profil");
+  revalidatePath("/coaches");
+  redirect("/profile");
 }
 
 // ---------------- Klub-admin: integration mod klubbens eget bookingsystem ----------------
@@ -1149,8 +1162,8 @@ export async function sendMessage(formData: FormData) {
     data: { matchRequestId, senderId: user.id, body },
   });
 
-  revalidatePath(`/beskeder/${matchRequestId}`);
-  revalidatePath("/beskeder");
+  revalidatePath(`/messages/${matchRequestId}`);
+  revalidatePath("/messages");
 }
 
 // ---------------- Swipe ----------------
@@ -1164,9 +1177,9 @@ export async function submitSwipe(formData: FormData) {
 
   const result = await recordSwipe(user.id, toUserId, liked);
   if (result.matched && result.threadId) {
-    redirect(`/beskeder/${result.threadId}?nyt=1`);
+    redirect(`/messages/${result.threadId}?nyt=1`);
   }
-  revalidatePath("/spillere");
+  revalidatePath("/players");
 }
 
 // ---------------- Trænerens svar på en anmodning ----------------
@@ -1176,7 +1189,7 @@ async function requireOwnCoachProfile() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const coach = await db.coachProfile.findUnique({ where: { userId: user!.id } });
-  if (!coach) redirect("/profil");
+  if (!coach) redirect("/profile");
   return coach!;
 }
 
@@ -1194,7 +1207,7 @@ export async function approveCoachBooking(formData: FormData) {
     where: { id, coachProfileId: coach.id, status: "REQUESTED" },
     include: { user: true, coachProfile: { include: { user: true } } },
   });
-  if (!booking) redirect("/profil/traener");
+  if (!booking) redirect("/profile/coaching");
 
   const credit = await spendCredit(booking!.userId, coach.id);
 
@@ -1217,8 +1230,8 @@ export async function approveCoachBooking(formData: FormData) {
     })
   );
 
-  revalidatePath("/profil/traener");
-  redirect("/profil/traener?svar=godkendt");
+  revalidatePath("/profile/coaching");
+  redirect("/profile/coaching?svar=godkendt");
 }
 
 /** Træneren siger nej. Der er ingenting at refundere, fordi der ikke er betalt. */
@@ -1230,9 +1243,9 @@ export async function declineCoachBooking(formData: FormData) {
     where: { id, coachProfileId: coach.id, status: "REQUESTED" },
     include: { user: true, coachProfile: { include: { user: true } } },
   });
-  if (!booking) redirect("/profil/traener");
+  if (!booking) redirect("/profile/coaching");
 
-  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED" } });
+  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "COACH", cancelledByUserId: coach.userId } });
 
   await sendMail(
     coachDecision({
@@ -1246,8 +1259,8 @@ export async function declineCoachBooking(formData: FormData) {
     })
   );
 
-  revalidatePath("/profil/traener");
-  redirect("/profil/traener?svar=afvist");
+  revalidatePath("/profile/coaching");
+  redirect("/profile/coaching?svar=afvist");
 }
 
 // ---------------- Adgang til klubbens eget system ----------------
@@ -1378,7 +1391,7 @@ export async function addCourt(_prev: unknown, formData: FormData) {
   if (await db.court.findFirst({ where: { clubId, name } })) return { error: "Navnet bruges allerede i klubben." };
   await db.court.create({ data: { clubId, name, sport, surface, indoor: formData.get("indoor") === "on" } });
   revalidatePath("/admin", "layout");
-  revalidatePath("/book");
+  revalidatePath("/courts");
   return { ok: `${name} er oprettet.` };
 }
 
@@ -1398,7 +1411,7 @@ export async function renameCourt(_prev: unknown, formData: FormData) {
   if ([priceHour, memberPriceHour].some(p => p !== null && (!Number.isSafeInteger(p) || p < 0))) return { error: "Prisen skal være et helt antal kroner, mindst 0." };
   await db.court.updateMany({ where: { id, clubId }, data: { name, sport, surface, indoor: formData.get("indoor") === "on", priceHour, memberPriceHour } });
   revalidatePath("/admin", "layout");
-  revalidatePath("/book");
+  revalidatePath("/courts");
   return { ok: `${name} er gemt.` };
 }
 
@@ -1473,9 +1486,9 @@ export async function joinSeasonTeam(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   const result = await signUpForTeam(user!.id, String(formData.get("teamId") ?? ""));
 
-  if (!result.ok) redirect(`/klub/${slug}?hold=${encodeURIComponent(result.error)}`);
+  if (!result.ok) redirect(`/clubs/${slug}?hold=${encodeURIComponent(result.error)}`);
   if (result.checkoutUrl) redirect(result.checkoutUrl);
-  redirect(`/klub/${slug}?hold=ok`);
+  redirect(`/clubs/${slug}?hold=ok`);
 }
 
 // ---------------- Klubbens klippekort ----------------
@@ -1523,9 +1536,9 @@ export async function buyClubPunchCard(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   const result = await buyPunchCard(user!.id, String(formData.get("cardId") ?? ""));
 
-  if (!result.ok) redirect(`/klub/${slug}?klippekort=${encodeURIComponent(result.error)}`);
+  if (!result.ok) redirect(`/clubs/${slug}?klippekort=${encodeURIComponent(result.error)}`);
   if (result.checkoutUrl) redirect(result.checkoutUrl);
-  redirect(`/klub/${slug}?klippekort=ok`);
+  redirect(`/clubs/${slug}?klippekort=ok`);
 }
 
 // ---------------- Automatisk fornyelse ----------------
@@ -1534,7 +1547,7 @@ export async function buyClubPunchCard(formData: FormData) {
 export async function saveCardForRenewal() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  redirect(await startCardSetup(user!.id, "/profil"));
+  redirect(await startCardSetup(user!.id, "/profile"));
 }
 
 export async function toggleAutoRenew(formData: FormData) {
@@ -1546,7 +1559,7 @@ export async function toggleAutoRenew(formData: FormData) {
     String(formData.get("membershipId") ?? ""),
     formData.get("on") === "1"
   );
-  revalidatePath("/profil");
+  revalidatePath("/profile");
 }
 
 // ---------------- Kontingent ----------------
@@ -1615,10 +1628,10 @@ export async function joinClubMembership(formData: FormData) {
   const result = await joinMembership(user!.id, typeId);
 
   if (!result.ok) {
-    redirect(`/klub/${slug}?kontingent=${encodeURIComponent(result.error)}`);
+    redirect(`/clubs/${slug}?kontingent=${encodeURIComponent(result.error)}`);
   }
   if (result.checkoutUrl) redirect(result.checkoutUrl);
-  redirect(`/klub/${slug}?kontingent=ok`);
+  redirect(`/clubs/${slug}?kontingent=ok`);
 }
 
 // ---------------- Faste baner ----------------
@@ -1735,9 +1748,9 @@ export async function submitReview(_prev: unknown, formData: FormData) {
 
   if (!result.ok) return { error: result.error };
 
-  revalidatePath("/profil");
-  revalidatePath("/traenere");
-  revalidatePath("/klubber");
+  revalidatePath("/profile");
+  revalidatePath("/coaches");
+  revalidatePath("/courts");
   return { ok: "Tak for din anmeldelse." };
 }
 
@@ -1761,8 +1774,11 @@ export async function approveClub(formData: FormData) {
     await approvePaidSignup(id);
   }else await db.club.update({where:{id},data:{status:'APPROVED',approvedAt:new Date(),reviewNote:null}});
 
+  // Players who asked to be told when courts open near this club get their one e-mail.
+  await notifyInterestForClub(id);
+
   revalidatePath("/superadmin", "layout");
-  revalidatePath("/book");
+  revalidatePath("/courts");
 }
 
 export async function rejectClub(formData: FormData) {
@@ -1804,8 +1820,8 @@ export async function createPackage(_prev: unknown, formData: FormData) {
     },
   });
 
-  revalidatePath("/profil/traener");
-  revalidatePath("/traenere");
+  revalidatePath("/profile/coaching");
+  revalidatePath("/coaches");
   return { ok: "Pakken er oprettet." };
 }
 
@@ -1823,8 +1839,8 @@ export async function togglePackage(formData: FormData) {
     where: { id },
     data: { active: !pkg.active },
   });
-  revalidatePath("/profil/traener");
-  revalidatePath("/traenere");
+  revalidatePath("/profile/coaching");
+  revalidatePath("/coaches");
 }
 
 // ---------------- Opsætning: land, sprog, sportsgren ----------------
@@ -1957,14 +1973,14 @@ export async function rebookLessonNextWeek(formData: FormData) {
   const result = await rebookLesson(user!.id, String(formData.get("bookingId")));
 
   if (result.ok) {
-    revalidatePath("/profil");
-    redirect(result.usedCredit ? "/profil?anmodet=klip" : "/profil?anmodet=1");
+    revalidatePath("/profile");
+    redirect(result.usedCredit ? "/profile?anmodet=klip" : "/profile?anmodet=1");
   }
 
   // Er tiden væk eller ikke længere tilbudt, sendes eleven til trænerens
   // side frem for en fejlbesked. Der er andre tider dér.
-  if (result.coachProfileId) redirect(`/traenere/${result.coachProfileId}?fejl=${result.reason}`);
-  redirect("/traenere");
+  if (result.coachProfileId) redirect(`/coaches/${result.coachProfileId}?fejl=${result.reason}`);
+  redirect("/coaches");
 }
 
 export async function rebookNextWeek(formData: FormData) {
@@ -1975,9 +1991,9 @@ export async function rebookNextWeek(formData: FormData) {
 
   if (!result.ok) {
     if (result.reason === "taken") {
-      redirect(`/klub/${result.clubSlug}?dag=${result.dayOffset}&optaget=1`);
+      redirect(`/clubs/${result.clubSlug}?dag=${result.dayOffset}&optaget=1`);
     }
-    redirect("/book");
+    redirect("/courts");
   }
 
   redirect(result.checkoutUrl);
@@ -2201,8 +2217,8 @@ export async function joinClub(_prev: unknown, formData: FormData) {
   if (user.clubId === club.id) return { ok: "Du er allerede medlem." };
 
   await db.user.update({ where: { id: user.id }, data: { clubId: club.id } });
-  revalidatePath(`/klub/${club.slug}`);
-  redirect(`/klub/${club.slug}`);
+  revalidatePath(`/clubs/${club.slug}`);
+  redirect(`/clubs/${club.slug}`);
 }
 
 // ---------------- Hjemmeside som ydelse ----------------
@@ -2377,7 +2393,7 @@ export async function uploadImage(_prev: unknown, formData: FormData) {
 
   revalidatePath("/admin", "layout");
   const club = await db.club.findUnique({ where: { id: clubId } });
-  if (club) revalidatePath(`/klub/${club.slug}`);
+  if (club) revalidatePath(`/clubs/${club.slug}`);
 
   return { ok: "Billedet er uploadet." };
 }
@@ -2389,7 +2405,7 @@ export async function deleteImage(formData: FormData) {
 
   revalidatePath("/admin", "layout");
   const club = await db.club.findUnique({ where: { id: clubId } });
-  if (club) revalidatePath(`/klub/${club.slug}`);
+  if (club) revalidatePath(`/clubs/${club.slug}`);
 }
 
 // ---------------- Stripe Connect: udbetalinger til klub og træner ----------------
@@ -2413,8 +2429,8 @@ export async function startCoachPayoutSetup() {
   const accountId = await ensureConnectAccount("COACH", user.coachProfile.id);
   const url = await createOnboardingLink(
     accountId,
-    "/profil/traener?stripe=return",
-    "/profil/traener?stripe=refresh"
+    "/profile/coaching?stripe=return",
+    "/profile/coaching?stripe=refresh"
   );
   redirect(url);
 }

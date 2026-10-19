@@ -125,7 +125,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
       <Card style={styles.profileCard}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 16 }}><Avatar name={user?.name} size={60} tone="dark" /><View style={{ flex: 1 }}><Text style={styles.profileEyebrow}>{tr("DIN RACKETBUDDY")}</Text><Text style={styles.name}>{user?.name}</Text></View></View>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8, alignItems: "center" }}>
-          <Badge>{`${user?.level} · ${LEVELS[user?.level] ?? ""}`}</Badge>
+          <Badge>{`${user?.level} · ${tr(LEVELS[user?.level] ?? "")}`}</Badge>
           {user?.area ? <Text style={styles.profileMeta}>{user.area}</Text> : null}
         </View>
         <Text style={styles.profileMeta}>{user?.email}</Text>

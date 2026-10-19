@@ -1,85 +1,330 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { getPreferences } from '../lib/preferences';
-import { landingCopy } from '../lib/landing-copy';
-import { clubSignupPrices } from '../lib/club-onboarding';
-import { formatMoney } from '../lib/international';
-import { SPORTS, sportLabel } from '../lib/sports';
-import { LandingSearch } from '../components/LandingSearch';
-import { Ball } from '../components/Ball';
+// The public home page.
+//
+// Five seconds in, a visitor should know: RacketBuddy is the easiest way to
+// play racquet sports and the smartest way to run a club. Everything on the
+// page is true today — no invented testimonials, no fake club counts.
+import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+import { getPreferences } from "../lib/preferences";
+import { clubSignupPrices } from "../lib/club-onboarding";
+import { formatMoney } from "../lib/international";
+import { SPORTS, sportLabel, sportColor } from "../lib/sports";
+import { getSettings } from "../lib/settings";
+import { DiscoverySearch } from "../components/discovery/DiscoverySearch";
+import { parseDiscoveryFilters } from "../lib/discovery";
+import { Icon, type IconName } from "../components/ui";
 
-export const dynamic = 'force-dynamic';
-export async function generateMetadata() {
-  const { locale } = await getPreferences(), c = landingCopy(locale);
-  return { title: `RacketBuddy — ${c.title} ${c.titleEnd}`, description: c.lead };
-}
-function Arrow() { return <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 12h16m-6-6 6 6-6 6"/></svg>; }
-type IconKind = 'court' | 'coach' | 'players' | 'members' | 'access' | 'website';
-function Icon({ kind }: { kind: IconKind }) {
-  const paths = {
-    court: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M3 16h18M12 4v16M7 8v8M17 8v8"/></>,
-    coach: <><circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3M6 15l-3-3M18 15l3-3"/></>,
-    players: <><circle cx="8" cy="7" r="3"/><circle cx="18" cy="9" r="2"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M16 15a5 5 0 0 1 6 5"/></>,
-    members: <><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4M7 13h3M14 13h3M7 17h3"/></>,
-    access: <><path d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="5" y="10" width="14" height="11" rx="3"/><path d="M12 14v3"/></>,
-    website: <><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M7 6h.01M10 6h.01M8 13h8M8 16h5"/></>,
-  };
-  return <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[kind]}</svg>;
-}
-export default async function Home() {
-  const prefs = await getPreferences(), c = landingCopy(prefs.locale), prices = await clubSignupPrices(prefs.country);
-  const monthly = formatMoney(prices.standard, prices.currency, prefs.locale), setup = prices.custom == null ? null : formatMoney(prices.custom, prices.currency, prefs.locale);
-  return <div className="landing space-y-16 md:space-y-24">
-    <div className="space-y-8 md:space-y-10">
-      <LandingSearch country={prefs.country} sport={prefs.sport} locale={prefs.locale}/>
-      <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-12">
-        <div className="py-2 lg:py-8">
-          <p className="eyebrow text-slate">{c.eyebrow}</p>
-          <h1 className="mt-5 text-[clamp(2.7rem,5vw,4.5rem)] leading-[1.06] tracking-[-0.045em]">{c.title}<br/><span className="text-court">{c.titleEnd}</span></h1>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate">{c.lead}</p>
-          <div className="mt-8 flex flex-wrap items-center gap-3"><Link href="/opret-klub" className="btn-court gap-3">{c.clubCta}<Arrow/></Link><Link href="#find-dit-spil" className="btn-ghost">{c.playCta}</Link></div>
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "RacketBuddy — Reserve courts, book coaches, run your club",
+  alternates: { canonical: "/" },
+};
+
+const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; body: string; points: string[]; cta: string }[] = [
+  {
+    href: "/courts",
+    icon: "court",
+    tint: "bg-court-tint text-court-dark",
+    title: "Players",
+    body: "Find a court near you, see what’s open today and pay in one go.",
+    points: ["Search by city, state or ZIP", "Real-time availability and clear hourly prices", "Instant confirmation, 24-hour cancellation"],
+    cta: "Reserve a court",
+  },
+  {
+    href: "/coaches",
+    icon: "coach",
+    tint: "bg-[#edf3e6] text-grass",
+    title: "Coaches",
+    body: "A professional profile, bookable availability and payouts straight to you.",
+    points: ["Set your rate, lesson length and weekly hours", "Students book and pay without the back-and-forth", "Lesson packages and automatic payouts"],
+    cta: "Find a coach",
+  },
+  {
+    href: "/list-your-club",
+    icon: "members",
+    tint: "bg-[#fff0e5] text-clay",
+    title: "Clubs",
+    body: "Run the whole facility from one place — bookings, members, payments, even the lights.",
+    points: ["Self-serve setup, live the same day", "Stripe payouts to your club’s own account", "One plan, $50/month, no commission on court bookings"],
+    cta: "List your club",
+  },
+];
+
+const HOW = [
+  { step: "01", title: "Search", body: "Enter a city, state or ZIP and pick your sport." },
+  { step: "02", title: "Pick a time", body: "Every open hour is a court tile. Tap the one you want." },
+  { step: "03", title: "Pay", body: "See the total before you pay. Secure checkout by Stripe." },
+  { step: "04", title: "Play", body: "Confirmation and access details land in your inbox and on your profile." },
+];
+
+const CLUB_FEATURES: { icon: IconName; title: string; body: string }[] = [
+  { icon: "calendar", title: "Court calendar", body: "Hours, courts, surfaces and prices. Release times to guests, keep members first." },
+  { icon: "dollar", title: "Payments", body: "Stripe Connect payouts to the club’s own account. Receipts, refunds and reporting built in." },
+  { icon: "members", title: "Members and memberships", body: "Plans, seasons, renewals and member pricing. Import from your current system." },
+  { icon: "access", title: "Lights and door access", body: "Bookings switch on court lights and open the door for the right person at the right time." },
+  { icon: "website", title: "Club website", body: "A clean public page on your own domain with news, photos and booking built in." },
+  { icon: "sparkle", title: "Recurring reservations", body: "Fixed weekly courts, teams and clinics, without re-entering them every week." },
+];
+
+function CourtTiles() {
+  // A small, honest rendering of the product's signature: open hours as pieces of court.
+  const hours = ["7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "5:00 PM", "6:00 PM", "7:00 PM", "8:00 PM"];
+  const taken = new Set(["9:00 AM", "6:00 PM"]);
+  return (
+    <div className="grid grid-cols-4 gap-2" aria-hidden="true">
+      {hours.map((h) => (
+        <div key={h} className={`flex h-16 flex-col justify-center rounded-xl px-3 ${taken.has(h) ? "border border-dashed border-slate/30 bg-mist text-slate" : "court-tile"}`} style={{ ["--sport" as string]: "#1B62C4" }}>
+          <span className="data text-xs font-bold">{h}</span>
+          <span className={`text-[11px] ${taken.has(h) ? "" : "text-chalk"}`}>{taken.has(h) ? "Booked" : "$38"}</span>
         </div>
-        <figure className="relative isolate overflow-hidden rounded-[28px] bg-[#e2e9df]">
-          <Image src="/images/club-life-hero.webp" alt={c.photoAlt} width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[380px] lg:h-[440px]"/>
-          <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-16 text-lg font-semibold text-white">{c.photoCaption}</figcaption>
+      ))}
+    </div>
+  );
+}
+
+export default async function Home() {
+  const [prefs, settings] = await Promise.all([getPreferences(), getSettings()]);
+  const prices = await clubSignupPrices("US");
+  const monthly = formatMoney(prices.standard, prices.currency, "en-US");
+  const filters = parseDiscoveryFilters({}, prefs.sport);
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "Organization", name: "RacketBuddy", url: settings.appUrl, logo: `${settings.appUrl}/icon.png`, areaServed: "US" },
+      {
+        "@type": "WebSite",
+        name: "RacketBuddy",
+        url: settings.appUrl,
+        potentialAction: { "@type": "SearchAction", target: `${settings.appUrl}/courts?q={search_term_string}`, "query-input": "required name=search_term_string" },
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "RacketBuddy for clubs",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web, iOS, Android",
+        offers: { "@type": "Offer", price: prices.standard, priceCurrency: "USD", description: "Standard plan, per club per month" },
+      },
+    ],
+  };
+
+  return (
+    <div className="landing space-y-20 md:space-y-28">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+      {/* Hero */}
+      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_.9fr] lg:gap-14">
+        <div className="min-w-0">
+          <p className="eyebrow text-slate">Courts · Coaches · Clubs · United States</p>
+          <h1 className="display mt-4 text-[clamp(2.6rem,6vw,4.5rem)] leading-[1.02] tracking-[-0.04em]">
+            Your next court,
+            <br />
+            <span className="text-court">one tap away.</span>
+          </h1>
+          <p className="lead mt-6 max-w-xl">
+            RacketBuddy is the easiest way to play racquet sports and the smartest way to run a club. Reserve tennis, pickleball and padel courts, book a coach, find a hitting partner.
+          </p>
+          <div className="mt-8">
+            <DiscoverySearch filters={filters} compact placeholder="Where do you want to play? City, state or ZIP" />
+          </div>
+          <p className="mt-4 text-sm text-slate">No account needed to look. Pay only when you reserve · Free cancellation up to 24 hours before</p>
+        </div>
+        <figure className="relative isolate overflow-hidden rounded-3xl bg-[#e2e9df]">
+          <Image src="/images/club-life-hero.webp" alt="Tennis players beside a clubhouse in the afternoon sun" width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[400px] lg:h-[520px]" />
+          <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-20 text-white">
+            <p className="text-lg font-semibold">More time on court. Less time arranging it.</p>
+          </figcaption>
         </figure>
       </section>
 
-      <ul className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">{SPORTS.map(s => <li key={s} className="flex min-h-11 items-center gap-2 px-2 text-sm text-slate"><Ball sport={s} size={24}/>{sportLabel(s,prefs.locale)}</li>)}</ul>
+      {/* Three doors */}
+      <section aria-labelledby="journeys-title">
+        <div className="max-w-2xl">
+          <p className="eyebrow text-slate">One product, three doors</p>
+          <h2 id="journeys-title" className="display mt-3 text-display-md sm:text-display-lg">Built for everyone who shows up to play.</h2>
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {JOURNEYS.map((j) => (
+            <article key={j.href} className="card-interactive flex flex-col rounded-3xl border border-slate/15 bg-chalk p-6">
+              <span className={`mb-6 flex h-12 w-12 items-center justify-center rounded-2xl ${j.tint}`}>
+                <Icon name={j.icon} size={24} />
+              </span>
+              <h3 className="display text-title">{j.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate">{j.body}</p>
+              <ul className="mt-5 flex-1 space-y-2 text-sm">
+                {j.points.map((p) => (
+                  <li key={p} className="flex gap-2">
+                    <Icon name="check" size={18} className="mt-0.5 shrink-0 text-court" />
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href={j.href} className="btn-ghost mt-6 justify-between">
+                {j.cta}
+                <Icon name="arrow" />
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* How booking works */}
+      <section className="grid items-center gap-10 rounded-3xl bg-chalk p-6 sm:p-10 lg:grid-cols-[.9fr_1.1fr]" aria-labelledby="how-title">
+        <div>
+          <p className="eyebrow text-slate">Booking a court</p>
+          <h2 id="how-title" className="display mt-3 text-display-md sm:text-display-lg">Search. Pick a time. Pay. Play.</h2>
+          <p className="mt-4 text-slate">No account needed to look. No phone call needed to book. Prices include the club’s fee — the number you see is the number you pay.</p>
+          <ol className="mt-8 grid gap-5 sm:grid-cols-2">
+            {HOW.map((h) => (
+              <li key={h.step}>
+                <span className="data text-sm font-bold text-court">{h.step}</span>
+                <p className="mt-1 font-bold">{h.title}</p>
+                <p className="mt-1 text-sm text-slate">{h.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="rounded-3xl bg-mist p-4 sm:p-6">
+          <div className="mb-3 flex items-center justify-between text-sm">
+            <span className="font-bold">Brookline Racquet Club</span>
+            <span className="badge-success">Open today</span>
+          </div>
+          <div className="mb-3 flex gap-2 text-xs font-semibold">
+            <span className="rounded-full bg-ink px-3 py-1.5 text-chalk">Today</span>
+            <span className="rounded-full border border-slate/20 px-3 py-1.5 text-slate">Tomorrow</span>
+            <span className="rounded-full border border-slate/20 px-3 py-1.5 text-slate">Wed</span>
+          </div>
+          <CourtTiles />
+          <p className="mt-3 text-xs text-slate">Illustration of the booking grid. Live clubs show real courts and times.</p>
+        </div>
+      </section>
+
+      {/* Clubs */}
+      <section id="for-clubs" className="rounded-3xl bg-ink px-6 py-10 text-chalk sm:px-10 sm:py-14" aria-labelledby="clubs-title">
+        <div className="grid gap-10 lg:grid-cols-[1.1fr_.9fr] lg:items-end">
+          <div>
+            <p className="eyebrow text-optic">For clubs and facilities</p>
+            <h2 id="clubs-title" className="display mt-4 max-w-xl text-display-md sm:text-display-lg">The modern operating system for a racquet club.</h2>
+            <p className="mt-5 max-w-xl leading-relaxed text-white/75">
+              Court management software shouldn’t need a sales call, a training day and a six-month contract. Set up your facility yourself, connect Stripe, and take your first booking today. Your members keep their priority; guests fill the gaps.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 lg:justify-end">
+            <Link href="/list-your-club" className="btn bg-white text-ink hover:bg-mist">
+              Set up your club
+              <Icon name="arrow" />
+            </Link>
+            <Link href="#pricing" className="btn border border-white/25 text-chalk hover:bg-white/10">See pricing</Link>
+          </div>
+        </div>
+        <div className="mt-10 grid gap-6 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-3">
+          {CLUB_FEATURES.map((f) => (
+            <div key={f.title}>
+              <div className="flex items-center gap-3">
+                <span className="text-optic"><Icon name={f.icon} size={24} /></span>
+                <span className="text-xs font-semibold text-white/60">Included</span>
+              </div>
+              <h3 className="mt-4 text-lg">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" aria-labelledby="pricing-title">
+        <div className="max-w-2xl">
+          <p className="eyebrow text-slate">Pricing</p>
+          <h2 id="pricing-title" className="display mt-3 text-display-md sm:text-display-lg">One simple price. No commission on court bookings.</h2>
+          <p className="mt-3 text-slate">Clubs pay one flat monthly price for the whole system. Players and coaches use RacketBuddy for free; coaches pay 10% on lessons booked through it, clubs pay no commission at all.</p>
+        </div>
+        <div className="mt-8 grid gap-4 lg:grid-cols-[1.2fr_.8fr]">
+          <div className="relative flex flex-col rounded-3xl border-2 border-court bg-chalk p-6 sm:p-8">
+            <span className="absolute -top-3 left-6 badge-court">Everything included</span>
+            <h3 className="text-title">RacketBuddy for clubs</h3>
+            <p className="mt-5">
+              <span className="display text-display-lg">{monthly}</span>
+              <span className="ml-1 text-sm text-slate">/month</span>
+            </p>
+            <p className="mt-2 text-sm font-semibold text-court">No setup fee · no contract · cancel any month</p>
+            <p className="mt-4 flex-1 leading-relaxed text-slate">The whole system: court calendar and online booking, Stripe payouts to your own account, members and memberships, teams and clinics, lights and door access, wallet and pricing rules, recurring reservations, club website and data import. Billed from the day you start.</p>
+            <Link href="/list-your-club" className="btn-court mt-7">Start today</Link>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-1 flex-col rounded-3xl border border-slate/20 bg-chalk p-6">
+              <h3 className="text-title">Players</h3>
+              <p className="mt-3"><span className="display text-display-md">Free</span></p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-slate">You pay the club’s court price or the coach’s lesson price. Nothing is added at checkout.</p>
+            </div>
+            <div className="flex flex-1 flex-col rounded-3xl border border-slate/20 bg-chalk p-6">
+              <h3 className="text-title">Coaches</h3>
+              <p className="mt-3"><span className="display text-display-md">Free</span><span className="ml-2 text-sm text-slate">· 10% per booked lesson</span></p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-slate">No subscription. RacketBuddy keeps 10% of lessons booked through the platform; the rest is paid out to you automatically.</p>
+            </div>
+          </div>
+        </div>
+        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate">RacketBuddy serves US clubs and bills in USD. Applicable sales tax, card processing fees, hardware and third-party services may be extra. Your total is shown before you pay.</p>
+      </section>
+
+      {/* Steps for clubs */}
+      <section aria-labelledby="steps-title">
+        <h2 id="steps-title" className="display text-display-md sm:text-display-lg">Live before lunch.</h2>
+        <ol className="mt-8 grid gap-6 md:grid-cols-4">
+          {[
+            { title: "Create your account", body: "One plan, everything included. Pay from today, cancel any month." },
+            { title: "Add your facility", body: "Address, sports, courts, hours and prices. Autofill does most of it." },
+            { title: "Connect payments", body: "Stripe onboarding takes about ten minutes. Payouts go to your account." },
+            { title: "Publish", body: "After a quick review, your club page and booking calendar go live." },
+          ].map((step, index) => (
+            <li key={step.title} className="border-t border-slate/20 pt-5">
+              <span className="data text-sm font-bold text-court">0{index + 1}</span>
+              <h3 className="mt-3 text-title">{step.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate">{step.body}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* FAQ */}
+      <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]" aria-labelledby="faq-title">
+        <h2 id="faq-title" className="display max-w-sm text-display-md sm:text-display-lg">Good to know before you play.</h2>
+        <div className="divide-y divide-slate/15 border-y border-slate/15">
+          {[
+            { q: "Is RacketBuddy only for clubs?", a: "No. Players reserve courts, book coaches and find hitting partners. Clubs get the tools to run the facility and get found." },
+            { q: "Do I need a membership to book?", a: "That depends on the club. Each club decides what members and guests can book and at what price. You see the price and availability before you reserve." },
+            { q: "What does it cost a player?", a: "Nothing beyond the club’s court price or the coach’s lesson price. There are no booking fees added at checkout." },
+            { q: "What does it cost a club or a coach?", a: "Clubs pay $50 a month for the whole system — no setup fee, no contract, cancel any month — and keep 100% of their court revenue. Coaches pay nothing up front; RacketBuddy keeps 10% of each lesson booked through the platform." },
+            { q: "How do refunds work?", a: "Cancel at least 24 hours before your start time and you get a full refund to your card. Later than that, the club keeps the booking." },
+            { q: "Which sports?", a: SPORTS.map((s) => sportLabel(s, "en-US")).join(", ") + "." },
+            { q: "Is there an app?", a: "Yes — RacketBuddy for iPhone and Android uses the same account, bookings and messages as the website." },
+          ].map((item) => (
+            <details key={item.q} className="group py-5">
+              <summary className="flex min-h-6 cursor-pointer list-none items-start justify-between gap-4 font-semibold">
+                <span>{item.q}</span>
+                <span aria-hidden="true" className="text-xl font-normal text-slate transition-transform group-open:rotate-45">+</span>
+              </summary>
+              <p className="mt-4 pr-7 text-sm leading-relaxed text-slate">{item.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="rounded-3xl bg-[#eaf0e5] px-6 py-12 text-center sm:px-10 sm:py-16">
+        <h2 className="display mx-auto max-w-3xl text-display-md sm:text-display-lg">A home for your club. More room for your game.</h2>
+        <p className="mx-auto mt-4 max-w-xl text-slate">Set up your club in minutes, or find a court, a coach or a partner for your next hour on court.</p>
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <Link href="/list-your-club" className="btn-ink">List your club</Link>
+          <Link href="/courts" className="btn-ghost">Reserve a court</Link>
+        </div>
+        <div className="mt-8 flex flex-wrap justify-center gap-2" aria-hidden="true">
+          {SPORTS.map((s) => (
+            <span key={s} className="h-2 w-10 rounded-full" style={{ backgroundColor: sportColor(s) }} />
+          ))}
+        </div>
+      </section>
     </div>
-
-    <section aria-labelledby="explore-title">
-      <div className="max-w-2xl"><h2 id="explore-title" className="text-3xl leading-tight sm:text-4xl">{c.exploreTitle}</h2><p className="mt-3 leading-relaxed text-slate">{c.exploreLead}</p></div>
-      <div className="mt-7 grid gap-4 md:grid-cols-3">{([
-        {href:'/book',icon:'court',title:c.courtTitle,body:c.courtBody,tint:'bg-[#e9f1fc]'},
-        {href:'/traenere',icon:'coach',title:c.coachTitle,body:c.coachBody,tint:'bg-[#edf3e6]'},
-        {href:'/spillere',icon:'players',title:c.playerTitle,body:c.playerBody,tint:'bg-[#fff0e5]'},
-      ] as const).map(item => <Link href={item.href} key={item.href} className="landing-link group flex flex-col rounded-[24px] border border-slate/15 bg-white p-6 transition-shadow hover:shadow-lift"><span className={`mb-7 flex h-14 w-14 items-center justify-center rounded-2xl ${item.tint}`}><Icon kind={item.icon}/></span><h3 className="text-xl">{item.title}</h3><p className="mt-3 flex-1 text-sm leading-relaxed text-slate">{item.body}</p><span className="mt-6 flex justify-end text-court"><Arrow/></span></Link>)}</div>
-    </section>
-
-    <section id="til-klubber" className="rounded-[28px] bg-ink px-6 py-9 text-white sm:px-10 sm:py-12">
-      <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr]">
-        <div><p className="eyebrow text-optic">{c.clubEyebrow}</p><h2 className="mt-4 max-w-xl text-3xl leading-tight sm:text-4xl">{c.clubTitle}</h2><p className="mt-5 max-w-xl leading-relaxed text-white/75">{c.clubLead}</p><Link className="btn mt-7 gap-3 bg-white text-ink hover:bg-mist" href="/opret-klub">{c.clubCta}<Arrow/></Link></div>
-        <div className="self-center rounded-[24px] border border-white/15 bg-white/5 p-5 sm:p-6"><p className="text-xs font-semibold uppercase tracking-widest text-white/60">{c.previewLabel}</p><p className="display mt-3 text-2xl">{c.previewTitle}</p><div className="mt-5 space-y-2">{([
-          {kind:'court',label:c.previewBooking},{kind:'members',label:c.previewMembers},{kind:'website',label:c.previewPayments},{kind:'access',label:c.previewAccess},
-        ] as const).map((item,index)=><div key={item.kind} className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3"><span className="text-optic"><Icon kind={item.kind}/></span><span className="flex-1 text-sm font-semibold">{item.label}</span><span className="text-[10px] text-white/60">{index===0?'Standard':'Custom'}</span></div>)}</div><p className="mt-4 text-xs leading-relaxed text-white/60">{c.previewNote}</p></div>
-      </div>
-      <div className="mt-10 grid gap-7 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-4">{([
-        {kind:'court',title:c.operations,body:c.operationsBody,custom:false},{kind:'members',title:c.members,body:c.membersBody,custom:true},{kind:'access',title:c.access,body:c.accessBody,custom:true},{kind:'website',title:c.website,body:c.websiteBody,custom:true},
-      ] as const).map(item=><div key={item.kind}><div className="flex items-center gap-3"><span className="text-optic"><Icon kind={item.kind}/></span><span className="text-xs text-white/60">{item.custom?'Custom':'Standard'}</span></div><h3 className="mt-4 text-lg">{item.title}</h3><p className="mt-2 text-sm leading-relaxed text-white/70">{item.body}</p></div>)}</div>
-      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-white/55">{c.customNote}</p>
-    </section>
-
-    <section id="priser">
-      <h2 className="text-3xl leading-tight sm:text-4xl">{c.pricingTitle}</h2><p className="mt-3 text-slate">{c.pricingLead}</p>
-      <div className="mt-7 grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col rounded-[24px] border border-slate/20 bg-white p-6 sm:p-8"><h3 className="text-xl">Standard</h3><p className="mt-5"><span className="text-4xl font-bold tracking-tight">{monthly}</span><span className="ml-1 text-sm text-slate">{c.perMonth}</span></p><p className="mt-4 flex-1 leading-relaxed text-slate">{c.standardBody}</p><Link href="/opret-klub?plan=STANDARD" className="btn-ghost mt-7">{c.chooseStandard}</Link></div>
-        <div className="flex flex-col rounded-[24px] border-2 border-court bg-white p-6 sm:p-8"><h3 className="text-xl">Custom</h3>{setup&&<p className="mt-5"><span className="text-4xl font-bold tracking-tight">{setup}</span><span className="ml-2 text-sm text-slate">{c.once}</span></p>}<p className="mt-2 text-sm font-semibold text-court">{c.monthlyAlso} {monthly}{c.perMonth}</p><p className="mt-4 flex-1 leading-relaxed text-slate">{c.customBody}</p><Link href="/opret-klub?plan=CUSTOM" className="btn-court mt-7">{c.chooseCustom}</Link></div>
-      </div><p className="mt-4 max-w-3xl text-xs leading-relaxed text-slate">{c.pricingNote}</p>
-    </section>
-
-    <section><h2 className="text-3xl sm:text-4xl">{c.signupSteps}</h2><ol className="mt-7 grid gap-6 md:grid-cols-3">{[{title:c.step1,body:c.step1Body},{title:c.step2,body:c.step2Body},{title:c.step3,body:c.step3Body}].map((step,index)=><li key={step.title} className="border-t border-slate/20 pt-5"><span className="text-sm font-bold text-court">0{index+1}</span><h3 className="mt-3 text-xl">{step.title}</h3><p className="mt-3 text-sm leading-relaxed text-slate">{step.body}</p></li>)}</ol></section>
-    <section className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]"><h2 className="max-w-sm text-3xl leading-tight sm:text-4xl">{c.faqTitle}</h2><div className="divide-y divide-slate/15 border-y border-slate/15">{[{q:c.faq1,a:c.faq1Body},{q:c.faq2,a:c.faq2Body},{q:c.faq3,a:c.faq3Body},{q:c.faq4,a:c.faq4Body}].map(item=><details key={item.q} className="group py-5"><summary className="flex min-h-6 cursor-pointer list-none items-start justify-between gap-4 font-semibold"><span>{item.q}</span><span aria-hidden="true" className="text-xl font-normal text-slate group-open:rotate-45">+</span></summary><p className="mt-4 pr-7 text-sm leading-relaxed text-slate">{item.a}</p></details>)}</div></section>
-    <section className="rounded-[28px] bg-[#eaf0e5] px-6 py-10 text-center sm:px-10 sm:py-14"><h2 className="mx-auto max-w-3xl text-3xl leading-tight sm:text-4xl">{c.finalTitle}</h2><p className="mx-auto mt-4 max-w-xl text-slate">{c.finalLead}</p><div className="mt-7 flex flex-wrap justify-center gap-3"><Link href="/opret-klub" className="btn-ink">{c.clubCta}</Link><Link href="/signup" className="btn-ghost">{c.playCta}</Link></div></section>
-  </div>;
+  );
 }

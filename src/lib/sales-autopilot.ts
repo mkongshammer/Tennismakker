@@ -408,7 +408,7 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
       "",
       prospect.hook,
       "",
-      `I’m reaching out from RacketBuddy. We give racket-sports clubs one simple platform for court booking, members, coaches, guest payments and day-to-day club administration. Standard is $${prices.USD.standard}/month for US clubs.${customLine}`,
+      `I’m reaching out from RacketBuddy. We give racket-sports clubs one simple platform for court booking, members, coaches, guest payments and day-to-day club administration. It is one plan with everything included at $${prices.USD.standard}/month for US clubs — no setup fee, no contract, and no commission on court bookings.${customLine}`,
       "",
       `You can see RacketBuddy here: ${settings.appUrl}`,
       "",

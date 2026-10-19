@@ -90,15 +90,17 @@ export function TabBar({
   const pathname = usePathname();
   const t = translator(locale);
   if (isPublicPage(pathname)) return null;
+  // Club and platform administration have their own navigation; the player tabs only take space there.
+  if (pathname === "/admin" || pathname.startsWith("/admin/") || pathname === "/superadmin" || pathname.startsWith("/superadmin/")) return null;
 
   // Tre punkter, ikke fire. Profilen ligger i hjørnet: den er noget man
   // besøger, ikke noget man kommer for. Færre valg i bundlinjen gør det
   // tydeligere, hvad appen er til.
   const tabs = [
-    { href: "/book", label: t("tab.book"), Icon: IconCourt, badge: 0 },
-    { href: "/traenere", label: t("tab.coaches"), Icon: IconCoach, badge: 0 },
-    { href: "/spillere", label: t("tab.players"), Icon: IconPlayers, badge: 0 },
-    { href: "/beskeder", label: t("tab.messages"), Icon: IconMessages, badge: unread },
+    { href: "/courts", label: t("tab.book"), Icon: IconCourt, badge: 0 },
+    { href: "/coaches", label: t("tab.coaches"), Icon: IconCoach, badge: 0 },
+    { href: "/players", label: t("tab.players"), Icon: IconPlayers, badge: 0 },
+    { href: "/messages", label: t("tab.messages"), Icon: IconMessages, badge: unread },
   ];
 
   const isActive = (href: string) =>

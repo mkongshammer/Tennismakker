@@ -1,6 +1,6 @@
 
 import {UiText} from "./InternationalProvider";
-import { dayKey, wallTime, addCalendarDays, formatMoney, formatDate } from "../lib/international";
+import { dayKey, wallTime, addCalendarDays, formatMoney, formatDate, timeZoneLabel, wallParts } from "../lib/international";
 import { phrase } from "../lib/phrases";
 // Klubbens side.
 //
@@ -24,9 +24,15 @@ import { openTeams } from "../lib/teams";
 import { punchesIn } from "../lib/punch-cards";
 import { buyClubPunchCard, joinClubMembership, joinSeasonTeam } from "../lib/actions";
 import { SubmitButton } from "./SubmitButton";
-import { sportLabel } from "../lib/sports";
+import { sportLabel, sportColor } from "../lib/sports";
 import { imageUrl } from "../lib/imageUrl";
 
+
+function hourRange(open: number, close: number, locale: string) {
+  if (locale !== "en-US") return `${open}–${close}`;
+  const h = (n: number) => `${n % 12 === 0 ? 12 : n % 12} ${n < 12 || n === 24 ? "AM" : "PM"}`;
+  return `${h(open)} – ${h(close)}`;
+}
 
 export async function generateMetadata({ params }: {params: {slug: string;};}) {
   const club = await db.club.findUnique({ where: { slug: params.slug } });
@@ -39,8 +45,8 @@ export async function generateMetadata({ params }: {params: {slug: string;};}) {
 /**
  * Klubbens side, uafhængigt af hvilken adresse man kom ind ad.
  *
- * Ligger for sig selv, fordi den vises to steder: på /klub/<slug> og på
- * klubbens eget domæne. Før omdirigerede domænet til /klub/<slug>, og så
+ * Ligger for sig selv, fordi den vises to steder: på /clubs/<slug> og på
+ * klubbens eget domæne. Før omdirigerede domænet til /clubs/<slug>, og så
  * stod der racketbuddy.app i adresselinjen et sekund efter — klubben havde
  * betalt for en hjemmeside, der sendte deres besøgende videre til vores.
  */
@@ -53,7 +59,7 @@ export async function ClubPage({
 
 
 
-}: {slug: string;searchParams: {dag?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
+}: {slug: string;searchParams: {dag?: string;sport?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
   const club = await db.club.findUnique({
     where: { slug },
     include: {
@@ -90,10 +96,21 @@ export async function ClubPage({
   );
   const rating = ratings.get(club.id) ?? { average: 0, count: 0 };
 
+  // Only what can still be booked: past hours vanish from today's grid.
+  const now = new Date();
+  const liveSlots = slots.filter((s) => s.startsAt.getTime() >= now.getTime());
+  const nowParts = wallParts(now, club.timeZone);
+  const firstHour = dayOffset === 0 ? Math.max(club.openHour, nowParts.hour + (nowParts.minute > 0 ? 1 : 0)) : club.openHour;
   const hours: number[] = [];
-  for (let h = club.openHour; h < club.closeHour; h++) hours.push(h);
-
+  for (let h = firstHour; h < club.closeHour; h++) hours.push(h);
   const sports = Array.from(new Set(club.courts.map((c: any) => c.sport))) as string[];
+  // A club with several sports shows one grid at a time; the sport lives in
+  // the URL so a shared link opens on the right courts.
+  const activeSport = sports.includes(String(searchParams.sport ?? "").toUpperCase()) ? String(searchParams.sport).toUpperCase() : sports[0];
+  const pageHref = (dag: number, sport = activeSport) => `/clubs/${club.slug}?${new URLSearchParams({ ...(dag ? { dag: String(dag) } : {}), ...(sports.length > 1 && sport !== sports[0] ? { sport } : {}) }).toString()}`.replace(/\?$/, "");
+  const loginHref = `/login?next=${encodeURIComponent(pageHref(dayOffset))}`;
+
+
 
   return (
     <div className="space-y-12">
@@ -113,8 +130,7 @@ export async function ClubPage({
         <p className="mt-5 max-w-xl text-lg text-chalk/80">{club.tagline}</p>
         }
           <p className="data mt-8 text-sm text-chalk/60">
-            {club.address ? `${club.address}, ` : ""}
-            {club.city} · {club.courts.length}{tr("baner")}
+            {club.address ? `${club.address}` : club.city} · {club.courts.length} {club.courts.length === 1 ? tr("bane") : tr("baner")}
           {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
           </p>
         </section> :
@@ -129,8 +145,7 @@ export async function ClubPage({
         <p className="mt-2 max-w-xl text-lg text-slate">{club.tagline}</p>
         }
           <p className="mt-4 text-sm text-slate">
-            {club.address ? `${club.address}, ` : ""}
-            {club.city} · {club.courts.length}{tr("baner")}
+            {club.address ? `${club.address}` : club.city} · {club.courts.length} {club.courts.length === 1 ? tr("bane") : tr("baner")}
           {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
           </p>
         </section> :
@@ -194,8 +209,7 @@ export async function ClubPage({
           <p className="mt-2 max-w-xl text-lg text-chalk/90">{club.tagline}</p>
           }
             <p className="mt-3 text-sm font-semibold text-chalk/85">
-              {club.address ? `${club.address}, ` : ""}
-              {club.city} · {club.courts.length}{tr("baner")}
+              {club.address ? `${club.address}` : club.city} · {club.courts.length} {club.courts.length === 1 ? tr("bane") : tr("baner")}
             {rating.count > 0 && ` · ★ ${rating.average.toFixed(1)}`}
             </p>
             {isMember &&
@@ -210,8 +224,8 @@ export async function ClubPage({
       {/* Afvist af klubbens egne regler. Beskeden kommer fra club-rules.ts
            og er skrevet til at kunne læses af den, der blev afvist. */}
       {searchParams.afvist &&
-      <p className="rounded-xl border-2 border-court/30 bg-court/5 p-4 text-sm font-semibold">
-          {searchParams.afvist}
+      <p role="alert" className="rounded-xl border border-warning/30 bg-warning-soft p-4 text-sm font-semibold text-warning-ink">
+          {tr(searchParams.afvist)}
         </p>
       }
 
@@ -263,7 +277,8 @@ export async function ClubPage({
         <p className="mb-4 text-sm text-slate">
           {club.memberPriceHour != null && !isMember ?
           `${tr("Gæstepris")} ${money(club.priceHour)}. ${tr("Medlemspris")} ${money(club.memberPriceHour)}.` :
-          <UiText text="Tiden holdes i 10 minutter, mens du betaler."/>}
+          <UiText text="Tiden holdes i 10 minutter, mens du betaler."/>}{" "}
+          <UiText text="Gratis aflysning indtil 24 timer før."/>
         </p>
 
         <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
@@ -274,7 +289,7 @@ export async function ClubPage({
               return (
                 <Link
                   key={i}
-                  href={`/klub/${club.slug}?dag=${i}`}
+                  href={pageHref(i)}
                   className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold capitalize ${
                   active ?
                   "bg-ink text-chalk" :
@@ -288,33 +303,46 @@ export async function ClubPage({
           </div>
         </div>
 
-        <p className="mb-3 text-xs text-slate">{tr("Lokal tid")}: {club.timeZone}</p>
-        <BookingGrid
-          courts={club.courts.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            surface: c.surface,
-            sport: c.sport,
-            indoor: c.indoor
-          }))}
-          slots={slots.map((s) => ({
-            courtId: s.courtId,
-            startsAt: s.startsAt.toISOString(),
-            priceKr: s.priceKr
-          }))}
-          hours={hours}
-          loggedIn={Boolean(user)}
-          locale={prefs.locale}
-          currency={club.currency} timeZone={club.timeZone} />
+        <p className="mb-3 text-xs text-slate">All times in {timeZoneLabel(club.timeZone, prefs.locale)}.</p>
+        {sports.length > 1 && (
+          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Sport">
+            {sports.map((sport) => (
+              <Link key={sport} href={pageHref(dayOffset, sport)} aria-current={sport === activeSport ? "true" : undefined} className={`pill ${sport === activeSport ? "is-active" : ""}`}>
+                <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: sportColor(sport) }} />
+                {sportLabel(sport, prefs.locale)}
+                <span className="text-xs font-medium opacity-70">{club.courts.filter((c: any) => c.sport === sport).length}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {sports.filter((sport) => sport === activeSport).map((sport) => {
+          const sportCourts = club.courts.filter((c: any) => c.sport === sport);
+          const courtIds = new Set(sportCourts.map((c: any) => c.id));
+          return (
+            <div key={sport}>
+              <BookingGrid
+                courts={sportCourts.map((c: any) => ({ id: c.id, name: c.name, surface: c.surface, sport: c.sport, indoor: c.indoor }))}
+                slots={liveSlots.filter((s) => courtIds.has(s.courtId)).map((s) => ({ courtId: s.courtId, startsAt: s.startsAt.toISOString(), priceKr: s.priceKr }))}
+                hours={hours}
+                loggedIn={Boolean(user)}
+                loginHref={loginHref}
+                locale={prefs.locale}
+                currency={club.currency}
+                timeZone={club.timeZone}
+              />
+            </div>
+          );
+        })}
 
 
-        {!user && slots.length > 0 &&
-        <p className="mt-4 text-sm text-slate">
-            <Link href="/login" className="font-semibold text-court underline">{tr("Log ind")}
-
-          </Link>{" "}{tr("for at booke en bane.")}
-
-        </p>
+        {!user && liveSlots.length > 0 &&
+        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate/15 bg-chalk p-4 text-sm sm:flex-row sm:items-center">
+            <p className="flex-1 text-slate">Pick a time to reserve it. You’ll sign in or create a free account, then pay — the court is held for you for 10 minutes.</p>
+            <div className="flex gap-2">
+              <Link href={loginHref} className="btn-ghost btn-sm flex-1">Sign in</Link>
+              <Link href={`/signup?next=${encodeURIComponent(pageHref(dayOffset))}`} className="btn-court btn-sm flex-1">Create account</Link>
+            </div>
+        </div>
         }
       </section>
 
@@ -498,7 +526,7 @@ export async function ClubPage({
               {club.membershipInfo}
             </p>
         }
-          <Link href={`/klub/${club.slug}/medlem`} className="btn-court mt-5">{tr("Indl\xF8s kode")}
+          <Link href={`/clubs/${club.slug}/medlem`} className="btn-court mt-5">{tr("Indl\xF8s kode")}
 
         </Link>
         </section>
@@ -529,7 +557,11 @@ export async function ClubPage({
           {club.address &&
           <div className="flex gap-2">
               <dt className="text-slate">{tr("Adresse")}</dt>
-              <dd>{club.address}, {club.city}</dd>
+              <dd>
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(club.address.includes(club.city) ? club.address : `${club.address}, ${club.city}`)}`} target="_blank" rel="noreferrer" className="underline">
+                  {club.address.includes(club.city) ? club.address : `${club.address}, ${club.city}`}
+                </a>
+              </dd>
             </div>
           }
           {club.contactEmail &&
@@ -551,7 +583,7 @@ export async function ClubPage({
           <div className="flex gap-2">
             <dt className="text-slate">{tr("\xC5bent")}</dt>
             <dd className="data">
-              {club.openHour}–{club.closeHour}
+              {hourRange(club.openHour, club.closeHour, prefs.locale)}
             </dd>
           </div>
         </dl>

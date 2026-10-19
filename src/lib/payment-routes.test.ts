@@ -63,7 +63,7 @@ test("asynkron betalingssucces videresender den komplette betalingsdokumentation
 
 function returnFixture(session = paid, signedIn = true) {
   let confirmations = 0; let retrieved = 0;
-  const { GET } = loadIsolatedModule("src/app/checkout/[id]/faerdig/route.ts", {
+  const { GET } = loadIsolatedModule("src/app/checkout/[id]/done/route.ts", {
     "next/navigation": { redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } },
     "../../../../lib/wallet":{}, "../../../../lib/db": { db: { booking: { findUnique: async () => ({ id: "booking-1", userId: "user-1", status: "HOLD", priceKr: 100 }) } } },
     "../../../../lib/session": { getCurrentUser: async () => signedIn ? { id: "user-1" } : null },
@@ -74,26 +74,26 @@ function returnFixture(session = paid, signedIn = true) {
       confirmations++;
     } },
   });
-  return { run: () => GET(new Request("https://example.test/checkout/booking-1/faerdig?session=cs_test"), { params: Promise.resolve({ id: "booking-1" }) }), counts: () => ({ confirmations, retrieved }) };
+  return { run: () => GET(new Request("https://example.test/checkout/booking-1/done?session=cs_test"), { params: Promise.resolve({ id: "booking-1" }) }), counts: () => ({ confirmations, retrieved }) };
 }
 test("retur fra mobilbetaling kræver ikke en separat browser-login", async () => {
   const f = returnFixture(paid, false);
-  await assert.rejects(f.run(), /REDIRECT:\/checkout\/retur$/);
+  await assert.rejects(f.run(), /REDIRECT:\/checkout\/return$/);
   assert.deepEqual(f.counts(), { confirmations: 0, retrieved: 0 });
 });
 test("betalt-returlink peger på den præcise bekræftede booking", async () => {
-  const f = returnFixture(); await assert.rejects(f.run(), /REDIRECT:\/profil\?betalt=booking-1$/);
+  const f = returnFixture(); await assert.rejects(f.run(), /REDIRECT:\/profile\?betalt=booking-1$/);
   assert.equal(f.counts().confirmations, 1);
 });
 test("en anden bookings betalingssession må ikke give succesbesked", async t => {
   t.mock.method(console, "error", () => {});
   const f = returnFixture({ ...paid, metadata: { bookingId: "other" } });
-  await assert.rejects(f.run(), /REDIRECT:\/profil\?betaling=afventer$/);
+  await assert.rejects(f.run(), /REDIRECT:\/profile\?betaling=afventer$/);
   assert.equal(f.counts().confirmations, 0);
 });
 test("ubetalt retur må ikke give succesbesked", async t => {
   t.mock.method(console, "error", () => {});
   const f = returnFixture({ ...paid, payment_status: "unpaid" });
-  await assert.rejects(f.run(), /REDIRECT:\/profil\?betaling=afventer$/);
+  await assert.rejects(f.run(), /REDIRECT:\/profile\?betaling=afventer$/);
   assert.equal(f.counts().confirmations, 0);
 });

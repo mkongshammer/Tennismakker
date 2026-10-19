@@ -1,33 +1,42 @@
-
-import {UiText} from "../components/InternationalProvider";
-import {InternationalProvider} from "../components/InternationalProvider";
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { headers } from "next/headers";
 import "./globals.css";
+import { InternationalProvider } from "../components/InternationalProvider";
 import { getCurrentUser } from "../lib/session";
 import { getPreferences } from "../lib/preferences";
 import { SiteHeader } from "../components/SiteHeader";
 import { isOwnHost } from "../lib/hosts";
 import { TabBar } from "../components/TabBar";
-import { LanguagePicker } from "../components/LanguagePicker";
-import { CountryLocation } from "../components/CountryLocation";
 import { BuddySportsOnboarding } from "../components/BuddySportsOnboarding";
 import { recordView } from "../lib/analytics";
-import { translator } from "../lib/i18n";
-import {phrase} from '../lib/phrases';
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
 import { consumeSignupSportsIntent, hasChosenBuddySports } from "../lib/buddy-sports";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const [settings, prefs] = await Promise.all([getSettings(), getPreferences()]);
-  const t = translator(prefs.locale);
+const SITE_NAME = "RacketBuddy";
+const DEFAULT_TITLE = "RacketBuddy — Reserve courts, book coaches, run your club";
+const DEFAULT_DESCRIPTION =
+  "The easiest way to play racquet sports and the smartest way to run a club. Reserve tennis, pickleball and padel courts, book coaches and find hitting partners across the United States.";
 
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
   return {
-    title: t("meta.title"),
-    description: t("meta.description"),
     metadataBase: new URL(settings.appUrl),
+    title: { default: DEFAULT_TITLE, template: `%s · ${SITE_NAME}` },
+    description: DEFAULT_DESCRIPTION,
+    applicationName: SITE_NAME,
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      locale: "en_US",
+      title: DEFAULT_TITLE,
+      description: DEFAULT_DESCRIPTION,
+      images: [{ url: "/images/club-life-hero.webp", width: 1536, height: 1024, alt: "Tennis players beside a clubhouse in the afternoon sun" }],
+    },
+    twitter: { card: "summary_large_image", title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -38,13 +47,29 @@ export const viewport: Viewport = {
   themeColor: "#0F2138",
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const FOOTER_LINKS = {
+  Players: [
+    { href: "/courts", label: "Reserve a court" },
+    { href: "/coaches", label: "Find a coach" },
+    { href: "/players", label: "Find a hitting partner" },
+    { href: "/app", label: "Get the app" },
+  ],
+  Clubs: [
+    { href: "/list-your-club", label: "List your club" },
+    { href: "/#pricing", label: "Pricing" },
+    { href: "/website", label: "Club website" },
+    { href: "/login", label: "Club sign in" },
+  ],
+  Company: [
+    { href: "/terms/us", label: "Terms of service" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/dpa", label: "Data processing agreement" },
+    { href: "/delete-account", label: "Delete your account" },
+  ],
+} as const;
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
-  const t = translator(prefs.locale);
   const unread = user ? await unreadCount(user.id) : 0;
   const requestHeaders = await headers();
 
@@ -52,15 +77,11 @@ export default async function RootLayout({
   if (user && ["PLAYER", "COACH"].includes(user.role)) {
     const alreadyChosen = await hasChosenBuddySports(user.id);
     if (!alreadyChosen) {
-      // Nye brugere har allerede valgt sportsgrene i oprettelsen. Valget
-      // gemmes kortvarigt på mailadressen, indtil deres konto/session findes.
-      // Eksisterende brugere har intet signup-intent og får derfor prompten
-      // præcis én gang næste gang de besøger websitet.
-      const consumed = await consumeSignupSportsIntent({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      });
+      // New users already chose their sports at signup. The choice is kept
+      // briefly against the e-mail address until their account/session
+      // exists. Existing users have no signup intent, so they get the
+      // prompt exactly once the next time they visit.
+      const consumed = await consumeSignupSportsIntent({ id: user.id, email: user.email, role: user.role });
       needsSportsOnboarding = !consumed;
     }
   }
@@ -70,7 +91,7 @@ export default async function RootLayout({
   const onOwnDomain = !isOwnHost(requestHeaders.get("host") ?? "");
 
   return (
-    <html lang={prefs.locale}>
+    <html lang="en-US">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -79,57 +100,56 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@500;700&display=swap"
         />
       </head>
-      <body className="min-h-screen"><InternationalProvider locale={prefs.locale} country={prefs.country}>
-        {onOwnDomain ? null : (
-          <SiteHeader
-            user={user ? { name: user.name, role: user.role } : null}
-            locale={prefs.locale}
-          />
-        )}
+      <body className="min-h-screen">
+        <InternationalProvider locale={prefs.locale} country={prefs.country}>
+          {onOwnDomain ? null : <SiteHeader user={user ? { name: user.name, role: user.role } : null} locale={prefs.locale} />}
 
-        <main
-          className={`mx-auto max-w-6xl px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}
-        >
-          {!prefs.countryChosen && prefs.countryDetection && !onOwnDomain && <CountryLocation detection={prefs.countryDetection} country={prefs.country} locale={prefs.locale} />}
-          {children}
-        </main>
+          <main className={`mx-auto max-w-page px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}>{children}</main>
 
-        {onOwnDomain ? (
-          <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light"><UiText text="Booking og betaling leveret af"/>{" "}
-            <a href="https://racketbuddy.app" className="underline">
-              RacketBuddy
-            </a>
-          </footer>
-        ) : (
-          <footer
-            className={`mt-20 border-t border-slate/10 bg-chalk md:pb-0 ${user ? "has-tabbar" : ""}`}
-          >
-            <div className="mx-auto max-w-6xl px-4 py-10">
-              <p className="display text-lg">
-                Racket<span className="text-court">Buddy</span>
-              </p>
-              <p className="mt-1 text-sm text-slate">{phrase('Ketsjersport samlet ét sted',prefs.locale)}</p>
-              <p className="mt-1 text-sm text-slate">{phrase("Book en bane. Find en træner. Saml klubben.",prefs.locale)}</p>
-              <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-slate">
-                <Link href="/opret-klub" className="hover:text-ink">{phrase('Til klubber',prefs.locale)}</Link>
-                <Link href="/hjemmeside" className="hover:text-ink">{phrase('Hjemmeside til klubben',prefs.locale)}</Link>
-                <Link href="/app" className="hover:text-ink">App</Link>
-                <Link href="/vilkaar/usa" className="hover:text-ink">{phrase('Handelsbetingelser',prefs.locale)} · USA</Link>
-                <Link href="/privatliv" className="hover:text-ink">{phrase('Privatliv',prefs.locale)}</Link>
-                <Link href="/databehandleraftale" className="hover:text-ink">{phrase('Databehandleraftale',prefs.locale)}</Link>
+          {onOwnDomain ? (
+            <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light">
+              Booking and payments powered by{" "}
+              <a href="https://racketbuddy.app" className="underline">RacketBuddy</a>
+            </footer>
+          ) : (
+            <footer className={`mt-20 border-t border-slate/10 bg-chalk ${user ? "has-tabbar md:pb-0" : ""}`}>
+              <div className="mx-auto max-w-page px-4 py-12">
+                <div className="grid gap-10 md:grid-cols-[1.2fr_repeat(3,1fr)]">
+                  <div>
+                    <p className="display text-xl">
+                      Racket<span className="text-court">Buddy</span>
+                    </p>
+                    <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate">
+                      The easiest way to play racquet sports and the smartest way to run a club. Made for the United States.
+                    </p>
+                  </div>
+                  {Object.entries(FOOTER_LINKS).map(([group, links]) => (
+                    <div key={group}>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">{group}</p>
+                      <ul className="mt-3 space-y-2 text-sm font-medium text-slate">
+                        {links.map((link) => (
+                          <li key={link.href}>
+                            <Link href={link.href} className="hover:text-ink">{link.label}</Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-slate/10 pt-6 text-xs text-slate-light">
+                  <p>© {new Date().getFullYear()} RacketBuddy. All prices in USD.</p>
+                  <p>
+                    <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="hover:text-slate">IP Geolocation by DB-IP</a>
+                  </p>
+                </div>
               </div>
-              <div className="mt-6 border-t border-slate/10 pt-5 space-y-4">
-                <p className="mb-2 text-xs font-bold text-slate">{t("common.language")}</p>
-                <LanguagePicker active={prefs.locale} />
-                <p className="text-xs text-slate-light"><a href="https://db-ip.com" target="_blank" rel="noreferrer">IP Geolocation by DB-IP</a></p>
-              </div>
-            </div>
-          </footer>
-        )}
+            </footer>
+          )}
 
-        {user && <TabBar locale={prefs.locale} unread={unread} />}
-        {needsSportsOnboarding && <BuddySportsOnboarding locale={prefs.locale} />}
-      </InternationalProvider></body>
+          {user && <TabBar locale={prefs.locale} unread={unread} />}
+          {needsSportsOnboarding && <Suspense><BuddySportsOnboarding locale={prefs.locale} /></Suspense>}
+        </InternationalProvider>
+      </body>
     </html>
   );
 }

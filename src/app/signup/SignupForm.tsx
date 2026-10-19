@@ -8,17 +8,20 @@ import { termsHref } from "../../lib/legal-market";
 import { useState } from "react";
 import { useFormState } from "react-dom";
 import { signup } from "./actions";
-import { LEVELS } from "../../lib/levels";
+import { LEVELS, LEVELS_EN } from "../../lib/levels";
 import { SPORTS, sportLabel } from "../../lib/sports";
 import type { Locale } from "../../lib/sports";
 import { SubmitButton } from "../../components/SubmitButton";
 
 export function SignupForm({
   labels,
+  defaultSport,
   terms,
   locale,
   initialCountry="DK",
+  next=null,
 }: {
+  next?: string | null;
   labels: {
     name: string;
     email: string;
@@ -41,6 +44,8 @@ export function SignupForm({
   };
   locale: Locale;
   initialCountry?: string;
+  /** The sport the visitor was just looking at; pre-checked so the common case is one tap fewer. */
+  defaultSport?: string;
   terms: { before: string; middle: string; after: string; termsText: string; privacyText: string };
 }) {
   const [state, action] = useFormState(signup, null);
@@ -52,7 +57,7 @@ export function SignupForm({
   const engagementLabel = tr("Ja tak, send mig inspiration til kampe, baner, nye ketsjersportsgrene og træning.");
 
   return (
-    <form action={action} className="card space-y-4"><input type="hidden" name="locale" value={locale}/>
+    <form action={action} className="card space-y-4"><input type="hidden" name="locale" value={locale}/>{next && <input type="hidden" name="next" value={next}/>}
       <label className="label block">{tr("Land")}<input type="hidden" name="country" value="US"/><div className="input flex items-center">United States</div></label>
       <div>
         <label className="label" htmlFor="name">{labels.name}</label>
@@ -78,7 +83,7 @@ export function SignupForm({
           <label className="label" htmlFor="level">{labels.level}</label>
           <select className="input" id="level" name="level" defaultValue="3">
             {Object.entries(LEVELS).map(([num, l]) => (
-              <option key={num} value={num}>{num} — {tr(l.label)}</option>
+              <option key={num} value={num}>{locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${tr(l.label)}`}</option>
             ))}
           </select>
         </div>
@@ -99,7 +104,7 @@ export function SignupForm({
         <span className="label">{role === "COACH" ? tr("Hvilke sportsgrene er du træner i og vil tilbyde træning i?") : tr("Hvilke sportsgrene spiller du og vil gerne finde medspillere til?")}</span>
         <p className="mb-3 mt-1 text-xs text-slate">{tr("Du kan vælge flere.")}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {SPORTS.map((s) => <label key={s} className="flex items-center gap-2 text-sm"><input type="checkbox" name="sports" value={s} />{sportLabel(s, locale)}</label>)}
+          {SPORTS.map((s) => <label key={s} className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name="sports" value={s} defaultChecked={s === defaultSport} />{sportLabel(s, locale)}</label>)}
         </div>
       </div>
 
@@ -117,11 +122,11 @@ export function SignupForm({
 
       <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate"><input type="checkbox" name="engagementEmails" className="mt-1" /><span>{engagementLabel}</span></label>
 
-      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privatliv" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
+      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privacy" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
 
       <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 
-      <p className="text-center text-sm text-slate/60">{labels.haveAccount}{" "}<Link href="/login" className="font-semibold text-court underline">{labels.login}</Link></p>
+      <p className="text-center text-sm text-slate">{labels.haveAccount}{" "}<Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-semibold text-court underline">{labels.login}</Link></p>
     </form>
   );
 }

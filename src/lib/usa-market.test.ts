@@ -59,7 +59,7 @@ test('major US time zones are valid', () => {
 });
 
 test('USA uses the US terms route', () => {
-  assert.equal(termsHref('US'), '/vilkaar/usa');
+  assert.equal(termsHref('US'), '/terms/us');
 });
 
 test('core club-admin labels render in English for en-US', () => {

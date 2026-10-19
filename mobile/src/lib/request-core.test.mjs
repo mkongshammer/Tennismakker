@@ -52,12 +52,14 @@ test("polling and send responses never duplicate or lose a just-sent message", (
   assert.deepEqual(mergeMessages([first], [second]), [first, second]);
   assert.deepEqual(mergeMessages([second, first], [second]), [first, second]);
 });
-test("day groups match displayed local dates across UTC midnight", () => {
+test("day groups follow the venue zone, defaulting to US Eastern, never the device zone", () => {
   const before = process.env.TZ;
   process.env.TZ = "Europe/Copenhagen";
   try {
-    const dates = [new Date("2026-09-18T23:00:00Z"), new Date("2026-09-19T08:00:00Z")];
-    assert.equal(isoDay(dates[0]), "2026-09-19");
-    assert.equal(groupByDay(dates, date => date).length, 1);
+    // 03:00Z on Sep 19 is still Sep 18 at 11 PM in New York.
+    const dates = [new Date("2026-09-19T03:00:00Z"), new Date("2026-09-19T08:00:00Z")];
+    assert.equal(isoDay(dates[0]), "2026-09-18");
+    assert.equal(groupByDay(dates, date => date).length, 2);
+    assert.equal(groupByDay(dates, date => date, "Europe/Copenhagen").length, 1);
   } finally { if (before === undefined) delete process.env.TZ; else process.env.TZ = before; }
 });

@@ -67,7 +67,7 @@ export default function SwipeScreen({ navigation }) {useInternational();
                   {item.isCoach ? <Badge>{tr("Tr\xE6ner")}</Badge> : null}
                 </View>
                 <Text style={styles.meta}>{tr("Niveau")}
-                  {item.level} · {LEVELS[item.level] ?? ""}
+                  {item.level} · {tr(LEVELS[item.level] ?? "")}
                 </Text>
                 {item.area ? <Text style={styles.meta}>{item.area}</Text> : null}
                 {item.sports?.length ? <Text style={styles.sports}>{item.sports.map((s) => SPORT_LABELS[s] ?? s).join(" · ")}</Text> : null}

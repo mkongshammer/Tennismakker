@@ -1,4 +1,5 @@
 'use server';
+import {PRICE_BOOK_SETTING_KEY} from './platform-pricing';
 import {ensureWebhookEndpoint,inspectWebhook} from './webhook-setup';
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
@@ -7,7 +8,7 @@ import {revalidatePath} from 'next/cache';
 import {db} from './db';
 import {createSession,getCurrentUser} from './session';
 import {clubSignupPrices,startOnboardingCheckout,refreshClubSignup} from './club-onboarding';
-import {normaliseFeatures} from './club-features';
+import {CUSTOM_FEATURES} from './club-features';
 import {bookingCurrency,marketFor,validCurrency,validTimeZone,validLocale} from './international';
 import {regionAllowsCountry} from './region';
 import {formatUSAddress,normalizeUSPostalCode,normalizeUSState,validUSPostalCode,validUSState} from '../../shared/us-address.mjs';
@@ -29,9 +30,10 @@ export async function registerClub(_prev:unknown,form:FormData){
   if(country==='US'&&(!street||!validUSState(usState)||!validUSPostalCode(postalCode)))throw Error('Enter a complete US address with street, city, state, and a valid ZIP code.');
   const address=country==='US'&&structuredUSAddress?formatUSAddress(street,city,usState,postalCode):street;
   if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>300)throw Error('Choose a valid country, address, and time zone.');
-  const features=normaliseFeatures(mode,form.getAll('features').map(String));
+  // One plan: every club gets the full system. The legacy STANDARD/CUSTOM split only remains for existing agreements.
+  void mode;const features=CUSTOM_FEATURES.map(f=>f.id);
   const sports=[...new Set(form.getAll('sports').map(String))];if(!sports.length||sports.some(s=>!(SPORTS as readonly string[]).includes(s)))throw Error('Vælg klubbens sportsgrene.');
-  const prices=await clubSignupPrices(country),price=mode==='CUSTOM'?prices.custom:prices.standard;if(price==null)throw Error('Custom-prisen er endnu ikke offentliggjort. Kontakt RacketBuddy.');
+  const prices=await clubSignupPrices(country),price=prices.standard;
   if(Number(form.get('quote'))!==price||Number(form.get('monthlyQuote'))!==prices.standard||form.get('billingCurrency')!==prices.currency)throw Error('Prisen er ændret. Genindlæs siden og gennemgå den nye pris.');
   const counts=sports.map(s=>({sport:s as Sport,count:Number(form.get('count_'+s))}));
   if(counts.some(x=>!Number.isInteger(x.count)||x.count<1||x.count>30))throw Error('Vælg mellem 1 og 30 baner/borde pr. sportsgren.');
@@ -40,7 +42,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   const coords=address?await geocode(address,city,country):null;
   userId=await db.$transaction(async tx=>{
    if(await tx.user.findUnique({where:{email}}))throw Error('E-mailen er allerede registreret. Log ind eller brug en anden e-mail.');
-   const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:mode,customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:mode==='CUSTOM'?price:0,billingModel:'SUBSCRIPTION',subscriptionKr:prices.standard,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
+   const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:'CUSTOM',customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:0,billingModel:'SUBSCRIPTION',subscriptionKr:prices.standard,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
    for(const {sport,count} of counts){const opt=COURT_OPTIONS[sport];await tx.court.createMany({data:Array.from({length:count},(_,i)=>({clubId:club.id,name:`${sportLabel(sport,locale as any)} ${locale==="da"?opt.noun:sport==="BORDTENNIS"?"table":"court"} ${i+1}`,sport,surface:opt.surfaces[0],indoor:opt.indoor}))});}
    return (await tx.user.create({data:{email,name:contact,passwordHash,country,locale,countryChosen:true,role:'CLUB_ADMIN',clubId:club.id,termsAcceptedAt:new Date()}})).id;
   });
@@ -57,7 +59,7 @@ export async function saveClubSignupPrices(_prev:unknown,form:FormData){
   const prices=Object.fromEntries(['EUR','USD'].map(currency=>[currency,{standard:Number(form.get(`${currency}_standard`)),custom:String(form.get(`${currency}_custom`)??'').trim()?Number(form.get(`${currency}_custom`)):null}]));
   const {parsePriceBook}=await import('./platform-pricing');parsePriceBook(JSON.stringify(prices));
   await ensureWebhookEndpoint();if((await inspectWebhook()).status!=='ok')throw Error('Kontrollér Stripe-nøgler og webhook i Opsætning, før tilmeldingen åbnes.');
-  await db.platformSetting.upsert({where:{key:'clubSignupPricesV3'},create:{key:'clubSignupPricesV3',value:JSON.stringify(prices)},update:{value:JSON.stringify(prices)}});
+  await db.platformSetting.upsert({where:{key:PRICE_BOOK_SETTING_KEY},create:{key:PRICE_BOOK_SETTING_KEY,value:JSON.stringify(prices)},update:{value:JSON.stringify(prices)}});
   revalidatePath('/','layout');return{ok:'EUR- og USD-priserne er gemt. Eksisterende aftaler ændres ikke.'};
  }catch(e){return{error:(e as Error).message};
  }

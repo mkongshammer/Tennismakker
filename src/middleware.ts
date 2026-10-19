@@ -35,11 +35,33 @@ function regionalRedirect(req: NextRequest) {
   }
 }
 
+/**
+ * Once racketbuddy.app points at this deployment, CANONICAL_HOST=racketbuddy.app
+ * sends every other hostname this app answers on (the onrender.com service
+ * name, www.) to the canonical one with a permanent redirect. Until the
+ * variable is set, nothing happens, so it can ship before the DNS change.
+ * API routes are never redirected (Stripe webhooks and the mobile app keep
+ * their configured hosts) — the matcher below excludes /api.
+ */
+function canonicalRedirect(req: NextRequest, host: string) {
+  const canonical = (process.env.CANONICAL_HOST ?? "").trim().toLowerCase();
+  if (!canonical) return null;
+  const clean = host.split(":")[0].toLowerCase();
+  if (!clean || clean === canonical || clean === "localhost" || clean === "127.0.0.1") return null;
+  if (req.nextUrl.pathname === "/healthz") return null;
+  const target = req.nextUrl.clone();
+  target.protocol = "https:";
+  target.host = canonical;
+  target.port = "";
+  return NextResponse.redirect(target, 308);
+}
+
 export function middleware(req: NextRequest) {
-  const host = req.headers.get("host") ?? "";
+  // Behind the regional gateway the Host header names the upstream service;
+  // the visitor's hostname arrives in X-Forwarded-Host.
+  const host = req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || "";
   if (isOwnHost(host)) {
-    const regional = regionalRedirect(req);
-    return regional ?? NextResponse.next();
+    return canonicalRedirect(req, host) ?? regionalRedirect(req) ?? NextResponse.next();
   }
 
   const clean = host.split(":")[0].toLowerCase();

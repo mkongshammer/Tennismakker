@@ -55,13 +55,13 @@
     "fr": "Sports et",
     "es": "Deportes y"
   },
-  "Klubside: /klub/": {
-    "en": "Club page: /klub/",
-    "de": "Clubseite: /klub/",
-    "sv": "Klubbsida: /klub/",
-    "no": "Klubbside: /klub/",
-    "fr": "Page du club : /klub/",
-    "es": "Página del club: /klub/"
+  "Klubside: /clubs/": {
+    "en": "Club page: /clubs/",
+    "de": "Clubseite: /clubs/",
+    "sv": "Klubbsida: /clubs/",
+    "no": "Klubbside: /clubs/",
+    "fr": "Page du club : /clubs/",
+    "es": "Página del club: /clubs/"
   },
   "Gæstebookinger": {
     "en": "Guest bookings",
@@ -10821,11 +10821,19 @@
   },
   "{count} timer": {
     "fr": "{count} heures",
-    "es": "{count} horas"
+    "es": "{count} horas",
+    "en": "{count} hours",
+    "de": "{count} Stunden",
+    "sv": "{count} timmar",
+    "no": "{count} timer"
   },
   "1 time": {
     "fr": "1 heure",
-    "es": "1 hora"
+    "es": "1 hora",
+    "en": "1 hour",
+    "de": "1 Stunde",
+    "sv": "1 timme",
+    "no": "1 time"
   },
   "Adgang til anlægget:": {
     "fr": "Accès aux installations :",
@@ -10851,9 +10859,9 @@
     "fr": "Payé : {p0}",
     "es": "Pagado: {p0}"
   },
-  "Se dine bookinger: {p0}/profil": {
-    "fr": "Consultez vos réservations : {p0}/profil",
-    "es": "Consulta tus reservas: {p0}/profil"
+  "Se dine bookinger: {p0}/profile": {
+    "fr": "Consultez vos réservations : {p0}/profile",
+    "es": "Consulta tus reservas: {p0}/profile"
   },
   "Kan du ikke alligevel? Aflys senest 24 timer før, så får du pengene retur.": {
     "fr": "Un empêchement ? Annulez au moins 24 heures avant pour être remboursé.",
@@ -10903,9 +10911,9 @@
     "fr": "Montant : {p0} — votre part est versée automatiquement",
     "es": "Importe: {p0} — tu parte se transfiere automáticamente"
   },
-  "Din kalender: {p0}/profil": {
-    "fr": "Votre calendrier : {p0}/profil",
-    "es": "Tu calendario: {p0}/profil"
+  "Din kalender: {p0}/profile": {
+    "fr": "Votre calendrier : {p0}/profile",
+    "es": "Tu calendario: {p0}/profile"
   },
   "{p0} vil spille med dig": {
     "fr": "{p0} souhaite jouer avec vous",
@@ -10919,9 +10927,9 @@
     "fr": "Échangez pour convenir d’un lieu et d’une heure ici :",
     "es": "Escribíos para acordar lugar y hora aquí:"
   },
-  "{p0}/beskeder/{p1}": {
-    "fr": "{p0}/beskeder/{p1}",
-    "es": "{p0}/beskeder/{p1}"
+  "{p0}/messages/{p1}": {
+    "fr": "{p0}/messages/{p1}",
+    "es": "{p0}/messages/{p1}"
   },
   "Aflyst: {p0}": {
     "fr": "Annulé : {p0}",
@@ -10991,9 +10999,9 @@
     "fr": "Aucun montant n’a été prélevé et aucun crédit n’a été utilisé.",
     "es": "No se ha cobrado nada ni se ha usado ningún crédito."
   },
-  "Find en anden tid: {p0}/traenere": {
-    "fr": "Choisissez un autre créneau : {p0}/traenere",
-    "es": "Busca otro horario: {p0}/traenere"
+  "Find en anden tid: {p0}/coaches": {
+    "fr": "Choisissez un autre créneau : {p0}/coaches",
+    "es": "Busca otro horario: {p0}/coaches"
   },
   "Timen {p0} er bekræftet": {
     "fr": "Le cours du {p0} est confirmé",
@@ -11007,9 +11015,9 @@
     "fr": "Un crédit de votre forfait a été utilisé ; vous n’avez rien à payer.",
     "es": "Se ha usado un crédito de tu bono, por lo que no tienes nada que pagar."
   },
-  "Se den her: {p0}/profil": {
-    "fr": "Consultez-le ici : {p0}/profil",
-    "es": "Consúltala aquí: {p0}/profil"
+  "Se den her: {p0}/profile": {
+    "fr": "Consultez-le ici : {p0}/profile",
+    "es": "Consúltala aquí: {p0}/profile"
   },
   "{p0} har sagt ja — betal for timen {p1}": {
     "fr": "{p0} a accepté — réglez le cours du {p1}",
@@ -11039,9 +11047,9 @@
     "fr": "Le créneau est bloqué jusqu’à votre réponse. Aucun montant n’a encore été prélevé.",
     "es": "El horario está bloqueado hasta que respondas. Aún no se ha cobrado nada."
   },
-  "Godkend eller afvis her: {p0}/profil": {
-    "fr": "Acceptez ou refusez ici : {p0}/profil",
-    "es": "Acepta o rechaza aquí: {p0}/profil"
+  "Godkend eller afvis her: {p0}/profile": {
+    "fr": "Acceptez ou refusez ici : {p0}/profile",
+    "es": "Acepta o rechaza aquí: {p0}/profile"
   },
   "Kontingent i {p0} — {p1}": {
     "fr": "Cotisation à {p0} — {p1}",
@@ -11071,9 +11079,9 @@
     "fr": "Vous pouvez désormais réserver les terrains du club au tarif membre. Consultez vos réservations",
     "es": "Ya puedes reservar las pistas del club a precio de socio. Consulta tus reservas"
   },
-  "her: {p0}/profil": {
-    "fr": "ici : {p0}/profil",
-    "es": "aquí: {p0}/profil"
+  "her: {p0}/profile": {
+    "fr": "ici : {p0}/profile",
+    "es": "aquí: {p0}/profile"
   },
   "Denne mail er din kvittering. Gem den til dit eget regnskab.": {
     "fr": "Ce message fait office de reçu. Conservez-le pour votre comptabilité.",
@@ -11103,9 +11111,9 @@
     "fr": "Si vous ne souhaitez pas renouveler, désactivez le renouvellement ici pour éviter tout prélèvement :",
     "es": "Si no quieres renovar, desactiva la renovación aquí para que no se cobre nada:"
   },
-  "{p0}/profil": {
-    "fr": "{p0}/profil",
-    "es": "{p0}/profil"
+  "{p0}/profile": {
+    "fr": "{p0}/profile",
+    "es": "{p0}/profile"
   },
   "Du kan slå det fra indtil dagen før.": {
     "fr": "Vous pouvez le désactiver jusqu’à la veille.",
@@ -11127,9 +11135,9 @@
     "fr": "Aucun montant n’a été prélevé. Si vous souhaitez rester membre, inscrivez-vous",
     "es": "No se ha cobrado nada. Si quieres seguir siendo socio, inscríbete"
   },
-  "dig her: {p0}/klub/{p1}": {
-    "fr": "ici : {p0}/klub/{p1}",
-    "es": "aquí: {p0}/klub/{p1}"
+  "dig her: {p0}/clubs/{p1}": {
+    "fr": "ici : {p0}/clubs/{p1}",
+    "es": "aquí: {p0}/clubs/{p1}"
   },
   "Du får {p0} retur. Beløbet er typisk på din konto inden for 5-10 hverdage.": {
     "fr": "Vous serez remboursé de {p0}. Le montant apparaît généralement sur votre compte sous 5 à 10 jours ouvrés.",
@@ -11273,5 +11281,37 @@
     "no": "Kunstgress",
     "fr": "Gazon synthétique",
     "es": "Césped artificial"
+  },
+  "Klubben lader medlemmer booke {days} dage frem.": {
+    "en": "Members can book up to {days} days ahead at this club.",
+    "de": "Mitglieder können in diesem Club bis zu {days} Tage im Voraus buchen.",
+    "sv": "Medlemmar kan boka upp till {days} dagar framåt i den här klubben.",
+    "no": "Medlemmer kan booke inntil {days} dager frem i denne klubben.",
+    "fr": "Les membres peuvent réserver jusqu’à {days} jours à l’avance dans ce club.",
+    "es": "Los socios pueden reservar hasta {days} días de antelación en este club."
+  },
+  "Gæster kan booke {days} dage frem. Er du medlem, så log ind — medlemmer kan booke længere ud.": {
+    "en": "Guests can book up to {days} days ahead. If you’re a member, sign in — members can book further out.",
+    "de": "Gäste können bis zu {days} Tage im Voraus buchen. Als Mitglied melde dich an – Mitglieder können weiter im Voraus buchen.",
+    "sv": "Gäster kan boka upp till {days} dagar framåt. Är du medlem, logga in – medlemmar kan boka längre fram.",
+    "no": "Gjester kan booke inntil {days} dager frem. Er du medlem, logg inn – medlemmer kan booke lenger frem.",
+    "fr": "Les invités peuvent réserver jusqu’à {days} jours à l’avance. Si vous êtes membre, connectez-vous : les membres peuvent réserver plus loin.",
+    "es": "Los invitados pueden reservar hasta {days} días de antelación. Si eres socio, inicia sesión: los socios pueden reservar con más antelación."
+  },
+  "Du har {count} kommende bookinger i klubben, og klubben tillader {max} ad gangen. Aflys en, eller vent til den er spillet.": {
+    "en": "You have {count} upcoming bookings at this club, and the club allows {max} at a time. Cancel one, or wait until one has been played.",
+    "de": "Du hast {count} bevorstehende Buchungen in diesem Club, und der Club erlaubt {max} gleichzeitig. Storniere eine oder warte, bis eine gespielt wurde.",
+    "sv": "Du har {count} kommande bokningar i klubben, och klubben tillåter {max} åt gången. Avboka en eller vänta tills en är spelad.",
+    "no": "Du har {count} kommende bookinger i klubben, og klubben tillater {max} om gangen. Avlys én, eller vent til én er spilt.",
+    "fr": "Vous avez {count} réservations à venir dans ce club, qui en autorise {max} à la fois. Annulez-en une ou attendez qu’une soit jouée.",
+    "es": "Tienes {count} reservas próximas en este club, y el club permite {max} a la vez. Cancela una o espera a que se juegue una."
+  },
+  "New clubs pay {monthly} per month for the RacketBuddy subscription, which includes the whole system. There is no setup fee and no minimum term: the subscription is charged from the day it starts and can be cancelled at any time, effective at the next renewal. Processing fees, hardware and third-party services are separate. The order and checkout disclose the total and any applicable taxes before payment.": {
+    "fr": "Les nouveaux clubs paient {monthly} par mois pour l’abonnement RacketBuddy, qui comprend l’ensemble du système. Il n’y a ni frais de mise en service ni durée minimale : l’abonnement est facturé à compter du jour où il commence et peut être résilié à tout moment, avec effet au renouvellement suivant. Frais de paiement, matériel et services tiers sont séparés. Commande et paiement indiquent le total et les taxes applicables avant règlement.",
+    "es": "Los nuevos clubes pagan {monthly} al mes por la suscripción a RacketBuddy, que incluye todo el sistema. No hay cuota de alta ni permanencia mínima: la suscripción se cobra desde el día en que empieza y puede cancelarse en cualquier momento, con efecto en la siguiente renovación. Comisiones de pago, equipo y servicios externos van aparte. Pedido y pago muestran el total e impuestos antes de pagar."
+  },
+  "For club subscriptions, the plan, billing currency, monthly renewal and any one-time fee are disclosed before payment. Canadian club subscriptions use USD; United Kingdom and Swiss club subscriptions use EUR. Your bank may charge conversion fees. Any applicable tax is shown before payment. Future club renewals can be cancelled in the billing portal; contact us if the portal is unavailable.": {
+    "fr": "Pour les abonnements club, formule, devise, renouvellement mensuel et frais Custom uniques sont indiqués avant paiement. Les clubs canadiens paient en USD ; ceux du Royaume-Uni et de Suisse en EUR. Votre banque peut facturer le change. Les taxes sont affichées avant paiement. Résiliez les renouvellements via le portail ; contactez-nous s’il est indisponible.",
+    "es": "Para clubes, plan, moneda, renovación mensual y cargo Custom único se indican antes de pagar. Canadá usa USD; Reino Unido y Suiza usan EUR. Tu banco puede cobrar cambio de moneda. Los impuestos se muestran antes de pagar. Cancela renovaciones en el portal; contacta si no está disponible."
   }
 }

@@ -41,7 +41,7 @@ Alle bruger adgangskoden `tennis123`.
 | `admin@demo.dk` | Klub-admin, Søndermark (NATIVE — vi er systemet) |
 | `nordhavn@demo.dk` | Klub-admin, Nordhavn (MANUAL — eget system + frigivne gæstetider) |
 
-Klubsider: `/klub/soendermark-tennis` og `/klub/nordhavn-tennis`. Log ind som `nordhavn@demo.dk` og gå til `/admin` for at se integrationsopsætningen og frigive gæstetider.
+Klubsider: `/clubs/soendermark-tennis` og `/clubs/nordhavn-tennis`. Log ind som `nordhavn@demo.dk` og gå til `/admin` for at se integrationsopsætningen og frigive gæstetider.
 
 ---
 
@@ -122,7 +122,7 @@ Enum-værdier (rolle, status, banetype) er gemt som tekst af hensyn til SQLite. 
 
 ## Multi-tenant
 
-Hver klub er en tenant med sin egen `slug` og sin egen farve på klubsiden. Alle klub-data hænger på `clubId`, så modellen er klar til flere klubber fra start. Vil du give klubberne deres eget subdomæne (`klubnavn.tennismakker.dk`), kan du tilføje en `middleware.ts`, der læser subdomænet og rewriter til `/klub/[slug]` — datamodellen skal ikke ændres.
+Hver klub er en tenant med sin egen `slug` og sin egen farve på klubsiden. Alle klub-data hænger på `clubId`, så modellen er klar til flere klubber fra start. Vil du give klubberne deres eget subdomæne (`klubnavn.tennismakker.dk`), kan du tilføje en `middleware.ts`, der læser subdomænet og rewriter til `/clubs/[slug]` — datamodellen skal ikke ændres.
 
 ## Før produktion
 
@@ -231,7 +231,7 @@ sat på webservicen, bruges `CRON_SECRET` som fallback.
 
 ## Juridiske dokumenter
 
-Ligger på `/vilkaar`, `/privatliv` og `/databehandleraftale`.
+Ligger på `/terms`, `/privacy` og `/dpa`.
 
 **De er udkast.** Alle tre viser en tydelig advarsel øverst, og felter der mangler rigtige oplysninger er markeret med firkantede parenteser. De skal gennemgås af en advokat, og advarslen fjernes ved at sætte `draft={false}` i den enkelte side.
 
@@ -251,9 +251,9 @@ Beskeder hentes ved sideindlæsning. Der er ingen realtidsopdatering endnu — m
 
 ## Swipe-matching
 
-`/spillere` viser én spiller ad gangen inden for ±1 niveau og samme område. Siger begge ja, oprettes automatisk en samtale, og begge sendes derind.
+`/players` viser én spiller ad gangen inden for ±1 niveau og samme område. Siger begge ja, oprettes automatisk en samtale, og begge sendes derind.
 
-Hvorfor swipe frem for opslagstavlen: en tavle kræver, at nogen gider skrive et opslag, og at andre gider læse det. Swipe fungerer også, når folk er passive — man skal bare sige ja eller nej til én ad gangen. Det virker ved langt færre brugere, end en tavle gør. Opslagstavlen findes stadig på `/makkere` for dem, der vil beskrive noget specifikt.
+Hvorfor swipe frem for opslagstavlen: en tavle kræver, at nogen gider skrive et opslag, og at andre gider læse det. Swipe fungerer også, når folk er passive — man skal bare sige ja eller nej til én ad gangen. Det virker ved langt færre brugere, end en tavle gør. Opslagstavlen findes stadig på `/matches` for dem, der vil beskrive noget specifikt.
 
 Et nej er privat: den anden får aldrig at vide, at man sprang over.
 
@@ -261,7 +261,7 @@ Et nej er privat: den anden får aldrig at vide, at man sprang over.
 
 Kun personer med en gennemført booking kan anmelde, og kun én gang pr. booking. Det er hele grunden til, at anmeldelserne er værd at stole på — de kan ikke skrives af nogen, der aldrig har været der. Logikken ligger i `src/lib/reviews.ts`, og både web og API bruger den samme funktion.
 
-Efter en overstået booking dukker anmeldelsen op øverst på `/profil`. Gennemsnit vises på klub- og trænerlisterne.
+Efter en overstået booking dukker anmeldelsen op øverst på `/profile`. Gennemsnit vises på klub- og trænerlisterne.
 
 **Ikke bygget:** der er ingen moderation af anmeldelsestekster og ingen mulighed for at en klub eller træner kan svare. Begge dele bør på plads, før der er rigtige brugere — en enkelt urimelig anmeldelse uden svarmulighed kan koste dig en klub.
 
@@ -273,7 +273,7 @@ Profilbilleder vises som initialer. Vil I have rigtige billeder senere, kræver 
 
 ## Kort over klubber
 
-`/klubber` er en delt visning: listen til venstre, kortet hængende til højre. På telefon vises listen med en "Vis kort"-knap, der bliver siddende nederst.
+`/courts` er en delt visning: listen til venstre, kortet hængende til højre. På telefon vises listen med en "Vis kort"-knap, der bliver siddende nederst.
 
 Tre designvalg der bærer siden:
 
@@ -341,14 +341,14 @@ Oversættelser ligger i `src/lib/i18n.ts` som en almindelig ordbog med dansk og 
 
 | Sti | Hvad |
 |---|---|
-| `/book` | Book bane — godkendte klubber i dit land, filtreret på sportsgren |
-| `/traenere` | Find træner — profil, timepris og pakkeforløb |
-| `/spillere` | Find medspiller — swipe, gensidigt ja åbner en samtale |
-| `/profil` | Min profil — bookinger, opslag, indstillinger |
+| `/courts` | Book bane — godkendte klubber i dit land, filtreret på sportsgren |
+| `/coaches` | Find træner — profil, timepris og pakkeforløb |
+| `/players` | Find medspiller — swipe, gensidigt ja åbner en samtale |
+| `/profile` | Min profil — bookinger, opslag, indstillinger |
 
 ## Klubgodkendelse
 
-Klubber opretter sig selv på `/opret-klub`, men oprettes med status `PENDING` og er **ikke synlige** for spillere. En RacketBuddy-administrator (rolle `SUPERADMIN`) godkender dem på `/superadmin`.
+Klubber opretter sig selv på `/list-your-club`, men oprettes med status `PENDING` og er **ikke synlige** for spillere. En RacketBuddy-administrator (rolle `SUPERADMIN`) godkender dem på `/superadmin`.
 
 Det er bevidst manuelt. En klub der påstår at have baner, den ikke har, koster tilliden hos alle andre — og hos den gæst der står foran en låst låge. Godkenderen ser adresse, antal baner, sportsgren, prismodel og kontaktperson, og bør ringe klubben op, før der trykkes godkend.
 
@@ -418,7 +418,7 @@ Et afvist billede slettes. Det skal ikke ligge og vente på at blive godkendt ve
 
 ## Trænerens ledige tider
 
-Træneren markerer sine timer i en ugekalender på `/profil/traener`. Før var det et tekstfelt med rå JSON — det virkede, men ingen træner udfylder det, og en enkelt manglende tuborgklamme gjorde profilen ubookbar uden nogen forklaring.
+Træneren markerer sine timer i en ugekalender på `/profile/coaching`. Før var det et tekstfelt med rå JSON — det virkede, men ingen træner udfylder det, og en enkelt manglende tuborgklamme gjorde profilen ubookbar uden nogen forklaring.
 
 **Formatet er uændret.** Der gemmes stadig `[{ "day": 2, "from": 16, "to": 20 }]` i `CoachProfile.weeklySlots`, så `upcomingSlotsFromWeekly()`, trænersiden og mobilappens API læser præcis som før. Kalenderen skriver bare ned i et skjult felt.
 
@@ -503,7 +503,7 @@ Uden variablen svarer siden "Ikke fundet" — samme svar som ved forkert token, 
 
 ## Glemt adgangskode
 
-`/login/glemt` sender et link til kontoens mail. Linket er beviset: kan man læse postkassen, må man gerne sætte en ny adgangskode. Det er den samme antagelse, login i to trin hviler på, så der er ikke noget at vinde ved at kræve begge dele.
+`/login/forgot` sender et link til kontoens mail. Linket er beviset: kan man læse postkassen, må man gerne sætte en ny adgangskode. Det er den samme antagelse, login i to trin hviler på, så der er ikke noget at vinde ved at kræve begge dele.
 
 - **Tokenet er 32 tilfældige bytes**, gemt som SHA-256. Vi skal kunne slå rækken op ud fra linket, og det kan man ikke med bcrypt — men der er intet at gætte, og hashen i databasen kan ikke bruges til at bygge linket igen.
 - **En time, én gang.** Længe nok til at nå at åbne mailen, kort nok til at et link, der bliver liggende i en indbakke, ikke er en nøgle for evigt.
@@ -657,7 +657,7 @@ Finder vi et kalenderfeed, kan klubben teste det med en knap, der fortæller hvo
 
 ## Plug and play: klubben bruger os som eneste system
 
-Klubber på `integrationType = NATIVE` har ikke noget andet bookingsystem — og ofte heller ingen hjemmeside. Så `/klub/[slug]` er ikke en bookingkalender, det er klubbens ansigt udadtil:
+Klubber på `integrationType = NATIVE` har ikke noget andet bookingsystem — og ofte heller ingen hjemmeside. Så `/clubs/[slug]` er ikke en bookingkalender, det er klubbens ansigt udadtil:
 
 - **Hoved** i klubbens egen farve med banemotiv, tagline, adresse og bedømmelse
 - **Nyheder** — lukkedage, turneringer, alt det der ellers hænger på en opslagstavle
@@ -674,14 +674,14 @@ Laver klubben en ny kode, holder den gamle op med at virke, men eksisterende med
 
 **Ikke bygget endnu:**
 
-- **Eget domæne.** Klubben ligger på `/klub/navn`, ikke `navn.dk`. Datamodellen er klar til det (`slug` er unik), og en `middleware.ts` der læser værtsnavnet ville være nok — men det kræver også, at klubben peger sit DNS hen, og at der udstedes certifikater.
+- **Eget domæne.** Klubben ligger på `/clubs/navn`, ikke `navn.dk`. Datamodellen er klar til det (`slug` er unik), og en `middleware.ts` der læser værtsnavnet ville være nok — men det kræver også, at klubben peger sit DNS hen, og at der udstedes certifikater.
 - **Billeder.** Der er ingen logo- eller fotoupload. Det kræver en lagringsudbyder og en beslutning om, hvem der rydder op i det.
 - **Kontingent.** Medlemskab giver adgang til medlemspris, men der opkræves ikke kontingent. Det er en anden slags betaling end en booking og hører sammen med Stripe Billing.
 - **Hold og turneringer.** Nyheder dækker det løseste behov. Rigtig holdadministration er et selvstændigt produkt.
 
 ## Hjemmeside som betalt ydelse
 
-Salgssiden ligger på `/hjemmeside`: fast pris på 5.000 kr for opsætning, hvad klubben får, hvad vi skal bruge fra dem, og en bestillingsformular. Bestillingen lander i `WebsiteOrder` og dukker op i `/superadmin` med en simpel kø: Ringet op → Bygger → Færdig.
+Salgssiden ligger på `/website`: fast pris på 5.000 kr for opsætning, hvad klubben får, hvad vi skal bruge fra dem, og en bestillingsformular. Bestillingen lander i `WebsiteOrder` og dukker op i `/superadmin` med en simpel kø: Ringet op → Bygger → Færdig.
 
 Klubben får en kvittering på mail. Sættes `ORDERS_EMAIL`, får I selv en besked med det samme.
 
@@ -768,7 +768,7 @@ Det er en **destination charge**: kunden betaler det fulde beløb til Stripe, og
 Både klubber og trænere skal have deres egen **Stripe Express-konto** (`src/lib/connect.ts`), før de kan modtage betaling. Express er den lette model — Stripe står for hele registreringen (identitet, bankkonto), vi sender dem bare derhen:
 
 - Klubben sætter det op i `/admin` under "Udbetalinger"
-- Træneren sætter det op i `/profil/traener` under samme overskrift
+- Træneren sætter det op i `/profile/coaching` under samme overskrift
 
 Ingen af delene kan modtage en bane- eller trænerbooking, før Stripe siger `charges_enabled`. Prøver en gæst at booke en klub uden det, får de en tydelig fejl i stedet for en betaling, der ikke kan gennemføres.
 
@@ -1097,7 +1097,7 @@ Globus Data har oplyst, at de tolererer det, og at deres software ikke opdateres
 
 **Egen service, ikke en del af hovedappen.** `automation/` bygges som Docker med Playwrights eget browserbillede. To grunde: browseren kræver ~1 GB og et snes systembiblioteker, og lagde man det i hovedappens byggetrin, ville hver udrulning af hjemmesiden afhænge af, at et browserbillede kan hentes. En browser, der hænger, tager desuden hukommelsen med sig — her kan den kun tage denne service ned.
 
-**Pengene trækkes efter verifikationen, aldrig før.** `/book` reserverer, henter siden igen og læser, om tiden nu står som optaget. Først når svaret er `verified: true`, må gæsten trækkes. En automatisering, der fejler tavst, ville ellers efterlade en betalt booking uden bane — og to hold på samme bane.
+**Pengene trækkes efter verifikationen, aldrig før.** `/courts` reserverer, henter siden igen og læser, om tiden nu står som optaget. Først når svaret er `verified: true`, må gæsten trækkes. En automatisering, der fejler tavst, ville ellers efterlade en betalt booking uden bane — og to hold på samme bane.
 
 **Adgangskoden krypteres** med samme mekanik som Stripe-nøglerne, nu løftet ud i `src/lib/crypto-box.ts`, så der ikke findes to udgaver af krypteringskode i projektet. Egen tabel frem for felter på `Club`: rækken kan slettes, når en klub stopper, og en klub uden automatisering har ingen tom hemmelighed liggende.
 
@@ -1113,7 +1113,7 @@ En klub kan få sin side på `booking.jerklub.dk` eller `jerklub.dk`. Tre dele s
 
 **Værtsnavnet afgør klubben.** `src/middleware.ts` genkender et fremmed værtsnavn og omskriver `/` til `/domaene/<host>`, som slår klubben op og renderer `ClubPage`. Middleware kører på edge og kan ikke tale med databasen — derfor omskrivningen frem for et opslag.
 
-**Siden renderes, den omdirigerer ikke.** Det var fejlen før: `/domaene/<host>` sendte videre til `/klub/<slug>`, så en besøgende på klubbens domæne endte på racketbuddy.app et sekund senere. Klubben havde betalt for en hjemmeside, der afleverede deres trafik hos os. Klubsiden er nu trukket ud i `src/components/ClubPage.tsx` og bruges af begge ruter — samme kode, ét sted at vedligeholde.
+**Siden renderes, den omdirigerer ikke.** Det var fejlen før: `/domaene/<host>` sendte videre til `/clubs/<slug>`, så en besøgende på klubbens domæne endte på racketbuddy.app et sekund senere. Klubben havde betalt for en hjemmeside, der afleverede deres trafik hos os. Klubsiden er nu trukket ud i `src/components/ClubPage.tsx` og bruges af begge ruter — samme kode, ét sted at vedligeholde.
 
 **Vores navigation vises ikke.** Layoutet læser værtsnavnet og skjuler header og bundlinje på et fremmed domæne. Tilbage står en enkelt linje: booking leveret af RacketBuddy. `isOwnHost()` ligger i `src/lib/hosts.ts`, fordi både middleware og layout skal bruge den samme vurdering — to kopier af den liste driver fra hinanden, og resultatet er "RacketBuddy · Book bane" i toppen af en klubs hjemmeside.
 
@@ -1211,7 +1211,7 @@ Bekræftelsen afhænger nu af, om der findes en `CONFIRMED` booking oprettet ind
 
 ### Den underliggende årsag: omdirigering på tværs af domæner
 
-Brugeren blev sendt til `/profil?betalt=1` uden nogensinde at have set Stripes betalingsside. `startCheckout()` returnerer en adresse på Stripes eget domæne, og en server-`redirect()` til et andet domæne behandles af Next som en intern navigation — browseren kunne derfor ende med at blive stående og lande tilbage på profilen.
+Brugeren blev sendt til `/profile?betalt=1` uden nogensinde at have set Stripes betalingsside. `startCheckout()` returnerer en adresse på Stripes eget domæne, og en server-`redirect()` til et andet domæne behandles af Next som en intern navigation — browseren kunne derfor ende med at blive stående og lande tilbage på profilen.
 
 Rettet to steder:
 
@@ -1226,7 +1226,7 @@ Tre forsøg i træk fejlede på samme grundproblem, hver gang med en ny forklæd
 
 ```
 GET /checkout/<id>?_rsc=1gbqz  →  200
-GET /profil?_rsc=1gbqz          →  200
+GET /profile?_rsc=1gbqz          →  200
 ```
 
 `_rsc` betyder, at Next hentede checkout-siden som **data i baggrunden**, ikke som en rigtig sidenavigation. Det sker, fordi knappen var et `<Link>`. Al omdirigering inde i den side — først `redirect()`, siden en meta-refresh — lå dermed i et datasvar, browseren aldrig kørte.

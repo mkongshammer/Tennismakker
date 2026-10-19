@@ -27,7 +27,7 @@ export async function signUpForTeam(userId:string,teamId:string):Promise<SignupR
   if(!team.club.stripeAccountId||!team.club.stripeChargesEnabled){await db.teamSignup.update({where:{id:signup.id},data:{status:"CANCELLED"}});return{ok:false,error:"Klubben kan ikke tage imod betaling endnu. Skriv til klubben."};}
 
   const region=dataRegionForCountry(team.club.country);
-  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",payment_intent_data:{transfer_data:{destination:team.club.stripeAccountId},metadata:{teamSignupId:signup.id,region}},line_items:[{price_data:{currency:team.club.currency.toLowerCase(),product_data:{name:team.name,description:`Sæsonhold i ${team.club.name}`},unit_amount:team.priceKr*100},quantity:1}],metadata:{teamSignupId:signup.id,region},success_url:`${settings.appUrl}/klub/${team.club.slug}?hold=ok`,cancel_url:`${settings.appUrl}/klub/${team.club.slug}?hold=afbrudt`});
+  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",payment_intent_data:{transfer_data:{destination:team.club.stripeAccountId},metadata:{teamSignupId:signup.id,region}},line_items:[{price_data:{currency:team.club.currency.toLowerCase(),product_data:{name:team.name,description:`Sæsonhold i ${team.club.name}`},unit_amount:team.priceKr*100},quantity:1}],metadata:{teamSignupId:signup.id,region},success_url:`${settings.appUrl}/clubs/${team.club.slug}?hold=ok`,cancel_url:`${settings.appUrl}/clubs/${team.club.slug}?hold=afbrudt`});
   await db.teamSignup.update({where:{id:signup.id},data:{stripeSessionId:session.id}});
   if(!session.url)return{ok:false,error:"Stripe returnerede ingen betalingsside."};
   return{ok:true,checkoutUrl:session.url};

@@ -10,6 +10,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # The host the US app answers on today. After the racketbuddy.app cutover
+  # (docs/domain-cutover.md) set the repository variable US_PUBLIC_ORIGIN to
+  # https://racketbuddy.app and the same checks verify the new origin.
+  US_PUBLIC_ORIGIN: ${{ vars.US_PUBLIC_ORIGIN || 'https://racketbuddy-us.onrender.com' }}
+
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
@@ -20,21 +26,29 @@ jobs:
         run: |
           set -euo pipefail
           curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
-            'https://racketbuddy-us.onrender.com/api/health' -o /tmp/health.json
+            "$US_PUBLIC_ORIGIN/api/health" -o /tmp/health.json
           node -e 'const v=require("/tmp/health.json"); if(!v || v.ok !== true) process.exit(1)'
           curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
-            'https://racketbuddy-us.onrender.com/api/v1/location' -o /tmp/location.json
+            "$US_PUBLIC_ORIGIN/api/v1/location" -o /tmp/location.json
           node -e 'const l=require("/tmp/location.json"); if(l.country!=="US" || l.needsChoice!==false) {console.error(l); process.exit(1)}'
           curl -fsS --retry 5 --retry-delay 3 --retry-all-errors --max-time 30 \
-            'https://racketbuddy-us.onrender.com/api/v1/clubs?land=DK' -o /tmp/clubs.json
+            "$US_PUBLIC_ORIGIN/api/v1/clubs?land=DK" -o /tmp/clubs.json
           node -e 'const j=require("/tmp/clubs.json"); if(!Array.isArray(j.clubs) || j.clubs.some(c=>c.country!=="US")) process.exit(1); console.log("US club records:",j.clubs.length)'
-      - name: Confirm canonical site routes guests into US region
+      - name: Confirm the canonical site serves the US product
         shell: bash
         run: |
           set -euo pipefail
           result=$(curl -sS -L --retry 4 --retry-delay 3 --retry-all-errors --max-time 40 \
-            -o /tmp/racketbuddy-book.html -w '%{http_code} %{url_effective}' \
-            'https://racketbuddy.app/book')
+            -o /tmp/racketbuddy-courts.html -w '%{http_code} %{url_effective}' \
+            'https://racketbuddy.app/courts')
           echo "$result"
-          [[ "$result" == 200\ https://racketbuddy-us.onrender.com/* ]]
-          grep -qi "United States" /tmp/racketbuddy-book.html
+          # Before the cutover the canonical host redirects to the US origin; after it, it is the US origin.
+          [[ "$result" == 200\ "$US_PUBLIC_ORIGIN"/* ]]
+          grep -qi "United States" /tmp/racketbuddy-courts.html
+      - name: Legacy Danish routes redirect permanently
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 30 "$US_PUBLIC_ORIGIN/book")
+          echo "$code"
+          [[ "$code" == 308\ "$US_PUBLIC_ORIGIN"/courts* ]]

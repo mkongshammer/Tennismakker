@@ -77,7 +77,7 @@ if (!globalForPrisma.messageEmailMiddlewareInstalled) {
                   "",
                   preview ? `“${preview}”` : "",
                   "",
-                  `Læs og svar her: ${appUrl}/beskeder/${thread.id}`,
+                  `Læs og svar her: ${appUrl}/messages/${thread.id}`,
                   "",
                   "RacketBuddy",
                 ]

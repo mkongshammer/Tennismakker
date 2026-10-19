@@ -49,7 +49,7 @@ export async function joinMembership(userId:string,typeId:string):Promise<JoinRe
   }
 
   const region=dataRegionForCountry(type.club.country);
-  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",payment_intent_data:{transfer_data:{destination:type.club.stripeAccountId},metadata:{membershipId:membership.id,region}},line_items:[{price_data:{currency:type.club.currency.toLowerCase(),product_data:{name:`${type.name} — ${type.seasonName}`,description:`Kontingent i ${type.club.name}`},unit_amount:type.priceKr*100},quantity:1}],metadata:{membershipId:membership.id,region},success_url:`${settings.appUrl}/klub/${type.club.slug}?kontingent=ok`,cancel_url:`${settings.appUrl}/klub/${type.club.slug}?kontingent=afbrudt`});
+  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",payment_intent_data:{transfer_data:{destination:type.club.stripeAccountId},metadata:{membershipId:membership.id,region}},line_items:[{price_data:{currency:type.club.currency.toLowerCase(),product_data:{name:`${type.name} — ${type.seasonName}`,description:`Kontingent i ${type.club.name}`},unit_amount:type.priceKr*100},quantity:1}],metadata:{membershipId:membership.id,region},success_url:`${settings.appUrl}/clubs/${type.club.slug}?kontingent=ok`,cancel_url:`${settings.appUrl}/clubs/${type.club.slug}?kontingent=afbrudt`});
   await db.membership.update({where:{id:membership.id},data:{stripeSessionId:session.id}});
   if(!session.url)return{ok:false,error:"Stripe returnerede ingen betalingsside."};
   return{ok:true,checkoutUrl:session.url};

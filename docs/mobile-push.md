@@ -5,7 +5,7 @@ Opt-in from Profile → Notifikationer on physical iOS/Android installations. In
 
 Events: newly confirmed bookings; confirmed/requested cancellations; confirmed booking time changes; reminders in 15-minute windows approximately 24 hours and 1 hour before start; incoming unread chat (coalesced into five-minute buckets); coach requests and player acceptance/payment prompts. Expired unpaid holds do not trigger cancellations. Generic lock-screen text, no message bodies, names, access codes or payment details.
 
-Tap opens the relevant chat or profile. Coach requests open /profil/traener in the browser, which may require separate web login. This is not a native coach inbox.
+Tap opens the relevant chat or profile. Coach requests open /profile/coaching in the browser, which may require separate web login. This is not a native coach inbox.
 
 Existing authenticated minute cron /api/cron/club-control processes push after hardware reconciliation. No new cron service is required. This does not enable email sending. Durable per-device event deduplication, claims, stale-event/consent checks, expiring tokens, bounded retries and Expo receipt inspection. Expo acceptance is not proof of device delivery. Ambiguous network timeouts can cause duplicate delivery. Round-robin scanning and bounded work can delay alerts; push is not a guaranteed real-time or safety channel. Status transitions that happen entirely between scans may not produce an alert.
 

@@ -151,7 +151,7 @@ export async function POST(req: Request) {
     // i stedet for en genvej der aldrig burde ligge i produktion.
     try {
       const checkoutUrl = await startCheckout(booking.id);
-      if(checkoutUrl === "/profil?wallet=1") return json({id:booking.id,status:"CONFIRMED"},201);
+      if(checkoutUrl === "/profile?wallet=1") return json({id:booking.id,status:"CONFIRMED"},201);
       return json({ id: booking.id, checkoutUrl }, 201);
     } catch {
       return json({ id: booking.id, error: "Reservationen er oprettet, men betalingen kunne ikke åbnes. Fortsæt med Betal nu under Min profil." }, 502);

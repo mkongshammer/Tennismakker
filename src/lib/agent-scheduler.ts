@@ -10,7 +10,7 @@ const MAX_PHASE_ATTEMPTS = 3;
 
 const OCTOBER_MISSION = [
   "RACKETBUDDY COMPANY MISSION THROUGH 31 OCTOBER 2026:",
-  "1. Reach at least 3 paying standard-plan clubs OR close at least 1 custom setup worth $2,250.",
+  "1. Reach at least 3 paying clubs on the $50/month plan.",
   "2. Reach at least 20 active coaches with a completed coach profile, sport and published availability.",
   "3. Reach at least 75 active players who completed their profile and performed at least one meaningful marketplace action such as finding a player, coach or court/booking flow.",
   "4. Contact at least 30 qualified new clubs with compliant, verified outreach.",

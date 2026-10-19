@@ -40,7 +40,7 @@ function harness(input?: {
       ordersEmail: "", appUrl: "https://racketbuddy.app",
     }) },
     "./club-onboarding": { clubSignupPriceBook: async () => ({
-      USD: { standard: 30, custom: 2250 }, EUR: { standard: 30, custom: 2250 },
+      USD: { standard: 50, custom: null }, EUR: { standard: 27, custom: 1999 },
     }) },
     "./region": { deploymentRegion: () => "EU" },
   };

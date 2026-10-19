@@ -39,7 +39,7 @@ test('US-only discovery overrides legacy stored countries and never geolocates v
  });
  const automatic=await prefs.getPreferences();assert.equal(automatic.country,'US');assert.equal(automatic.locale,'en-US');assert.equal(automatic.countryChosen,true);
  values={'rb_prefs_country':'SE','rb_prefs_locale':'de'};detections=0;
- const manual=await prefs.getPreferences();assert.equal(manual.country,'US');assert.equal(manual.locale,'de');assert.ok(manual.countryChosen);assert.equal(detections,0);
+ const manual=await prefs.getPreferences();assert.equal(manual.country,'US');assert.equal(manual.locale,'en-US','a stale language cookie never changes the US product language');assert.ok(manual.countryChosen);assert.equal(detections,0);
  user={country:'NO',locale:'en',countryChosen:true};values={};
  const profile=await prefs.getPreferences();assert.equal(profile.country,'US');assert.equal(profile.locale,'en-US');assert.equal(detections,0);
 });

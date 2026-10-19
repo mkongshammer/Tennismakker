@@ -2,11 +2,12 @@
 import {getPreferences} from "../lib/preferences";
 import {formatDate,marketFor} from "../lib/international";
 import {UiText} from "./InternationalProvider";
+import {phrase} from "../lib/phrases";
 import { rebookNextWeek } from "../lib/actions";
 import { getCurrentUser } from "../lib/session";
 import { userProfilePhotoId } from "../lib/profile-images";
 import { imageUrl } from "../lib/imageUrl";
-import { uploadProfilePhoto, deleteProfilePhoto } from "../app/profil/photo-actions";
+import { uploadProfilePhoto, deleteProfilePhoto } from "../app/profile/photo-actions";
 import { SubmitButton } from "./SubmitButton";
 
 // "Spil igen": gentag en tid, man allerede har spillet.
@@ -54,12 +55,13 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
 
             <div className="min-w-0 flex-1">
               <p className="font-bold"><UiText text="Dit profilbillede"/></p>
-              <p className="mt-1 text-sm text-slate/60"><UiText text="Billedet bruges på din RacketBuddy-profil. Både spillere og trænere kan vælge et."/></p>
+              <p className="mt-1 text-sm text-slate"><UiText text="Billedet bruges på din RacketBuddy-profil. Både spillere og trænere kan vælge et."/></p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <form action={uploadProfilePhoto} className="flex flex-wrap items-center gap-2">
                   <input
                     type="file"
                     name="photo"
+                    aria-label={phrase("Vælg et billede", locale)}
                     accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                     className="text-sm"
                     required
@@ -87,7 +89,7 @@ export async function PlayAgain({ items }: { items: Repeatable[] }) {
           <ul className="space-y-3">
             {items.map((item) => {
               const day = formatDate(item.startsAt,locale,zone,{weekday:"long"});
-              const time = formatDate(item.startsAt,locale,zone,{hour:"2-digit",minute:"2-digit"});
+              const time = formatDate(item.startsAt,locale,zone,{hour:"numeric",minute:"2-digit"});
 
               return (
                 <li

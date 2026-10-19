@@ -1,3 +1,4 @@
+import {refundDecision,type CancellationContext} from './cancellation-policy';
 import {subscriptionIsActive} from './billing';
 import {db} from './db';
 import {stripe} from './stripe';
@@ -53,13 +54,15 @@ export async function payBookingWithWallet(userId:string,bookingId:string) {
   await tx.walletEntry.create({data:{walletId:wallet.id,eventKey:`booking:${bookingId}`,amountOre:-amount,label:'Banebooking'}});
  });
 }
-export async function cancelWalletBooking(userId:string,bookingId:string) {
+export async function cancelWalletBooking(userId:string,bookingId:string,context:CancellationContext={by:'PLAYER'}) {
  return db.$transaction(async tx=>{
   const b=await tx.booking.findUnique({where:{id:bookingId},include:{court:true}});
   if(!b||b.userId!==userId||!b.court||!b.walletPaidOre)throw Error('Ukendt walletbooking.');
   if(b.status==='CANCELLED')return 0;
-  const claim=await tx.booking.updateMany({where:{id:bookingId,status:'CONFIRMED'},data:{status:'CANCELLED'}});if(!claim.count)throw Error('Bookingen er ændret.');
-  if(+b.startsAt-Date.now()<24*3600000)return null;
+  const claim=await tx.booking.updateMany({where:{id:bookingId,status:'CONFIRMED'},data:{status:'CANCELLED',cancelledAt:new Date(),cancelledBy:context.by,cancelledByUserId:context.actorUserId??null,cancelReason:context.reason??null}});if(!claim.count)throw Error('Bookingen er ændret.');
+  // Same policy as card payments: a club-initiated cancellation always
+  // restores the credit; a late player cancellation does not.
+  if(!refundDecision({by:context.by,startsAt:b.startsAt}).refund)return null;
   const existing=await tx.clubWallet.findUnique({where:{userId_clubId:{userId,clubId:b.court.clubId}}});
   if(!existing||existing.currency!==b.currency)throw Error("Wallet currency mismatch.");
   const wallet=await tx.clubWallet.update({where:{userId_clubId:{userId,clubId:b.court.clubId}},data:{balanceOre:{increment:b.walletPaidOre}}});

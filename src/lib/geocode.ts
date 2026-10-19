@@ -70,7 +70,23 @@ export async function geocode(
   } catch {
     return null;
   }};
-  const pending = queue.then(lookup, lookup);
+  const pending = queue.then(lookup, lookup).then(async (found) => found ?? (await usZipFallback(address, country)));
   queue = pending.catch(() => null);
   return pending;
+}
+
+/**
+ * A US club must never be invisible on the map because a third-party
+ * geocoder was slow or down: fall back to the centroid of the ZIP code in
+ * the address, which our offline dataset always knows. It is a few hundred
+ * yards off at worst — good enough for distance and the map pin, and it is
+ * replaced the next time the address is saved and the geocoder answers.
+ */
+async function usZipFallback(address: string, country: string): Promise<Coordinates | null> {
+  if (country !== "US") return null;
+  const zip = address.match(/\b(\d{5})(?:-\d{4})?\s*$/)?.[1];
+  if (!zip) return null;
+  const { resolvePlace } = await import("./us-places");
+  const place = await resolvePlace(zip);
+  return place ? { latitude: place.latitude, longitude: place.longitude } : null;
 }

@@ -224,6 +224,11 @@ model Club {
   images          Image[]
   control         ClubControl?
   controlEvents   ClubControlEvent[]
+
+  // Discovery: approved US clubs narrowed by a bounding box before anything
+  // else is loaded (src/lib/discovery.ts). Both indexes are additive.
+  @@index([country, status])
+  @@index([latitude, longitude])
 }
 
 // ---------- Billeder ----------
@@ -400,6 +405,14 @@ model Booking {
   // "skal indtastes", indtil klubben markerer den som ført ind.
   needsClubEntry Boolean   @default(false)
   clubEnteredAt  DateTime?
+
+  // Audit trail for cancellations: who (PLAYER | CLUB | COACH | SYSTEM),
+  // which signed-in user acted, when, and the reason shown to the customer.
+  // Refund rules depend on `cancelledBy` — see src/lib/cancellation-policy.ts.
+  cancelledAt       DateTime?
+  cancelledBy       String?
+  cancelledByUserId String?
+  cancelReason      String?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -1270,4 +1283,38 @@ model BookingImport {
   key       String  @id
   bookingId String  @unique
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Demand capture for empty markets ----------
+// When a player searches a city where no club or coach is live yet, the
+// honest answer is "not yet" — and the useful one is "tell me when". Each
+// row is one person, one sport, one place, so sales can see where demand
+// is and players can be told the moment supply opens there.
+//
+// Lifecycle: created (unconfirmed) → confirmedAt set by the e-mail link →
+// notifiedAt set when a matching club/coach goes live → pruned by retention
+// rules in src/lib/market-interest.ts. Unsubscribing deletes the row.
+model MarketInterest {
+  id             String    @id @default(cuid())
+  email          String
+  kind           String // "COURTS" | "COACHES"
+  sport          String
+  placeKey       String // "zip:02108" | "city:boston,ma" | "state:ma"
+  label          String // "Boston, MA 02108"
+  state          String? // two-letter state of the place
+  latitude       Float?
+  longitude      Float?
+  userId         String?
+  source         String    @default("web") // "web" | "api"
+  ipFingerprint  String? // salted one-way hash of the client address, for abuse review only
+  createdAt      DateTime  @default(now())
+  confirmedAt    DateTime?
+  confirmMailAt  DateTime?
+  notifiedAt     DateTime?
+  notifiedAbout  String? // club or coach id that triggered the notice
+
+  @@unique([email, kind, sport, placeKey])
+  @@index([placeKey, kind])
+  @@index([state, kind, sport])
+  @@index([confirmedAt, notifiedAt])
 }

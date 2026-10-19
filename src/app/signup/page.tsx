@@ -1,6 +1,7 @@
 import { getPreferences } from "../../lib/preferences";
 import { translator, t as translate } from "../../lib/i18n";
 import { SignupForm } from "./SignupForm";
+import { safeReturnPath } from "../../lib/return-path";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +16,9 @@ function splitTerms(sentence: string) {
   return { before, middle, after };
 }
 
-export default async function SignupPage() {
-  const { locale,country } = await getPreferences();
+export default async function SignupPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const [{ locale,country,sport }, query] = await Promise.all([getPreferences(), searchParams]);
+  const next = safeReturnPath(query.next);
   const t = translator(locale);
   const parts = splitTerms(translate("auth.termsNote", locale));
 
@@ -24,6 +26,7 @@ export default async function SignupPage() {
     <div className="mx-auto max-w-md">
       <h1 className="display mb-6 text-3xl">{t("nav.signup")}</h1>
       <SignupForm
+        defaultSport={sport}
         labels={{
           name: t("auth.name"),
           email: t("auth.email"),
@@ -46,6 +49,7 @@ export default async function SignupPage() {
         }}
         initialCountry={country}
         locale={locale}
+        next={next}
         terms={{
           ...parts,
           termsText: t("auth.termsLink"),
