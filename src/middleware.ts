@@ -16,11 +16,12 @@ function regionalRedirect(req: NextRequest) {
   const deployed = String(process.env.RACKETBUDDY_REGION ?? "GLOBAL").toUpperCase();
   if (deployed !== "EU" && deployed !== "US") return null;
 
-  const cookieCountry = req.cookies.get("rb_prefs_country")?.value?.toUpperCase();
-  const headerCountry = req.headers.get("x-racketbuddy-country")?.toUpperCase();
-  const country = cookieCountry || headerCountry;
-  if (!country) return null;
-  const wanted = country === "US" ? "US" : "EU";
+  // A US-only storefront must use the US data region for new/guest visitors,
+  // even when the browser is in Denmark or holds a stale EU country cookie.
+  // Retain the old EU origin for already signed-in legacy EU customers, so
+  // their existing bookings and payments are not silently migrated.
+  const legacyEuSession = deployed === "EU" && Boolean(req.cookies.get("tm_session")?.value);
+  const wanted = legacyEuSession ? "EU" : "US";
   if (wanted === deployed) return null;
 
   const origin = wanted === "US" ? process.env.US_APP_URL : process.env.EU_APP_URL;
