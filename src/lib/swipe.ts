@@ -61,6 +61,13 @@ export async function recordSwipe(
   if (fromUserId === toUserId) return { matched: false };
   if (await isBlockedBetween(fromUserId, toUserId)) return { matched: false };
 
+  // Do not create new cross-market swipe connections when discovery is US-only.
+  const [from, to] = await Promise.all([
+    db.user.findUnique({where:{id:fromUserId},select:{country:true}}),
+    db.user.findUnique({where:{id:toUserId},select:{country:true}}),
+  ]);
+  if (from?.country !== "US" || to?.country !== "US") return { matched: false };
+
   await db.swipe.upsert({
     where: { fromUserId_toUserId: { fromUserId, toUserId } },
     create: { fromUserId, toUserId, liked },
