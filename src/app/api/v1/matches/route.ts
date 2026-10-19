@@ -1,4 +1,3 @@
-import {marketFor} from "../../../../lib/international";
 import {validArea} from "../../../../lib/profile-location";
 import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
@@ -17,8 +16,7 @@ export async function GET(req: Request) {
   const levelParam = url.searchParams.get("niveau");
   const level = levelParam ? Number(levelParam) : null;
   const me = await userFromRequest(req);
-  const country=me?.country ?? url.searchParams.get("land") ?? "DK";
-  if(!marketFor(country)) return apiError("Unsupported country.");
+  const country="US"; // Match discovery is always limited to US player profiles.
   const selectedRegion=country==="DK"?(isDanishRegion(rawRegion)?rawRegion:regionForArea(rawRegion)??""):rawRegion;
   const blocked = me ? await blockedUserIds(me.id) : [];
 
