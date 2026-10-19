@@ -112,11 +112,6 @@ export function SiteHeader({ user, locale }: Props) {
         <div className="ml-auto flex items-center gap-2 text-sm">
           {user ? (
             <>
-              {user.role === "CLUB_ADMIN" && (
-                <Link href="/admin" className="btn-soft btn-sm hidden sm:inline-flex">
-                  {t("nav.admin")}
-                </Link>
-              )}
               <Link
                 href="/profil"
                 aria-label={t("nav.profile")}

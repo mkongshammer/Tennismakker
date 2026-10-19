@@ -3,7 +3,7 @@ import { ClubInvoices } from "../../components/ClubInvoices";
 import { InternationalProvider } from "../../components/InternationalProvider";
 import { InternationalForm } from "./InternationalForm";
 import { getPreferences } from "../../lib/preferences";
-import { formatMoney, formatDate, dayKey, wallTime } from "../../lib/international";
+import { formatMoney, formatDate, dayKey, wallTime, timeZoneLabel } from "../../lib/international";
 import { clubHasSection, clubHasFeature } from "../../lib/club-features";
 import { MemberForm } from "./MemberForm";
 import { WalletForm } from "./WalletForm";
@@ -47,6 +47,9 @@ import { refreshAccountStatus } from "../../lib/connect";
 import { stripeEnabled } from "../../lib/stripe";
 import { getSettings } from "../../lib/settings";
 import { subscriptionIsActive } from "../../lib/billing";
+import { loadClubDashboard } from "../../lib/club-dashboard";
+import { ClubHome } from "./ClubHome";
+import { CourtSchedule } from "./CourtSchedule";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +60,7 @@ export default async function AdminPageContent({
 
 
 
-}: {searchParams: Promise<{stripe?: string;abonnement?: string;}>;section?: AdminSection;}) {
+}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;}>;section?: AdminSection;}) {
   const query = await searchParams;
   const prefs = await getPreferences();const tr=(text:string,params?:Record<string,string|number>)=>phrase(text,prefs.locale,params);
   if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][]).toString()}`);
@@ -149,7 +152,7 @@ export default async function AdminPageContent({
   const today = wallTime(dayKey(new Date(), club.timeZone), 0, 0, club.timeZone)!;
 
   const [upcoming, payments, rules, guestSlots] = await Promise.all([
-  section === 'oversigt' || section === 'bookinger' ? db.booking.findMany({
+  section === 'bookinger' ? db.booking.findMany({
     where: {
       courtId: { in: courtIds },
       status: "CONFIRMED",
@@ -158,9 +161,7 @@ export default async function AdminPageContent({
     include: { user: true, court: true },
     orderBy: { startsAt: "asc" }
   }) : Promise.resolve([]),
-  section === 'oversigt' ? db.payment.findMany({
-    where: { status: "PAID", booking: { courtId: { in: courtIds } } }
-  }) : Promise.resolve([]),
+  Promise.resolve([]),
   section === 'tider' ? db.guestRule.findMany({ where: { clubId: club.id }, orderBy: { createdAt: "desc" } }) : Promise.resolve([]),
   section === 'tider' ? db.guestSlot.findMany({
     where: { courtId: { in: courtIds }, startsAt: { gte: new Date() } },
@@ -170,20 +171,26 @@ export default async function AdminPageContent({
   }) : Promise.resolve([])]
   );
 
-  const gross = payments.reduce((s: number, p: any) => s + p.amountKr, 0);
-  const fees = payments.reduce((s: number, p: any) => s + p.platformFee, 0);
   const toEnter = upcoming.filter((b: any) => b.needsClubEntry && !b.clubEnteredAt);
 
   return (
     <InternationalProvider country={club.country} locale={prefs.locale} currency={club.currency} timeZone={club.timeZone}><div className="space-y-6">
-<div>
-        <h1 className="display text-3xl">{club.name}</h1>
-        <p className="mt-2 text-sm">{selectedSports.map((s) => sportLabel(s, prefs.locale)).join(" · ") || tr("Vælg klubbens sportsgrene for at komme i gang.")}</p>
-        <a className="inline-block mt-2 font-semibold text-court underline" href="/admin/baner">{tr("Sportsgrene og") + " "}{tr(facilityLabel(selectedSports)).toLowerCase()}</a>
-        <p className="text-sm text-slate">{club.currency} · {club.timeZone}</p>
-        <p className="text-slate/70">{tr("Klubside: /klub/")}
-            {club.slug} · {tr(INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS])}
-        </p>
+<div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="eyebrow text-slate">{tr("Klubadministration")}</p>
+          <h1 className="display mt-1 text-display-md sm:text-display-lg">{club.name}</h1>
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate">
+            <span>{selectedSports.map((s) => sportLabel(s, prefs.locale)).join(" · ") || tr("Vælg klubbens sportsgrene for at komme i gang.")}</span>
+            <span>·</span>
+            <span>{club.currency} · {timeZoneLabel(club.timeZone, prefs.locale)}</span>
+            <span>·</span>
+            <span>{tr(INTEGRATION_LABELS[club.integrationType as keyof typeof INTEGRATION_LABELS])}</span>
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/klub/${club.slug}`} className="btn-ghost btn-sm">View public page</Link>
+          {club.status === "APPROVED" ? <span className="badge-success self-center">Live</span> : <span className="badge-warning self-center">{club.status === "PENDING" ? "Awaiting approval" : club.status}</span>}
+        </div>
       </div>
 {query.abonnement &&
         <p className="card border border-court/25 text-sm">
@@ -200,27 +207,9 @@ export default async function AdminPageContent({
 <AdminNavigation features={club.customFeatures} mode={club.solutionMode} section={section} facility={tr(facilityLabel(selectedSports))} locale={prefs.locale} />
 <div className="min-w-0 space-y-6">
 <header><h2 className="display text-2xl">{section === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(currentPage.label, prefs.locale)}</h2><p className="mt-1 text-sm text-slate">{phrase(currentPage.description, prefs.locale)}</p></header>
-{section === 'oversigt' && <>
-<section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="card">
-          <p className="text-sm text-slate/60">{tr(facilityLabel(selectedSports))}</p>
-          <p className="display text-3xl">{club.courts.length}</p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-slate/60">{tr("G\xE6stebookinger")}</p>
-          <p className="display text-3xl">{payments.length}</p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-slate/60">{tr("Oms\xE6tning")}</p>
-          <p className="display text-3xl">{formatMoney(gross, club.currency, prefs.locale)}</p>
-        </div>
-        <div className="card">
-          <p className="text-sm text-slate/60">{tr("Udbetalt til jer")}</p>
-          <p className="display text-3xl text-ink">{formatMoney(gross - fees, club.currency, prefs.locale)}</p>
-        </div>
-      </section>
-</>}
+{section === 'oversigt' && <ClubHome data={await loadClubDashboard(club.id)} locale={prefs.locale} />}
 {section === 'bookinger' && <>
+<CourtSchedule clubId={club.id} courts={club.courts.map((c: any) => ({ id: c.id, name: c.name, sport: c.sport, indoor: c.indoor }))} openHour={club.openHour} closeHour={club.closeHour} timeZone={club.timeZone} currency={club.currency} locale={prefs.locale} dayOffset={Math.min(6, Math.max(0, Number(query.dag ?? 0) || 0))} baseHref="/admin/bookinger" />
 {toEnter.length > 0 &&
               <section className="rounded-lg border-2 border-court bg-court/5 p-5">
           <p className="display text-xl text-court-dark">
@@ -251,8 +240,9 @@ export default async function AdminPageContent({
 <section>
         <h2 className="display mb-3 text-2xl">{tr("Kommende g\xE6stebookinger")}</h2>
         {upcoming.length === 0 && <p className="text-slate/60">{tr("Ingen bookinger i den kommende uge.")}</p>}
+        {upcoming.length > 15 && <p className="mb-2 text-xs text-slate">Showing the next 15 of {upcoming.length} bookings this week. Use the schedule above for the full picture.</p>}
         <ul className="space-y-2">
-          {upcoming.map((b: any) =>
+          {upcoming.slice(0, 15).map((b: any) =>
                   <li key={b.id} className="card flex flex-wrap justify-between gap-2 py-3 text-sm">
               <span className="font-semibold capitalize">
                 {formatDate(b.startsAt, prefs.locale, b.timeZone, { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}–{formatDate(b.endsAt, prefs.locale, b.timeZone, { hour: "2-digit", minute: "2-digit" })} ·{" "}
@@ -812,12 +802,6 @@ export default async function AdminPageContent({
                 </p>
         <PeopleForm people={club.people as any} />
       </section>}
-</>}
-{section === 'oversigt' && <>
-  {toEnter.length > 0 && <Link href="/admin/bookinger" className="block rounded-xl border border-court/30 bg-court/5 p-4 font-semibold">{toEnter.length}{" " + tr("bookinger skal f\xF8res ind i jeres system \u2192")}</Link>}
-  {!selectedSports.length && <Link href="/admin/baner" className="block rounded-xl bg-court/5 p-4 font-semibold">{tr("Kom i gang: V\xE6lg sportsgrene og opret baner eller borde \u2192")}</Link>}
-  {stripeOn && !club.stripeChargesEnabled && <Link href="/admin/betaling" className="block rounded-xl bg-court/5 p-4 font-semibold">{tr("Ops\xE6t udbetalinger, s\xE5 g\xE6ster kan betale \u2192")}</Link>}
-  <div className="grid gap-3 sm:grid-cols-2">{ADMIN_PAGES.filter((p) => clubHasSection(club.solutionMode, p.id, club.customFeatures)).filter((p) => p.id !== 'oversigt').map((p) => <Link key={p.id} href={adminHref(p.id)} className="rounded-2xl border border-slate/15 bg-white p-5 hover:border-court focus-visible:outline-court"><h2 className="font-bold">{p.id === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(p.label, prefs.locale)} <span aria-hidden="true">→</span></h2><p className="mt-2 text-sm text-slate">{phrase(p.description, prefs.locale)}</p></Link>)}</div>
 </>}
 {section === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>{tr("Ledige tider styres gennem klubbens bookingsystem.")}</p><Link href="/admin/integrationer" className="font-semibold text-court underline">{tr("\xC5bn bookingsystemets indstillinger")}</Link></div>}
 </div></div></div></InternationalProvider>);
