@@ -56,8 +56,10 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
         </button>
       </div>
 
-      <div className="no-scrollbar -mx-1 mt-3 overflow-x-auto px-1">
-        <div className="flex w-max gap-2" role="group" aria-label="Sport">
+      {/* Every sport is visible without scrolling: one line that shrinks to
+          fit on wider cards, two rows of three on phones (see .sport-chips). */}
+      <div className="sport-chips-wrap mt-3">
+        <div className="sport-chips" role="group" aria-label="Sport">
           {SPORTS.map((s) => (
             <button
               key={s}
@@ -69,8 +71,8 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
               }}
               className="pill"
             >
-              <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: sportColor(s) }} />
-              {sportLabel(s, "en-US")}
+              <span aria-hidden="true" className="sport-dot h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: sportColor(s) }} />
+              <span className="truncate">{sportLabel(s, "en-US")}</span>
             </button>
           ))}
         </div>

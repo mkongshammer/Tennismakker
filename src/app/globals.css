@@ -194,6 +194,21 @@ h3 {
   @apply border-ink bg-ink text-chalk;
 }
 
+/* Sport chips in the search card: never a sideways scroll. The card's own
+   width decides the layout (container query), so the hero card, the /courts
+   header and phones each get a row that fits. */
+.sport-chips-wrap { container-type: inline-size; }
+.sport-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.sport-chips .pill { min-width: 0; min-height: 36px; justify-content: center; gap: 6px; padding-inline: 8px; font-size: 12px; white-space: nowrap; }
+.sport-chips .sport-dot { display: none; }
+@container (min-width: 370px) {
+  .sport-chips { display: flex; gap: clamp(4px, 1cqw, 8px); }
+  .sport-chips .pill { flex: 1 1 auto; padding-inline: clamp(6px, 1.4cqw, 16px); font-size: clamp(11px, 2.9cqw, 14px); }
+}
+@container (min-width: 680px) {
+  .sport-chips .sport-dot { display: block; }
+}
+
 /* Skeletons: shimmer in the page color, never a spinner for layout. */
 .skeleton {
   @apply animate-shimmer rounded-lg bg-mist-deep;
