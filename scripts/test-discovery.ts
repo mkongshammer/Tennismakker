@@ -106,6 +106,15 @@ async function main(){
   r=await search('',{sport:'PADEL'});assert.deepEqual(names(r),['Brooklyn Padel House']);assert.equal(r.totalForSport,1);
   r=await search('');assert.equal(r.total,8);assert.equal(r.clubs.length,8);
   check('Nationwide browse counts per sport');
+  // 7. Date filter: a day ten days out reads that day's calendar, and old today=1 links still filter.
+  const future=discoveryFilters.discoveryDayOptions()[12].value;
+  r=await search('Boston, MA',{date:future});
+  assert.ok(r.clubs.length>0,'clubs open on the chosen day');
+  for(const c of r.clubs)assert.equal(new Intl.DateTimeFormat('en-CA',{timeZone:c.timeZone}).format(new Date(c.nextSlotAt!)),future,`${c.name} counted on ${future}`);
+  assert.equal(r.filters.date,future);
+  r=await search('Boston, MA',{today:'1'});assert.equal(r.filters.date,'today');assert.ok(r.clubs.length>0);
+  r=await search('Boston, MA',{date:'2099-01-01'});assert.equal(r.filters.date,null,'out-of-range dates are ignored');
+  check('Date filter reads the chosen day up to a month ahead; legacy today=1 still works');
 
   // Scale: add clubs around the country, then measure.
   const cities=[['Austin','TX',30.2672,-97.7431],['Denver','CO',39.7392,-104.9903],['Seattle','WA',47.6062,-122.3321],['Miami','FL',25.7617,-80.1918],['Chicago','IL',41.8781,-87.6298],['Phoenix','AZ',33.4484,-112.074],['Atlanta','GA',33.749,-84.388],['Boston','MA',42.3601,-71.0589],['Los Angeles','CA',34.0522,-118.2437],['New York','NY',40.7128,-74.006]] as const;
@@ -120,7 +129,8 @@ async function main(){
     ['Boston, MA (50 mi)',()=>search('Boston, MA')],
     ['Massachusetts',()=>search('Massachusetts')],
     ['nationwide page 1',()=>search('')],
-    ['Boston, MA · today',()=>search('Boston, MA',{today:'1'})],
+    ['Boston, MA · today',()=>search('Boston, MA',{date:'today'})],
+    ['Boston, MA · +20 days',()=>search('Boston, MA',{date:discoveryFilters.discoveryDayOptions()[22].value})],
    ];
    for(const [label,fn] of runs){
     reset();const t0=performance.now();const res=await fn();const ms=Math.round(performance.now()-t0);

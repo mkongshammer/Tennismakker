@@ -47,12 +47,12 @@ function CourtGraphic({ color }: { color: string }) {
   );
 }
 
-export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club: MapClub; active: boolean; favorite: boolean; onFavorite: () => void; onHover: (id: string | null) => void }) {
+export function ClubCard({ club, active, favorite, onFavorite, onHover, dayPhrase = "today", date = null }: { club: MapClub; active: boolean; favorite: boolean; onFavorite: () => void; onHover: (id: string | null) => void; /** "today", "tomorrow", "on Fri, Oct 24" — the day the counts are for. */ dayPhrase?: string; /** The searched day, so the club page opens on it. */ date?: string | null }) {
   const next = club.nextSlotAt ? new Date(club.nextSlotAt) : null;
   return (
     <div onMouseEnter={() => onHover(club.id)} onMouseLeave={() => onHover(null)} className="relative">
       <Link
-        href={`/clubs/${club.slug}`}
+        href={`/clubs/${club.slug}${date && date !== "today" ? `?date=${date}` : ""}`}
         onFocus={() => onHover(club.id)}
         className={`card-interactive flex gap-4 rounded-2xl border bg-chalk p-3 sm:p-4 ${active ? "border-court shadow-lift" : "border-slate/10"}`}
       >
@@ -95,10 +95,10 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
               <span className="badge-neutral">See times on the club page</span>
             ) : club.guestSlotsToday > 0 ? (
               <span className="badge-success">
-                {club.guestSlotsToday} open today{next ? ` · next ${formatDate(next, "en-US", club.timeZone ?? "America/New_York", { hour: "numeric", minute: "2-digit" })}` : ""}
+                {club.guestSlotsToday} open {dayPhrase}{next ? ` · next ${formatDate(next, "en-US", club.timeZone ?? "America/New_York", { hour: "numeric", minute: "2-digit" })}` : ""}
               </span>
             ) : (
-              <span className="badge-neutral">Nothing open today</span>
+              <span className="badge-neutral">Nothing open {dayPhrase}</span>
             )}
           </div>
         </div>
@@ -116,7 +116,7 @@ export function ClubCard({ club, active, favorite, onFavorite, onHover }: { club
   );
 }
 
-export function ClubResults({ clubs, origin }: { clubs: MapClub[]; origin: { latitude: number; longitude: number; label: string } | null }) {
+export function ClubResults({ clubs, origin, dayPhrase = "today", date = null }: { clubs: MapClub[]; origin: { latitude: number; longitude: number; label: string } | null; dayPhrase?: string; date?: string | null }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -148,7 +148,7 @@ export function ClubResults({ clubs, origin }: { clubs: MapClub[]; origin: { lat
     <ul className="space-y-3">
       {sorted.map((club) => (
         <li key={club.id} ref={(el) => { cardRefs.current[club.id] = el; }}>
-          <ClubCard club={club} active={club.id === activeId} favorite={favorites.includes(club.id)} onFavorite={() => toggleFavorite(club.id)} onHover={setActiveId} />
+          <ClubCard club={club} active={club.id === activeId} favorite={favorites.includes(club.id)} onFavorite={() => toggleFavorite(club.id)} onHover={setActiveId} dayPhrase={dayPhrase} date={date} />
         </li>
       ))}
     </ul>

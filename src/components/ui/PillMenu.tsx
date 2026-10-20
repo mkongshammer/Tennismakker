@@ -5,6 +5,7 @@
 // closes. Outside clicks close. Options are plain buttons, so touch targets
 // are a full row each. On phones the menu is a bottom sheet (fixed), which
 // also escapes the horizontally scrolling filter row that would clip it.
+// Long lists (the 30-day date menu) scroll inside the menu.
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Icon } from "./index";
 
@@ -68,7 +69,7 @@ export function PillMenu<T extends string | number>({ label, value, options, onC
           id={menuId}
           role="listbox"
           aria-label={srLabel}
-          className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 overflow-hidden rounded-2xl border border-slate/15 bg-chalk p-1.5 shadow-pop animate-pop-in sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-[calc(100%+6px)] sm:min-w-[12rem]"
+          className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 max-h-[min(60vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-slate/15 bg-chalk p-1.5 shadow-pop animate-pop-in sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-[calc(100%+6px)] sm:min-w-[12rem]"
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
             if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }

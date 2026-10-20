@@ -27,7 +27,7 @@ export function stateFromAddress(address: string | null | undefined) {
   return match ? match[1] : null;
 }
 
-/** How many of the nearest candidates get a live availability check when filtering by "open today". */
+/** How many of the nearest candidates get a live availability check when filtering by a day ("open today", "open Fri, Oct 24"). */
 export const TODAY_FILTER_CANDIDATES = 48;
 /** Concurrent availability reads per search. */
 const AVAILABILITY_CONCURRENCY = 6;
@@ -50,14 +50,21 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   });
 }
 
-async function availabilityToday(club: { id: string; timeZone: string; courtIds: Set<string> }, now = new Date()): Promise<Availability | null> {
+/**
+ * Open times for one club on one day in the club's own zone: "today" (or no
+ * date) means the club's current calendar day from now on; a future date
+ * means that whole day. A day already over counts as nothing open.
+ */
+async function availabilityOn(club: { id: string; timeZone: string; courtIds: Set<string> }, date: string | null, now = new Date()): Promise<Availability | null> {
   const today = dayKey(now, club.timeZone);
-  const key = `${club.id}:${today}`;
+  const day = !date || date === "today" ? today : date;
+  if (day < today) return { count: 0, next: null };
+  const key = `${club.id}:${day}`;
   const cached = availabilityCache.get(key);
   if (cached && now.getTime() - cached.at < AVAILABILITY_CACHE_MS) return cached.value;
-  const start = wallTime(today, 0, 0, club.timeZone) ?? wallTime(today, 1, 0, club.timeZone)!;
-  const tomorrow = addCalendarDays(today, 1);
-  const end = wallTime(tomorrow, 0, 0, club.timeZone) ?? wallTime(tomorrow, 1, 0, club.timeZone)!;
+  const start = wallTime(day, 0, 0, club.timeZone) ?? wallTime(day, 1, 0, club.timeZone)!;
+  const next = addCalendarDays(day, 1);
+  const end = wallTime(next, 0, 0, club.timeZone) ?? wallTime(next, 1, 0, club.timeZone)!;
   const result = await withTimeout(getClubAvailability(club.id, start, end), AVAILABILITY_TIMEOUT_MS);
   let value: Availability | null = null;
   if (result) {
@@ -118,7 +125,7 @@ export async function discoverClubs(filters: DiscoveryFilters, now = new Date())
 
   const baseWhere = { status: "APPROVED", country: "US", courts: { some: { sport: filters.sport } } } as const;
   // Plain nationwide browse (no place, no name, no filters): let the database page.
-  const dbPaged = !place && !nameNeedle && !filters.indoor && filters.maxPrice == null && !filters.today;
+  const dbPaged = !place && !nameNeedle && !filters.indoor && filters.maxPrice == null && !filters.date;
   const [candidates, totalForSport] = await Promise.all([
     db.club.findMany({
       where: {
@@ -192,15 +199,15 @@ export async function discoverClubs(filters: DiscoveryFilters, now = new Date())
     return a.name.localeCompare(b.name);
   });
 
-  // Live availability: for the page we show, or — when filtering by "open
-  // today" — for a bounded set of the best-ranked candidates.
+  // Live availability: for the page we show (today), or — when filtering by
+  // a day — for a bounded set of the best-ranked candidates on that day.
   let availabilityChecked = 0;
-  if (filters.today) {
+  if (filters.date) {
     const checked = matches.slice(0, TODAY_FILTER_CANDIDATES);
     availabilityChecked = checked.length;
     await mapBounded(checked, AVAILABILITY_CONCURRENCY, async (club) => {
       if (!club.bookable) { club.slotsToday = 0; return; }
-      const a = await availabilityToday(club, now);
+      const a = await availabilityOn(club, filters.date, now);
       club.slotsToday = a ? a.count : null;
       club.nextSlotAt = a?.next ?? null;
     });
@@ -212,11 +219,11 @@ export async function discoverClubs(filters: DiscoveryFilters, now = new Date())
   const page = dbPaged ? filters.page : Math.min(filters.page, pageCount);
   const pageRows = dbPaged ? matches : matches.slice((page - 1) * pageSize, page * pageSize);
 
-  if (!filters.today) {
+  if (!filters.date) {
     availabilityChecked = pageRows.length;
     await mapBounded(pageRows, AVAILABILITY_CONCURRENCY, async (club) => {
       if (!club.bookable) { club.slotsToday = 0; return; }
-      const a = await availabilityToday(club, now);
+      const a = await availabilityOn(club, filters.date, now);
       club.slotsToday = a ? a.count : null;
       club.nextSlotAt = a?.next ?? null;
     });

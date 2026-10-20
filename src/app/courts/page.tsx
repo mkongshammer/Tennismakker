@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getPreferences, setPreferenceCookies } from "../../lib/preferences";
 import { discoverClubs, parseDiscoveryFilters, discoveryHref, TODAY_FILTER_CANDIDATES } from "../../lib/discovery";
+import { discoveryDayPhrase } from "../../lib/discovery-filters";
 import { sportLabel } from "../../lib/sports";
 import { DiscoverySearch } from "../../components/discovery/DiscoverySearch";
 import { ClubResults } from "../../components/discovery/ClubResults";
@@ -40,7 +41,8 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
   const sportLower = sportName.toLowerCase();
   const place = result.place;
   const stateSearch = place?.kind === "state";
-  const filtersActive = filters.today || filters.indoor || filters.maxPrice != null;
+  const filtersActive = Boolean(filters.date) || filters.indoor || filters.maxPrice != null;
+  const dayPhrase = discoveryDayPhrase(filters.date);
   const openCounts = result.clubs.map((c) => c.slotsToday).filter((n): n is number => n != null);
   const totalOpen = openCounts.reduce((sum, n) => sum + n, 0);
   const pageCount = Math.max(1, Math.ceil(result.total / result.pageSize));
@@ -55,7 +57,7 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
       ? null
       : [
           `${result.total} ${result.total === 1 ? "club" : "clubs"}${place && !stateSearch ? ` within ${filters.radiusMiles} mi` : ""}`,
-          openCounts.length ? `${totalOpen} ${totalOpen === 1 ? "time" : "times"} open today${result.total > result.clubs.length ? " on this page" : ""}` : null,
+          openCounts.length ? `${totalOpen} ${totalOpen === 1 ? "time" : "times"} open ${dayPhrase}${result.total > result.clubs.length ? " on this page" : ""}` : null,
         ].filter(Boolean).join(" · ");
 
   return (
@@ -80,15 +82,15 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
         </p>
       ) : null}
 
-      {filters.today && result.availabilityChecked >= TODAY_FILTER_CANDIDATES && (
+      {filters.date && result.availabilityChecked >= TODAY_FILTER_CANDIDATES && (
         <p className="-mt-2 text-sm text-slate" role="note">
-          “Available today” was checked for the {TODAY_FILTER_CANDIDATES} best-matching clubs. Narrow the search to a city or ZIP to check a smaller area completely.
+          Open times {dayPhrase} were checked for the {TODAY_FILTER_CANDIDATES} best-matching clubs. Narrow the search to a city or ZIP to check a smaller area completely.
         </p>
       )}
 
       {result.clubs.length > 0 ? (
         <>
-          <ClubResults clubs={result.clubs.map((c) => ({ ...c, priceHour: c.priceFrom, guestSlotsToday: c.slotsToday }))} origin={place && !stateSearch ? { latitude: place.latitude, longitude: place.longitude, label: place.label } : null} />
+          <ClubResults clubs={result.clubs.map((c) => ({ ...c, priceHour: c.priceFrom, guestSlotsToday: c.slotsToday }))} origin={place && !stateSearch ? { latitude: place.latitude, longitude: place.longitude, label: place.label } : null} dayPhrase={dayPhrase} date={filters.date} />
           {pageCount > 1 && (
             <nav aria-label="Pages" className="flex flex-wrap items-center justify-between gap-3 border-t border-slate/10 pt-4 text-sm">
               <p className="text-slate">

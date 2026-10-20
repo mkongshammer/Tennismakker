@@ -59,7 +59,7 @@ export async function ClubPage({
 
 
 
-}: {slug: string;searchParams: {dag?: string;sport?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
+}: {slug: string;searchParams: {dag?: string;date?: string;sport?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
   const club = await db.club.findUnique({
     where: { slug },
     include: {
@@ -87,7 +87,14 @@ export async function ClubPage({
   );
 
   const todayKey = dayKey(new Date(), club.timeZone),today = wallTime(todayKey, 0, 0, club.timeZone)!;
-  const dayOffset = Math.min(6, Math.max(0, Number(searchParams.dag ?? 0) || 0));
+  // Up to a month ahead, as in court search. `date=YYYY-MM-DD` (from a
+  // dated search) wins over `dag=<offset>` (the day tabs below).
+  const MAX_DAY_OFFSET = 30;
+  const dateOffset = /^\d{4}-\d{2}-\d{2}$/.test(String(searchParams.date ?? "")) ?
+  Math.round((Date.parse(`${searchParams.date}T00:00:00Z`) - Date.parse(`${todayKey}T00:00:00Z`)) / 86_400_000) :
+  NaN;
+  const dayOffset = Math.min(MAX_DAY_OFFSET, Math.max(0, Number.isFinite(dateOffset) ? dateOffset : Number(searchParams.dag ?? 0) || 0));
+  const weekStart = Math.floor(dayOffset / 7) * 7;
   const dayKeyValue = addCalendarDays(todayKey, dayOffset),day = wallTime(dayKeyValue, 0, 0, club.timeZone)!;
 
   const [{ slots }, ratings] = await Promise.all([
@@ -282,8 +289,14 @@ export async function ClubPage({
         </p>
 
         <div className="no-scrollbar -mx-4 mb-5 overflow-x-auto px-4 pb-1">
-          <div className="flex w-max gap-2">
-            {Array.from({ length: 7 }, (_, i) => {
+          <div className="flex w-max items-center gap-2">
+            {weekStart > 0 &&
+            <Link href={pageHref(Math.max(0, weekStart - 7))} aria-label="Earlier dates" className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate/20 bg-chalk text-slate">
+                <span aria-hidden="true">‹</span>
+              </Link>
+            }
+            {Array.from({ length: Math.min(7, MAX_DAY_OFFSET + 1 - weekStart) }, (_, n) => {
+              const i = weekStart + n;
               const d = wallTime(addCalendarDays(todayKey, i), 0, 0, club.timeZone)!;
               const active = i === dayOffset;
               return (
@@ -300,6 +313,11 @@ export async function ClubPage({
                 </Link>);
 
             })}
+            {weekStart + 7 <= MAX_DAY_OFFSET &&
+            <Link href={pageHref(weekStart + 7)} aria-label="Later dates" className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate/20 bg-chalk text-slate">
+                <span aria-hidden="true">›</span>
+              </Link>
+            }
           </div>
         </div>
 

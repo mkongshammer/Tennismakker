@@ -7,7 +7,7 @@ export default async function KlubRoute({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ dag?: string; optaget?: string; fejl?: string }>;
+  searchParams: Promise<{ dag?: string; date?: string; optaget?: string; fejl?: string }>;
 }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   return <ClubPage slug={slug} searchParams={query} />;

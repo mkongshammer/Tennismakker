@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
 
 /**
- * GET /api/v1/clubs?sport=TENNIS&q=Boston&indoor=1&today=1&max=40&radius=50&page=1
+ * GET /api/v1/clubs?sport=TENNIS&q=Boston&indoor=1&date=2026-11-07&max=40&radius=50&page=1
  *
  * Approved US clubs only, with the same search the website uses: a city,
  * state or ZIP resolves to a point and results carry distance in miles.

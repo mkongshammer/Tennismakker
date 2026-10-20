@@ -1,11 +1,11 @@
 "use client";
 
 // Court search. A plain GET form so every search is a shareable URL and
-// the back button works: /courts?q=Boston&sport=PICKLEBALL&today=1.
+// the back button works: /courts?q=Boston&sport=PICKLEBALL&date=2026-11-07.
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SPORTS, sportColor, sportLabel, type Sport } from "../../lib/sports";
-import { discoveryHref, DEFAULT_RADIUS_MILES, type DiscoveryFilters } from "../../lib/discovery-filters";
+import { discoveryHref, discoveryDayOptions, DEFAULT_RADIUS_MILES, type DiscoveryFilters } from "../../lib/discovery-filters";
 import { Icon } from "../ui";
 import { PillMenu } from "../ui/PillMenu";
 
@@ -14,6 +14,12 @@ const PRICE_STEPS = [25, 40, 60, 100] as const;
 export function DiscoverySearch({ filters, compact = false, action = "/courts", placeholder = "City, state or ZIP", radiusApplies = true }: { filters: DiscoveryFilters; compact?: boolean; action?: string; placeholder?: string; /** False for a whole-state search, where distance is not the filter. */ radiusApplies?: boolean }) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [dayOptions] = useState(() => {
+    const options = discoveryDayOptions();
+    // A shared link may name a day the menu no longer lists (yesterday's date); keep it selectable.
+    if (filters.date && !options.some((o) => o.value === filters.date)) options.splice(1, 0, { value: filters.date, label: filters.date });
+    return options;
+  });
   const [q, setQ] = useState(filters.q);
   const [sport, setSport] = useState<Sport>(filters.sport);
 
@@ -82,9 +88,16 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
         <div className="no-scrollbar -mx-1 mt-3 overflow-x-auto border-t border-slate/10 px-1 pt-3 text-sm sm:overflow-visible">
         <div className="flex w-max items-center gap-2 sm:w-auto sm:flex-wrap">
           <span className="mr-1 hidden text-xs font-bold uppercase tracking-[0.14em] text-slate sm:inline">Filters</span>
-          <button type="button" aria-pressed={filters.today} onClick={() => go({ today: !filters.today })} className="pill min-h-9 shrink-0 text-xs">
-            <Icon name="clock" size={14} /> Available today
-          </button>
+          <PillMenu
+            className="shrink-0"
+            srLabel="Open on day"
+            icon={<Icon name="clock" size={14} />}
+            value={filters.date ?? ""}
+            defaultValue=""
+            label={filters.date ? `Open ${dayOptions.find((o) => o.value === filters.date)?.label.replace(/^(Today|Tomorrow)$/, (d) => d.toLowerCase()) ?? "that day"}` : "Any day"}
+            options={dayOptions}
+            onChange={(v) => go({ date: v || null })}
+          />
           <button type="button" aria-pressed={filters.indoor} onClick={() => go({ indoor: !filters.indoor })} className="pill min-h-9 shrink-0 text-xs">
             <Icon name="roof" size={14} /> Indoor
           </button>
@@ -109,8 +122,8 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
               onChange={(v) => go({ radiusMiles: Number(v) })}
             />
           )}
-          {(filters.today || filters.indoor || filters.maxPrice) && (
-            <button type="button" onClick={() => go({ today: false, indoor: false, maxPrice: null })} className="shrink-0 text-xs font-semibold text-slate underline-offset-2 hover:underline sm:ml-auto">
+          {(filters.date || filters.indoor || filters.maxPrice) && (
+            <button type="button" onClick={() => go({ date: null, indoor: false, maxPrice: null })} className="shrink-0 text-xs font-semibold text-slate underline-offset-2 hover:underline sm:ml-auto">
               Clear filters
             </button>
           )}
