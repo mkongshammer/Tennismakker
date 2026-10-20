@@ -42,32 +42,45 @@ Court and coach payments are for real-world physical services. The app may open 
 
 Account deletion is available inside the app under “Min profil” → “Slet konto permanent”.
 
-## Google Play
+## Google Play (USA, English)
 
-**App name:** RacketBuddy
+**App name:** RacketBuddy: Clubs & Courts
 
-**Short description:** Find medspillere, book baner og trænere til din racketsport.
+**Short description (max 80):** Find players at your level, book courts and coaches for tennis and pickleball.
 
 **Full description:**
-RacketBuddy gør det nemmere at komme ud og spille.
+RacketBuddy gets you on court faster.
 
-Find andre spillere på dit niveau og i dit område, opret spilleopslag, book ledige baner hos tilknyttede klubber og centre, og find trænere med ledige tider.
+Find players at your level near you, post a game, book open courts at partner clubs, and book lessons with local coaches. Tennis, pickleball, padel, badminton, squash and table tennis.
 
-RacketBuddy giver dig mulighed for at:
-- finde relevante medspillere
-- oprette og svare på spilleopslag
-- booke baner
-- booke træning
-- sende beskeder til dine matches
-- holde styr på kommende bookinger
+With RacketBuddy you can:
+- find players who match your level and schedule
+- post a game or join one
+- book open courts at partner clubs
+- book coaches and pay securely
+- message players and, once a lesson is confirmed, your coach
+- keep track of your upcoming games, bookings and lessons
+- rate your coach after a lesson
 
-For klubber og centre fungerer RacketBuddy samtidig som en kanal til at gøre ledige tider tilgængelige for medlemmer og eksterne spillere.
+For clubs, RacketBuddy is court booking, member management and payments in one place, with open slots shown to players nearby.
 
-**Privacy policy:** https://racketbuddy.app/privatliv
+Payments for courts and lessons are for real-world services and are handled by Stripe.
 
-**Account deletion:** https://racketbuddy.app/slet-konto
+**Category:** Sports  **Tags:** Tennis, Sports, Booking
+**Countries:** United States only
+**Contact email (public):** support@racketbuddy.app
+**Website:** https://racketbuddy.app
+**Privacy policy:** https://racketbuddy.app/privacy
+**Account deletion:** https://racketbuddy.app/delete-account
+**Terms:** https://racketbuddy.app/terms/us
 
-**Support:** support@racketbuddy.app
+### Play Console answers (verify before submitting)
+- App access: all features available after free sign-up; no invite code. Reviewers can sign up on the login screen.
+- Ads: no ads.
+- Content rating: no violence, sexual content, gambling or drugs; users can message each other (user interaction), so expect Teen/Everyone 10+ depending on the questionnaire.
+- Target audience: 18+ (the app lets adults meet and message strangers; keep it out of the children's audience).
+- Data safety: collects name, email, phone (optional), user IDs, messages, in-app activity (bookings, posts), device push token. Purpose: app functionality and account management. Not sold, not shared for ads. Encrypted in transit. Users can request deletion. No location, photos, contacts or payment card data in the app (Stripe handles cards).
+- Government / financial / health features: none.
 
 ## Store data checklist
 
