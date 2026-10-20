@@ -46,6 +46,26 @@ export const LANGUAGES = ['da', 'en', 'en-US', 'de', 'sv', 'no', 'fr', 'es'];
 export const LANGUAGE_NAMES = { da: 'Dansk', en: 'English', 'en-US': 'American English', de: 'Deutsch', sv: 'Svenska', no: 'Norsk', fr: 'Français', es: 'Español' };
 export const TIME_ZONES = [...new Set([...MARKETS.map(c => c.timeZone), 'America/Chicago', 'America/Denver', 'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'Pacific/Honolulu', 'America/Halifax', 'America/St_Johns', 'America/Winnipeg', 'America/Edmonton', 'America/Vancouver', 'Atlantic/Canary', 'Atlantic/Azores', 'UTC'])];
 
+// RacketBuddy sells only in the United States. Pickers for clubs, coaches and
+// players offer these zones, named the way Americans say them; stored values
+// stay IANA names. A legacy value outside the list is kept selectable so an
+// old profile never silently changes zone on save.
+export const US_TIME_ZONES = [
+  { zone: 'America/New_York', label: 'Eastern Time' },
+  { zone: 'America/Chicago', label: 'Central Time' },
+  { zone: 'America/Denver', label: 'Mountain Time' },
+  { zone: 'America/Phoenix', label: 'Arizona (Mountain, no daylight saving)' },
+  { zone: 'America/Los_Angeles', label: 'Pacific Time' },
+  { zone: 'America/Anchorage', label: 'Alaska Time' },
+  { zone: 'Pacific/Honolulu', label: 'Hawaii Time' },
+];
+export function isUsTimeZone(zone) { return US_TIME_ZONES.some(z => z.zone === zone); }
+export function usTimeZoneOptions(current) {
+  const options = US_TIME_ZONES.map(z => ({ value: z.zone, label: z.label }));
+  if (current && !isUsTimeZone(current)) options.push({ value: current, label: current });
+  return options;
+}
+
 export function marketFor(code) { return MARKETS.find(c => c.code === String(code).toUpperCase()) ?? null; }
 export function validLocale(locale) { return LANGUAGES.includes(locale); }
 export function validCurrency(currency) { return CURRENCIES.includes(currency); }

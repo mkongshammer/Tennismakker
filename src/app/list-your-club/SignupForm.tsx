@@ -11,7 +11,7 @@ import { useFormState } from "react-dom";
 import { registerClub } from "../../lib/club-onboarding-actions";
 import { CUSTOM_FEATURES } from "../../lib/club-features";
 import { SPORTS, sportLabel, sportColor, type Locale, type Sport } from "../../lib/sports";
-import { TIME_ZONES, formatMoney, timeZoneLabel } from "../../lib/international";
+import { formatMoney, usTimeZoneOptions } from "../../lib/international";
 import { US_STATES, usStateTimeZone } from "../../../shared/us-address.mjs";
 import { phrase } from "../../lib/phrases";
 import { termsHref } from "../../lib/legal-market";
@@ -139,7 +139,7 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
             <label><span className="label">ZIP code</span><input className="input" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108" /></label>
             <label><span className="label">Time zone</span>
               <select className="input" name="timeZone" value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
-                {TIME_ZONES.filter((z) => z.startsWith("America/") || z.startsWith("Pacific/")).map((z) => <option key={z} value={z}>{timeZoneLabel(z, "en-US")} ({z})</option>)}
+                {usTimeZoneOptions(timeZone).map((z) => <option key={z.value} value={z.value}>{z.label}</option>)}
               </select>
               <span className="hint">Set from your state. Change it if your club sits in a different zone.</span>
             </label>

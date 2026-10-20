@@ -3,7 +3,7 @@ import {UiText} from "../../../../components/InternationalProvider";
 
 
 import {useWebsiteInternational} from "../../../../components/InternationalProvider";
-import {SALES_CURRENCIES,TIME_ZONES,marketFor} from "../../../../lib/international";
+import {SALES_CURRENCIES,TIME_ZONES,marketFor,usTimeZoneOptions} from "../../../../lib/international";
 import { useFormState } from "react-dom";
 import { SPORTS, sportLabel } from "../../../../lib/sports";
 import { DK_REGIONS } from "../../../../lib/regions";
@@ -47,21 +47,31 @@ export default function OpretTraenerprofilPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="label" htmlFor="priceHour"><UiText text="Pris / time"/></label>
-            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={market.currency==='USD'?53:47} required />
+            <label className="label" htmlFor="priceHour">{country==="US"?"Price per hour (USD)":<UiText text="Pris / time"/>}</label>
+            <input className="input" id="priceHour" name="priceHour" type="number" min={1} max={10000} defaultValue={market.currency==='USD'?75:47} required />
           </div>
           <div>
-            <label className="label" htmlFor="area"><UiText text="Region"/></label>
+            <label className="label" htmlFor="area">{country==="US"?"City or area":<UiText text="Region"/>}</label>
             {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
               <option value="" disabled><UiText text="Vælg region"/></option>
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
+            </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100} placeholder="e.g. Boston, MA"/>}
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+        {country==="US" ? (
+          <div>
+            <label className="label" htmlFor="timeZone">Time zone</label>
+            <select id="timeZone" name="timeZone" className="input" defaultValue={market.timeZone}>
+              {usTimeZoneOptions(market.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>)}
+            </select>
+            <p className="mt-1 text-xs text-slate">Prices are in US dollars. Your open times are shown to players in this zone.</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+        )}
         {state?.error ? <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p> : null}
 
         <SubmitButton className="btn-court w-full" pendingText="Opretter…"><UiText text="Opret trænerprofil"/></SubmitButton>

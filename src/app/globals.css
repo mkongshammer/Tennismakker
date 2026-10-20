@@ -223,6 +223,24 @@ h3 {
   border-radius: 6px;
 }
 
+/* Selects: one chevron, inset from the edge with room to breathe, the same
+   in every browser. The native arrow sat flush against the border and
+   differed between Chrome, Safari and Firefox. :not([multiple]) lifts the
+   specificity above padding utilities (px-3, px-4) on the element. */
+select:not([multiple]) {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2354677E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 7.75 10 12.25l4.5-4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  background-size: 1.15rem;
+  padding-right: 2.75rem;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+select:not([multiple]):disabled { cursor: not-allowed; opacity: 0.6; }
+select::-ms-expand { display: none; }
+
 /* iOS zooms on fields under 16px */
 input,
 select,

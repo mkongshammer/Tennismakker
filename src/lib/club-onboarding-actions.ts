@@ -9,7 +9,7 @@ import {db} from './db';
 import {createSession,getCurrentUser} from './session';
 import {clubSignupPrices,startOnboardingCheckout,refreshClubSignup} from './club-onboarding';
 import {CUSTOM_FEATURES} from './club-features';
-import {bookingCurrency,marketFor,validCurrency,validTimeZone,validLocale} from './international';
+import {bookingCurrency,marketFor,validCurrency,validTimeZone,validLocale,isUsTimeZone} from './international';
 import {regionAllowsCountry} from './region';
 import {formatUSAddress,normalizeUSPostalCode,normalizeUSState,validUSPostalCode,validUSState} from '../../shared/us-address.mjs';
 import {geocode} from './geocode';
@@ -29,7 +29,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   const usState=normalizeUSState(form.get('state')),postalCode=normalizeUSPostalCode(form.get('postalCode'));
   if(country==='US'&&(!street||!validUSState(usState)||!validUSPostalCode(postalCode)))throw Error('Enter a complete US address with street, city, state, and a valid ZIP code.');
   const address=country==='US'&&structuredUSAddress?formatUSAddress(street,city,usState,postalCode):street;
-  if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||!validLocale(locale)||address.length>300)throw Error('Choose a valid country, address, and time zone.');
+  if(!market||!validCurrency(currency)||!validTimeZone(timeZone)||(country==='US'&&!isUsTimeZone(timeZone))||!validLocale(locale)||address.length>300)throw Error('Choose a valid country, address, and time zone.');
   // One plan: every club gets the full system. The legacy STANDARD/CUSTOM split only remains for existing agreements.
   void mode;const features=CUSTOM_FEATURES.map(f=>f.id);
   const sports=[...new Set(form.getAll('sports').map(String))];if(!sports.length||sports.some(s=>!(SPORTS as readonly string[]).includes(s)))throw Error('Vælg klubbens sportsgrene.');

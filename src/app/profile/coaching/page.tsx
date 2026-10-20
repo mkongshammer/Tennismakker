@@ -8,7 +8,7 @@ import { updateCoachProfile, startCoachPayoutSetup } from "./actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { WeeklyCalendar } from "./WeeklyCalendar";
 import { LESSON_LENGTHS, describeLength, lessonPriceKr } from "../../../lib/slots";
-import {TIME_ZONES,formatMoney} from "../../../lib/international";
+import {TIME_ZONES,formatMoney,usTimeZoneOptions} from "../../../lib/international";
 import {useWebsiteInternational} from "../../../components/InternationalProvider";
 import { DK_REGIONS, regionForArea } from "../../../lib/regions";
 import { useSearchParams } from "next/navigation";
@@ -100,7 +100,7 @@ export default function TraenerProfilPage() {
             </select>:<input className="input" id="area" name="area" defaultValue={profile.area} required maxLength={100}/>}
           </div>
         </div>
-        <label className="label block">{tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
+        <label className="label block">{profile.country==="US"?"Time zone":tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{profile.country==="US"?usTimeZoneOptions(profile.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>):TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
         <div>
           <label className="label" htmlFor="lessonMinutes"><UiText text="Længden på én lektion"/></label>
           <select

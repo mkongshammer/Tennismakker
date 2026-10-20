@@ -28,7 +28,7 @@ export default function NytOpslagPage() {
             required
           />
         </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="label" htmlFor="matchType"><UiText text="Type"/></label>
             <select className="input" id="matchType" name="matchType" defaultValue="SINGLE">

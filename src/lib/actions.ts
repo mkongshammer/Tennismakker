@@ -7,7 +7,7 @@ import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
 import {phrase} from "./phrases";
 import {clubSignupPrices} from "./club-onboarding";
-import { marketFor, validSalesCurrency, validCurrency, validTimeZone,wallTime,formatDate,formatMoney } from "./international";
+import { marketFor, validSalesCurrency, validCurrency, validTimeZone,isUsTimeZone,wallTime,formatDate,formatMoney } from "./international";
 import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
 import {createCourtReservation} from "./court-reservation";
 import { requireCustomClub } from "./club-management-actions";
@@ -119,9 +119,10 @@ export async function signup(_prev: unknown, formData: FormData) {
   const {area,country,locale}=location;
   if (country !== "US") return { error: "New RacketBuddy accounts are available for the United States only." };
   const market=marketFor(country)!;
-  const currency=String(formData.get('currency')??market.currency),timeZone=String(formData.get('timeZone')??market.timeZone);
-  const coachPrice=Number(formData.get('priceHour')??(currency==='USD'?53:47));
-  if(role==='COACH' && (!validSalesCurrency(currency)||!validTimeZone(timeZone)||!Number.isSafeInteger(coachPrice)||coachPrice<1||coachPrice>10000)) return {error:locale==='da'?'Vælg gyldig valuta, tidszone og trænerpris.':'Choose a valid currency, time zone and coaching price.'};
+  // US only: coach prices are USD and zones are US zones, whatever the form says.
+  const currency='USD',timeZone=String(formData.get('timeZone')??market.timeZone);
+  const coachPrice=Number(formData.get('priceHour')??75);
+  if(role==='COACH' && (!validSalesCurrency(currency)||!isUsTimeZone(timeZone)||!Number.isSafeInteger(coachPrice)||coachPrice<1||coachPrice>10000)) return {error:locale==='da'?'Vælg gyldig valuta, tidszone og trænerpris.':'Choose a valid currency, time zone and coaching price.'};
 
   if (!email.includes("@") || password.length < 8 || Buffer.byteLength(password)>72 || !name || !Number.isFinite(level)) {
     return { error: "Udfyld navn, gyldig e-mail og en adgangskode på mindst 8 tegn." };
@@ -728,7 +729,7 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
   }
 
   const timeZone=String(formData.get("timeZone")??user.coachProfile.timeZone),priceHour=Number(formData.get("priceHour")??350);
-  if(!validTimeZone(timeZone)||!Number.isSafeInteger(priceHour)||priceHour<0||priceHour>10000)return {error:"Choose a valid time zone and hourly price."};
+  if(!validTimeZone(timeZone)||(user.coachProfile.country==="US"&&!isUsTimeZone(timeZone)&&timeZone!==user.coachProfile.timeZone)||!Number.isSafeInteger(priceHour)||priceHour<0||priceHour>10000)return {error:"Choose a valid time zone and hourly price."};
   await db.coachProfile.update({
     where: { userId: user.id },
     data: {

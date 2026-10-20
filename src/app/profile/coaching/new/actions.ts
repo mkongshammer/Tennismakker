@@ -6,7 +6,7 @@ import { db } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/session";
 import { normaliseBuddySports } from "../../../../lib/buddy-sports";
 import {validArea} from "../../../../lib/profile-location";
-import {marketFor,validSalesCurrency,validTimeZone} from "../../../../lib/international";
+import {isUsTimeZone,marketFor,validSalesCurrency,validTimeZone} from "../../../../lib/international";
 
 export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const user = await getCurrentUser();
@@ -22,8 +22,10 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
 
   if (!headline) return { error: "Skriv en kort overskrift til din trænerprofil." };
   const country=user.country,market=marketFor(country)!;
-  const currency=String(formData.get("currency")??market.currency),timeZone=String(formData.get("timeZone")??market.timeZone);
-  if(!validSalesCurrency(currency)||!validTimeZone(timeZone))return {error:"Choose a valid currency and time zone."};
+  // US-only: coaches are paid in USD and teach in a US time zone, whatever the form says.
+  const us=country==="US";
+  const currency=us?"USD":String(formData.get("currency")??market.currency),timeZone=String(formData.get("timeZone")??market.timeZone);
+  if(!validSalesCurrency(currency)||!validTimeZone(timeZone)||(us&&!isUsTimeZone(timeZone)))return {error:"Choose a valid US time zone."};
   if (!validArea(country,area)) return { error: "Choose a valid city/area." };
   if (!Number.isSafeInteger(priceHour) || priceHour < 1 || priceHour > 10000) {
     return { error: "Set an hourly price between 1 and 10,000." };

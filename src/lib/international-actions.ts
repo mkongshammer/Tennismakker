@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache';
 import { db } from './db';
 import { getCurrentUser } from './session';
-import { marketFor, validSalesCurrency, validCurrency, validTimeZone } from './international';
+import { marketFor, validSalesCurrency, validCurrency, validTimeZone, isUsTimeZone } from './international';
 
 export async function saveClubInternational(_prev: unknown, form: FormData): Promise<{ok?: string; error?: string}> {
   try {
@@ -10,7 +10,7 @@ export async function saveClubInternational(_prev: unknown, form: FormData): Pro
     if (user?.role !== 'CLUB_ADMIN' || !user.clubId) throw Error('Ingen adgang.');
     const country = String(form.get('country') ?? ''), currency = String(form.get('currency') ?? ''), timeZone = String(form.get('timeZone') ?? '');
     const market = marketFor(country), priceHour = Number(form.get('priceHour'));
-    if (!market || !validCurrency(currency) || !validTimeZone(timeZone) || !Number.isSafeInteger(priceHour) || priceHour < 0 || priceHour > 10000) throw Error('Vælg gyldigt land, valuta, tidszone og pris.');
+    if (!market || !validCurrency(currency) || !validTimeZone(timeZone) || (country === 'US' && !isUsTimeZone(timeZone) && timeZone !== (await db.club.findUnique({ where: { id: user.clubId! }, select: { timeZone: true } }))?.timeZone) || !Number.isSafeInteger(priceHour) || priceHour < 0 || priceHour > 10000) throw Error('Vælg gyldigt land, valuta, tidszone og pris.');
     await db.$transaction(async tx => {
       await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${user.clubId} FOR UPDATE`;
       const club = await tx.club.findUniqueOrThrow({where:{id:user.clubId!}});
