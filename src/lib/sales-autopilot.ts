@@ -226,6 +226,12 @@ async function createUnsubscribe(prospect: Prospect, appUrl: string) {
   return `${appUrl}/sales/unsubscribe?token=${encodeURIComponent(token)}`;
 }
 
+/** True for a sender on racketbuddy.app or any of its subdomains (send.racketbuddy.app). */
+export function isPrimaryDomainSender(from: string): boolean {
+  const domain = (from.match(/@([^>\s]+)/)?.[1] ?? "").toLowerCase();
+  return domain === "racketbuddy.app" || domain.endsWith(".racketbuddy.app");
+}
+
 type SalesSendResult = { accepted: boolean; providerId?: string; error?: string };
 
 async function sendSalesMail(input: { to: string; replyTo: string; subject: string; body: string }): Promise<SalesSendResult> {
@@ -319,9 +325,14 @@ async function runSalesAutopilotUnlocked(now = new Date(), options?: { force?: b
 
   const settings = await getSettings();
   if (!settings.emailApiKey) return saveReport({ ...base, reason: "email-unconfigured", detail: "Configure the production email provider before autonomous sales can send." });
-  const replyEmail = settings.ordersEmail || "racketbuddy.app@gmail.com";
+  const replyEmail = settings.ordersEmail || "sales@racketbuddy.app";
   const postalAddress = config.salesPostalAddress.trim() || DEFAULT_SALES_POSTAL_ADDRESS;
   if (!settings.emailFrom || !settings.emailFrom.includes("@")) return saveReport({ ...base, reason: "sender-email-missing", detail: "Set a verified Resend sender address in Platform settings." });
+  // Cold outreach never goes out from the product domain: spam complaints there
+  // would land booking confirmations and password resets in spam. Outreach runs
+  // from separate sending domains (Instantly); this autopilot stays off until it
+  // is given one of those as its own sender.
+  if (isPrimaryDomainSender(settings.emailFrom)) return saveReport({ ...base, reason: "primary-domain-sender", detail: "Sales outreach is disabled on racketbuddy.app. Use the separate sending domains (Instantly) for cold email." });
 
   const schedule = easternSchedule(now);
   if (!options?.force && !schedule.inWindow) return { ...base, reason: "outside-us-business-hours" };

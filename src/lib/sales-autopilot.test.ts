@@ -36,7 +36,7 @@ function harness(input?: {
     }) },
     "./settings": { getSettings: async () => ({
       emailApiKey: input?.emailKey === undefined ? "test-resend-key" : input.emailKey,
-      emailFrom: "RacketBuddy <hello@racketbuddy.app>",
+      emailFrom: "RacketBuddy <hello@getracketbuddy.com>",
       ordersEmail: "", appUrl: "https://racketbuddy.app",
     }) },
     "./club-onboarding": { clubSignupPriceBook: async () => ({
@@ -160,4 +160,12 @@ test("No outbound mail is attempted until three distinct prospects verify", asyn
     assert.equal(result.sent, 0);
     assert.equal(h.fetchCalls.filter((url) => url.includes("api.resend.com")).length, 0);
   } finally { h.restore(); }
+});
+
+test("cold outreach never sends from the product domain", async () => {
+  const { isPrimaryDomainSender } = await import("./sales-autopilot");
+  assert.equal(isPrimaryDomainSender("RacketBuddy <ikke-svar@racketbuddy.app>"), true);
+  assert.equal(isPrimaryDomainSender("hello@send.racketbuddy.app"), true);
+  assert.equal(isPrimaryDomainSender("Magnus <magnus@getracketbuddy.com>"), false);
+  assert.equal(isPrimaryDomainSender("x@racketbuddy.app.evil.com"), false);
 });
