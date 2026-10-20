@@ -34,7 +34,7 @@
     },
     "android": {
       "package": "dk.racketbuddy.app",
-      "versionCode": 1,
+      "versionCode": 100,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1E3D2F"
@@ -49,11 +49,12 @@
       "apiUrlUs": "https://racketbuddy.app",
       "googleWebClientId": "367445361935-os7taa4egjiaf7e2ct67copfrocp5tos.apps.googleusercontent.com",
       "eas": {
-        "projectId": "620ef3a3-d92c-4241-86bb-511817c9d3cb"
+        "projectId": "6f8383f0-de60-4b32-9104-1cec88ba543c"
       }
     },
     "experiments": {
       "baseUrl": "/app"
-    }
+    },
+    "owner": "magnuskongs99"
   }
 }
