@@ -1,11 +1,8 @@
-import Constants from "expo-constants";
-import { getToken } from "./api";
-
-const BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? "https://racketbuddy.app";
+import { apiBaseUrl, getToken } from "./api";
 
 async function postAction(threadId, body) {
   const token = await getToken();
-  const response = await fetch(`${BASE_URL}/api/v1/threads/${encodeURIComponent(threadId)}`, {
+  const response = await fetch(`${apiBaseUrl()}/api/v1/threads/${encodeURIComponent(threadId)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -6,10 +6,10 @@
 // uoverensstemmelser, der bliver dyre.
 
 export const COMPANY = {
-  name: "RacketBuddy LLC",
+  name: "PTMove LLC",
   registration: "registreret i staten Delaware, USA",
   address: "8 The Green, Ste D, Dover, DE 19901, USA",
-  email: "racketbuddy.app@gmail.com",
+  email: "support@racketbuddy.app",
 } as const;
 
 /**

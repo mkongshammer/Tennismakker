@@ -77,7 +77,7 @@ export function AgentSettingsForm({
         <label className="block">
           <span className="text-sm font-bold">RacketBuddys virksomheds-postadresse</span>
           <input name="salesPostalAddress" defaultValue={salesPostalAddress} className="input mt-1" placeholder="Street, city, postal code, country" />
-          <span className="mt-1 block text-xs text-slate">Bruges i bunden af kommercielle salgsmails. Standardadressen for RacketBuddy LLC bruges, hvis feltet er tomt.</span>
+          <span className="mt-1 block text-xs text-slate">Bruges i bunden af kommercielle salgsmails. Standardadressen for PTMove LLC bruges, hvis feltet er tomt.</span>
         </label>
       </section>
 

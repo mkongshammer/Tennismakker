@@ -67,7 +67,7 @@ For klubber og centre fungerer RacketBuddy samtidig som en kanal til at gøre le
 
 **Account deletion:** https://racketbuddy.app/slet-konto
 
-**Support:** racketbuddy.app@gmail.com
+**Support:** support@racketbuddy.app
 
 ## Store data checklist
 

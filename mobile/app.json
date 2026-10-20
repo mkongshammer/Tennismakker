@@ -45,8 +45,8 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "https://racketbuddy.app",
-      "apiUrlUs": "https://racketbuddy-us.onrender.com",
+      "apiUrl": "https://eu.racketbuddy.app",
+      "apiUrlUs": "https://racketbuddy.app",
       "googleWebClientId": "367445361935-os7taa4egjiaf7e2ct67copfrocp5tos.apps.googleusercontent.com",
       "eas": {
         "projectId": "620ef3a3-d92c-4241-86bb-511817c9d3cb"
