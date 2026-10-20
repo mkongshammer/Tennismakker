@@ -66,7 +66,7 @@ export default function SwipeScreen({ navigation }) {useInternational();
                   <Text style={styles.name}>{item.name}</Text>
                   {item.isCoach ? <Badge>{tr("Tr\xE6ner")}</Badge> : null}
                 </View>
-                <Text style={styles.meta}>{tr("Niveau")}
+                <Text style={styles.meta}>{tr("Niveau")}{" "}
                   {item.level} · {tr(LEVELS[item.level] ?? "")}
                 </Text>
                 {item.area ? <Text style={styles.meta}>{item.area}</Text> : null}

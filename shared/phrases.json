@@ -1202,5 +1202,21 @@
   "Tillad notifikationer i telefonens indstillinger.": "Allow notifications in your phone's settings.",
   "Push skal aktiveres på en fysisk telefon.": "Push notifications must be enabled on a physical phone.",
   "Push er endnu ikke konfigureret i denne app-build.": "Push notifications are not configured in this app build yet.",
-  "Kunne ikke åbne beskeder": "Could not open messages"
+  "Kunne ikke åbne beskeder": "Could not open messages",
+  "Klar til næste\\nserve?": "Ready for your\nnext serve?",
+  "Færdiggør din profil": "Finish your profile",
+  "Skriv din e-mail, så sender vi et sikkert link til at vælge en ny adgangskode.": "Enter your email and we'll send you a secure link to choose a new password.",
+  "Vi mangler kun et par oplysninger, før din konto er klar.": "We just need a few details before your account is ready.",
+  "Login kunne ikke gennemføres.": "We couldn't sign you in.",
+  "Ved at oprette en profil accepterer du ": "By creating a profile you agree to the ",
+  "vilkårene": "terms",
+  " og ": " and ",
+  "Opret profil med e-mail": "Create profile with email",
+  "Log ind med e-mail": "Log in with email",
+  "Annullér og gå tilbage": "Cancel and go back",
+  "Applås": "App lock",
+  "er slået til. RacketBuddy låses, når du forlader appen.": "is on. RacketBuddy locks when you leave the app.",
+  "Du forbliver logget ind. Slå biometrisk applås til, hvis appen skal kræve godkendelse, hver gang du åbner den.": "You stay signed in. Turn on biometric app lock if you want the app to ask for verification every time you open it.",
+  "Slå {method} fra": "Turn off {method}",
+  "Slå {method} til": "Turn on {method}"
 }

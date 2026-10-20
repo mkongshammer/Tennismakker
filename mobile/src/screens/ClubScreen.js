@@ -18,6 +18,15 @@ import { dayLong, dayShort, groupByDay, time } from "../lib/dates";
 import { BookingReview } from "../lib/BookingReview";
 import { readableSurface } from "../lib/contrast.mjs";
 
+// "America/New_York" -> "Eastern Daylight Time": readable for players, still exact.
+function zoneLabel(timeZone) {
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "long" }).formatToParts(new Date()).find(part => part.type === "timeZoneName")?.value ?? timeZone;
+  } catch {
+    return timeZone;
+  }
+}
+
 // En ledig tid som et stykke bane: sportens farve, kridhvid baglinje langs
 // bunden. Samme signatur som websitets .court-tile — bare tegnet med
 // StyleSheet i stedet for CSS. Linjen ligger i bunden, ikke midt i feltet,
@@ -107,7 +116,7 @@ export default function ClubScreen({ route }) {useInternational();
       <View style={[styles.hero, { backgroundColor: hero.backgroundColor }]}>
         <Text style={[styles.heroTitle, { color: hero.color }]}>{club.name}</Text>
         <Text style={[styles.heroCity, { color: hero.color }]}>
-          {club.address ? `${club.address}, ` : ""}{club.city}
+          {club.address && club.city && club.address.toLowerCase().includes(String(club.city).toLowerCase()) ? club.address : `${club.address ? `${club.address}, ` : ""}${club.city ?? ""}`}
         </Text>
         {club.description ? <Text style={[styles.heroText, { color: hero.color }]}>{club.description}</Text> : null}
         <Text style={[styles.heroMeta, { color: hero.color }]}>
@@ -116,7 +125,7 @@ export default function ClubScreen({ route }) {useInternational();
       </View>
 
       <Button title={tr("Se på kort")} variant="quiet" onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(Number.isFinite(club.latitude) && Number.isFinite(club.longitude) ? `${club.latitude},${club.longitude}` : `${club.address ?? club.name}, ${club.city}, ${club.country}`)}`).catch(() => Alert.alert(tr("Kunne ikke åbne siden. Prøv igen.")))} />
-      <Text style={styles.heroMeta}>{tr("Lokal tid")}: {club.timeZone}</Text>
+      <Text style={{ color: colors.slate, marginTop: 4 }}>{tr("Lokal tid")}: {zoneLabel(club.timeZone)}</Text>
       <Text style={styles.section}>{tr("Ledige tider")}</Text>
       <Text style={{ color: colors.slate, marginBottom: 14, lineHeight: 22 }}>{tr("V\xE6lg en tid for at se detaljerne inden betaling.")}</Text>
 

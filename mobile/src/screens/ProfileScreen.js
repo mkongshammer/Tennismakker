@@ -221,7 +221,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
               : tr("Du forbliver logget ind. Slå biometrisk applås til, hvis appen skal kræve godkendelse, hver gang du åbner den.")}
           </Text>
           <Button
-            title={appLock.enabled ? `${tr("Slå")} ${appLock.biometricLabel} ${tr("fra")}` : `${tr("Slå")} ${appLock.biometricLabel} ${tr("til")}`}
+            title={appLock.enabled ? tr("Slå {method} fra", { method: appLock.biometricLabel }) : tr("Slå {method} til", { method: appLock.biometricLabel })}
             variant={appLock.enabled ? "quiet" : undefined}
             loading={lockBusy}
             onPress={toggleAppLock} />
