@@ -1,5 +1,6 @@
 import { db } from './db';
-import { bookingPush, reminderWindow, retryDelay, type PushCategory } from './push-policy';
+import { bookingPush, reminderWindow, retryDelay, pushCopy, type PushCategory, type PushLang } from './push-policy';
+import { messageLocale } from './mail-locale';
 
 // Generic lock-screen copy: no names, message text, access codes or payment data.
 async function enqueue(userId: string, key: string, category: PushCategory, title: string, body: string, data: object, expiresAt: Date, extra: {bookingId?:string;expectedStatus?:string;threadId?:string} = {}) {
@@ -14,19 +15,21 @@ async function collectPushEvents(now:Date, deadline:number) {
   for(const pref of prefs) {
     if(Date.now()>deadline) break;
     const userId=pref.userId;
+    const owner=await db.user.findUnique({where:{id:userId},select:{locale:true}});
+    const lang:PushLang=messageLocale(owner?.locale)==='da'?'da':'en';
     const bookings=await db.booking.findMany({where:{OR:[{userId},{coachProfile:{userId}}],endsAt:{gt:new Date(now.getTime()-86400000)}},include:{coachProfile:{select:{userId:true}}},orderBy:{startsAt:'asc'},take:100});
     for(const booking of bookings) {
       const prev=await db.pushBookingState.findUnique({where:{userId_bookingId:{userId,bookingId:booking.id}}});
       const isCoach=booking.userId!==userId;
       // First scan establishes a baseline; no flood of old confirmations.
       if ((!prev && booking.createdAt>=pref.enabledAt) || (prev && prev.status!==booking.status)) {
-        const event=bookingPush(booking.status,prev?.status??null,isCoach);
+        const event=bookingPush(booking.status,prev?.status??null,isCoach,lang);
         if(event) await enqueue(userId,`booking:${booking.id}:${booking.status}`,event.category,event.title,event.body,{screen:isCoach?'coach':'profile'},new Date(now.getTime()+86400000),{bookingId:booking.id,expectedStatus:booking.status});
       }
-      if(prev && prev.startsAt.getTime()!==booking.startsAt.getTime() && booking.status==='CONFIRMED') await enqueue(userId,`rescheduled:${booking.id}:${booking.startsAt.toISOString()}`,'bookings','Din booking har fået en ny tid','Se det opdaterede tidspunkt i appen.',{screen:isCoach?'coach':'profile'},booking.startsAt,{bookingId:booking.id,expectedStatus:'CONFIRMED'});
+      if(prev && prev.startsAt.getTime()!==booking.startsAt.getTime() && booking.status==='CONFIRMED') await enqueue(userId,`rescheduled:${booking.id}:${booking.startsAt.toISOString()}`,'bookings',pushCopy('rescheduled',lang).title,pushCopy('rescheduled',lang).body,{screen:isCoach?'coach':'profile'},booking.startsAt,{bookingId:booking.id,expectedStatus:'CONFIRMED'});
       if(booking.status==='CONFIRMED') {
-        const reminder=reminderWindow(booking.startsAt,now);
-        if(reminder) await enqueue(userId,`reminder:${booking.id}:${booking.startsAt.toISOString()}:${reminder.key}`,'reminders',reminder.title,'Se tid og sted under dine bookinger.',{screen:isCoach?'coach':'profile'},booking.startsAt,{bookingId:booking.id,expectedStatus:'CONFIRMED'});
+        const reminder=reminderWindow(booking.startsAt,now,lang);
+        if(reminder) await enqueue(userId,`reminder:${booking.id}:${booking.startsAt.toISOString()}:${reminder.key}`,'reminders',reminder.title,reminder.body,{screen:isCoach?'coach':'profile'},booking.startsAt,{bookingId:booking.id,expectedStatus:'CONFIRMED'});
       }
       await db.pushBookingState.upsert({where:{userId_bookingId:{userId,bookingId:booking.id}},create:{userId,bookingId:booking.id,status:booking.status,startsAt:booking.startsAt},update:{status:booking.status,startsAt:booking.startsAt}});
     }
@@ -35,7 +38,7 @@ async function collectPushEvents(now:Date, deadline:number) {
       // At most one notification per conversation per five-minute window.
       const groups=new Map<string,typeof messages[number]>();
       for(const m of messages) groups.set(`${m.matchRequestId}:${Math.floor(m.createdAt.getTime()/300000)}`,m);
-      for(const [key,m] of groups) await enqueue(userId,`message:${key}`,'messages','Ny besked','Du har en ulæst besked i RacketBuddy.',{screen:'thread',threadId:m.matchRequestId},new Date(m.createdAt.getTime()+86400000),{threadId:m.matchRequestId});
+      for(const [key,m] of groups) await enqueue(userId,`message:${key}`,'messages',pushCopy('message',lang).title,pushCopy('message',lang).body,{screen:'thread',threadId:m.matchRequestId},new Date(m.createdAt.getTime()+86400000),{threadId:m.matchRequestId});
     }
     await db.pushPreference.update({where:{userId},data:{scannedAt:now}});
   }

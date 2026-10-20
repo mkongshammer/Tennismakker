@@ -15,7 +15,7 @@ async function register(ask=false) {
   const projectId=Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
   if(!projectId) { if(ask) throw Error('Push er endnu ikke konfigureret i denne app-build.'); return false; }
   const N=await import('expo-notifications');
-  if(Platform.OS==='android') await N.setNotificationChannelAsync('racketbuddy',{name:'Bookinger og beskeder',importance:N.AndroidImportance.DEFAULT});
+  if(Platform.OS==='android') await N.setNotificationChannelAsync('racketbuddy',{name:'Bookings and messages',importance:N.AndroidImportance.DEFAULT});
   let permission=await N.getPermissionsAsync();
   if(!permission.granted && ask) permission=await N.requestPermissionsAsync();
   if(!permission.granted) { await unregister(); if(ask) throw Error('Tillad notifikationer i telefonens indstillinger.'); return false; }

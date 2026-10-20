@@ -1198,5 +1198,8 @@
   "Trænertime hos {p0} ({p1})": "Lesson with {p0} ({p1})",
   "Gratis aflysning indtil 24 timer før.": "Free cancellation until 24 hours before.",
   "Fortryder du, kan du aflyse gratis indtil 24 timer før starttidspunktet.": "Change of plans? Cancel free of charge until 24 hours before the start time.",
-  "Din trænerside": "Coach dashboard"
+  "Din trænerside": "Coach dashboard",
+  "Tillad notifikationer i telefonens indstillinger.": "Allow notifications in your phone's settings.",
+  "Push skal aktiveres på en fysisk telefon.": "Push notifications must be enabled on a physical phone.",
+  "Push er endnu ikke konfigureret i denne app-build.": "Push notifications are not configured in this app build yet."
 }

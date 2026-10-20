@@ -1,97 +1,22 @@
-import { runRenewals } from "../../../../lib/renewals";
-import { runEngagementEmails } from "../../../../lib/engagement-emails";
-import { runScheduledAgentSweep } from "../../../../lib/agent-scheduler";
-import { getSettings } from "../../../../lib/settings";
-import { ensureBlocks, processBlocks } from "../../../../lib/system-blocks";
-// Baggrundsjob: synkroniserer alle klubber med kalenderfeed og rydder
-// udløbne reservationer.
+// Baggrundsjob hvert 15. minut: rydder udløbne reservationer, synkroniserer
+// kalenderfeeds, spærringer, fornyelser, engagement-mails og autopilot.
 //
-// Kaldes af et cron-job på Render. Beskyttet med CRON_SECRET, så endpointet
-// ikke kan misbruges til at hamre klubbernes feeds.
+// Kaldes af et cron-job på Render mod EU-tjenesten, beskyttet med
+// CRON_SECRET. EU kører jobbet selv og videresender kørslen til US-tjenesten
+// (se src/lib/cron-jobs.ts).
 //
 // Kør manuelt:  curl -H "Authorization: Bearer $CRON_SECRET" https://.../api/cron/sync
-
-import { db } from "../../../../lib/db";
-import { syncClubCalendar } from "../../../../lib/integrations";
-import { releaseExpiredHolds } from "../../../../lib/payments";
+import { runSyncJob, relayCronToUS } from "../../../../lib/cron-jobs";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 
-/**
- * Fornyelser, engagement-mails og AI-autopilot køres her sammen med
- * kalendersynkroniseringen. Agent-schedulerens egen timelås betyder, at den
- * hyppige sync-cron kun udløser én fuld autopilot-cyklus pr. time.
- */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   const provided = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!secret) return Response.json({ error: "CRON_SECRET er ikke sat på serveren." }, { status: 500 });
+  if (provided !== secret) return Response.json({ error: "Ikke adgang." }, { status: 401 });
 
-  if (!secret) {
-    return Response.json(
-      { error: "CRON_SECRET er ikke sat på serveren." },
-      { status: 500 }
-    );
-  }
-  if (provided !== secret) {
-    return Response.json({ error: "Ikke adgang." }, { status: 401 });
-  }
-
-  await releaseExpiredHolds();
-
-  const clubs = await db.club.findMany({
-    where: { integrationType: "ICAL", icalUrl: { not: null } },
-    select: { id: true, name: true },
-  });
-
-  const results = [];
-  for (const club of clubs) {
-    const result = await syncClubCalendar(club.id);
-    results.push({ klub: club.name, ...result });
-  }
-
-  // Spærringer i klubbernes egne systemer. Hver er en browsersession, så
-  // der tages ti ad gangen — resten venter til næste kørsel.
-  const withLogin = await db.clubSystemLogin.findMany({ select: { clubId: true } });
-  for (const l of withLogin) {
-    await ensureBlocks(l.clubId).catch((err) =>
-      console.error("ensureBlocks fejlede:", err)
-    );
-  }
-  const blocks = await processBlocks(10).catch((err) => {
-    console.error("Spærringer fejlede:", err);
-    return { blocked: 0, failed: 0, skipped: 0 };
-  });
-
-  const renewals = await runRenewals().catch((err) => {
-    console.error("Fornyelser fejlede:", err);
-    return { notified: 0, charged: 0, failed: 0 };
-  });
-
-  // Inspirationsmails tjekkes ved hver cron-kørsel, men funktionen sender
-  // kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
-  const engagement = await runEngagementEmails().catch((err) => {
-    console.error("Engagement-mails fejlede:", err);
-    return { sent: 0, skipped: 0, reason: "error" };
-  });
-
-  // Autopilot kører højst én gang i timen og udfører selv de godkendte,
-  // lavrisiko handlinger. API-nøglen og agentmotoren skal være slået til.
-  const agents = await runScheduledAgentSweep().catch((err) => {
-    console.error("AI-autopilot fejlede:", err);
-    return { ran: false, reason: "error" };
-  });
-
-  // Expose only safe configuration booleans to the authenticated cron logs.
-  // This lets operations distinguish missing email credentials from missed schedules.
-  const emailSettings = await getSettings();
-  return Response.json({
-    kørt: new Date().toISOString(),
-    mailProvider: { resendKeyConfigured: Boolean(emailSettings.emailApiKey), senderConfigured: Boolean(emailSettings.emailFrom) },
-    klubber: results.length,
-    resultater: results,
-    fornyelser: renewals,
-    engagement,
-    spaerringer: blocks,
-    agents,
-  });
+  const [local, us] = await Promise.all([runSyncJob(), relayCronToUS("sync")]);
+  return Response.json({ ...local, us });
 }
