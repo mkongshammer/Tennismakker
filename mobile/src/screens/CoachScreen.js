@@ -18,6 +18,7 @@ export default function CoachScreen({ route }) {useInternational();
   const [bookingError, setBookingError] = useState(null);
   const bookingLock = useRef(false);
   const [notice, setNotice] = useState(null);
+  const [note, setNote] = useState("");
 
   if (state.loading) return <Loading />;
   if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
@@ -33,10 +34,12 @@ export default function CoachScreen({ route }) {useInternational();
     try {
       const result = await api.book({
         coachProfileId: coach.id,
-        startsAt: date.toISOString()
+        startsAt: date.toISOString(),
+        note: note.trim() || undefined
       });
       if (result.status === "REQUESTED") {
         setSelection(null);
+        setNote("");
         setNotice("Din anmodning er sendt. Du betaler først, når træneren har godkendt tiden. Følg den under Min profil.");
         Alert.alert("Anmodning sendt", "Træneren skal godkende tiden. Du kan følge din booking under Min profil.");
       } else {
@@ -75,6 +78,16 @@ export default function CoachScreen({ route }) {useInternational();
         <Text style={styles.meta}>{coach.area}</Text>
         <Text style={styles.meta}>{coach.lessonMinutes ?? 60}{" " + tr("minutter \xB7") + " "}{money(coach.lessonPriceKr ?? coach.priceHour, coach.currency)} / {tr("lektion")}</Text>
       </Card>
+
+      {(coach.levels?.length > 0 || coach.ages?.length > 0 || coach.lessonPlace || coach.whatToBring) &&
+        <Card>
+          <Text style={styles.cardTitle}>About the lessons</Text>
+          {coach.levels?.length > 0 && <Fact label="Levels" value={coach.levels.join(" · ")} />}
+          {coach.ages?.length > 0 && <Fact label="Ages" value={coach.ages.join(" · ")} />}
+          {coach.lessonPlace ? <Fact label="Where" value={coach.lessonPlace} /> : null}
+          {coach.whatToBring ? <Fact label="What to bring" value={coach.whatToBring} /> : null}
+        </Card>
+      }
 
       {packages.length > 0 &&
         <>
@@ -125,18 +138,35 @@ export default function CoachScreen({ route }) {useInternational();
         )
         }
 
-      {reviews.length > 0 &&
-        <>
-          <Text style={styles.section}>{tr("Hvad elever siger")}</Text>
-          {reviews.map((r) =>
-          <Card key={r.id}>
-              <Text style={{ color: colors.court }}>{"★".repeat(r.rating)}</Text>
-              {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
-              <Text style={styles.meta}>{r.authorName}</Text>
-            </Card>
+      <Text style={styles.section}>
+        {coach.rating?.count > 0 ? `★ ${coach.rating.average.toFixed(2).replace(/0$/, "")} · ${coach.rating.count} ${coach.rating.count === 1 ? "review" : "reviews"}` : "Reviews"}
+      </Text>
+      <Text style={styles.sectionHint}>
+        {coach.rating?.count > 0 ? "Every review is from a player who booked and paid for a lesson on RacketBuddy." : "New on RacketBuddy. After each paid lesson, players can leave a rating and a review."}
+      </Text>
+      {coach.rating?.count > 0 && Array.isArray(coach.ratingDistribution) &&
+        <Card>
+          {coach.ratingDistribution.map((n, i) =>
+            <View key={i} style={styles.barRow} accessible accessibilityLabel={`${n} ${n === 1 ? "review" : "reviews"} with ${5 - i} stars`}>
+              <Text style={styles.barLabel}>{5 - i}</Text>
+              <View style={styles.barTrack}><View style={[styles.barFill, { width: `${coach.rating.count ? Math.round(n / coach.rating.count * 100) : 0}%` }]} /></View>
+            </View>
           )}
-        </>
-        }
+        </Card>
+      }
+      {reviews.map((r) =>
+        <Card key={r.id}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View style={styles.avatar}><Text style={styles.avatarText}>{(r.authorName || "?")[0]}</Text></View>
+            <View>
+              <Text style={styles.packageName}>{r.authorName}</Text>
+              {r.createdAt ? <Text style={styles.meta}>{new Date(r.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</Text> : null}
+            </View>
+          </View>
+          <Text style={{ color: colors.court, marginTop: 8 }} accessibilityLabel={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}</Text>
+          {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
+        </Card>
+      )}
     </ScrollView>
     {selection && <BookingReview
         visible
@@ -149,13 +179,34 @@ export default function CoachScreen({ route }) {useInternational();
         busy={booking !== null}
         error={bookingError}
         onConfirm={() => book(selection)}
-        onClose={() => setSelection(null)} />
+        onClose={() => setSelection(null)}
+        note={note}
+        onNoteChange={setNote}
+        noteLabel={`Note to ${String(coach.name).split(" ")[0]} (optional)`}
+        notePlaceholder="E.g. your level, what you'd like to work on, or a question." />
       }
     </>);
 
 }
 
+function Fact({ label, value }) {
+  return (
+    <View style={{ marginTop: 10 }}>
+      <Text style={styles.factLabel}>{label.toUpperCase()}</Text>
+      <Text style={styles.factValue}>{value}</Text>
+    </View>);
+}
+
 const styles = StyleSheet.create({
+  cardTitle: { fontWeight: "900", fontSize: 17, color: colors.ink },
+  factLabel: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.2 },
+  factValue: { color: colors.ink, marginTop: 2, lineHeight: 20 },
+  barRow: { flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 3 },
+  barLabel: { width: 12, textAlign: "right", color: colors.slate, fontSize: 13 },
+  barTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.mist, overflow: "hidden" },
+  barFill: { height: 6, borderRadius: 3, backgroundColor: colors.ink },
+  avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.mist, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontWeight: "800", color: colors.slate },
   row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 },
   name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.ink },
   price: { fontWeight: "800", color: colors.court, fontSize: 17 },

@@ -14,6 +14,7 @@ const COPY = {
   reminder1h: { da: ['Din booking starter om cirka en time', 'Se tid og sted under dine bookinger.'], en: ['Your booking starts in about an hour', 'See time and place under your bookings.'] },
   reminder24h: { da: ['Husk din booking i morgen', 'Se tid og sted under dine bookinger.'], en: ['Reminder: your booking is tomorrow', 'See time and place under your bookings.'] },
   message: { da: ['Ny besked', 'Du har en ulæst besked i RacketBuddy.'], en: ['New message', 'You have an unread message on RacketBuddy.'] },
+  reviewPrompt: { da: ['Hvordan gik træningen?', 'Giv din træner stjerner i appen — det tager ti sekunder.'], en: ['How was your lesson?', 'Rate your coach in the app — it takes ten seconds.'] },
 } as const;
 export type PushCopyKey = keyof typeof COPY;
 export function pushCopy(key: PushCopyKey, lang: PushLang) { const [title, body] = COPY[key][lang]; return { title, body }; }

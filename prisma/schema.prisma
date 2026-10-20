@@ -414,6 +414,13 @@ model Booking {
   cancelledByUserId String?
   cancelReason      String?
 
+  // Coach lessons: the player's note with the request, and the coach's note
+  // with the answer — the only exchange before a paid lesson opens the chat.
+  requestNote      String?
+  coachNote        String?
+  // When the player was asked to review this lesson (one prompt per lesson).
+  reviewPromptedAt DateTime?
+
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
@@ -550,6 +557,12 @@ model CoachProfile {
   lessonMinutes Int    @default(60)
   specialties   String // kommasepareret, fx "Serv,Baghånd,Junior"
   area          String
+  // Fixed facts players ask about before booking (shown on the profile, so
+  // questions don't need an open chat). Comma lists of fixed codes.
+  levels        String  @default("") // BEGINNER,INTERMEDIATE,ADVANCED,COMPETITIVE
+  ages          String  @default("") // KIDS,TEENS,ADULTS,SENIORS
+  lessonPlace   String? // where lessons happen, e.g. "Public courts at Boston Common or your club"
+  whatToBring   String? // e.g. "Racquet and water. Balls provided."
   // Ledige tider som ugentligt mønster: JSON [{ "day": 1, "from": 16, "to": 20 }] (day: 0=søn ... 6=lør)
   weeklySlots   String @default("[]")
 

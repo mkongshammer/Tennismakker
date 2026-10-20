@@ -23,6 +23,7 @@ type Request = {
   priceKr: number;
   currency: string;
   timeZone: string;
+  requestNote?: string | null;
   user: { name: string; level: number; area: string | null };
 };
 
@@ -67,16 +68,24 @@ export async function CoachRequests({
                 )}
               </p>
 
-              <div className="mt-3 flex flex-wrap gap-3">
-                <form action={approveCoachBooking}>
-                  <input type="hidden" name="bookingId" value={r.id} />
+              {r.requestNote && (
+                <blockquote className="mt-3 whitespace-pre-line rounded-xl bg-mist p-3 text-sm">
+                  <span className="mb-1 block text-xs font-bold uppercase tracking-[0.12em] text-slate">{locale === "da" ? `Besked fra ${r.user.name.split(" ")[0]}` : `Note from ${r.user.name.split(" ")[0]}`}</span>
+                  {r.requestNote}
+                </blockquote>
+              )}
+
+              <form action={approveCoachBooking} className="mt-3 space-y-3">
+                <input type="hidden" name="bookingId" value={r.id} />
+                <label className="block">
+                  <span className="text-sm font-semibold">{locale === "da" ? "Svar (valgfrit)" : "Reply (optional)"}</span>
+                  <textarea name="note" rows={2} maxLength={500} className="input mt-1 w-full resize-y" placeholder={locale === "da" ? "Fx hvor I mødes, eller hvorfor tiden ikke passer." : "E.g. where to meet, or why the time doesn't work."} />
+                </label>
+                <div className="flex flex-wrap gap-3">
                   <SubmitButton pendingText="Godkender…"><UiText text="Godkend"/></SubmitButton>
-                </form>
-                <form action={declineCoachBooking}>
-                  <input type="hidden" name="bookingId" value={r.id} />
-                  <SubmitButton className="btn-ghost" pendingText="Afviser…"><UiText text="Kan ikke"/></SubmitButton>
-                </form>
-              </div>
+                  <SubmitButton formAction={declineCoachBooking} className="btn-ghost" pendingText="Afviser…"><UiText text="Kan ikke"/></SubmitButton>
+                </div>
+              </form>
             </li>
           );
         })}

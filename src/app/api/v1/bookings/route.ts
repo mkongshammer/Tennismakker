@@ -1,4 +1,5 @@
 import {createCourtReservation, CourtReservationConflict} from "../../../../lib/court-reservation";
+import { cleanLessonNote } from "../../../../lib/lesson-notes";
 import {mayBook} from "../../../../lib/club-rules";
 import { addHours, addMinutes } from "date-fns";
 import { isOffered, isTaken } from "../../../../lib/coaching";
@@ -83,6 +84,9 @@ export async function GET(req: Request) {
         b.kind === "COURT"
           ? `${b.court?.club.name} — ${b.court?.name}`
           : `${b.coachProfile?.user.name}`,
+      // Coach lessons: the player's note with the request and the coach's reply.
+      requestNote: b.requestNote ?? null,
+      coachNote: b.coachNote ?? null,
       access: bookingDoorAccess(b, now),
     })),
   });
@@ -189,6 +193,7 @@ export async function POST(req: Request) {
         priceKr: lessonPriceKr(coach.priceHour, coach.lessonMinutes),
         userId: auth.user.id,
         coachProfileId: coachId,
+        requestNote: cleanLessonNote(body.note),
       },
     });
 
@@ -205,6 +210,7 @@ export async function POST(req: Request) {
           priceKr: booking.priceKr,
           currency:booking.currency,timeZone:booking.timeZone,locale:coachUser.locale,
           withCredit: credits.length > 0,
+          note: booking.requestNote,
         })
       );
     }

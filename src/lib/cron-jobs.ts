@@ -17,6 +17,7 @@ import { getSettings } from "./settings";
 import { ensureBlocks, processBlocks } from "./system-blocks";
 import { reconcileAllClubControls } from "./club-control";
 import { runPushNotifications } from "./push";
+import { runReviewPrompts } from "./review-prompts";
 import { deploymentRegion, regionalShardingActive } from "./region";
 import { regionalInternalHeaders } from "./internal-auth";
 
@@ -41,6 +42,8 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const renewals = await runRenewals().catch((err) => { console.error("Fornyelser fejlede:", err); return { notified: 0, charged: 0, failed: 0 }; });
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
+  // One review prompt per finished coach lesson (e-mail + push).
+  const reviewPrompts = await runReviewPrompts().catch((err) => { console.error("Review prompts failed:", err); return { sent: 0 }; });
   // Autopilot: højst én gang i timen. Kun hvor den er slået til for regionen.
   const agentRun = agents
     ? await runScheduledAgentSweep().catch((err) => { console.error("AI-autopilot fejlede:", err); return { ran: false, reason: "error" }; })
@@ -55,6 +58,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     resultater: results,
     fornyelser: renewals,
     engagement,
+    reviewPrompts,
     spaerringer: blocks,
     agents: agentRun,
   };

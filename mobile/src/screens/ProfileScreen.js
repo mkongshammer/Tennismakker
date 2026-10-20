@@ -13,6 +13,7 @@ import { colors, LEVELS } from "../lib/theme";
 import { dateTimeLong } from "../lib/dates";
 
 import { NotificationSettings } from "../lib/NotificationSettings";
+import { ReviewPrompt } from "../lib/ReviewPrompt";
 
 const PRIVACY_URL = "https://racketbuddy.app/privacy";
 const TERMS_URL = "https://racketbuddy.app/terms";
@@ -135,6 +136,8 @@ export default function ProfileScreen({ navigation }) {useInternational();
         <PlayAgain items={repeatable} onBooked={load} />
       </View>}
 
+      <ReviewPrompt />
+
       <Text style={styles.section}>{tr("Kommende bookinger")}</Text>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {state.loading ?
@@ -159,6 +162,8 @@ export default function ProfileScreen({ navigation }) {useInternational();
                 {dateTimeLong(new Date(b.startsAt), b.timeZone)} · {money(b.priceKr, b.currency)}
               </Text>
               {b.status === "REQUESTED" && <Text style={styles.warn}>{tr("Afventer tr\xE6nerens svar")}</Text>}
+              {b.requestNote ? <Text style={styles.meta}>Your note: {b.requestNote}</Text> : null}
+              {b.coachNote ? <Text style={[styles.meta, { color: colors.ink, marginTop: 6 }]}>{String(b.title).split(" ")[0]}: {b.coachNote}</Text> : null}
               {b.status === "CONFIRMED" && <Text style={styles.meta}>{tr("Bekr\xE6ftet")}</Text>}
               {b.status === "HOLD" &&
             <View style={{ marginTop: 12 }}>

@@ -1,13 +1,13 @@
 import { money, tr, useInternational } from "./international";
 import React from "react";
-import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "./ui";
 import { colors } from "./theme";
 
 // Selection is local until the customer explicitly confirms. Scrolling and
 // minimum (not fixed) heights leave room for large system text sizes.
-export function BookingReview({ visible, title, details, priceKr, currency = "DKK", hint, action, busy, error, onConfirm, onClose }) {useInternational();
+export function BookingReview({ visible, title, details, priceKr, currency = "DKK", hint, action, busy, error, onConfirm, onClose, note, onNoteChange, noteLabel, notePlaceholder }) {useInternational();
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => {if (!busy) onClose();}}>
       <SafeAreaView style={styles.safe}>
@@ -22,6 +22,21 @@ export function BookingReview({ visible, title, details, priceKr, currency = "DK
             <Text style={styles.price}>{money(priceKr, currency)}</Text>
           </View>
           <Text style={styles.hint}>{hint}</Text>
+          {onNoteChange &&
+            <View style={{ gap: 6 }}>
+              <Text style={styles.noteLabel}>{noteLabel}</Text>
+              <TextInput
+                value={note}
+                onChangeText={(v) => onNoteChange(v.slice(0, 500))}
+                placeholder={notePlaceholder}
+                placeholderTextColor={colors.slateLight}
+                multiline
+                maxLength={500}
+                editable={!busy}
+                accessibilityLabel={noteLabel}
+                style={styles.note} />
+            </View>
+          }
           {error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{tr(error)}</Text>}
           <Button title={action} loading={busy} onPress={onConfirm} />
           <Button title={tr("Tilbage til tider")} variant="quiet" disabled={busy} onPress={onClose} />
@@ -42,5 +57,7 @@ const styles = StyleSheet.create({
   total: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", borderTopWidth: 1, borderColor: colors.border, paddingTop: 20, gap: 12 },
   price: { color: colors.ink, fontSize: 30, fontWeight: "800" },
   hint: { color: colors.slate, fontSize: 16, lineHeight: 24 },
-  error: { color: "#9B2525", fontSize: 16, lineHeight: 24 }
+  error: { color: "#9B2525", fontSize: 16, lineHeight: 24 },
+  noteLabel: { color: colors.ink, fontSize: 15, fontWeight: "700" },
+  note: { minHeight: 96, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, fontSize: 16, lineHeight: 22, color: colors.ink, textAlignVertical: "top" }
 });

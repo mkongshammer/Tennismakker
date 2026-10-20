@@ -12,6 +12,7 @@ import {TIME_ZONES,formatMoney} from "../../../lib/international";
 import {useWebsiteInternational} from "../../../components/InternationalProvider";
 import { DK_REGIONS, regionForArea } from "../../../lib/regions";
 import { useSearchParams } from "next/navigation";
+import { COACH_AGES, COACH_LEVELS } from "../../../lib/coach-facts";
 
 // Enkel redigering af trænerprofil inkl. ugentlige ledige tider.
 export default function TraenerProfilPage() {
@@ -119,6 +120,40 @@ export default function TraenerProfilPage() {
           <label className="label" htmlFor="specialties"><UiText text="Specialer (kommasepareret)"/></label>
           <input className="input" id="specialties" name="specialties" defaultValue={profile.specialties} placeholder={tr("Serv, Baghånd, Junior")} />
         </div>
+        <fieldset className="space-y-4 rounded-2xl border border-slate/15 p-4">
+          <legend className="px-1 text-sm font-bold">About your lessons</legend>
+          <p className="-mt-1 text-xs text-slate">Shown on your public profile. Players can only message you after a paid lesson, so answer the usual questions here.</p>
+          <div>
+            <span className="label">Levels you teach</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {COACH_LEVELS.map((l) => (
+                <label key={l.code} className="flex min-h-9 items-center gap-2 text-sm">
+                  <input type="checkbox" name="levels" value={l.code} defaultChecked={String(profile.levels ?? "").split(",").includes(l.code)} />
+                  {l.label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <span className="label">Ages you teach</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {COACH_AGES.map((a) => (
+                <label key={a.code} className="flex min-h-9 items-center gap-2 text-sm">
+                  <input type="checkbox" name="ages" value={a.code} defaultChecked={String(profile.ages ?? "").split(",").includes(a.code)} />
+                  {a.label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="lessonPlace">Where lessons happen</label>
+            <input className="input" id="lessonPlace" name="lessonPlace" maxLength={300} defaultValue={profile.lessonPlace ?? ""} placeholder="E.g. Public courts at Boston Common, or at your club" />
+          </div>
+          <div>
+            <label className="label" htmlFor="whatToBring">What to bring</label>
+            <input className="input" id="whatToBring" name="whatToBring" maxLength={300} defaultValue={profile.whatToBring ?? ""} placeholder="E.g. Racquet, water and court shoes. Balls provided." />
+          </div>
+        </fieldset>
         <div>
           <span className="label"><UiText text="Hvornår kan du tage elever?"/></span>
           <p className="mb-2 text-xs text-slate"><UiText text="Tiderne gentages hver uge. Eleverne kan kun booke de timer, du markerer her — og kun dem, der ikke allerede er booket."/></p>

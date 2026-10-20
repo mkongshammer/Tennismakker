@@ -16,7 +16,8 @@ import { approvedCoachPhotoId } from "../../../lib/images";
 import { imageUrl } from "../../../lib/imageUrl";
 import { buyPackage } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
-import { coachRatings, recentReviews } from "../../../lib/reviews";
+import { coachReviewSummary, recentReviews, reviewerName } from "../../../lib/reviews";
+import { COACH_AGES, COACH_LEVELS, hasLessonFacts, labelsFor } from "../../../lib/coach-facts";
 import { contactPlayer } from "../../players/actions";
 import { coachChatGate } from "../../../lib/coach-messaging";
 import { formatDate, formatMoney, timeZoneLabel } from "../../../lib/international";
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: `${coach.user.name} · ${parseSports(coach.sports).map((s) => sportLabel(s, "en-US")).join(", ")} coach in ${coach.area}`, description: coach.headline };
 }
 
-export default async function CoachPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fejl?: string; chat?: string }> }) {
+export default async function CoachPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fejl?: string; chat?: string; reviews?: string }> }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const coach = await db.coachProfile.findUnique({ where: { id }, include: { user: true, packages: { where: { active: true } } } });
   if (!coach || coach.country !== "US") notFound();
@@ -41,8 +42,11 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
   const chatGate = user && user.id !== coach?.userId && coach ? await coachChatGate(user.id, coach.userId) : null;
   await releaseExpiredHolds();
 
-  const [ratings, reviews, free, prefs, photoId] = await Promise.all([coachRatings([coach.id]), recentReviews({ coachProfileId: coach.id }), freeSlots(coach), getPreferences(), approvedCoachPhotoId(coach.id)]);
-  const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
+  const showAllReviews = query.reviews === "all";
+  const [rating, reviews, free, prefs, photoId] = await Promise.all([coachReviewSummary(coach.id), recentReviews({ coachProfileId: coach.id }, showAllReviews ? 200 : 6), freeSlots(coach), getPreferences(), approvedCoachPhotoId(coach.id)]);
+  const firstName = coach.user.name.split(" ")[0];
+  const levelLabels = labelsFor(coach.levels, COACH_LEVELS);
+  const ageLabels = labelsFor(coach.ages, COACH_AGES);
   const t = translator(prefs.locale);
   const money = (n: number) => formatMoney(n, coach.currency, prefs.locale);
   const date = (d: Date, options: Intl.DateTimeFormatOptions) => formatDate(d, prefs.locale, coach.timeZone, options);
@@ -86,7 +90,7 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
             <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate">
               <span className="inline-flex items-center gap-1"><Icon name="pin" size={14} /> {coach.area}</span>
               {rating.count > 0 ? (
-                <span><span className="text-court">★</span> {rating.average.toFixed(1)} · {rating.count} {rating.count === 1 ? "review" : "reviews"}</span>
+                <a href="#reviews-title" className="hover:underline"><span className="text-court">★</span> {rating.average.toFixed(2).replace(/0$/, "")} · {rating.count} {rating.count === 1 ? "review" : "reviews"}</a>
               ) : (
                 <span className="badge-neutral">New on RacketBuddy</span>
               )}
@@ -114,6 +118,27 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
         </div>
       </header>
 
+      {hasLessonFacts(coach) && (
+        <section aria-labelledby="facts-title" className="card-flat">
+          <h2 id="facts-title" className="display text-title">About the lessons</h2>
+          <dl className="mt-4 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+            {levelLabels.length > 0 && (
+              <div><dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate">Levels</dt><dd className="mt-1">{levelLabels.join(" · ")}</dd></div>
+            )}
+            {ageLabels.length > 0 && (
+              <div><dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate">Ages</dt><dd className="mt-1">{ageLabels.join(" · ")}</dd></div>
+            )}
+            {coach.lessonPlace && (
+              <div><dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate">Where</dt><dd className="mt-1">{coach.lessonPlace}</dd></div>
+            )}
+            {coach.whatToBring && (
+              <div><dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate">What to bring</dt><dd className="mt-1">{coach.whatToBring}</dd></div>
+            )}
+            <div><dt className="text-xs font-bold uppercase tracking-[0.12em] text-slate">Lesson</dt><dd className="mt-1">{length} · {money(lessonPrice)}</dd></div>
+          </dl>
+        </section>
+      )}
+
       <section aria-labelledby="times-title">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -126,7 +151,7 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
         {byDay.size === 0 ? (
           <div className="card-flat mt-4 text-sm text-slate">
             <p className="font-semibold text-ink">No open times in the next {BOOKING_WINDOW_DAYS} days.</p>
-            <p className="mt-1">{coach.user.name.split(" ")[0]} hasn’t released more hours yet. Send a message to arrange a lesson outside the regular schedule.</p>
+            <p className="mt-1">{firstName} hasn’t released more hours yet. New times appear here as soon as they’re added.</p>
           </div>
         ) : (
           <div className="mt-4 space-y-5">
@@ -136,7 +161,7 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
                 <div className="flex flex-wrap gap-2">
                   {daySlots.map((s) =>
                     user ? (
-                      <CoachSlotButton key={s.toISOString()} coachProfileId={coach.id} startsAt={s.toISOString()} time={date(s, { hour: "numeric", minute: "2-digit" })} />
+                      <CoachSlotButton key={s.toISOString()} coachProfileId={coach.id} startsAt={s.toISOString()} time={date(s, { hour: "numeric", minute: "2-digit" })} dayLabel={date(s, { weekday: "short", month: "short", day: "numeric" })} coachFirstName={firstName} />
                     ) : (
                       <Link key={s.toISOString()} href={loginHref} className="pill min-h-10">
                         {date(s, { hour: "numeric", minute: "2-digit" })}
@@ -198,20 +223,61 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
         </section>
       )}
 
-      {reviews.length > 0 && (
-        <section aria-labelledby="reviews-title">
-          <h2 id="reviews-title" className="display text-display-md">What students say</h2>
-          <ul className="mt-4 space-y-3">
-            {reviews.map((r: any) => (
-              <li key={r.id} className="card-flat">
-                <p className="text-court" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}</p>
-                <p className="mt-1">{r.comment}</p>
-                <p className="mt-1 text-sm text-slate-light">{r.author.name}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <section aria-labelledby="reviews-title" id="reviews">
+        {rating.count > 0 ? (
+          <>
+            <h2 id="reviews-title" className="display flex items-center gap-2 text-display-md">
+              <span className="text-court" aria-hidden="true">★</span>
+              {rating.average.toFixed(2).replace(/0$/, "")} · {rating.count} {rating.count === 1 ? "review" : "reviews"}
+            </h2>
+            <p className="mt-1 text-sm text-slate">Every review is from a player who booked and paid for a lesson with {firstName} on RacketBuddy.</p>
+            <div className="mt-5 grid gap-8 lg:grid-cols-[14rem_1fr]">
+              <dl className="space-y-1.5 text-sm" aria-label="Rating breakdown">
+                {rating.distribution.map((n, i) => {
+                  const stars = 5 - i;
+                  const pct = rating.count ? Math.round((n / rating.count) * 100) : 0;
+                  return (
+                    <div key={stars} className="flex items-center gap-3">
+                      <dt className="w-3 shrink-0 text-right text-slate">{stars}</dt>
+                      <dd className="flex flex-1 items-center gap-2">
+                        <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-mist" aria-hidden="true"><span className="block h-full rounded-full bg-ink" style={{ width: `${pct}%` }} /></span>
+                        <span className="sr-only">{n} {n === 1 ? "review" : "reviews"} with {stars} {stars === 1 ? "star" : "stars"}</span>
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
+              {reviews.length > 0 ? (
+                <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
+                  {reviews.map((r: any) => (
+                    <li key={r.id}>
+                      <div className="flex items-center gap-3">
+                        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mist font-bold text-slate">{reviewerName(r.author.name)[0]}</span>
+                        <div>
+                          <p className="font-semibold">{reviewerName(r.author.name)}</p>
+                          <p className="text-xs text-slate">{formatDate(r.createdAt, "en-US", coach.timeZone, { month: "long", year: "numeric" })}</p>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-sm text-court" aria-label={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}<span className="text-slate/30">{"★".repeat(5 - r.rating)}</span></p>
+                      <p className="mt-1 whitespace-pre-line leading-relaxed">{r.comment}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-slate">Players have rated {firstName} but haven’t written comments yet.</p>
+              )}
+            </div>
+            {!showAllReviews && rating.withComment > reviews.length && (
+              <Link href={`/coaches/${coach.id}?reviews=all#reviews`} className="btn-ghost mt-6">Show all {rating.withComment} reviews</Link>
+            )}
+          </>
+        ) : (
+          <>
+            <h2 id="reviews-title" className="display text-display-md">Reviews</h2>
+            <p className="mt-1 text-sm text-slate">{firstName} is new on RacketBuddy. After each paid lesson, players can leave a rating and a review here.</p>
+          </>
+        )}
+      </section>
 
       <section className="rounded-3xl bg-mist p-6">
         <h2 className="display text-title">How booking a lesson works</h2>

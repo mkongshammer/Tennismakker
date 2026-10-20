@@ -157,6 +157,7 @@ function doorProfile(booking, openDoor, alerts) {
     '../lib/theme': { colors: {}, LEVELS: {} },
     '../lib/dates': { dateTimeLong: d => d.toISOString() },
     '../lib/NotificationSettings': { NotificationSettings: 'NotificationSettings' },
+    '../lib/ReviewPrompt': { ReviewPrompt: () => null },
   }).default;
 }
 function doorBooking() {

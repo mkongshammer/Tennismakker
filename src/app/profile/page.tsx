@@ -17,7 +17,8 @@ import { CancelBookingButton } from "../../components/CancelBookingButton";
 import { refundDecision, REFUND_WINDOW_HOURS } from "../../lib/cancellation-policy";
 import { LevelBadge } from "../../components/LevelBadge";
 import { ReviewForm } from "../../components/ReviewForm";
-import { pendingReviews } from "../../lib/reviews";
+import { pendingReviews, coachReviewSummary } from "../../lib/reviews";
+import { hasLessonFacts } from "../../lib/coach-facts";
 import { PlayAgain } from "../../components/PlayAgain";
 import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
 import { checkDeletion } from "../../lib/deletion-guards";
@@ -64,6 +65,7 @@ export default async function ProfilPage({
     }
   }
 
+  const coachSummary = user.coachProfile ? await coachReviewSummary(user.coachProfile.id) : null;
   const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
     db.booking.findMany({
       where: {
@@ -153,6 +155,16 @@ export default async function ProfilPage({
             {user.coachProfile ? (
               <>
                 <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
+                {(() => {
+                  const r = coachSummary;
+                  return (
+                    <div className="mt-3 rounded-xl bg-mist p-3 text-sm">
+                      <p className="font-semibold">{r && r.count > 0 ? `★ ${r.average.toFixed(2).replace(/0$/, "")} · ${r.count} ${r.count === 1 ? "review" : "reviews"}` : "No reviews yet"}</p>
+                      <p className="mt-1 text-slate">Ratings and reviews on your public profile come only from lessons booked and paid on RacketBuddy. Every lesson booked here builds your rating.</p>
+                      {!hasLessonFacts(user.coachProfile) && <p className="mt-2"><Link href="/profile/coaching" className="font-semibold text-court underline-offset-2 hover:underline">Add levels, ages and where you teach</Link><span className="text-slate"> — players see it before booking.</span></p>}
+                    </div>
+                  );
+                })()}
                 <Link href="/profile/coaching" className="btn-ghost mt-4 inline-block text-sm"><UiText text="Administrér trænerprofil"/></Link>
               </>
             ) : (
@@ -168,7 +180,7 @@ export default async function ProfilPage({
       <PlayAgain items={repeatable} />
 
       {toReview.length > 0 && (
-        <section className="min-w-0">
+        <section id="review" className="min-w-0 scroll-mt-6">
           <h2 className="display mb-3 text-2xl"><UiText text="Hvordan gik det?"/></h2>
           <ul className="space-y-3">
             {toReview.map((r: any) => (
@@ -226,6 +238,12 @@ export default async function ProfilPage({
                         : "profile.confirmed"
                   )}
                 </p>
+                {b.kind === "COACH" && (b.requestNote || b.coachNote) && (
+                  <div className="mt-2 max-w-full space-y-1.5 break-words text-sm">
+                    {b.requestNote && <p className="text-slate"><span className="font-semibold text-ink">{prefs.locale === "da" ? "Din besked:" : "Your note:"}</span> {b.requestNote}</p>}
+                    {b.coachNote && <p className="rounded-lg bg-court/5 p-2.5"><span className="font-semibold">{(b.coachProfile?.user.name ?? "").split(" ")[0]}:</span> {b.coachNote}</p>}
+                  </div>
+                )}
                 {b.status === "CONFIRMED" && b.kind === "COURT" && b.court?.club.hasLock && (
                   <div className="mt-2 max-w-full break-words rounded-lg bg-court/5 p-2.5 text-sm">
                     <span className="font-semibold"><UiText text="Adgang:"/>{" "}</span>

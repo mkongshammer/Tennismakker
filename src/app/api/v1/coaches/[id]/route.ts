@@ -1,7 +1,8 @@
 import { db } from "../../../../../lib/db";
 import { freeSlots } from "../../../../../lib/coaching";
 import { lessonPriceKr } from "../../../../../lib/slots";
-import { coachRatings, recentReviews } from "../../../../../lib/reviews";
+import { coachReviewSummary, recentReviews, reviewerName } from "../../../../../lib/reviews";
+import { COACH_AGES, COACH_LEVELS, labelsFor } from "../../../../../lib/coach-facts";
 import { apiError, json, preflight } from "../../../../../lib/api/helpers";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +20,11 @@ export async function GET(
   });
   if (!coach || coach.country !== "US") return apiError("Coach not found.", 404);
 
-  const [ratings, reviews] = await Promise.all([
-    coachRatings([coach.id]),
-    recentReviews({ coachProfileId: coach.id }),
+  const [summary, reviews] = await Promise.all([
+    coachReviewSummary(coach.id),
+    recentReviews({ coachProfileId: coach.id }, 20),
   ]);
-  const rating = ratings.get(coach.id) ?? { average: 0, count: 0 };
+  const rating = { average: summary.average, count: summary.count };
 
   const free = await freeSlots(coach);
 
@@ -39,6 +40,12 @@ export async function GET(
       area: coach.area,
       specialties: coach.specialties ? coach.specialties.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
       rating,
+      ratingDistribution: summary.distribution,
+      // "About the lessons": answered up front, since chat opens only after a paid lesson.
+      levels: labelsFor(coach.levels, COACH_LEVELS),
+      ages: labelsFor(coach.ages, COACH_AGES),
+      lessonPlace: coach.lessonPlace,
+      whatToBring: coach.whatToBring,
     },
     packages: coach.packages.map((p: any) => ({
       id: p.id,
@@ -51,7 +58,8 @@ export async function GET(
       id: r.id,
       rating: r.rating,
       comment: r.comment,
-      authorName: r.author.name,
+      authorName: reviewerName(r.author.name),
+      createdAt: r.createdAt.toISOString(),
     })),
     slots: free.map((s) => s.toISOString()),
   });

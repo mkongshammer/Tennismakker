@@ -6,11 +6,13 @@
 // har været der, og en utilfreds konkurrent kan ikke stemme nogen ned.
 
 import { db } from "./db";
+import { messageLocale } from "./mail-locale";
 
 export type Reviewable = {
   bookingId: string;
   what: string;
   startsAt: Date;
+  timeZone: string;
   kind: "COURT" | "COACH";
 };
 
@@ -26,6 +28,7 @@ export async function pendingReviews(userId: string): Promise<Reviewable[]> {
     include: {
       court: { include: { club: true } },
       coachProfile: { include: { user: true } },
+      user: { select: { locale: true } },
     },
     orderBy: { startsAt: "desc" },
     take: 10,
@@ -35,10 +38,13 @@ export async function pendingReviews(userId: string): Promise<Reviewable[]> {
     bookingId: b.id,
     kind: b.kind,
     startsAt: b.startsAt,
+    timeZone: b.timeZone,
     what:
       b.kind === "COURT"
         ? `${b.court?.club.name} — ${b.court?.name}`
-        : `Trænertime hos ${b.coachProfile?.user.name}`,
+        : messageLocale(b.user?.locale) === "da"
+          ? `Trænertime hos ${b.coachProfile?.user.name}`
+          : `Lesson with ${b.coachProfile?.user.name}`,
   }));
 }
 
@@ -128,10 +134,44 @@ export async function recentReviews(
 ) {
   return db.review.findMany({
     where: { ...where, comment: { not: null } },
-    include: { author: true },
+    // Only what is shown publicly: the author's first name comes from this.
+    include: { author: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
     take,
   });
+}
+
+export type ReviewSummary = Rating & {
+  /** How many reviews gave 5, 4, 3, 2 and 1 stars, in that order. */
+  distribution: [number, number, number, number, number];
+  /** Reviews that also have a written comment. */
+  withComment: number;
+};
+
+/** Average, count and star distribution for one coach — everything the public profile shows above the reviews. */
+export async function coachReviewSummary(coachProfileId: string): Promise<ReviewSummary> {
+  const [byStar, withComment] = await Promise.all([
+    db.review.groupBy({ by: ["rating"], where: { coachProfileId }, _count: { rating: true } }),
+    db.review.count({ where: { coachProfileId, comment: { not: null } } }),
+  ]);
+  return summarise(byStar.map((r: any) => ({ rating: r.rating, count: r._count.rating })), withComment);
+}
+
+export function summarise(rows: { rating: number; count: number }[], withComment = 0): ReviewSummary {
+  const distribution: ReviewSummary["distribution"] = [0, 0, 0, 0, 0];
+  let total = 0, sum = 0;
+  for (const r of rows) {
+    if (r.rating < 1 || r.rating > 5) continue;
+    distribution[5 - r.rating] += r.count;
+    total += r.count;
+    sum += r.rating * r.count;
+  }
+  return { average: total ? sum / total : 0, count: total, distribution, withComment };
+}
+
+/** "Sam" from "Sam Carter" — reviews show first names only, as on Airbnb. */
+export function reviewerName(name: string | null | undefined): string {
+  return String(name ?? "").trim().split(/\s+/)[0] || "A player";
 }
 
 export function stars(average: number): string {

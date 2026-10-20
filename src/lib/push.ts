@@ -3,7 +3,7 @@ import { bookingPush, reminderWindow, retryDelay, pushCopy, type PushCategory, t
 import { messageLocale } from './mail-locale';
 
 // Generic lock-screen copy: no names, message text, access codes or payment data.
-async function enqueue(userId: string, key: string, category: PushCategory, title: string, body: string, data: object, expiresAt: Date, extra: {bookingId?:string;expectedStatus?:string;threadId?:string} = {}) {
+export async function enqueue(userId: string, key: string, category: PushCategory, title: string, body: string, data: object, expiresAt: Date, extra: {bookingId?:string;expectedStatus?:string;threadId?:string} = {}) {
   const prefs = await db.pushPreference.findUnique({where:{userId}});
   if (!prefs?.[category]) return;
   const devices = await db.pushDevice.findMany({where:{userId,expiresAt:{gt:new Date()}}});

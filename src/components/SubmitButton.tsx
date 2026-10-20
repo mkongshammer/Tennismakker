@@ -43,11 +43,14 @@ export function SubmitButton({
   pendingText,
   disabled = false,
   className = "btn-court",
+  formAction,
 }: {
   children: React.ReactNode;
   pendingText?: string;
   disabled?: boolean;
   className?: string;
+  /** For a second submit button in the same form (e.g. accept / decline). */
+  formAction?: (formData: FormData) => void | Promise<void>;
 }) {
   const { pending } = useFormStatus();
   const {tr}=useWebsiteInternational();
@@ -55,6 +58,7 @@ export function SubmitButton({
   return (
     <button
       type="submit"
+      formAction={formAction}
       disabled={pending || disabled}
       aria-busy={pending}
       className={`${className} ${pending ? "cursor-wait opacity-80" : ""}`}

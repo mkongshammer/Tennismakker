@@ -1,5 +1,7 @@
 "use server";
 import { coachChatGate } from "./coach-messaging";
+import { cleanLessonNote } from "./lesson-notes";
+import { cleanCodes, cleanFactText, COACH_AGES, COACH_LEVELS } from "./coach-facts";
 import { safeReturnPath } from "./return-path";
 import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
@@ -618,6 +620,7 @@ export async function bookCoachSlot(formData: FormData) {
 
   const coachProfileId = String(formData.get("coachProfileId"));
   const startsAt = new Date(String(formData.get("startsAt")));
+  const requestNote = cleanLessonNote(formData.get("note"));
 
   const coach = await db.coachProfile.findUnique({ where: { id: coachProfileId } });
   if (!coach) redirect("/coaches");
@@ -668,6 +671,7 @@ export async function bookCoachSlot(formData: FormData) {
       priceKr: price,
       userId: user.id,
       coachProfileId,
+      requestNote,
     },
   });
 
@@ -682,6 +686,7 @@ export async function bookCoachSlot(formData: FormData) {
         startsAt,
         priceKr: price,currency:coach.currency,timeZone:coach.timeZone,locale:coachUser.locale,
         withCredit: credits.length > 0,
+        note: requestNote,
       })
     );
   }
@@ -733,6 +738,10 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
       specialties: String(formData.get("specialties") ?? "").trim(),
       area: String(formData.get("area") ?? "").trim(),
       weeklySlots,
+      levels: cleanCodes(formData.getAll("levels"), COACH_LEVELS),
+      ages: cleanCodes(formData.getAll("ages"), COACH_AGES),
+      lessonPlace: cleanFactText(formData.get("lessonPlace")),
+      whatToBring: cleanFactText(formData.get("whatToBring")),
     },
   });
   revalidatePath("/coaches");
@@ -1212,12 +1221,13 @@ export async function approveCoachBooking(formData: FormData) {
   if (!booking) redirect("/profile/coaching");
 
   const credit = await spendCredit(booking!.userId, coach.id);
+  const coachNote = cleanLessonNote(formData.get("note"));
 
   const updated = await db.booking.update({
     where: { id: booking!.id },
     data: credit
-      ? { status: "CONFIRMED", priceKr: 0, packagePurchaseId: credit, holdExpiresAt: null }
-      : { status: "HOLD", holdExpiresAt: addHours(new Date(), 24) },
+      ? { status: "CONFIRMED", priceKr: 0, packagePurchaseId: credit, holdExpiresAt: null, coachNote }
+      : { status: "HOLD", holdExpiresAt: addHours(new Date(), 24), coachNote },
   });
 
   await sendMail(
@@ -1229,6 +1239,8 @@ export async function approveCoachBooking(formData: FormData) {
       approved: true,
       paidWithCredit: Boolean(credit),
       bookingId: updated.id,
+      currency: updated.currency, timeZone: updated.timeZone, locale: booking!.user.locale,
+      note: coachNote,
     })
   );
 
@@ -1247,7 +1259,8 @@ export async function declineCoachBooking(formData: FormData) {
   });
   if (!booking) redirect("/profile/coaching");
 
-  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "COACH", cancelledByUserId: coach.userId } });
+  const coachNote = cleanLessonNote(formData.get("note"));
+  await db.booking.update({ where: { id: booking!.id }, data: { status: "CANCELLED", cancelledAt: new Date(), cancelledBy: "COACH", cancelledByUserId: coach.userId, coachNote, cancelReason: coachNote?.slice(0, 280) ?? null } });
 
   await sendMail(
     coachDecision({
@@ -1258,6 +1271,8 @@ export async function declineCoachBooking(formData: FormData) {
       approved: false,
       paidWithCredit: false,
       bookingId: booking!.id,
+      currency: booking!.currency, timeZone: booking!.timeZone, locale: booking!.user.locale,
+      note: coachNote,
     })
   );
 

@@ -336,6 +336,14 @@ export function passwordResetLink(opts: {locale?:string;
  * det er et almindeligt svar, og eleven skal kunne se, at der ikke er
  * trukket penge.
  */
+/** A quoted personal note in a lesson e-mail ("Note from Sam:"), or nothing. */
+function noteLines(note: string | null | undefined, from: string, locale?: string): string[] {
+  const text = (note ?? "").trim();
+  if (!text) return [];
+  const label = messageLocale(locale) === "da" ? `Besked fra ${from}:` : `Note from ${from}:`;
+  return ["", label, ...text.split(/\r?\n/).map((line) => `> ${line}`)];
+}
+
 export function coachDecision(opts: {
   to: string;
   playerName: string;
@@ -345,7 +353,10 @@ export function coachDecision(opts: {
   currency?:string;locale?:string;timeZone?:string;
   paidWithCredit: boolean;
   bookingId: string;
+  /** The coach's optional note with the answer. */
+  note?: string | null;
 }): Mail {
+  const note = noteLines(opts.note, opts.coachName, opts.locale);
   const when = formatDate(opts.startsAt,messageLocale(opts.locale),messageTimeZone(opts.timeZone),{dateStyle:"long",timeStyle:"short"});
 
   if (!opts.approved) {
@@ -356,6 +367,7 @@ export function coachDecision(opts: {
         phrase("Hej {p0}",messageLocale(opts.locale),{p0:opts.playerName}),
         "",
         phrase("{p0} kan desværre ikke tage timen {p1}.",messageLocale(opts.locale),{p0:opts.coachName,p1:when}),
+        ...note,
         "",
         phrase("Der er ikke trukket penge, og der er ikke brugt et klip.",messageLocale(opts.locale)),
         "",
@@ -372,6 +384,7 @@ export function coachDecision(opts: {
         phrase("Hej {p0}",messageLocale(opts.locale),{p0:opts.playerName}),
         "",
         phrase("{p0} har sagt ja til timen {p1}.",messageLocale(opts.locale),{p0:opts.coachName,p1:when}),
+        ...note,
         "",
         phrase("Der er brugt et klip fra dit pakkeforløb, så der er ingenting at betale.",messageLocale(opts.locale)),
         "",
@@ -387,6 +400,7 @@ export function coachDecision(opts: {
       phrase("Hej {p0}",messageLocale(opts.locale),{p0:opts.playerName}),
       "",
       phrase("{p0} har sagt ja til timen {p1}.",messageLocale(opts.locale),{p0:opts.coachName,p1:when}),
+      ...note,
       "",
       phrase("Timen er din, når den er betalt. Du har et døgn, derefter frigives tiden igen:",messageLocale(opts.locale)),
       `${baseUrl()}/checkout/${opts.bookingId}/start`,
@@ -412,6 +426,8 @@ export function coachRequestNotice(opts: {
   currency?:string;
   locale?:string;timeZone?:string;
   withCredit: boolean;
+  /** The player's optional note with the request. */
+  note?: string | null;
 }): Mail {
   return {
     to: opts.to,
@@ -422,6 +438,7 @@ export function coachRequestNotice(opts: {
       phrase("{p0} (niveau {p1}) vil booke en time hos dig:",messageLocale(opts.locale),{p0:opts.playerName,p1:opts.playerLevel}),
       formatDate(opts.startsAt,messageLocale(opts.locale),messageTimeZone(opts.timeZone),{dateStyle:"long",timeStyle:"short"}),
       opts.withCredit ? phrase("Betales med klip fra et pakkeforløb.",messageLocale(opts.locale)) : `${formatMoney(opts.priceKr,messageCurrency(opts.currency),messageLocale(opts.locale))}`,
+      ...noteLines(opts.note, opts.playerName, opts.locale),
       "",
       phrase("Tiden er spærret, indtil du svarer. Der er ikke trukket penge endnu.",messageLocale(opts.locale)),
       "",
