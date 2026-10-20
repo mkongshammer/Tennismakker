@@ -35,7 +35,9 @@ export default function ChatScreen({ route }) {useInternational();
   const insets = useSafeAreaInsets();
   useEffect(() => {setSent([]);setDraft("");setSendError(null);nearBottom.current = true;}, [id]);
 
-  const messagingBlocked = Boolean(state.data?.blockedByMe || state.data?.blockedByOther);
+  // Coach ↔ player chat waits for a paid lesson (server field canSend; older servers omit it).
+  const lessonLocked = state.data?.canSend === false;
+  const messagingBlocked = Boolean(state.data?.blockedByMe || state.data?.blockedByOther || lessonLocked);
 
   const send = async () => {
     const body = draft.trim();
@@ -150,10 +152,12 @@ export default function ChatScreen({ route }) {useInternational();
       </View>
       {messagingBlocked &&
         <View style={styles.blockedBanner}>
-          <Text style={styles.blockedTitle}>{state.data.blockedByMe ? "You blocked this user" : "Messaging unavailable"}</Text>
+          <Text style={styles.blockedTitle}>{state.data.blockedByMe ? "You blocked this user" : lessonLocked && !state.data.blockedByOther ? "Messaging opens after a paid lesson" : "Messaging unavailable"}</Text>
           <Text style={styles.blockedText}>
             {state.data.blockedByMe
               ? "Messages are disabled. You can unblock this user at any time."
+              : lessonLocked && !state.data.blockedByOther
+              ? state.data.lockedReason ?? "You can message once the lesson has been accepted and paid for."
               : "You cannot send messages in this conversation."}
           </Text>
         </View>

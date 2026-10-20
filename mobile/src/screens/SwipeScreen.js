@@ -23,7 +23,7 @@ export default function SwipeScreen({ navigation }) {useInternational();
         params: { id: threadId, name: otherName }
       });
     } catch (e) {
-      Alert.alert("Kunne ikke åbne beskeder", e.message);
+      Alert.alert(tr("Kunne ikke åbne beskeder"), e.message);
     } finally {
       lock.current = false;
       setBusyId(null);

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
+import { coachChatGate } from "../../lib/coach-messaging";
 
 export async function contactPlayer(formData: FormData) {
   const user = await getCurrentUser();
@@ -21,6 +22,11 @@ export async function contactPlayer(formData: FormData) {
   });
 
   if (!other) redirect("/players");
+  // Coach ↔ player: no chat before a paid lesson. Back to where they came from, with the reason.
+  if (!(await coachChatGate(user.id, other.id)).allowed) {
+    const coach = await db.coachProfile.findUnique({ where: { userId: other.id }, select: { id: true } });
+    redirect(coach ? `/coaches/${coach.id}?chat=locked` : "/players?chat=locked");
+  }
 
   const existing = await db.matchRequest.findFirst({
     where: {

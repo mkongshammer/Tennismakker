@@ -1,4 +1,5 @@
 "use server";
+import { coachChatGate } from "./coach-messaging";
 import { safeReturnPath } from "./return-path";
 import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
@@ -1157,6 +1158,7 @@ export async function sendMessage(formData: FormData) {
 
   const access = await loadThread(matchRequestId, user.id);
   if (!access.ok) return;
+  if (!(await coachChatGate(user.id, access.otherUser.id)).allowed) return;
 
   await db.message.create({
     data: { matchRequestId, senderId: user.id, body },

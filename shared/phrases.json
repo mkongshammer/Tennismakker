@@ -1201,5 +1201,6 @@
   "Din trænerside": "Coach dashboard",
   "Tillad notifikationer i telefonens indstillinger.": "Allow notifications in your phone's settings.",
   "Push skal aktiveres på en fysisk telefon.": "Push notifications must be enabled on a physical phone.",
-  "Push er endnu ikke konfigureret i denne app-build.": "Push notifications are not configured in this app build yet."
+  "Push er endnu ikke konfigureret i denne app-build.": "Push notifications are not configured in this app build yet.",
+  "Kunne ikke åbne beskeder": "Could not open messages"
 }

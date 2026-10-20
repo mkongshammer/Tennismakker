@@ -1,6 +1,7 @@
 import { db } from "../../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../../lib/api/helpers";
 import { isBlockedBetween } from "../../../../../../lib/moderation";
+import { coachChatGate } from "../../../../../../lib/coach-messaging";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -26,6 +27,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     select: { id: true, name: true, level: true, area: true, sports: true },
   });
   if (!other) return apiError("Spilleren findes ikke.", 404);
+  const gate = await coachChatGate(auth.user.id, other.id);
+  if (!gate.allowed) return apiError(gate.reason, 403);
 
   const existing = await db.matchRequest.findFirst({
     where: {

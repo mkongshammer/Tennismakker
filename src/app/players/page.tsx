@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 const PAGE_SIZE = 10;
 
 type Props = {
-  searchParams: Promise<{ sport?: string; region?: string; page?: string }>;
+  searchParams: Promise<{ sport?: string; region?: string; page?: string; chat?: string }>;
 };
 
 function splitSports(value: string) {
@@ -99,6 +99,12 @@ export default async function SpillerePage({ searchParams }: Props) {
         <h1 className="display text-3xl">{t("players.findTitle")}</h1>
         <Link href="/matches" className="btn-ghost px-4 py-2"><UiText text="Se opslag"/></Link>
       </div>
+
+      {resolvedSearchParams.chat === "locked" && (
+        <p className="mb-4 rounded-2xl border border-slate/15 bg-mist p-4 text-sm" role="status">
+          Coaches and players can message each other once a lesson has been accepted by the coach and paid for by the player.
+        </p>
+      )}
 
       <ShareRacketBuddy />
 

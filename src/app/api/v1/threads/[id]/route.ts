@@ -1,6 +1,7 @@
 import { db } from "../../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../../lib/api/helpers";
 import { loadThread, readMessages, MAX_MESSAGE_LENGTH } from "../../../../../lib/messages";
+import { coachChatGate } from "../../../../../lib/coach-messaging";
 import {
   REPORT_REASONS,
   blockStatus,
@@ -22,9 +23,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const access = await loadThread(id, auth.user.id);
   if (!access.ok) return apiError(access.reason, 403);
 
-  const [messages, moderation] = await Promise.all([
+  const [messages, moderation, gate] = await Promise.all([
     readMessages(id, auth.user.id),
     blockStatus(auth.user.id, access.otherUser.id),
+    coachChatGate(auth.user.id, access.otherUser.id),
   ]);
 
   return json({
@@ -33,6 +35,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     otherUserId: access.otherUser.id,
     blockedByMe: moderation.blockedByMe,
     blockedByOther: moderation.blockedByOther,
+    /** Coach ↔ player chat waits for a paid lesson; the reason is shown instead of the composer. */
+    canSend: gate.allowed,
+    lockedReason: gate.allowed ? null : gate.reason,
     messages: messages.map((m: any) => ({
       id: m.id,
       body: m.body,
@@ -92,6 +97,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (await isBlockedBetween(auth.user.id, access.otherUser.id)) {
     return apiError("Messaging is unavailable because one of you has blocked the other user.", 403);
   }
+
+  const gate = await coachChatGate(auth.user.id, access.otherUser.id);
+  if (!gate.allowed) return apiError(gate.reason, 403);
 
   const body = String(payload.body ?? "").trim();
   if (!body) return apiError("Beskeden er tom.");

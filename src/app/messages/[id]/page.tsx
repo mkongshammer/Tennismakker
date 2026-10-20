@@ -5,6 +5,7 @@ import { getPreferences } from "../../../lib/preferences";
 import { translator } from "../../../lib/i18n";
 import { loadThread, readMessages, MAX_MESSAGE_LENGTH } from "../../../lib/messages";
 import { MessageForm } from "./MessageForm";
+import { coachChatGate } from "../../../lib/coach-messaging";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function SamtalePage({ params }: { params: Promise<{ id: st
     );
   }
 
-  const messages = await readMessages(id, user.id);
+  const [messages, gate] = await Promise.all([readMessages(id, user.id), coachChatGate(user.id, access.otherUser.id)]);
 
   return (
     <div id="top" className="mx-auto max-w-2xl scroll-mt-4">
@@ -74,12 +75,19 @@ export default async function SamtalePage({ params }: { params: Promise<{ id: st
         })}
       </div>
 
-      <MessageForm
-        threadId={id}
-        placeholder={t("msg.placeholder")}
-        sendLabel={t("msg.send")}
-        maxLength={MAX_MESSAGE_LENGTH}
-      />
+      {gate.allowed ? (
+        <MessageForm
+          threadId={id}
+          placeholder={t("msg.placeholder")}
+          sendLabel={t("msg.send")}
+          maxLength={MAX_MESSAGE_LENGTH}
+        />
+      ) : (
+        <div className="rounded-2xl border border-slate/15 bg-mist p-4 text-sm" role="note">
+          <p className="font-semibold">Messaging opens after a paid lesson</p>
+          <p className="mt-1 text-slate">{gate.reason}</p>
+        </div>
+      )}
     </div>
   );
 }

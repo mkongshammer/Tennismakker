@@ -18,6 +18,7 @@ import { buyPackage } from "../../../lib/actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { coachRatings, recentReviews } from "../../../lib/reviews";
 import { contactPlayer } from "../../players/actions";
+import { coachChatGate } from "../../../lib/coach-messaging";
 import { formatDate, formatMoney, timeZoneLabel } from "../../../lib/international";
 import { sportLabel, sportColor, parseSports } from "../../../lib/sports";
 import { Icon } from "../../../components/ui";
@@ -31,12 +32,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: `${coach.user.name} · ${parseSports(coach.sports).map((s) => sportLabel(s, "en-US")).join(", ")} coach in ${coach.area}`, description: coach.headline };
 }
 
-export default async function CoachPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fejl?: string }> }) {
+export default async function CoachPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ fejl?: string; chat?: string }> }) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const coach = await db.coachProfile.findUnique({ where: { id }, include: { user: true, packages: { where: { active: true } } } });
   if (!coach || coach.country !== "US") notFound();
 
   const user = await getCurrentUser();
+  const chatGate = user && user.id !== coach?.userId && coach ? await coachChatGate(user.id, coach.userId) : null;
   await releaseExpiredHolds();
 
   const [ratings, reviews, free, prefs, photoId] = await Promise.all([coachRatings([coach.id]), recentReviews({ coachProfileId: coach.id }), freeSlots(coach), getPreferences(), approvedCoachPhotoId(coach.id)]);
@@ -100,13 +102,13 @@ export default async function CoachPage({ params, searchParams }: { params: Prom
             <p className="display text-display-md text-court">{money(lessonPrice)}</p>
             <p className="text-xs text-slate">per {length} lesson</p>
             {coach.lessonMinutes !== 60 && <p className="mt-1 text-xs text-slate-light">{money(coach.priceHour)} / hour</p>}
-            {user && user.id !== coach.user.id ? (
+            {user && user.id !== coach.user.id && chatGate?.allowed ? (
               <form action={contactPlayer} className="mt-3">
                 <input type="hidden" name="playerId" value={coach.user.id} />
                 <button type="submit" className="btn-ghost btn-sm w-full">Message</button>
               </form>
-            ) : !user ? (
-              <Link href={loginHref} className="btn-ghost btn-sm mt-3 w-full">Sign in to message</Link>
+            ) : user && user.id !== coach.user.id ? (
+              <p className={`mt-3 max-w-40 text-xs leading-snug ${query.chat === "locked" ? "font-semibold text-ink" : "text-slate"}`}>Messaging opens once {coach.user.name.split(" ")[0]} accepts your lesson and you've paid.</p>
             ) : null}
           </div>
         </div>
