@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { Select } from "../../components/ui/Select";
 import { useFormState } from "react-dom";
 import { createClubAsAdmin } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
@@ -34,7 +35,7 @@ export function CreateClubForm() {
       </div>
 
       <label className="label" htmlFor="solutionMode">Klubløsning</label>
-      <select className="input" id="solutionMode" name="solutionMode" defaultValue="STANDARD"><option value="STANDARD">Standard · gæstebooking</option><option value="CUSTOM">Custom · fuld klubadministration</option></select>
+      <Select className="input" id="solutionMode" name="solutionMode" defaultValue="STANDARD"><option value="STANDARD">Standard · gæstebooking</option><option value="CUSTOM">Custom · fuld klubadministration</option></Select>
       <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" name="privateSetup" className="mt-1" defaultChecked />
         <span>Hold klubben skjult under opsætning. Den vises først for spillere, når du godkender den.</span>
@@ -53,10 +54,10 @@ export function CreateClubForm() {
           </div>
         </div>
         <label className="label mt-4" htmlFor="loginDelivery">Udlevering af login</label>
-        <select id="loginDelivery" name="loginDelivery" className="input" defaultValue="screen">
+        <Select id="loginDelivery" name="loginDelivery" className="input" defaultValue="screen">
           <option value="screen">Vis login her — send ingen mail</option>
           <option value="email">Send login til administratoren på mail</option>
-        </select>
+        </Select>
       </div>
 
       {state?.error && <p className="text-sm font-semibold text-court">{state.error}</p>}

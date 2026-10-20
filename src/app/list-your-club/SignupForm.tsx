@@ -6,6 +6,7 @@
 // live preview on the right shows the club the way players will see it.
 // Field names are the contract with registerClub() and are unchanged.
 import { pricesForCountry, type PriceBook } from "../../lib/platform-pricing";
+import { Select } from "../../components/ui/Select";
 import { useMemo, useRef, useState } from "react";
 import { useFormState } from "react-dom";
 import { registerClub } from "../../lib/club-onboarding-actions";
@@ -131,16 +132,16 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
             <label className="sm:col-span-2"><span className="label">Street address</span><input className="input" name="address" autoComplete="street-address" enterKeyHint="next" required maxLength={150} placeholder="123 Main St" /></label>
             <label><span className="label">City</span><input className="input" name="city" autoComplete="address-level2" required maxLength={100} placeholder="Boston" value={city} onChange={(e) => setCity(e.target.value)} /></label>
             <label><span className="label">State</span>
-              <select className="input" name="state" autoComplete="address-level1" required value={usState} onChange={(e) => { setUsState(e.target.value); if (e.target.value) setTimeZone(usStateTimeZone(e.target.value)); }}>
+              <Select className="input" name="state" autoComplete="address-level1" required value={usState} onChange={(e) => { setUsState(e.target.value); if (e.target.value) setTimeZone(usStateTimeZone(e.target.value)); }}>
                 <option value="" disabled>Select state</option>
                 {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}
-              </select>
+              </Select>
             </label>
             <label><span className="label">ZIP code</span><input className="input" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108" /></label>
             <label><span className="label">Time zone</span>
-              <select className="input" name="timeZone" value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
+              <Select className="input" name="timeZone" value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
                 {usTimeZoneOptions(timeZone).map((z) => <option key={z.value} value={z.value}>{z.label}</option>)}
-              </select>
+              </Select>
               <span className="hint">Set from your state. Change it if your club sits in a different zone.</span>
             </label>
             <label className="sm:col-span-2"><span className="label">Your name</span><input className="input" name="contact" autoComplete="name" required maxLength={150} placeholder="Who runs the club day to day" /></label>

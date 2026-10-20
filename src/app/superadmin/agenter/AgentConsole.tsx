@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormState } from "react-dom";
+import { Select } from "../../../components/ui/Select";
 import { SubmitButton } from "../../../components/SubmitButton";
 import { runAgentFromAdmin, updateAgentSettings } from "./actions";
 
@@ -97,9 +98,9 @@ export function AgentRunner({ agents }: { agents: ReadonlyArray<{ id: string; na
       </div>
       <label className="block">
         <span className="text-sm font-bold">Agent</span>
-        <select name="agent" defaultValue="manager" className="input mt-1">
+        <Select name="agent" defaultValue="manager" className="input mt-1">
           {agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}
-        </select>
+        </Select>
       </label>
       <label className="block">
         <span className="text-sm font-bold">Opgave</span>

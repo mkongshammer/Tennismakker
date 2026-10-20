@@ -1,6 +1,7 @@
 "use client";
 
 import { useFormState } from "react-dom";
+import { Select } from "../../components/ui/Select";
 import { setCustomDomain } from "../../lib/actions";
 
 export function DomainForm({
@@ -15,7 +16,7 @@ export function DomainForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="clubId">Klub</label>
-          <select className="input" id="clubId" name="clubId" required>
+          <Select className="input" id="clubId" name="clubId" required>
             <option value="">Vælg klub</option>
             {clubs.map((c) => (
               <option key={c.id} value={c.id}>
@@ -23,7 +24,7 @@ export function DomainForm({
                 {c.customDomain ? ` — ${c.customDomain}` : ""}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label className="label" htmlFor="domain">Domæne</label>

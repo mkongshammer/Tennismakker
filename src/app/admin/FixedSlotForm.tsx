@@ -8,6 +8,7 @@
 // "book fast bane" ville give den til den, der sad ved computeren klokken
 // otte den rigtige morgen.
 import { useWebsiteInternational } from "../../components/InternationalProvider";import { useFormState } from "react-dom";
+import { Select } from "../../components/ui/Select";
 import { assignFixedSlot, dropFixedSlot } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
 
@@ -83,11 +84,11 @@ export function FixedSlotForm({
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="label" htmlFor="fixedUser">{tr("Medlem")}</label>
-              <select className="input" id="fixedUser" name="userId" required>
+              <Select className="input" id="fixedUser" name="userId" required>
                 {members.map((m) =>
               <option key={m.id} value={m.id}>{m.name}</option>
               )}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="label" htmlFor="fixedCourt">{tr("Bane")}</label>
@@ -107,11 +108,11 @@ export function FixedSlotForm({
             </div>
             <div>
               <label className="label" htmlFor="fixedHour">{tr("Klokken \xB7 dansk tid, \xE9n time pr. booking")}</label>
-              <select className="input" id="fixedHour" name="hour" defaultValue="17">
+              <Select className="input" id="fixedHour" name="hour" defaultValue="17">
                 {Array.from({ length: 18 }, (_, i) => i + 6).map((h) =>
               <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>
               )}
-              </select>
+              </Select>
             </div>
             <div>
               <label className="label" htmlFor="fixedFrom">{tr("Fra")}</label>

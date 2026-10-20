@@ -1,4 +1,5 @@
 import {phrase} from "../../../lib/phrases";
+import { Select } from "../../../components/ui/Select";
 import {getPreferences} from "../../../lib/preferences";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -135,14 +136,14 @@ export default async function CustomAdminPage() {
         <form action={saveGenericIntegration} className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="type">{tr("Type")}</label>
-            <select className="input" id="type" name="type" defaultValue="ACCOUNTING">
+            <Select className="input" id="type" name="type" defaultValue="ACCOUNTING">
               <option value="ACCOUNTING">{tr("Regnskab")}</option>
               <option value="LIGHTING">{tr("Lysstyring")}</option>
               <option value="ACCESS">{tr("Adgangskontrol")}</option>
               <option value="BOOKING">{tr("Bookingsystem")}</option>
               <option value="PAYMENTS">{tr("Betaling")}</option>
               <option value="CUSTOM_API">{tr("Andet API/system")}</option>
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="provider">{tr("System")}</label>

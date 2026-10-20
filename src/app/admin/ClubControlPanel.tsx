@@ -1,4 +1,5 @@
 "use client";import { useWebsiteInternational } from "../../components/InternationalProvider";
+import { Select } from "../../components/ui/Select";
 
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
@@ -44,12 +45,12 @@ function RelayStep({ device, number, saved, courts }: {device: Device;number: nu
     {editing || !saved ? <form action={mapAction} className="space-y-3">
       <input type="hidden" name="deviceId" value={device.id} /><input type="hidden" name="channel" value={number} />
       <label className="label" htmlFor="relay-assignment">{tr("Hvad styrer dette rel\xE6?")}</label>
-      <select id="relay-assignment" name="assignment" className="input" defaultValue={value} required>
+      <Select id="relay-assignment" name="assignment" className="input" defaultValue={value} required>
         <option value="" disabled>{tr("V\xE6lg lys eller d\xF8r\u2026")}</option>
         {courts.map((c) => <option key={c.id} value={`COURT_LIGHT:${c.id}`}>{tr("Lys p\xE5") + " "}{c.name}</option>)}
         <option value="COMMON_LIGHT">{tr("Gang / f\xE6lleslys")}</option><option value="DOOR">{tr("D\xF8r")}</option>
         <option value="UNUSED">{tr("Intet tilsluttet \u2014 spring over")}</option>
-      </select>
+      </Select>
       {!courts.length && <p className="text-sm text-slate">{tr("Opret klubbens baner i administrationen f\xF8rst, hvis du vil v\xE6lge banelys.")}</p>}
       <SubmitButton pendingText={tr("Gemmer\u2026")}>{tr("Gem og forts\xE6t")}</SubmitButton><Result state={mapping} />
     </form> : <>

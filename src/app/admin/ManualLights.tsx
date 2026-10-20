@@ -1,5 +1,6 @@
 'use client';
 import { useWebsiteInternational } from "../../components/InternationalProvider";
+import { Select } from "../../components/ui/Select";
 import { useFormState } from 'react-dom';
 import { setManualLight } from '../../lib/club-control-actions';
 import { requestClubHardwareIntegration } from '../../lib/club-hardware-request-actions';
@@ -60,8 +61,8 @@ export function ManualLights({ channels }: {channels: {id: string;label: string 
       <h2 className="display text-2xl">{tr("Tænd lys manuelt")}</h2>
       <p className="text-sm">{tr("Lyset kan tændes i en afgrænset periode. Derefter følger det igen bookingerne. “Automatik” slukker ikke lyset under en aktiv booking.")}</p>
       {channels.length ? <form action={action} className="flex flex-wrap gap-3">
-        <select className="input" name="channelId" aria-label={tr("Lys")}>{channels.map((c) => <option key={c.id} value={c.id}>{c.label ?? tr("Lys")}</option>)}</select>
-        <select className="input" name="minutes" aria-label={tr("Varighed")} defaultValue="30">{[15, 30, 60, 120].map((n) => <option key={n} value={n}>{n}{" " + tr("minutter")}</option>)}<option value="0">{tr("Automatik")}</option></select>
+        <Select className="input" name="channelId" aria-label={tr("Lys")}>{channels.map((c) => <option key={c.id} value={c.id}>{c.label ?? tr("Lys")}</option>)}</Select>
+        <Select className="input" name="minutes" aria-label={tr("Varighed")} defaultValue="30">{[15, 30, 60, 120].map((n) => <option key={n} value={n}>{n}{" " + tr("minutter")}</option>)}<option value="0">{tr("Automatik")}</option></Select>
         <SubmitButton pendingText={tr("Sender…")}>{tr("Anvend")}</SubmitButton>
       </form> : <p>{tr("Færdiggør lysopsætningen nedenfor først.")}</p>}
       {state?.error && <p role="alert" className="text-sm text-red-800">{tr(state.error)}</p>}
@@ -73,7 +74,7 @@ export function ManualLights({ channels }: {channels: {id: string;label: string 
       <details className="rounded-xl border border-slate/15 p-4" open={Boolean(requestState?.error)}>
         <summary className="cursor-pointer font-semibold">{h.summary}</summary>
         <form action={requestAction} className="mt-4 space-y-4">
-          <div><label className="label" htmlFor="hardware-category">{h.category}</label><select id="hardware-category" className="input" name="category" defaultValue="LIGHTING" required><option value="LIGHTING">{h.lighting}</option><option value="ACCESS">{h.access}</option><option value="HEATING">{h.heating}</option><option value="SCOREBOARD">{h.scoreboard}</option><option value="OTHER">{h.other}</option></select></div>
+          <div><label className="label" htmlFor="hardware-category">{h.category}</label><Select id="hardware-category" className="input" name="category" defaultValue="LIGHTING" required><option value="LIGHTING">{h.lighting}</option><option value="ACCESS">{h.access}</option><option value="HEATING">{h.heating}</option><option value="SCOREBOARD">{h.scoreboard}</option><option value="OTHER">{h.other}</option></Select></div>
           <div className="grid gap-3 sm:grid-cols-2"><div><label className="label" htmlFor="hardware-manufacturer">{h.manufacturer}</label><input id="hardware-manufacturer" className="input" name="manufacturer" maxLength={120} placeholder={h.manufacturerPlaceholder} /></div><div><label className="label" htmlFor="hardware-model">{h.model}</label><input id="hardware-model" className="input" name="model" maxLength={120} placeholder={h.modelPlaceholder} /></div></div>
           <div><label className="label" htmlFor="hardware-details">{h.details}</label><textarea id="hardware-details" className="input" name="details" rows={4} minLength={10} maxLength={2000} required placeholder={h.detailsPlaceholder} /></div>
           <SubmitButton pendingText={h.sending}>{h.send}</SubmitButton>

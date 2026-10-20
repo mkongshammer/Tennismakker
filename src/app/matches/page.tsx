@@ -1,4 +1,5 @@
 import {phrase} from "../../lib/phrases";
+import { Select } from "../../components/ui/Select";
 
 import {UiText} from "../../components/InternationalProvider";
 import Link from "next/link";
@@ -99,21 +100,21 @@ export default async function MakkerePage({
         <input type="hidden" name="filtrer" value="1" />
         <div>
           <label className="label" htmlFor="region"><UiText text="Region"/></label>
-          {prefs.country==="DK"?<select className="input" id="region" name="region" defaultValue={selectedRegion}>
+          {prefs.country==="DK"?<Select className="input" id="region" name="region" defaultValue={selectedRegion}>
             <option value=""><UiText text="Alle regioner"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
+          </Select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
         </div>
         <div>
           <label className="label" htmlFor="niveau"><UiText text="Niveau"/></label>
-          <select className="input" id="niveau" name="niveau" defaultValue={selectedLevel}>
+          <Select className="input" id="niveau" name="niveau" defaultValue={selectedLevel}>
             <option value=""><UiText text="Alle niveauer"/></option>
             {Object.entries(LEVELS).map(([num, item]) => (
               <option key={num} value={num}>{prefs.locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${item.label}`}</option>
             ))}
-          </select>
+          </Select>
         </div>
         <button className="btn-ink">{t("common.filter")}</button>
         {(selectedRegion || selectedLevel) && (

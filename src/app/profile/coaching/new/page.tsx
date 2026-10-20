@@ -1,5 +1,6 @@
 "use client";
 import { PlaceInput } from "../../../../components/ui/PlaceInput";
+import { Select } from "../../../../components/ui/Select";
 import {UiText} from "../../../../components/InternationalProvider";
 
 
@@ -53,25 +54,25 @@ export default function OpretTraenerprofilPage() {
           </div>
           <div>
             <label className="label" htmlFor="area">{country==="US"?"City or area":<UiText text="Region"/>}</label>
-            {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
+            {country==="DK"?<Select className="input" id="area" name="area" defaultValue="" required>
               <option value="" disabled><UiText text="Vælg region"/></option>
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>:<PlaceInput id="area" name="area" required />}
+            </Select>:<PlaceInput id="area" name="area" required />}
           </div>
         </div>
 
         {country==="US" ? (
           <div>
             <label className="label" htmlFor="timeZone">Time zone</label>
-            <select id="timeZone" name="timeZone" className="input" defaultValue={market.timeZone}>
+            <Select id="timeZone" name="timeZone" className="input" defaultValue={market.timeZone}>
               {usTimeZoneOptions(market.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>)}
-            </select>
+            </Select>
             <p className="mt-1 text-xs text-slate">Prices are in US dollars. Your open times are shown to players in this zone.</p>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<select name="currency" className="input" defaultValue={market.currency}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</select></label><label className="label">{tr("Lokal tidszone")}<select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label></div>
+          <div className="grid gap-4 sm:grid-cols-2"><label className="label">{tr("Valuta")}<Select name="currency" className="input" defaultValue={market.currency}>{SALES_CURRENCIES.map(c=><option key={c}>{c}</option>)}</Select></label><label className="label">{tr("Lokal tidszone")}<Select name="timeZone" className="input" defaultValue={market.timeZone}>{TIME_ZONES.map(z=><option key={z}>{z}</option>)}</Select></label></div>
         )}
         {state?.error ? <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p> : null}
 

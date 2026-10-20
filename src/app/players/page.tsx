@@ -1,4 +1,5 @@
 import {phrase} from "../../lib/phrases";
+import { Select } from "../../components/ui/Select";
 
 import {UiText} from "../../components/InternationalProvider";
 import Link from "next/link";
@@ -109,7 +110,7 @@ export default async function SpillerePage({ searchParams }: Props) {
       <ShareRacketBuddy />
 
       <form method="get" className="card mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="min-w-0 text-sm font-semibold"><UiText text="Sportsgren"/><select
+        <label className="min-w-0 text-sm font-semibold"><UiText text="Sportsgren"/><Select
             name="sport"
             defaultValue={selectedSport}
             className="mt-1 w-full rounded-xl border border-slate/20 bg-white px-3 py-2.5 text-sm"
@@ -120,7 +121,7 @@ export default async function SpillerePage({ searchParams }: Props) {
                 {sport}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
 
         <label className="min-w-0 text-sm font-semibold">US city or state<input

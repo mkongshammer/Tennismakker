@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Select } from "../../components/ui/Select";
 import { useFormState } from 'react-dom';
 import type { Locale } from '../../lib/sports';
 import { createClubSupportTicket } from '../../lib/club-support-ticket-actions';
@@ -65,13 +66,13 @@ export function ClubSupportTicket({ locale, page }: { locale: Locale; page: stri
     <form ref={formRef} action={action} className="mt-4 space-y-3 px-1">
       <input type="hidden" name="page" value={page} />
       <label className="block text-xs font-semibold text-slate">{c.type}
-        <select name="type" className="input mt-1 w-full" defaultValue="IMPROVEMENT" required>
+        <Select name="type" className="input mt-1 w-full" defaultValue="IMPROVEMENT" required>
           <option value="IMPROVEMENT">{c.improvement}</option>
           <option value="CHANGE">{c.change}</option>
           <option value="BUG">{c.bug}</option>
           <option value="INTEGRATION">{c.integration}</option>
           <option value="OTHER">{c.other}</option>
-        </select>
+        </Select>
       </label>
       <label className="block text-xs font-semibold text-slate">{c.subject}
         <input name="subject" className="input mt-1 w-full" minLength={5} maxLength={140} required placeholder={c.subjectPlaceholder} />
@@ -80,10 +81,10 @@ export function ClubSupportTicket({ locale, page }: { locale: Locale; page: stri
         <textarea name="details" className="input mt-1 w-full resize-y" rows={4} minLength={10} maxLength={3000} required placeholder={c.detailsPlaceholder} />
       </label>
       <label className="block text-xs font-semibold text-slate">{c.priority}
-        <select name="priority" className="input mt-1 w-full" defaultValue="NORMAL">
+        <Select name="priority" className="input mt-1 w-full" defaultValue="NORMAL">
           <option value="NORMAL">{c.normal}</option>
           <option value="HIGH">{c.high}</option>
-        </select>
+        </Select>
       </label>
       <SubmitButton className="w-full" pendingText={c.sending}>{c.send}</SubmitButton>
     </form>

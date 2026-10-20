@@ -1,5 +1,6 @@
 "use client";
 import {dayKey} from "../../lib/international";
+import { Select } from "../../components/ui/Select";
 
 import {useWebsiteInternational} from "../../components/InternationalProvider";
 import { useFormState } from "react-dom";
@@ -26,11 +27,11 @@ export function ReleaseForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="courtId">{tr("Bane")}</label>
-          <select className="input" id="courtId" name="courtId" required>
+          <Select className="input" id="courtId" name="courtId" required>
             {courts.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label className="label" htmlFor="date">{tr("Dato")}</label>

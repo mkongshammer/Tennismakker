@@ -1,5 +1,6 @@
 "use client";
 import { PlaceInput } from "../../../components/ui/PlaceInput";
+import { Select } from "../../../components/ui/Select";
 import {UiText} from "../../../components/InternationalProvider";
 
 
@@ -87,7 +88,7 @@ export default function TraenerProfilPage() {
           </div>
           <div>
             <label className="label" htmlFor="area">{profile.country==="US"?"City or area":<UiText text="Region"/>}</label>
-            {profile.country==="DK"?<select
+            {profile.country==="DK"?<Select
               className="input"
               id="area"
               name="area"
@@ -98,13 +99,13 @@ export default function TraenerProfilPage() {
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>:<PlaceInput id="area" name="area" defaultValue={profile.area} required />}
+            </Select>:<PlaceInput id="area" name="area" defaultValue={profile.area} required />}
           </div>
         </div>
-        <label className="label block">{profile.country==="US"?"Time zone":tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{profile.country==="US"?usTimeZoneOptions(profile.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>):TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>
+        <label className="label block">{profile.country==="US"?"Time zone":tr("Lokal tidszone")}<Select className="input" name="timeZone" defaultValue={profile.timeZone}>{profile.country==="US"?usTimeZoneOptions(profile.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>):TIME_ZONES.map(z=><option key={z}>{z}</option>)}</Select></label>
         <div>
           <label className="label" htmlFor="lessonMinutes"><UiText text="Længden på én lektion"/></label>
-          <select
+          <Select
             className="input"
             id="lessonMinutes"
             name="lessonMinutes"
@@ -114,7 +115,7 @@ export default function TraenerProfilPage() {
             {LESSON_LENGTHS.map((m) => (
               <option key={m} value={m}>{describeLength(m,locale)}</option>
             ))}
-          </select>
+          </Select>
           <p className="mt-1 text-xs text-slate"><UiText text="Eleven betaler"/>{" "}{formatMoney(lessonPriceKr(priceHour,lessonMinutes),profile.currency,locale)}{" "}<UiText text="for én lektion. Timeprisen er stadig den, du sammenlignes på i oversigten."/></p>
         </div>
         <div>

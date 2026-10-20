@@ -1,4 +1,5 @@
 "use client";import { useWebsiteInternational } from "../../components/InternationalProvider";
+import { Select } from "../../components/ui/Select";
 import { useState } from 'react';
 import { useFormState } from 'react-dom';
 import { addCourt, renameCourt, removeCourt, saveClubSports } from '../../lib/actions';
@@ -16,16 +17,16 @@ function Fields({ sports, court }: {sports: Sport[];court?: Court;}) {const { tr
   const prefix = court?.id ?? 'new';
   return <>
     <div><label className="label" htmlFor={`${prefix}-sport`}>{tr("Sportsgren")}</label>
-      <select id={`${prefix}-sport`} className="input" name="sport" value={sport} onChange={(e) => {const s = e.target.value as Sport;setSport(s);setSurface(COURT_OPTIONS[s].surfaces[0]);setIndoor(COURT_OPTIONS[s].indoor);}}>
+      <Select id={`${prefix}-sport`} className="input" name="sport" value={sport} onChange={(e) => {const s = e.target.value as Sport;setSport(s);setSurface(COURT_OPTIONS[s].surfaces[0]);setIndoor(COURT_OPTIONS[s].indoor);}}>
         {sports.map((s) => <option key={s} value={s}>{sportLabel(s, locale)}</option>)}
-      </select></div>
+      </Select></div>
     <div className="min-w-[10rem] flex-1"><label className="label" htmlFor={`${prefix}-name`}>{sport === 'BORDTENNIS' ? tr("Bordets navn") : tr("Banens navn")}</label>
       <input id={`${prefix}-name`} name="name" className="input" defaultValue={court?.name} placeholder={sport === 'BORDTENNIS' ? tr("fx Bord 1") : tr("fx Bane 1")} required /></div>
     <div><label className="label" htmlFor={`${prefix}-surface`}>{sport === 'BORDTENNIS' ? tr("Type") : tr("Underlag")}</label>
-      <select id={`${prefix}-surface`} name="surface" className="input" value={surface} onChange={(e) => setSurface(e.target.value)}>
+      <Select id={`${prefix}-surface`} name="surface" className="input" value={surface} onChange={(e) => setSurface(e.target.value)}>
         {!options.surfaces.includes(surface) && <option value={surface} disabled>{surfaceLabel(surface,locale)}{" " + tr("\u2014 v\xE6lg nyt underlag")}</option>}
         {options.surfaces.map((s) => <option key={s} value={s}>{surfaceLabel(s,locale)}</option>)}
-      </select></div>
+      </Select></div>
     <label className="flex items-center gap-2 pb-2 text-sm"><input type="checkbox" name="indoor" checked={indoor} onChange={(e) => setIndoor(e.target.checked)} />{tr("Indend\xF8rs")}</label>
   </>;
 }

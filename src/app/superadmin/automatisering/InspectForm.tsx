@@ -6,6 +6,7 @@
 // link med de attributter, man vælger dem ud fra. Uden det skulle
 // selektorerne gættes, og et gæt er kode, der ser rigtig ud og ikke virker.
 import { useFormState } from "react-dom";
+import { Select } from "../../../components/ui/Select";
 import { runInspect } from "./actions";
 import { SubmitButton } from "../../../components/SubmitButton";
 
@@ -19,12 +20,12 @@ export function InspectForm({ clubs }: { clubs: Club[] }) {
       <form action={action} className="card space-y-4">
         <div>
           <label className="label" htmlFor="clubId">Klub (gemmer adgangen)</label>
-          <select className="input" id="clubId" name="clubId" defaultValue="">
+          <Select className="input" id="clubId" name="clubId" defaultValue="">
             <option value="">Gem ikke — kun se</option>
             {clubs.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>

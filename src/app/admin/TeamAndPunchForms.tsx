@@ -6,6 +6,7 @@
 // form: klubben opretter noget, medlemmerne køber det, og det lukkes frem
 // for at blive slettet — nogen har betalt for det.
 import { useWebsiteInternational } from "../../components/InternationalProvider";import { useFormState } from "react-dom";
+import { Select } from "../../components/ui/Select";
 import {
   closePunchCard,
   closeSeasonTeam,
@@ -83,35 +84,35 @@ export function TeamForm({ teams, locale }: {teams: Team[];locale: Locale;}) {co
           </div>
           <div>
             <label className="label" htmlFor="teamSport">{tr("Sportsgren")}</label>
-            <select className="input" id="teamSport" name="sport" defaultValue="TENNIS">
+            <Select className="input" id="teamSport" name="sport" defaultValue="TENNIS">
               {SPORTS.map((s) =>
               <option key={s} value={s}>{sportLabel(s, locale)}</option>
               )}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="teamDay">{tr("Ugedag")}</label>
-            <select className="input" id="teamDay" name="dayOfWeek" defaultValue="2">
+            <Select className="input" id="teamDay" name="dayOfWeek" defaultValue="2">
               {DAYS.map((d, i) =>
               <option key={i} value={i}>{tr(d)}</option>
               )}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="teamHour">{tr("Klokken")}</label>
-            <select className="input" id="teamHour" name="hour" defaultValue="17">
+            <Select className="input" id="teamHour" name="hour" defaultValue="17">
               {Array.from({ length: 18 }, (_, i) => i + 6).map((h) =>
               <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>
               )}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="teamMinutes">{tr("L\xE6ngde (min)")}</label>
-            <select className="input" id="teamMinutes" name="minutes" defaultValue="60">
+            <Select className="input" id="teamMinutes" name="minutes" defaultValue="60">
               {[45, 60, 90, 120].map((m) =>
               <option key={m} value={m}>{m}</option>
               )}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="teamPrice">{tr("Pris for s\xE6sonen")}</label>

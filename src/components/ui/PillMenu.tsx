@@ -63,13 +63,13 @@ export function PillMenu<T extends string | number>({ label, value, options, onC
         <span className="sr-only">, {srLabel}</span>
         <Icon name="chevron" size={14} className={`transition-transform ${open ? "rotate-90" : ""}`} />
       </button>
-      {open && <div aria-hidden="true" className="fixed inset-0 z-30 bg-ink/35 backdrop-blur-[1px] sm:hidden" />}
+      {open && <div aria-hidden="true" className="fixed inset-0 z-[60] bg-ink/35 backdrop-blur-[1px] sm:hidden" />}
       {open && (
         <ul
           id={menuId}
           role="listbox"
           aria-label={srLabel}
-          className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 max-h-[min(60vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-slate/15 bg-chalk p-1.5 shadow-pop animate-pop-in sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-[calc(100%+6px)] sm:min-w-[12rem]"
+          className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-[70] max-h-[min(60vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-slate/15 bg-chalk p-1.5 shadow-pop animate-pop-in sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-[calc(100%+6px)] sm:min-w-[12rem]"
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
             if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }

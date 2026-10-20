@@ -1,5 +1,6 @@
 "use client";
 import { PlaceInput } from "../../../components/ui/PlaceInput";
+import { Select } from "../../../components/ui/Select";
 import {UiText} from "../../../components/InternationalProvider";
 
 
@@ -32,29 +33,29 @@ export default function NytOpslagPage() {
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="label" htmlFor="matchType"><UiText text="Type"/></label>
-            <select className="input" id="matchType" name="matchType" defaultValue="SINGLE">
+            <Select className="input" id="matchType" name="matchType" defaultValue="SINGLE">
               {Object.entries(MATCH_TYPES).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="label" htmlFor="level"><UiText text="Niveau"/></label>
-            <select className="input" id="level" name="level" defaultValue="3">
+            <Select className="input" id="level" name="level" defaultValue="3">
               {Object.entries(LEVELS).map(([num, l]) => (
                 <option key={num} value={num}>{locale === "en-US" ? `${LEVELS_EN[Number(num)].label} · NTRP ${LEVELS_EN[Number(num)].ntrp}` : `${num} — ${l.label}`}</option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
         <div>
           <label className="label" htmlFor="area">{country==="US"?"City or area":<UiText text="Region"/>}</label>
-          {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
+          {country==="DK"?<Select className="input" id="area" name="area" defaultValue="" required>
             <option value="" disabled><UiText text="Vælg region"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>:<PlaceInput id="area" name="area" required />}
+          </Select>:<PlaceInput id="area" name="area" required />}
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p>}
         <SubmitButton className="btn-court w-full" pendingText="Slår op…"><UiText text="Slå op"/></SubmitButton>

@@ -1,4 +1,5 @@
 import {formatMoney} from "../../lib/international";
+import { Select } from "../../components/ui/Select";
 import { CUSTOM_FEATURES } from "../../lib/club-features";
 import { setClubSolution } from "../../lib/club-management-actions";
 import React from "react";
@@ -170,7 +171,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
               <li key={club.id} className="card">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <p className="text-lg font-bold">{club.name}</p>
-                  <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></select><button className="btn-ghost">Gem løsning</button></form>
+                  <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><Select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></Select><button className="btn-ghost">Gem løsning</button></form>
                   <p className="text-sm text-slate">
                     Oprettet {format(club.createdAt, "d. MMM yyyy", { locale: da })}
                   </p>
@@ -346,7 +347,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
           {decided.map((club: any) => (
             <li key={club.id} className="flex flex-wrap justify-between gap-2 py-2 text-sm">
               <span className="font-semibold">{club.name}</span>
-              <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></select><button className="btn-ghost">Gem løsning</button></form>
+              <form action={setClubSolution} className="flex gap-2"><input type="hidden" name="clubId" value={club.id}/><Select className="input" name="solutionMode" defaultValue={club.solutionMode}><option value="STANDARD">Standard</option><option value="CUSTOM">Custom</option></Select><button className="btn-ghost">Gem løsning</button></form>
               <span className="text-slate">{club.city}</span>
               <span
                 className={
