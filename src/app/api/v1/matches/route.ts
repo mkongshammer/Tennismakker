@@ -1,3 +1,4 @@
+import { AREA_ERROR, canonicalArea } from "../../../../lib/us-area";
 import {validArea} from "../../../../lib/profile-location";
 import { db } from "../../../../lib/db";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
@@ -56,9 +57,9 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const message = String(body.message ?? "").trim();
-  const area = String(body.area ?? "").trim();
+  const area = await canonicalArea(auth.user.country, body.area);
   if (!message) return apiError("Skriv en besked.");
-  if (!validArea(auth.user.country,area)) return apiError("Choose a valid city/area.");
+  if (!area) return apiError(AREA_ERROR);
 
   const created = await db.matchRequest.create({
     data: {

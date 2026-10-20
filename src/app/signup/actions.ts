@@ -1,5 +1,6 @@
 "use server";
 
+import { canonicalArea } from "../../lib/us-area";
 import crypto from "crypto";
 import { db } from "../../lib/db";
 import { signup as baseSignup } from "../../lib/actions";
@@ -36,7 +37,10 @@ export async function signup(prev: unknown, formData: FormData) {
     }
     // Public discovery needs only city + state. Exact street/ZIP are deliberately not stored
     // for player/coach accounts, even when the browser uses them to autofill the form.
-    formData.set("area", `${city}, ${state}`);
+    // Only real places: the city must exist in the chosen state ("Boston, MA").
+    const place = await canonicalArea("US", `${city}, ${state}`);
+    if (!place) return { error: `We couldn't find ${city || "that city"} in ${state}. Check the spelling, e.g. Boston.` };
+    formData.set("area", place);
   }
   const area = String(formData.get("area") ?? "").trim();
 

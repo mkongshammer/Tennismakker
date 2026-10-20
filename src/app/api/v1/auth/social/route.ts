@@ -1,3 +1,4 @@
+import { canonicalArea } from "../../../../../lib/us-area";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { createRemoteJWKSet, jwtVerify } from "jose";
@@ -138,6 +139,9 @@ export async function POST(req: Request) {
       return apiError("Choose a city and state and enter a valid US ZIP code.");
     }
     body.area = `${city}, ${state}`;
+    const place = await canonicalArea("US", body.area);
+    if (!place) return apiError(`We couldn't find ${city || "that city"} in ${state}. Check the spelling, e.g. Boston.`);
+    body.area = place;
   }
 
   let location;

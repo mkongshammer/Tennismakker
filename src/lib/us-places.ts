@@ -85,6 +85,11 @@ function bounds(rows: ZipRow[]): Bounds | null {
 
 const titleCase = (s: string) => s.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
 
+/** "St Louis" / "St. Louis" → "Saint Louis", "Ft Worth" → "Fort Worth", "Mt Vernon" → "Mount Vernon": the dataset spells them out. */
+export function expandPlaceAbbreviations(text: string): string {
+  return text.replace(/(^|[\s,])(st|ste|ft|mt)\.?(?=\s)/gi, (_m, pre: string, abbr: string) => pre + ({ st: "Saint", ste: "Sainte", ft: "Fort", mt: "Mount" } as Record<string, string>)[abbr.toLowerCase()]);
+}
+
 // city name (lower) → state → rows. Built once; the dataset has ~44k rows.
 let cityIndex: Promise<Map<string, Map<string, ZipRow[]>>> | null = null;
 function cities() {
@@ -120,7 +125,7 @@ async function statePlace(code: string): Promise<Place | null> {
 
 /** Parse "Boston, MA", "Boston MA", "boston", "02108", "Massachusetts", "MA". */
 export async function resolvePlace(raw: string): Promise<Place | null> {
-  const query = raw.trim().replace(/\s+/g, " ");
+  const query = expandPlaceAbbreviations(raw.trim().replace(/\s+/g, " "));
   if (!query || query.length > 120) return null;
 
   const zipMatch = query.match(/^(\d{5})(?:-\d{4})?$/);
@@ -175,6 +180,43 @@ export async function resolvePlace(raw: string): Promise<Place | null> {
   // one-ZIP hamlet that shares the name (Boston, GA).
   const alternatives = ranked.slice(1).filter(([, rows]) => rows.length >= 3).slice(0, 5).map(([st]) => ({ label: `${titleCase(city)}, ${st}`, query: `${titleCase(city)}, ${st}` }));
   return { kind: "city", label: `${titleCase(city)}, ${bestState}`, city: titleCase(city), state: bestState, ...center, ...(alternatives.length ? { alternatives } : {}) };
+}
+
+// Prefix search for the "City or area" field. Ranked by how many ZIP codes a
+// city has — a fair proxy for size — so "Spr" offers Springfield, MA/IL/MO
+// before a one-ZIP hamlet. Built once from the city index.
+let cityList: Promise<{ key: string; label: string; weight: number }[]> | null = null;
+function allCities() {
+  cityList ??= cities().then((index) => {
+    const list: { key: string; label: string; weight: number }[] = [];
+    for (const [name, byState] of index) {
+      for (const [state, rows] of byState) list.push({ key: name, label: `${titleCase(name)}, ${state}`, weight: rows.length });
+    }
+    return list.sort((a, b) => b.weight - a.weight || a.label.localeCompare(b.label));
+  });
+  return cityList;
+}
+
+/** Up to `limit` "City, ST" suggestions for what someone has typed (city prefix, optional ", ST"), or a ZIP's city. */
+export async function suggestCities(raw: string, limit = 8): Promise<string[]> {
+  const query = expandPlaceAbbreviations(raw.trim().replace(/\s+/g, " ")).toLowerCase();
+  if (query.length < 2 || query.length > 60) return [];
+  if (/^\d{5}$/.test(query)) {
+    const row = (await zips()).lookup(query);
+    return row && row.country === "US" ? [`${titleCase(row.city)}, ${row.state}`] : [];
+  }
+  // "boston ma" (no comma): read the last word as a state when it is one.
+  const tail = !query.includes(",") ? query.match(/^(.+)\s([a-z]{2})$/) : null;
+  const [cityPart, statePart = ""] = tail && STATE_BY_CODE.has(tail[2].toUpperCase()) ? [tail[1], tail[2]] : query.split(",").map((s) => s.trim());
+  // After a comma, the state may be typed as a code or a name, fully or partly: "boston, m", "boston, mass".
+  const stateMatches = (code: string) => !statePart || code.toLowerCase().startsWith(statePart) || stateName(code).toLowerCase().startsWith(statePart);
+  const out: string[] = [];
+  for (const c of await allCities()) {
+    if (!c.key.startsWith(cityPart) || !stateMatches(c.label.slice(-2))) continue;
+    out.push(c.label);
+    if (out.length >= limit) break;
+  }
+  return out;
 }
 
 /** The state a coordinate falls in, from the nearest ZIP code. */

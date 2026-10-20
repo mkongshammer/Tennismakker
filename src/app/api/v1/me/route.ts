@@ -1,3 +1,4 @@
+import { AREA_ERROR, canonicalArea } from "../../../../lib/us-area";
 import { profileLocation } from "../../../../lib/profile-location";
 import {walletBlocksDeletion} from "../../../../lib/wallet";
 import { json, preflight, publicUser, requireUser } from "../../../../lib/api/helpers";
@@ -54,7 +55,10 @@ export async function DELETE(req: Request) {
 export async function POST(req: Request) {
   const auth=await requireUser(req); if ('response' in auth) return auth.response;
   const body=await req.json().catch(()=>({}));
-  try {const data=profileLocation({country:body.country??auth.user.country,locale:body.locale??auth.user.locale,area:body.area??auth.user.area});
+  // A changed area must be a real place; an unchanged one is left as it is.
+  const country=String(body.country??auth.user.country);
+  if(body.area!==undefined&&body.area!==auth.user.area){const place=await canonicalArea(country,body.area);if(!place)return json({error:AREA_ERROR},400);body.area=place;}
+  try {const data=profileLocation({country,locale:body.locale??auth.user.locale,area:body.area??auth.user.area});
     const user=await db.user.update({where:{id:auth.user.id},data,include:{coachProfile:true}}); return json({user:publicUser(user)});
   } catch(e) {return json({error:(e as Error).message},400);}
 }

@@ -1,3 +1,4 @@
+import { canonicalArea } from "../../../../../lib/us-area";
 import bcrypt from "bcryptjs";
 import { db } from "../../../../../lib/db";
 import { createMobileSession } from "../../../../../lib/mobile-session";
@@ -29,6 +30,9 @@ export async function POST(req: Request) {
     // Home street/ZIP are accepted only for native autofill validation and are not persisted.
     // Discovery exposes city + state, never a player's exact home address.
     body.area = `${city}, ${state}`;
+    const place = await canonicalArea("US", body.area);
+    if (!place) return apiError(`We couldn't find ${city || "that city"} in ${state}. Check the spelling, e.g. Boston.`);
+    body.area = place;
   }
   let location;
   try { location=profileLocation(body); } catch(e) { return apiError((e as Error).message); }

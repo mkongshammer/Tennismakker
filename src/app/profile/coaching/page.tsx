@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../../components/ui/PlaceInput";
 import {UiText} from "../../../components/InternationalProvider";
 
 
@@ -85,7 +86,7 @@ export default function TraenerProfilPage() {
             />
           </div>
           <div>
-            <label className="label" htmlFor="area"><UiText text="Region"/></label>
+            <label className="label" htmlFor="area">{profile.country==="US"?"City or area":<UiText text="Region"/>}</label>
             {profile.country==="DK"?<select
               className="input"
               id="area"
@@ -97,7 +98,7 @@ export default function TraenerProfilPage() {
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>:<input className="input" id="area" name="area" defaultValue={profile.area} required maxLength={100}/>}
+            </select>:<PlaceInput id="area" name="area" defaultValue={profile.area} required />}
           </div>
         </div>
         <label className="label block">{profile.country==="US"?"Time zone":tr("Lokal tidszone")}<select className="input" name="timeZone" defaultValue={profile.timeZone}>{profile.country==="US"?usTimeZoneOptions(profile.timeZone).map(z=><option key={z.value} value={z.value}>{z.label}</option>):TIME_ZONES.map(z=><option key={z}>{z}</option>)}</select></label>

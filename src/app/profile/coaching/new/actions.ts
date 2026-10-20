@@ -1,5 +1,6 @@
 "use server";
 
+import { AREA_ERROR, canonicalArea } from "../../../../lib/us-area";
 import { redirect } from "next/navigation";
 import { notifyInterestForCoach } from "../../../../lib/market-interest";
 import { db } from "../../../../lib/db";
@@ -26,7 +27,8 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
   const us=country==="US";
   const currency=us?"USD":String(formData.get("currency")??market.currency),timeZone=String(formData.get("timeZone")??market.timeZone);
   if(!validSalesCurrency(currency)||!validTimeZone(timeZone)||(us&&!isUsTimeZone(timeZone)))return {error:"Choose a valid US time zone."};
-  if (!validArea(country,area)) return { error: "Choose a valid city/area." };
+  const placeArea = await canonicalArea(country, area);
+  if (!placeArea) return { error: AREA_ERROR };
   if (!Number.isSafeInteger(priceHour) || priceHour < 1 || priceHour > 10000) {
     return { error: "Set an hourly price between 1 and 10,000." };
   }
@@ -39,7 +41,7 @@ export async function createCoachProfile(_prev: unknown, formData: FormData) {
       sports: sports.join(","),
       priceHour: Math.round(priceHour),
       specialties: "",
-      area,
+      area: placeArea,
     },
   });
   // Players waiting for a coach in this area get their one e-mail.

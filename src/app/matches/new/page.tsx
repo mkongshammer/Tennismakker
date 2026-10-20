@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../../components/ui/PlaceInput";
 import {UiText} from "../../../components/InternationalProvider";
 
 
@@ -47,13 +48,13 @@ export default function NytOpslagPage() {
           </div>
         </div>
         <div>
-          <label className="label" htmlFor="area"><UiText text="Region"/></label>
+          <label className="label" htmlFor="area">{country==="US"?"City or area":<UiText text="Region"/>}</label>
           {country==="DK"?<select className="input" id="area" name="area" defaultValue="" required>
             <option value="" disabled><UiText text="Vælg region"/></option>
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100}/>}
+          </select>:<PlaceInput id="area" name="area" required />}
         </div>
         {state?.error && <p className="text-sm font-semibold text-court">{<UiText text={state.error}/>}</p>}
         <SubmitButton className="btn-court w-full" pendingText="Slår op…"><UiText text="Slå op"/></SubmitButton>

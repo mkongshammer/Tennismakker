@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../../../components/ui/PlaceInput";
 import {UiText} from "../../../../components/InternationalProvider";
 
 
@@ -57,7 +58,7 @@ export default function OpretTraenerprofilPage() {
               {DK_REGIONS.map((region) => (
                 <option key={region} value={region}>{region}</option>
               ))}
-            </select>:<input className="input" id="area" name="area" required minLength={2} maxLength={100} placeholder="e.g. Boston, MA"/>}
+            </select>:<PlaceInput id="area" name="area" required />}
           </div>
         </div>
 
