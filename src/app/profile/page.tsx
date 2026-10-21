@@ -161,6 +161,9 @@ export default async function ProfilPage({
               <span className="max-w-full break-all">{user.email}</span>
             </div>
           </div>
+          <Link href="/profile/settings" className="inline-flex items-center justify-center gap-2 self-center rounded-full bg-white/10 px-4 py-2.5 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:bg-white/20 sm:self-start">
+            <Icon name="settings" size={16} />{en ? "Edit profile" : "Redigér profil"}
+          </Link>
         </div>
         <dl className={`mt-7 grid gap-px overflow-hidden rounded-2xl bg-white/10 ${stats.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
           {stats.map((s) => (
@@ -406,6 +409,14 @@ export default async function ProfilPage({
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Konto"/></h2>
         <div className="divide-y divide-slate/10 overflow-hidden rounded-2xl border border-slate/15 bg-chalk">
+          <Link href="/profile/settings" className="flex items-center gap-3 px-5 py-4 transition hover:bg-mist">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="settings" size={18} /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold">{en ? "Profile settings" : "Profilindstillinger"}</span>
+              <span className="block text-sm text-slate">{en ? "Name, city, level, sports, about me and phone" : "Navn, by, niveau, sportsgrene, om mig og telefon"}</span>
+            </span>
+            <Icon name="chevron" size={18} className="text-slate" />
+          </Link>
           <a href="/profile/receipts" className="flex items-center gap-3 px-5 py-4 transition hover:bg-mist">
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="receipt" size={18} /></span>
             <span className="min-w-0 flex-1">

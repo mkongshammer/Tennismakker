@@ -23,9 +23,13 @@ export function PlaceInput({ name = "area", id, defaultValue = "", required = fa
   const listId = useId();
   const root = useRef<HTMLDivElement>(null);
   const picked = useRef(false);
+  // Suggestions follow typing only: a saved city shown on page load must not
+  // pop a list open over the rest of the form.
+  const typed = useRef(false);
 
   useEffect(() => {
     if (picked.current) { picked.current = false; return; }
+    if (!typed.current) return;
     const q = value.trim();
     if (q.length < 2) { setOptions([]); return; }
     const controller = new AbortController();
@@ -64,7 +68,7 @@ export function PlaceInput({ name = "area", id, defaultValue = "", required = fa
         aria-expanded={showList}
         aria-controls={listId}
         aria-activedescendant={showList && active >= 0 ? `${listId}-${active}` : undefined}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => { typed.current = true; setValue(e.target.value); }}
         onFocus={() => options.length && setOpen(true)}
         onKeyDown={(e) => {
           if (!showList) return;

@@ -157,6 +157,7 @@ const icons = {
   logout: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 16l-4-4 4-4M6 12h10"/></>,
   wallet: <><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></>,
   chat: <path d="M5 18 3 21V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5Z"/>,
+  settings: <><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/></>,
 } as const;
 export type IconName = keyof typeof icons;
 
