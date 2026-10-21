@@ -74,7 +74,7 @@ export default async function AdminPageContent({
 
 
 
-}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;from?: string;to?: string;uge?: string;fra?: string;til?: string;}>;section?: AdminSection;}) {
+}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;from?: string;to?: string;uge?: string;fra?: string;til?: string;quickbooks?: string;}>;section?: AdminSection;}) {
   const query = await searchParams;
   const prefs = await getPreferences();const tr=(text:string,params?:Record<string,string|number>)=>phrase(text,prefs.locale,params);
   if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][]).toString()}`);
@@ -461,7 +461,10 @@ export default async function AdminPageContent({
   const from = /^\d{4}-\d{2}-\d{2}$/.test(String(query.from ?? '')) ? String(query.from) : defaultFrom;
   const to = /^\d{4}-\d{2}-\d{2}$/.test(String(query.to ?? '')) ? String(query.to) : todayKey;
   const lines = await revenueLines(club.id, wallTime(from, 0, 0, club.timeZone)!, new Date(wallTime(to, 0, 0, club.timeZone)!.getTime() + 86_400_000), club.timeZone);
-  return <ReportsPanel months={summarize(lines, club.timeZone)} categories={CATEGORIES} from={from} to={to} recent={lines.slice(-25).reverse().map((l) => ({ ...l, date: l.date.toISOString() }))} />;
+  const { accountingStatus, quickBooksConfigured } = await import('../../lib/quickbooks');
+  const qbNotice: Record<string, string> = { connected: 'QuickBooks er forbundet. Omsætningen bogføres fra i dag; vælg en tidligere dag under "Bogfør fra", hvis du vil have historikken med.', cancelled: 'Forbindelsen blev afbrudt, før den var færdig.', denied: 'Log ind som klubbens administrator og prøv igen.', error: 'QuickBooks afviste forbindelsen. Prøv igen.', 'not-configured': 'QuickBooks-koblingen er ikke slået til på denne server endnu.' };
+  const accounting = { configured: quickBooksConfigured(), notice: qbNotice[String(query.quickbooks ?? '')] ?? null, status: await accountingStatus(club.id) };
+  return <ReportsPanel accounting={accounting} months={summarize(lines, club.timeZone)} categories={CATEGORIES} from={from} to={to} recent={lines.slice(-25).reverse().map((l) => ({ ...l, date: l.date.toISOString() }))} />;
 })()}
 {section === 'events' && await (async () => {
   const [events, ladders] = await Promise.all([

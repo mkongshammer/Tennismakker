@@ -14,6 +14,7 @@ import { runRenewals } from "./renewals";
 import { runBillReminders } from "./member-billing";
 import { runMonthlyCharges } from "./memberships";
 import { runSmsReminders } from "./sms";
+import { runQuickBooksPosting } from "./quickbooks";
 import { releaseNoShows } from "./waiver";
 import { runEngagementEmails } from "./engagement-emails";
 import { runScheduledAgentSweep } from "./agent-scheduler";
@@ -46,6 +47,8 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const renewals = await runRenewals().catch((err) => { console.error("Fornyelser fejlede:", err); return { notified: 0, charged: 0, failed: 0 }; });
   const monthly = await runMonthlyCharges().catch((err) => { console.error("Monthly charges failed:", err); return { charged: 0, failed: 0, ended: 0 }; });
   const billReminders = await runBillReminders().catch((err) => { console.error("Bill reminders failed:", err); return { sent: 0 }; });
+  // Yesterday's revenue into each connected club's QuickBooks.
+  const quickbooks = await runQuickBooksPosting().catch((err) => { console.error("QuickBooks posting failed:", err); return { clubs: 0, posted: 0, failed: 0 }; });
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
   // One review prompt per finished coach lesson (e-mail + push).
@@ -64,6 +67,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     resultater: results,
     fornyelser: renewals,
     billReminders,
+    quickbooks,
     monthly,
     engagement,
     reviewPrompts,

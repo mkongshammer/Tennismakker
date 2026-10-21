@@ -13694,5 +13694,205 @@
     "no": "Stemple dem ut før kjøringen lukkes.",
     "fr": "Pointez leur sortie avant de clôturer.",
     "es": "Ficha su salida antes de cerrar la nómina."
+  },
+  "Afbryd forbindelsen": {
+    "en": "Disconnect",
+    "de": "Verbindung trennen",
+    "sv": "Koppla från",
+    "no": "Koble fra",
+    "fr": "Déconnecter",
+    "es": "Desconectar"
+  },
+  "Bogfør automatisk hver nat": {
+    "en": "Post automatically every night",
+    "de": "Jede Nacht automatisch buchen",
+    "sv": "Bokför automatiskt varje natt",
+    "no": "Bokfør automatisk hver natt",
+    "fr": "Comptabiliser automatiquement chaque nuit",
+    "es": "Contabilizar automáticamente cada noche"
+  },
+  "Bogfør fra": {
+    "en": "Post from",
+    "de": "Buchen ab",
+    "sv": "Bokför från",
+    "no": "Bokfør fra",
+    "fr": "Comptabiliser à partir du",
+    "es": "Contabilizar desde"
+  },
+  "Bogfør nu": {
+    "en": "Post now",
+    "de": "Jetzt buchen",
+    "sv": "Bokför nu",
+    "no": "Bokfør nå",
+    "fr": "Comptabiliser maintenant",
+    "es": "Contabilizar ahora"
+  },
+  "Forbind QuickBooks": {
+    "en": "Connect QuickBooks",
+    "de": "QuickBooks verbinden",
+    "sv": "Anslut QuickBooks",
+    "no": "Koble til QuickBooks",
+    "fr": "Connecter QuickBooks",
+    "es": "Conectar QuickBooks"
+  },
+  "Forbind klubbens QuickBooks én gang. Derefter bogføres hver dags omsætning automatisk som én afstemt postering: indtægt pr. kategori, gebyrer for sig, kontanter og kortterminal på egne konti.": {
+    "en": "Connect the club's QuickBooks once. After that every day's revenue is posted automatically as one balanced entry: income per category, fees on their own, cash and the card terminal on their own accounts.",
+    "de": "Verbinde das QuickBooks des Clubs einmal. Danach wird der Umsatz jedes Tages automatisch als eine ausgeglichene Buchung gebucht: Einnahmen pro Kategorie, Gebühren separat, Bargeld und Kartenterminal auf eigenen Konten.",
+    "sv": "Anslut klubbens QuickBooks en gång. Därefter bokförs varje dags omsättning automatiskt som en avstämd verifikation: intäkt per kategori, avgifter för sig, kontanter och kortterminal på egna konton.",
+    "no": "Koble til klubbens QuickBooks én gang. Deretter bokføres hver dags omsetning automatisk som én avstemt postering: inntekt per kategori, gebyrer for seg, kontanter og kortterminal på egne kontoer.",
+    "fr": "Connectez le QuickBooks du club une fois. Ensuite, le chiffre d'affaires de chaque jour est comptabilisé automatiquement en une écriture équilibrée : produits par catégorie, frais à part, espèces et terminal carte sur leurs propres comptes.",
+    "es": "Conecta el QuickBooks del club una vez. Después, los ingresos de cada día se contabilizan automáticamente como un asiento cuadrado: ingresos por categoría, comisiones aparte, efectivo y terminal de tarjeta en sus propias cuentas."
+  },
+  "Forbindelsen er udløbet. Forbind igen.": {
+    "en": "The connection has expired. Connect again.",
+    "de": "Die Verbindung ist abgelaufen. Verbinde erneut.",
+    "sv": "Anslutningen har gått ut. Anslut igen.",
+    "no": "Tilkoblingen er utløpt. Koble til igjen.",
+    "fr": "La connexion a expiré. Reconnectez-vous.",
+    "es": "La conexión ha caducado. Conecta de nuevo."
+  },
+  "Forbundet": {
+    "en": "Connected",
+    "de": "Verbunden",
+    "sv": "Ansluten",
+    "no": "Tilkoblet",
+    "fr": "Connecté",
+    "es": "Conectado"
+  },
+  "Postering": {
+    "en": "Entry",
+    "de": "Buchung",
+    "sv": "Verifikation",
+    "no": "Postering",
+    "fr": "Écriture",
+    "es": "Asiento"
+  },
+  "QuickBooks-koblingen er ikke slået til på denne server endnu. Skriv til support@racketbuddy.app, så sætter vi den op. Indtil da virker QuickBooks-filen ovenfor.": {
+    "en": "The QuickBooks connection isn't switched on for this server yet. Write to support@racketbuddy.app and we'll set it up. Until then the QuickBooks file above works.",
+    "de": "Die QuickBooks-Anbindung ist auf diesem Server noch nicht aktiviert. Schreib an support@racketbuddy.app, dann richten wir sie ein. Bis dahin funktioniert die QuickBooks-Datei oben.",
+    "sv": "QuickBooks-kopplingen är inte påslagen på den här servern ännu. Skriv till support@racketbuddy.app så sätter vi upp den. Tills dess fungerar QuickBooks-filen ovan.",
+    "no": "QuickBooks-koblingen er ikke slått på på denne serveren ennå. Skriv til support@racketbuddy.app, så setter vi den opp. Inntil da fungerer QuickBooks-filen ovenfor.",
+    "fr": "La connexion QuickBooks n'est pas encore activée sur ce serveur. Écrivez à support@racketbuddy.app et nous la configurerons. En attendant, le fichier QuickBooks ci-dessus fonctionne.",
+    "es": "La conexión con QuickBooks aún no está activada en este servidor. Escribe a support@racketbuddy.app y la configuraremos. Mientras tanto, el archivo de QuickBooks de arriba funciona."
+  },
+  "Status": {
+    "en": "Status",
+    "de": "Status",
+    "sv": "Status",
+    "no": "Status",
+    "fr": "Statut",
+    "es": "Estado"
+  },
+  "Sæt": {
+    "en": "Set",
+    "de": "Setzen",
+    "sv": "Sätt",
+    "no": "Sett",
+    "fr": "Définir",
+    "es": "Fijar"
+  },
+  "bogført": {
+    "en": "posted",
+    "de": "gebucht",
+    "sv": "bokförd",
+    "no": "bokført",
+    "fr": "comptabilisé",
+    "es": "contabilizado"
+  },
+  "bogført til og med": {
+    "en": "posted through",
+    "de": "gebucht bis einschließlich",
+    "sv": "bokfört till och med",
+    "no": "bokført til og med",
+    "fr": "comptabilisé jusqu'au",
+    "es": "contabilizado hasta el"
+  },
+  "fejl": {
+    "en": "error",
+    "de": "Fehler",
+    "sv": "fel",
+    "no": "feil",
+    "fr": "erreur",
+    "es": "error"
+  },
+  "forbundet": {
+    "en": "connected",
+    "de": "verbunden",
+    "sv": "ansluten",
+    "no": "tilkoblet",
+    "fr": "connecté",
+    "es": "conectado"
+  },
+  "ingen omsætning": {
+    "en": "no revenue",
+    "de": "kein Umsatz",
+    "sv": "ingen omsättning",
+    "no": "ingen omsetning",
+    "fr": "aucun chiffre d'affaires",
+    "es": "sin ingresos"
+  },
+  "intet bogført endnu": {
+    "en": "nothing posted yet",
+    "de": "noch nichts gebucht",
+    "sv": "inget bokfört ännu",
+    "no": "ingenting bokført ennå",
+    "fr": "rien de comptabilisé pour l'instant",
+    "es": "nada contabilizado aún"
+  },
+  "QuickBooks er forbundet. Omsætningen bogføres fra i dag; vælg en tidligere dag under \"Bogfør fra\", hvis du vil have historikken med.": {
+    "en": "QuickBooks is connected. Revenue is posted from today; pick an earlier day under \"Post from\" to include history.",
+    "de": "QuickBooks ist verbunden. Der Umsatz wird ab heute gebucht; wähle unter \"Buchen ab\" einen früheren Tag, um die Historie einzubeziehen.",
+    "sv": "QuickBooks är anslutet. Omsättningen bokförs från i dag; välj en tidigare dag under \"Bokför från\" om du vill ha med historiken.",
+    "no": "QuickBooks er tilkoblet. Omsetningen bokføres fra i dag; velg en tidligere dag under \"Bokfør fra\" hvis du vil ha med historikken.",
+    "fr": "QuickBooks est connecté. Le chiffre d'affaires est comptabilisé à partir d'aujourd'hui ; choisissez un jour antérieur sous « Comptabiliser à partir du » pour inclure l'historique.",
+    "es": "QuickBooks está conectado. Los ingresos se contabilizan desde hoy; elige un día anterior en \"Contabilizar desde\" para incluir el historial."
+  },
+  "Forbindelsen blev afbrudt, før den var færdig.": {
+    "en": "The connection was cancelled before it finished.",
+    "de": "Die Verbindung wurde abgebrochen, bevor sie fertig war.",
+    "sv": "Anslutningen avbröts innan den var klar.",
+    "no": "Tilkoblingen ble avbrutt før den var ferdig.",
+    "fr": "La connexion a été annulée avant la fin.",
+    "es": "La conexión se canceló antes de terminar."
+  },
+  "Log ind som klubbens administrator og prøv igen.": {
+    "en": "Log in as the club's administrator and try again.",
+    "de": "Melde dich als Administrator des Clubs an und versuche es erneut.",
+    "sv": "Logga in som klubbens administratör och försök igen.",
+    "no": "Logg inn som klubbens administrator og prøv igjen.",
+    "fr": "Connectez-vous en tant qu'administrateur du club et réessayez.",
+    "es": "Inicia sesión como administrador del club e inténtalo de nuevo."
+  },
+  "QuickBooks afviste forbindelsen. Prøv igen.": {
+    "en": "QuickBooks rejected the connection. Try again.",
+    "de": "QuickBooks hat die Verbindung abgelehnt. Versuche es erneut.",
+    "sv": "QuickBooks avvisade anslutningen. Försök igen.",
+    "no": "QuickBooks avviste tilkoblingen. Prøv igjen.",
+    "fr": "QuickBooks a refusé la connexion. Réessayez.",
+    "es": "QuickBooks rechazó la conexión. Inténtalo de nuevo."
+  },
+  "QuickBooks-koblingen er ikke slået til på denne server endnu.": {
+    "en": "The QuickBooks connection isn't switched on for this server yet.",
+    "de": "Die QuickBooks-Anbindung ist auf diesem Server noch nicht aktiviert.",
+    "sv": "QuickBooks-kopplingen är inte påslagen på den här servern ännu.",
+    "no": "QuickBooks-koblingen er ikke slått på på denne serveren ennå.",
+    "fr": "La connexion QuickBooks n'est pas encore activée sur ce serveur.",
+    "es": "La conexión con QuickBooks aún no está activada en este servidor."
+  },
+  "QuickBooks er ikke forbundet.": {
+    "en": "QuickBooks isn't connected.",
+    "de": "QuickBooks ist nicht verbunden.",
+    "sv": "QuickBooks är inte anslutet.",
+    "no": "QuickBooks er ikke tilkoblet.",
+    "fr": "QuickBooks n'est pas connecté.",
+    "es": "QuickBooks no está conectado."
+  },
+  "Bogført: {posted} dage med omsætning, {skipped} dage uden.": {
+    "en": "Posted: {posted} days with revenue, {skipped} days without.",
+    "de": "Gebucht: {posted} Tage mit Umsatz, {skipped} Tage ohne.",
+    "sv": "Bokfört: {posted} dagar med omsättning, {skipped} dagar utan.",
+    "no": "Bokført: {posted} dager med omsetning, {skipped} dager uten.",
+    "fr": "Comptabilisé : {posted} jours avec chiffre d'affaires, {skipped} jours sans.",
+    "es": "Contabilizado: {posted} días con ingresos, {skipped} días sin."
   }
 }

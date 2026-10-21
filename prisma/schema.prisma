@@ -138,6 +138,7 @@ model Club {
   staffMembers   StaffMember[]
   timeEntries    TimeEntry[]
   payrollRuns    PayrollRun[]
+  accounting     ClubAccounting?
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -1708,4 +1709,45 @@ model PayrollRun {
   entries     TimeEntry[]
 
   @@index([clubId, periodStart])
+}
+
+/// The club's QuickBooks Online connection. Tokens are sealed with AUTH_SECRET.
+model ClubAccounting {
+  id               String   @id @default(cuid())
+  clubId           String   @unique
+  club             Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  provider         String   @default("QBO")
+  realmId          String
+  companyName      String?
+  accessToken      String
+  refreshToken     String
+  accessExpiresAt  DateTime
+  refreshExpiresAt DateTime
+  /// JSON map of our account roles to QuickBooks account ids
+  accountsJson     String   @default("{}")
+  /// Last club-local day fully posted, YYYY-MM-DD
+  lastPostedDay    String?
+  autoPost         Boolean  @default(true)
+  lastError        String?
+  connectedAt      DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  postings         AccountingPosting[]
+}
+
+/// One day's revenue posted as one journal entry. Unique per day, so a
+/// re-run never posts twice.
+model AccountingPosting {
+  id           String         @id @default(cuid())
+  accountingId String
+  accounting   ClubAccounting @relation(fields: [accountingId], references: [id], onDelete: Cascade)
+  day          String
+  externalId   String?
+  grossCents   Int
+  feeCents     Int
+  lines        Int
+  status       String         @default("POSTED") // "POSTED" | "SKIPPED" | "FAILED"
+  error        String?
+  createdAt    DateTime       @default(now())
+
+  @@unique([accountingId, day])
 }
