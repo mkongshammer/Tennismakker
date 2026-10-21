@@ -1873,7 +1873,7 @@
   },
   "auth.termsNote": {
     "da": "Ved at oprette en profil accepterer du {terms} og {privacy}.",
-    "en": "By creating a profile you accept our {terms} and {privacy}.",
+    "en": "By creating a profile you accept {terms} and {privacy}.",
     "de": "Mit dem Erstellen eines Profils akzeptierst du {terms} und {privacy}.",
     "sv": "Genom att skapa ett konto godkänner du {terms} och {privacy}.",
     "no": "Ved å opprette en profil godtar du {terms} og {privacy}.",

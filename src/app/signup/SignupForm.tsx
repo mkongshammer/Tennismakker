@@ -123,11 +123,12 @@ export function SignupForm({
 
       <label className="flex items-start gap-3 rounded-xl border border-slate/15 p-3 text-sm text-slate"><input type="checkbox" name="engagementEmails" className="mt-1" /><span>{engagementLabel}</span></label>
 
-      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline">{terms.termsText}</Link>{terms.middle}<Link href="/privacy" className="font-semibold text-court underline">{terms.privacyText}</Link>{terms.after}</p>
+      <p className="text-sm text-slate">{terms.before}<Link href={termsHref(country)} className="font-semibold text-court underline decoration-court/30 underline-offset-2 hover:decoration-court">{terms.termsText}</Link>{terms.middle}<Link href="/privacy" className="font-semibold text-court underline decoration-court/30 underline-offset-2 hover:decoration-court">{terms.privacyText}</Link>{terms.after}</p>
 
       <SubmitButton className="btn-court w-full" pendingText={labels.pending}>{labels.submit}</SubmitButton>
 
-      <p className="text-center text-sm text-slate">{labels.haveAccount}{" "}<Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-semibold text-court underline">{labels.login}</Link></p>
+      <div className="flex items-center gap-3 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-light" aria-hidden="true"><span className="h-px flex-1 bg-slate/15" />{labels.haveAccount.replace(/\?$/, "")}<span className="h-px flex-1 bg-slate/15" /></div>
+      <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="btn-ghost w-full">{labels.login}</Link>
     </form>
   );
 }

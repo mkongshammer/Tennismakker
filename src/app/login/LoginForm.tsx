@@ -46,7 +46,12 @@ export function LoginForm({
         <input className="input" id="email" name="email" type="email" autoComplete="email" required />
       </div>
       <div>
-        <label className="label" htmlFor="password">{labels.password}</label>
+        <div className="flex items-baseline justify-between gap-3">
+          <label className="label" htmlFor="password">{labels.password}</label>
+          <Link href="/login/forgot" className="text-sm font-semibold text-court transition hover:text-court-dark">
+            {labels.forgot}
+          </Link>
+        </div>
         <input
           className="input"
           id="password"
@@ -64,21 +69,18 @@ export function LoginForm({
       {state?.error === "auth.errWrong" && legacyOrigin && (
         <p className="text-xs text-slate">
           Created your account in Europe before October 2026? Those accounts live on our European site:{" "}
-          <a href={`${legacyOrigin}/login`} className="font-semibold text-court underline">sign in there</a>.
+          <a href={`${legacyOrigin}/login`} className="font-semibold text-court underline-offset-2 hover:underline">sign in there</a>.
         </p>
       )}
       <SubmitButton className="btn-ink w-full" pendingText={labels.pending}>
         {labels.submit}
       </SubmitButton>
-      <p className="text-center text-sm">
-        <Link href="/login/forgot" className="font-semibold text-court underline">
-          {labels.forgot}
-        </Link>
-      </p>
-      <p className="text-center text-sm text-slate">
-        {labels.newHere}{" "}
-        <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="font-semibold text-court underline">{labels.signup}</Link>
-      </p>
+      <div className="flex items-center gap-3 pt-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-light" aria-hidden="true">
+        <span className="h-px flex-1 bg-slate/15" />{labels.newHere.replace(/\?$/, "")}<span className="h-px flex-1 bg-slate/15" />
+      </div>
+      <Link href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"} className="btn-ghost w-full">
+        {labels.signup}
+      </Link>
     </form>
   );
 }

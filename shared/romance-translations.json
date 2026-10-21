@@ -5567,7 +5567,7 @@
     "fr": "Rien pour vous. Vous payez uniquement le terrain ou le cours, au tarif du club. Le club nous verse un abonnement mensuel fixe, sans supplément pour vous.",
     "es": "Nada para ti. Solo pagas la pista o clase al precio del club. El club nos paga una cuota mensual fija, sin recargo para ti."
   },
-  "By creating a profile you accept our {terms} and {privacy}.": {
+  "By creating a profile you accept {terms} and {privacy}.": {
     "fr": "En créant un profil, vous acceptez nos {terms} et {privacy}.",
     "es": "Al crear un perfil aceptas nuestras {terms} y {privacy}."
   },

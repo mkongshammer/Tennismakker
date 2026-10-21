@@ -37,7 +37,7 @@ export function ForgotForm({
         {labels.submit}
       </SubmitButton>
       <p className="text-center text-sm text-slate">
-        <Link href="/login" className="font-semibold text-court underline">{labels.back}</Link>
+        <Link href="/login" className="inline-flex items-center gap-1 font-semibold text-court transition hover:text-court-dark"><span aria-hidden="true">←</span>{labels.back}</Link>
       </p>
     </form>
   );
