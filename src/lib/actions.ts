@@ -782,6 +782,16 @@ export async function startClubSubscription() {
 }
 
 /** Åbner Stripes kundeportal: skift kort, se fakturaer, opsig. */
+export async function switchToAnnual(formData: FormData) {
+  const { clubId } = await requireClubAdmin();
+  const { switchBillingInterval } = await import("./subscription");
+  const target = formData.get("interval") === "MONTH" ? "MONTH" : "YEAR";
+  try { await switchBillingInterval(clubId, target); }
+  catch (err) { console.error("Interval switch failed:", err); redirect(`/admin/betaling?abonnement=skift-fejl`); }
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/betaling?abonnement=${target === "YEAR" ? "aarlig" : "maanedlig"}`);
+}
+
 export async function openClubBillingPortal() {
   const { clubId } = await requireClubAdmin();
   const url = await billingPortalUrl(clubId).catch((err) => {

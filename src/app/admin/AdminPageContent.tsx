@@ -22,7 +22,8 @@ import { redirect } from "next/navigation";
 import { addDays } from "date-fns";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
-import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme, startClubSubscription, openClubBillingPortal } from "../../lib/actions";
+import { markClubEntered, syncNow, withdrawGuestSlot, toggleRule, deleteRule, setLastMinute, generateJoinCode, deletePost, setTheme, startClubSubscription, openClubBillingPortal, switchToAnnual } from "../../lib/actions";
+import { clubSignupPrices } from "../../lib/club-onboarding";
 import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
@@ -111,6 +112,8 @@ export default async function AdminPageContent({
     }
   });
   if (!club) redirect("/");
+  const priceBook = section === 'betaling' ? await clubSignupPrices(club.country).catch(() => null) : null;
+  const monthlyPrice = priceBook?.standard ?? club.subscriptionKr, annualPrice = priceBook?.annual ?? club.subscriptionKr * 10;
   if (club.signupManaged && club.status !== "APPROVED" && section !== "betaling") redirect("/club-start");
   if (!clubHasSection(club.solutionMode, section, club.customFeatures)) redirect("/admin");
   const selectedSports = clubSports(club.sports, club.courts);
@@ -692,6 +695,21 @@ export default async function AdminPageContent({
                         tr("Fornyes {date}.",{date:formatDate(club.subscriptionRenewsAt,prefs.locale,club.timeZone,{day:"numeric",month:"long"})}) :
                         tr("Fornyes automatisk hver måned.")}
                 </p>
+                {query.abonnement === "aarlig" && <p role="status" className="mt-2 text-sm font-semibold text-success">{tr("I er skiftet til årlig betaling. Forskellen for resten af perioden er opkrævet nu.")}</p>}
+                {query.abonnement === "maanedlig" && <p role="status" className="mt-2 text-sm font-semibold text-success">{tr("I er skiftet til månedlig betaling.")}</p>}
+                {query.abonnement === "skift-fejl" && <p role="alert" className="mt-2 text-sm font-semibold text-[#a2401c]">{tr("Skiftet kunne ikke gennemføres. Prøv igen, eller skriv til support@racketbuddy.app.")}</p>}
+                {club.subscriptionInterval !== "YEAR" ? (
+                  <form action={switchToAnnual} className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-mist p-3">
+                    <input type="hidden" name="interval" value="YEAR" />
+                    <p className="flex-1 text-sm">{tr("Betal årligt og spar to måneder: {price} om året i stedet for {monthly} om måneden.", { price: formatMoney(annualPrice, club.billingCurrency, prefs.locale), monthly: formatMoney(monthlyPrice, club.billingCurrency, prefs.locale) })}</p>
+                    <SubmitButton className="btn-court" pendingText={tr("Skifter\u2026")}>{tr("Skift til årlig betaling")}</SubmitButton>
+                  </form>
+                ) : (
+                  <form action={switchToAnnual} className="mt-3 text-sm text-slate">
+                    <input type="hidden" name="interval" value="MONTH" />
+                    {tr("I betaler årligt.")}{" "}<SubmitButton className="font-semibold text-court underline-offset-2 hover:underline" pendingText="…">{tr("Skift tilbage til månedlig")}</SubmitButton>
+                  </form>
+                )}
               </> :
 
                     <>

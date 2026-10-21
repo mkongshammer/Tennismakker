@@ -137,3 +137,34 @@ export async function syncSubscription(subscription: {
     },
   });
 }
+
+
+/**
+ * Monthly → annual (or back) on a running subscription. Stripe swaps the
+ * price on the existing item, bills the prorated difference now and starts
+ * a new cycle today. The club's own record follows so the sign-up check
+ * (price, interval) still matches.
+ */
+export async function switchBillingInterval(clubId: string, interval: "MONTH" | "YEAR"): Promise<void> {
+  const club = await db.club.findUniqueOrThrow({ where: { id: clubId } });
+  if (!club.subscriptionId || !["active", "trialing", "past_due"].includes(club.subscriptionStatus ?? "")) throw Error("Der er intet aktivt abonnement at ændre.");
+  if (club.subscriptionInterval === interval) return;
+  const { clubSignupPrices } = await import("./club-onboarding");
+  const prices = await clubSignupPrices(club.country);
+  if (prices.currency !== club.billingCurrency) throw Error("Prisbogen matcher ikke klubbens valuta. Kontakt RacketBuddy.");
+  const amount = interval === "YEAR" ? prices.annual : prices.standard;
+  const client = await stripe();
+  const sub = await client.subscriptions.retrieve(club.subscriptionId);
+  const item = sub.items.data[0];
+  if (!item) throw Error("Abonnementet har ingen pris.");
+  const product = typeof item.price.product === "string" ? item.price.product : item.price.product.id;
+  const taxEnabled = ["EUR", "USD"].includes(club.billingCurrency);
+  await client.subscriptions.update(club.subscriptionId, {
+    items: [{ id: item.id, price_data: { currency: club.billingCurrency.toLowerCase(), product, unit_amount: amount * 100, recurring: { interval: interval === "YEAR" ? "year" : "month" }, tax_behavior: taxEnabled ? "exclusive" : undefined } }],
+    proration_behavior: "always_invoice",
+    billing_cycle_anchor: "now",
+    metadata: { clubId: club.id, region: dataRegionForCountry(club.country) },
+  }, { idempotencyKey: `switch-interval:${club.subscriptionId}:${interval}:${new Date().toISOString().slice(0, 10)}` });
+  await db.club.update({ where: { id: clubId }, data: { subscriptionKr: amount, subscriptionInterval: interval } });
+  if (club.signupManaged) await refreshClubSignup(clubId).catch((err) => console.error("Refresh after interval switch failed:", err));
+}

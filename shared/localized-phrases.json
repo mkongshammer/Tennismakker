@@ -12754,5 +12754,69 @@
     "no": "år",
     "fr": "an",
     "es": "año"
+  },
+  "I er skiftet til årlig betaling. Forskellen for resten af perioden er opkrævet nu.": {
+    "en": "You've switched to annual billing. The difference for the rest of the period has been charged now.",
+    "de": "Sie haben auf jährliche Abrechnung umgestellt. Die Differenz für den Rest des Zeitraums wurde jetzt berechnet.",
+    "sv": "Ni har bytt till årlig betalning. Skillnaden för resten av perioden har dragits nu.",
+    "no": "Dere har byttet til årlig betaling. Differansen for resten av perioden er belastet nå.",
+    "fr": "Vous êtes passé à la facturation annuelle. La différence pour le reste de la période a été prélevée.",
+    "es": "Habéis cambiado a pago anual. La diferencia del resto del periodo se ha cobrado ahora."
+  },
+  "I er skiftet til månedlig betaling.": {
+    "en": "You've switched to monthly billing.",
+    "de": "Sie haben auf monatliche Abrechnung umgestellt.",
+    "sv": "Ni har bytt till månadsbetalning.",
+    "no": "Dere har byttet til månedlig betaling.",
+    "fr": "Vous êtes passé à la facturation mensuelle.",
+    "es": "Habéis cambiado a pago mensual."
+  },
+  "Skiftet kunne ikke gennemføres. Prøv igen, eller skriv til support@racketbuddy.app.": {
+    "en": "The switch couldn't be completed. Try again or write to support@racketbuddy.app.",
+    "de": "Der Wechsel konnte nicht abgeschlossen werden. Versuchen Sie es erneut oder schreiben Sie an support@racketbuddy.app.",
+    "sv": "Bytet kunde inte genomföras. Försök igen eller skriv till support@racketbuddy.app.",
+    "no": "Byttet kunne ikke gjennomføres. Prøv igjen eller skriv til support@racketbuddy.app.",
+    "fr": "Le changement n'a pas pu être effectué. Réessayez ou écrivez à support@racketbuddy.app.",
+    "es": "No se pudo completar el cambio. Inténtalo de nuevo o escribe a support@racketbuddy.app."
+  },
+  "Betal årligt og spar to måneder: {price} om året i stedet for {monthly} om måneden.": {
+    "en": "Pay yearly and save two months: {price} a year instead of {monthly} a month.",
+    "de": "Jährlich zahlen und zwei Monate sparen: {price} pro Jahr statt {monthly} pro Monat.",
+    "sv": "Betala årligen och spara två månader: {price} per år i stället för {monthly} per månad.",
+    "no": "Betal årlig og spar to måneder: {price} i året i stedet for {monthly} i måneden.",
+    "fr": "Payez à l'année et économisez deux mois : {price} par an au lieu de {monthly} par mois.",
+    "es": "Paga al año y ahorra dos meses: {price} al año en vez de {monthly} al mes."
+  },
+  "Skifter…": {
+    "en": "Switching…",
+    "de": "Wird umgestellt…",
+    "sv": "Byter…",
+    "no": "Bytter…",
+    "fr": "Changement…",
+    "es": "Cambiando…"
+  },
+  "Skift til årlig betaling": {
+    "en": "Switch to annual billing",
+    "de": "Auf jährliche Abrechnung umstellen",
+    "sv": "Byt till årlig betalning",
+    "no": "Bytt til årlig betaling",
+    "fr": "Passer à la facturation annuelle",
+    "es": "Cambiar a pago anual"
+  },
+  "I betaler årligt.": {
+    "en": "You pay yearly.",
+    "de": "Sie zahlen jährlich.",
+    "sv": "Ni betalar årligen.",
+    "no": "Dere betaler årlig.",
+    "fr": "Vous payez à l'année.",
+    "es": "Pagáis anualmente."
+  },
+  "Skift tilbage til månedlig": {
+    "en": "Switch back to monthly",
+    "de": "Zurück zu monatlich",
+    "sv": "Byt tillbaka till månadsvis",
+    "no": "Bytt tilbake til månedlig",
+    "fr": "Repasser au mensuel",
+    "es": "Volver a mensual"
   }
 }
