@@ -164,14 +164,15 @@ export async function ensureWebhookEndpoint(): Promise<string> {
  * signing secret) and never touches one that is switched off.
  */
 export async function addMissingWebhookEvents(): Promise<{ added: string[] }> {
-  if (!(await stripeEnabled())) return { added: [] };
+  if (!(await stripeEnabled())) { console.log("Stripe webhook check: no Stripe key"); return { added: [] }; }
   const settings = await getSettings();
   const wanted = `${settings.appUrl}${WEBHOOK_PATH}`;
   const client = await stripe();
   const ours = (await client.webhookEndpoints.list({ limit: 100 })).data.find((e) => sameUrl(e.url, wanted));
-  if (!ours || ours.status !== "enabled" || ours.enabled_events.includes("*")) return { added: [] };
+  if (!ours) { console.log(`Stripe webhook check: no endpoint for ${wanted}`); return { added: [] }; }
+  if (ours.status !== "enabled" || ours.enabled_events.includes("*")) { console.log(`Stripe webhook check: endpoint ${ours.status}, events ${ours.enabled_events.includes("*") ? "*" : "listed"}; nothing to do`); return { added: [] }; }
   const missing = REQUIRED_EVENTS.filter((e) => !ours.enabled_events.includes(e));
-  if (!missing.length) return { added: [] };
+  if (!missing.length) { console.log("Stripe webhook check: all required events present"); return { added: [] }; }
   await client.webhookEndpoints.update(ours.id, { enabled_events: [...new Set([...ours.enabled_events, ...missing])] as any });
   console.log(`Stripe webhook: added ${missing.join(", ")}`);
   return { added: missing };
