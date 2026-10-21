@@ -41,6 +41,12 @@ export async function loadThread(
 }
 
 /** Alle samtaler brugeren er med i, nyeste besked først. */
+// A thread opened from a player's card has no post behind it; its subject is
+// the generated "Samtale med …", which says nothing worth showing.
+export function isDirectSubject(subject: string | null | undefined) {
+  return !subject || /^(Samtale med|Conversation with) /.test(subject);
+}
+
 export async function listThreads(userId: string) {
   const requests = await db.matchRequest.findMany({
     where: {
@@ -60,7 +66,10 @@ export async function listThreads(userId: string) {
     return {
       id: r.id,
       subject: r.message,
+      otherId: other?.id ?? null,
       otherName: other?.name ?? "Ukendt",
+      otherArea: other?.area ?? null,
+      direct: isDirectSubject(r.message),
       lastBody: last?.body ?? null,
       lastAt: last?.createdAt ?? r.createdAt,
       unread: Boolean(last && last.senderId !== userId && !last.readAt),
