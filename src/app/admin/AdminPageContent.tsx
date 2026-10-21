@@ -47,7 +47,6 @@ import { EventsPanel } from "./EventsPanel";
 import { ShopPanel } from "./ShopPanel";
 import { StaffPanel } from "./StaffPanel";
 import { broadcastRecipients } from "../../lib/broadcast";
-import { smsConfigured } from "../../lib/sms";
 import { revenueLines, summarize, CATEGORIES } from "../../lib/reports";
 import { ladderStandings } from "../../lib/events";
 import { tournamentView } from "../../lib/tournament";
@@ -454,7 +453,7 @@ export default async function AdminPageContent({
 </>}
 {section === 'kommunikation' && await (async () => {
   const [all, paid, history] = await Promise.all([broadcastRecipients(club.id, 'ALL'), broadcastRecipients(club.id, 'PAID'), db.clubBroadcast.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 30 })]);
-  return <CommunicationPanel counts={{ all: all.length, paid: paid.length }} history={history} smsReminders={club.smsReminders} smsReady={smsConfigured()} />;
+  return <CommunicationPanel counts={{ all: all.length, paid: paid.length }} history={history} />;
 })()}
 {section === 'rapporter' && await (async () => {
   const todayKey = dayKey(new Date(), club.timeZone);

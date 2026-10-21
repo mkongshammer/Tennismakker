@@ -21,12 +21,3 @@ export async function sendBroadcastAction(_prev: State, form: FormData): Promise
     return { ok: `Sendt til ${sent} af ${total} medlemmer.` };
   } catch (e) { return fail(e); }
 }
-
-export async function saveSmsSetting(_prev: State, form: FormData): Promise<State> {
-  try {
-    const { club } = await requireCustomClub('kommunikation');
-    await db.club.update({ where: { id: club.id }, data: { smsReminders: form.get('smsReminders') === 'on' } });
-    revalidatePath('/admin/kommunikation');
-    return { ok: 'Gemt.' };
-  } catch (e) { return fail(e); }
-}

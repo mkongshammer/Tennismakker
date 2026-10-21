@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { useWebsiteInternational } from '../../components/InternationalProvider';
 import { Select } from '../../components/ui/Select';
-import { saveSmsSetting, sendBroadcastAction } from '../../lib/communication-actions';
+import { sendBroadcastAction } from '../../lib/communication-actions';
 
 type Past = { id: string; subject: string; body: string; audience: string; sentCount: number; createdAt: Date };
 
@@ -14,10 +14,9 @@ function Pending({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonEle
   return <button {...rest} disabled={pending} aria-busy={pending}>{children}</button>;
 }
 
-export function CommunicationPanel({ counts, history, smsReminders, smsReady }: { counts: { all: number; paid: number }; history: Past[]; smsReminders: boolean; smsReady: boolean }) {
+export function CommunicationPanel({ counts, history }: { counts: { all: number; paid: number }; history: Past[] }) {
   const { tr, date } = useWebsiteInternational();
   const [state, action] = useFormState(sendBroadcastAction, null);
-  const [smsState, smsAction] = useFormState(saveSmsSetting, null);
   const [audience, setAudience] = useState<'ALL' | 'PAID'>('ALL');
   const n = audience === 'PAID' ? counts.paid : counts.all;
   return (
@@ -45,17 +44,6 @@ export function CommunicationPanel({ counts, history, smsReminders, smsReady }: 
         </form>
       </section>
 
-      <section className="card space-y-3">
-        <h2 className="display text-2xl">{tr('Sms-påmindelser')}</h2>
-        <p className="text-sm text-slate">{tr('Medlemmer, der har sagt ja til sms på deres profil, får en sms cirka to timer før en banebooking. Færre udeblivelser, ingen ekstra arbejde.')}</p>
-        {!smsReady && <p className="rounded-xl bg-mist p-3 text-sm">{tr('Sms er ikke aktiveret på platformen endnu. Indstillingen gemmes, og påmindelserne starter, når det er.')}</p>}
-        <form action={smsAction} className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="smsReminders" defaultChecked={smsReminders} />{tr('Send sms-påmindelser til klubbens medlemmer')}</label>
-          <Pending className="btn-ghost">{tr('Gem')}</Pending>
-          {smsState?.ok && <span className="text-sm font-semibold text-success">{tr(smsState.ok)}</span>}
-          {smsState?.error && <span className="text-sm font-semibold text-[#a2401c]">{tr(smsState.error)}</span>}
-        </form>
-      </section>
 
       <section className="card space-y-3">
         <h2 className="display text-2xl">{tr('Sendte mails')}</h2>

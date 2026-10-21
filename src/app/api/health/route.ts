@@ -8,7 +8,6 @@
 // database, er værre end en, der ikke svarer: den ser rask ud udefra.
 import { db } from "../../../lib/db";
 import { quickBooksConfigured } from "../../../lib/quickbooks";
-import { smsConfigured } from "../../../lib/sms";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +15,7 @@ export async function GET() {
   try {
     await db.$queryRaw`SELECT 1`;
     // Which optional integrations this deployment has keys for. Booleans only, never the keys.
-    return Response.json({ ok: true, integrations: { quickbooks: quickBooksConfigured(), sms: smsConfigured(), intuitEnvironment: (process.env.INTUIT_ENVIRONMENT ?? "sandbox") === "production" ? "production" : "sandbox" } });
+    return Response.json({ ok: true, integrations: { quickbooks: quickBooksConfigured(), intuitEnvironment: (process.env.INTUIT_ENVIRONMENT ?? "sandbox") === "production" ? "production" : "sandbox" } });
   } catch {
     return Response.json({ ok: false, database: "unreachable" }, { status: 503 });
   }
