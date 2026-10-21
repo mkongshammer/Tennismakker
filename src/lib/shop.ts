@@ -1,9 +1,9 @@
 // Front-desk register and gift cards.
 //
-// The register records what was sold and how it was paid (cash, card at the
-// desk, or the member's club wallet). It is a record for the books, not a
-// card terminal: card payments at the desk are taken on the club's own
-// reader. Wallet payments do move money: the member's balance is debited.
+// The register records what was sold and how it was paid: cash, a card on
+// the club's own terminal, the member's club wallet, or a card on a Stripe
+// Terminal reader we drive (terminal.ts). Wallet payments move money: the
+// member's balance is debited.
 //
 // Gift cards are bought online with Stripe (to the club's account) and
 // redeemed into the recipient's club wallet, which already pays for courts.
@@ -17,7 +17,7 @@ import { sendMail } from "./email";
 
 export type SaleLine = { itemId: string; qty: number };
 
-export async function recordSale(clubId: string, soldById: string, lines: SaleLine[], method: "CASH" | "CARD" | "WALLET", userId: string | null) {
+export async function recordSale(clubId: string, soldById: string, lines: SaleLine[], method: "CASH" | "CARD" | "WALLET" | "READER", userId: string | null) {
   const items = await db.shopItem.findMany({ where: { clubId, id: { in: lines.map((l) => l.itemId) }, active: true } });
   const rows = lines.map((l) => ({ item: items.find((i) => i.id === l.itemId)!, qty: Math.max(1, Math.min(99, Math.floor(l.qty))) })).filter((r) => r.item);
   if (!rows.length) throw Error("Vælg mindst én vare.");
@@ -30,7 +30,8 @@ export async function recordSale(clubId: string, soldById: string, lines: SaleLi
     if (wallet.balanceOre < totalKr * 100) throw Error("Der er ikke nok på medlemmets wallet.");
   }
   return db.$transaction(async (tx) => {
-    const sale = await tx.shopSale.create({ data: { clubId, userId, soldById, method, totalKr, currency: club.currency, items: JSON.stringify(rows.map((r) => ({ name: r.item.name, priceKr: r.item.priceKr, qty: r.qty }))) } });
+    // A reader sale is pending until the card goes through; stock is held meanwhile and given back if it doesn't.
+    const sale = await tx.shopSale.create({ data: { clubId, userId, soldById, method, totalKr, currency: club.currency, status: method === "READER" ? "PENDING" : "PAID", items: JSON.stringify(rows.map((r) => ({ itemId: r.item.id, name: r.item.name, priceKr: r.item.priceKr, qty: r.qty }))) } });
     for (const r of rows) if (r.item.stock >= 0) await tx.shopItem.update({ where: { id: r.item.id }, data: { stock: { decrement: r.qty } } });
     if (method === "WALLET" && userId) {
       const wallet = await tx.clubWallet.findUniqueOrThrow({ where: { userId_clubId: { userId, clubId } } });

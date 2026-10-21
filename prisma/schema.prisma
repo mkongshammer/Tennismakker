@@ -139,6 +139,7 @@ model Club {
   timeEntries    TimeEntry[]
   payrollRuns    PayrollRun[]
   accounting     ClubAccounting?
+  readers        ClubReader[]
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -1601,12 +1602,17 @@ model ShopSale {
   items     String
   totalKr   Int
   currency  String   @default("USD")
-  /// "CASH" | "CARD" (taken at the desk) | "WALLET" (member's club wallet)
+  /// "CASH" | "CARD" (club's own terminal) | "WALLET" (member's club wallet) | "READER" (Stripe Terminal)
   method    String
+  /// "PAID" | "PENDING" (card being taken on the reader) | "CANCELLED" | "FAILED"
+  status    String   @default("PAID")
+  paymentIntentId String?
+  readerId  String?
   soldById  String?
   createdAt DateTime @default(now())
 
   @@index([clubId, createdAt])
+  @@index([clubId, status])
 }
 
 // ---------- Gift cards ----------
@@ -1750,4 +1756,18 @@ model AccountingPosting {
   createdAt    DateTime       @default(now())
 
   @@unique([accountingId, day])
+}
+
+/// A Stripe Terminal reader registered to the club's own Stripe account.
+model ClubReader {
+  id             String   @id @default(cuid())
+  clubId         String
+  club           Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  stripeReaderId String   @unique
+  locationId     String
+  label          String
+  deviceType     String?
+  createdAt      DateTime @default(now())
+
+  @@index([clubId])
 }

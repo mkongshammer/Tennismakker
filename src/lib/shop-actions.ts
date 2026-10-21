@@ -5,8 +5,9 @@ import { db } from './db';
 import { getCurrentUser } from './session';
 import { requireCustomClub } from './club-management-actions';
 import { buyGiftCard, recordSale, redeemGiftCard } from './shop';
+import { cancelReaderSale, registerReader, removeReader, startReaderPayment } from './terminal';
 
-type State = { ok?: string; error?: string } | null;
+type State = { ok?: string; error?: string; pendingSaleId?: string } | null;
 const fail = (e: unknown) => ({ error: e instanceof Error ? e.message : 'Noget gik galt. Prøv igen.' });
 
 export async function saveShopItem(_prev: State, form: FormData): Promise<State> {
@@ -39,14 +40,40 @@ export async function recordSaleAction(_prev: State, form: FormData): Promise<St
     const { user, club } = await requireCustomClub('butik');
     const lines = form.getAll('itemId').map((id) => ({ itemId: String(id), qty: Number(form.get(`qty_${id}`) ?? 0) })).filter((l) => l.qty > 0);
     const method = String(form.get('method'));
-    if (!['CASH', 'CARD', 'WALLET'].includes(method)) throw Error('Vælg betalingsmåde.');
+    if (!['CASH', 'CARD', 'WALLET', 'READER'].includes(method)) throw Error('Vælg betalingsmåde.');
+    const readerId = String(form.get('readerId') ?? '');
+    if (method === 'READER' && !readerId) throw Error('Vælg en kortlæser.');
     const email = String(form.get('memberEmail') ?? '').trim().toLowerCase();
     let userId: string | null = null;
     if (email) { const m = await db.user.findFirst({ where: { email, clubId: club.id }, select: { id: true } }); if (!m) throw Error('Ingen medlem med den e-mail i klubben.'); userId = m.id; }
     const sale = await recordSale(club.id, user.id, lines, method as any, userId);
+    if (method === 'READER') {
+      try { await startReaderPayment(club.id, sale.id, readerId); }
+      catch (e) { await cancelReaderSale(club.id, sale.id); throw e; }
+      return { ok: `Beløbet er sendt til kortlæseren: ${sale.totalKr} ${sale.currency}.`, pendingSaleId: sale.id };
+    }
     revalidatePath('/admin/butik');
     return { ok: `Salg registreret: ${sale.totalKr} ${sale.currency}.` };
   } catch (e) { return fail(e); }
+}
+
+export async function readerAction(_prev: State, form: FormData): Promise<State> {
+  try {
+    const { club } = await requireCustomClub('butik');
+    const intent = String(form.get('intent') ?? '');
+    if (intent === 'remove') { await removeReader(club.id, String(form.get('readerId') ?? '')); revalidatePath('/admin/butik'); return { ok: 'Kortlæseren er fjernet.' }; }
+    const code = String(form.get('registrationCode') ?? '').trim();
+    if (!/^[a-z]+(-[a-z]+){2}$/i.test(code)) throw Error('Skriv parringskoden fra læserens skærm, fx sepia-cerulean-orynx.');
+    const r = await registerReader(club.id, code, String(form.get('label') ?? '').trim().slice(0, 60), String(form.get('postalCode') ?? '').trim().slice(0, 12), String(form.get('state') ?? '').trim().slice(0, 3));
+    revalidatePath('/admin/butik');
+    return { ok: `${r.label} er klar. Vælg "Kortlæser" i kassen, når der skal betales.` };
+  } catch (e) { return fail(e); }
+}
+
+export async function cancelReaderSaleAction(form: FormData) {
+  const { club } = await requireCustomClub('butik');
+  await cancelReaderSale(club.id, String(form.get('saleId') ?? ''));
+  revalidatePath('/admin/butik');
 }
 
 export async function createStaffShift(_prev: State, form: FormData): Promise<State> {

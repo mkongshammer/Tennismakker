@@ -29,6 +29,11 @@ export async function handleStripeEvent(type:string,object:any){
       if(id)await expireWalletTopup(id,object.id);
       return;
     }
+    case 'payment_intent.succeeded':{
+      const saleId=object.metadata?.shopSaleId;
+      if(saleId){const {confirmReaderSale}=await import('./terminal');await confirmReaderSale(saleId);}
+      return;
+    }
     case 'charge.refunded':
     case 'charge.dispute.created':{
       const pi=typeof object.payment_intent==='string'?object.payment_intent:object.payment_intent?.id;

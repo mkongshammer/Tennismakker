@@ -13894,5 +13894,205 @@
     "no": "Bokført: {posted} dager med omsetning, {skipped} dager uten.",
     "fr": "Comptabilisé : {posted} jours avec chiffre d'affaires, {skipped} jours sans.",
     "es": "Contabilizado: {posted} días con ingresos, {skipped} días sin."
+  },
+  "Betalingen gik igennem på kortlæseren. Salget er registreret.": {
+    "en": "The payment went through on the reader. The sale is recorded.",
+    "de": "Die Zahlung ist am Lesegerät durchgegangen. Der Verkauf ist erfasst.",
+    "sv": "Betalningen gick igenom på kortläsaren. Försäljningen är registrerad.",
+    "no": "Betalingen gikk gjennom på kortleseren. Salget er registrert.",
+    "fr": "Le paiement est passé sur le lecteur. La vente est enregistrée.",
+    "es": "El pago se completó en el lector. La venta está registrada."
+  },
+  "Betalingen på kortlæseren blev ikke gennemført. Varerne er lagt tilbage på lager.": {
+    "en": "The payment on the reader didn't go through. The items are back in stock.",
+    "de": "Die Zahlung am Lesegerät ist nicht durchgegangen. Die Artikel sind wieder im Bestand.",
+    "sv": "Betalningen på kortläsaren gick inte igenom. Varorna är tillbaka i lager.",
+    "no": "Betalingen på kortleseren ble ikke gjennomført. Varene er lagt tilbake på lager.",
+    "fr": "Le paiement sur le lecteur n'a pas abouti. Les articles sont remis en stock.",
+    "es": "El pago en el lector no se completó. Los artículos vuelven al inventario."
+  },
+  "En Stripe Terminal-læser (fx BBPOS WisePOS E eller Stripe Reader S700) i receptionen. Kassen sender beløbet til læseren, kunden tapper, og pengene går direkte til klubbens konto. Køb læseren i Stripe-dashboardet under Terminal.": {
+    "en": "A Stripe Terminal reader (e.g. BBPOS WisePOS E or Stripe Reader S700) at the desk. The register sends the amount to the reader, the customer taps, and the money goes straight to the club's account. Buy the reader in the Stripe dashboard under Terminal.",
+    "de": "Ein Stripe-Terminal-Lesegerät (z. B. BBPOS WisePOS E oder Stripe Reader S700) an der Rezeption. Die Kasse sendet den Betrag ans Lesegerät, der Kunde tippt, und das Geld geht direkt auf das Clubkonto. Das Lesegerät kaufst du im Stripe-Dashboard unter Terminal.",
+    "sv": "En Stripe Terminal-läsare (t.ex. BBPOS WisePOS E eller Stripe Reader S700) i receptionen. Kassan skickar beloppet till läsaren, kunden blippar och pengarna går direkt till klubbens konto. Köp läsaren i Stripe-panelen under Terminal.",
+    "no": "En Stripe Terminal-leser (f.eks. BBPOS WisePOS E eller Stripe Reader S700) i resepsjonen. Kassen sender beløpet til leseren, kunden tapper, og pengene går rett til klubbens konto. Kjøp leseren i Stripe-dashbordet under Terminal.",
+    "fr": "Un lecteur Stripe Terminal (par ex. BBPOS WisePOS E ou Stripe Reader S700) à l'accueil. La caisse envoie le montant au lecteur, le client tape sa carte et l'argent va directement sur le compte du club. Achetez le lecteur dans le tableau de bord Stripe, rubrique Terminal.",
+    "es": "Un lector Stripe Terminal (p. ej. BBPOS WisePOS E o Stripe Reader S700) en recepción. La caja envía el importe al lector, el cliente acerca la tarjeta y el dinero va directo a la cuenta del club. Compra el lector en el panel de Stripe, en Terminal."
+  },
+  "Gør klubbens Stripe-konto færdig under Betaling, før en læser kan parres.": {
+    "en": "Finish the club's Stripe account under Payments before a reader can be paired.",
+    "de": "Schließe das Stripe-Konto des Clubs unter Zahlung ab, bevor ein Lesegerät gekoppelt werden kann.",
+    "sv": "Gör klart klubbens Stripe-konto under Betalning innan en läsare kan paras.",
+    "no": "Gjør klubbens Stripe-konto ferdig under Betaling før en leser kan pares.",
+    "fr": "Terminez le compte Stripe du club sous Paiement avant de pouvoir associer un lecteur.",
+    "es": "Completa la cuenta de Stripe del club en Pagos antes de poder emparejar un lector."
+  },
+  "Kort": {
+    "en": "Card",
+    "de": "Karte",
+    "sv": "Kort",
+    "no": "Kort",
+    "fr": "Carte",
+    "es": "Tarjeta"
+  },
+  "Kortlæser": {
+    "en": "Card reader",
+    "de": "Kartenleser",
+    "sv": "Kortläsare",
+    "no": "Kortleser",
+    "fr": "Lecteur de carte",
+    "es": "Lector de tarjetas"
+  },
+  "Kortlæser (Stripe Terminal)": {
+    "en": "Card reader (Stripe Terminal)",
+    "de": "Kartenleser (Stripe Terminal)",
+    "sv": "Kortläsare (Stripe Terminal)",
+    "no": "Kortleser (Stripe Terminal)",
+    "fr": "Lecteur de carte (Stripe Terminal)",
+    "es": "Lector de tarjetas (Stripe Terminal)"
+  },
+  "Kortlæsere": {
+    "en": "Card readers",
+    "de": "Kartenleser",
+    "sv": "Kortläsare",
+    "no": "Kortlesere",
+    "fr": "Lecteurs de carte",
+    "es": "Lectores de tarjetas"
+  },
+  "Læser": {
+    "en": "Reader",
+    "de": "Lesegerät",
+    "sv": "Läsare",
+    "no": "Leser",
+    "fr": "Lecteur",
+    "es": "Lector"
+  },
+  "Par kortlæser": {
+    "en": "Pair reader",
+    "de": "Lesegerät koppeln",
+    "sv": "Para läsare",
+    "no": "Par leser",
+    "fr": "Associer le lecteur",
+    "es": "Emparejar lector"
+  },
+  "Parringskode fra læserens skærm": {
+    "en": "Pairing code from the reader's screen",
+    "de": "Kopplungscode vom Display des Lesegeräts",
+    "sv": "Parningskod från läsarens skärm",
+    "no": "Paringskode fra leserens skjerm",
+    "fr": "Code d'association affiché sur le lecteur",
+    "es": "Código de emparejamiento de la pantalla del lector"
+  },
+  "Postnummer": {
+    "en": "ZIP code",
+    "de": "Postleitzahl",
+    "sv": "Postnummer",
+    "no": "Postnummer",
+    "fr": "Code postal",
+    "es": "Código postal"
+  },
+  "Reception": {
+    "en": "Front desk",
+    "de": "Rezeption",
+    "sv": "Reception",
+    "no": "Resepsjon",
+    "fr": "Accueil",
+    "es": "Recepción"
+  },
+  "Registrér et salg i receptionen: bolde, drikkevarer, leje af ketsjer. Vælg Kortlæser for at tage kortet på jeres Stripe-læser, eller Wallet for at trække på medlemmets klubwallet.": {
+    "en": "Ring up a sale at the desk: balls, drinks, racket rental. Choose Card reader to take the card on your Stripe reader, or Wallet to charge the member's club wallet.",
+    "de": "Erfasse einen Verkauf an der Rezeption: Bälle, Getränke, Schlägerverleih. Wähle Kartenleser, um die Karte am Stripe-Lesegerät zu nehmen, oder Wallet, um das Club-Guthaben des Mitglieds zu belasten.",
+    "sv": "Registrera en försäljning i receptionen: bollar, dryck, rackethyra. Välj Kortläsare för att ta kortet på er Stripe-läsare, eller Wallet för att dra från medlemmens klubbwallet.",
+    "no": "Registrer et salg i resepsjonen: baller, drikke, racketleie. Velg Kortleser for å ta kortet på Stripe-leseren, eller Wallet for å trekke fra medlemmets klubbwallet.",
+    "fr": "Enregistrez une vente à l'accueil : balles, boissons, location de raquette. Choisissez Lecteur de carte pour prendre la carte sur votre lecteur Stripe, ou Wallet pour débiter le portefeuille club du membre.",
+    "es": "Registra una venta en recepción: pelotas, bebidas, alquiler de raqueta. Elige Lector de tarjetas para cobrar en vuestro lector Stripe, o Wallet para cargar el monedero del club del socio."
+  },
+  "Stat": {
+    "en": "State",
+    "de": "Bundesstaat",
+    "sv": "Delstat",
+    "no": "Delstat",
+    "fr": "État",
+    "es": "Estado"
+  },
+  "Venter på kortet på læseren …": {
+    "en": "Waiting for the card on the reader …",
+    "de": "Warte auf die Karte am Lesegerät …",
+    "sv": "Väntar på kortet på läsaren …",
+    "no": "Venter på kortet på leseren …",
+    "fr": "En attente de la carte sur le lecteur…",
+    "es": "Esperando la tarjeta en el lector…"
+  },
+  "Wallet": {
+    "en": "Wallet",
+    "de": "Wallet",
+    "sv": "Wallet",
+    "no": "Wallet",
+    "fr": "Wallet",
+    "es": "Wallet"
+  },
+  "afventer": {
+    "en": "pending",
+    "de": "ausstehend",
+    "sv": "väntar",
+    "no": "venter",
+    "fr": "en attente",
+    "es": "pendiente"
+  },
+  "afvist": {
+    "en": "declined",
+    "de": "abgelehnt",
+    "sv": "nekad",
+    "no": "avvist",
+    "fr": "refusé",
+    "es": "rechazado"
+  },
+  "annulleret": {
+    "en": "cancelled",
+    "de": "storniert",
+    "sv": "avbruten",
+    "no": "avbrutt",
+    "fr": "annulé",
+    "es": "cancelado"
+  },
+  "Vælg en kortlæser.": {
+    "en": "Choose a card reader.",
+    "de": "Wähle einen Kartenleser.",
+    "sv": "Välj en kortläsare.",
+    "no": "Velg en kortleser.",
+    "fr": "Choisissez un lecteur de carte.",
+    "es": "Elige un lector de tarjetas."
+  },
+  "Kortlæseren er fjernet.": {
+    "en": "The card reader has been removed.",
+    "de": "Der Kartenleser wurde entfernt.",
+    "sv": "Kortläsaren har tagits bort.",
+    "no": "Kortleseren er fjernet.",
+    "fr": "Le lecteur de carte a été retiré.",
+    "es": "El lector de tarjetas se ha eliminado."
+  },
+  "Skriv parringskoden fra læserens skærm, fx sepia-cerulean-orynx.": {
+    "en": "Enter the pairing code from the reader's screen, e.g. sepia-cerulean-orynx.",
+    "de": "Gib den Kopplungscode vom Display des Lesegeräts ein, z. B. sepia-cerulean-orynx.",
+    "sv": "Skriv parningskoden från läsarens skärm, t.ex. sepia-cerulean-orynx.",
+    "no": "Skriv paringskoden fra leserens skjerm, f.eks. sepia-cerulean-orynx.",
+    "fr": "Saisissez le code d'association affiché sur le lecteur, par ex. sepia-cerulean-orynx.",
+    "es": "Escribe el código de emparejamiento de la pantalla del lector, p. ej. sepia-cerulean-orynx."
+  },
+  "{label} er klar. Vælg \"Kortlæser\" i kassen, når der skal betales.": {
+    "en": "{label} is ready. Choose \"Card reader\" in the register when it's time to pay.",
+    "de": "{label} ist bereit. Wähle in der Kasse \"Kartenleser\", wenn bezahlt werden soll.",
+    "sv": "{label} är redo. Välj \"Kortläsare\" i kassan när det ska betalas.",
+    "no": "{label} er klar. Velg \"Kortleser\" i kassen når det skal betales.",
+    "fr": "{label} est prêt. Choisissez « Lecteur de carte » dans la caisse au moment de payer.",
+    "es": "{label} está listo. Elige \"Lector de tarjetas\" en la caja cuando haya que pagar."
+  },
+  "Beløbet er sendt til kortlæseren: {amount} {currency}.": {
+    "en": "The amount has been sent to the reader: {amount} {currency}.",
+    "de": "Der Betrag wurde ans Lesegerät gesendet: {amount} {currency}.",
+    "sv": "Beloppet har skickats till kortläsaren: {amount} {currency}.",
+    "no": "Beløpet er sendt til kortleseren: {amount} {currency}.",
+    "fr": "Le montant a été envoyé au lecteur : {amount} {currency}.",
+    "es": "El importe se ha enviado al lector: {amount} {currency}."
   }
 }

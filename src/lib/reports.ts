@@ -50,10 +50,10 @@ export async function revenueLines(clubId: string, from: Date, to: Date, timeZon
   for (const e of events) lines.push({ date: e.paidAt!, category: "Events", description: e.event.name, customer: e.user.name, amountKr: e.priceKr, feeKr: 0, currency: e.currency, method: "Card", ref: e.stripeSessionId ?? e.id });
 
   // Wallet sales were paid for when the wallet was topped up, so they don't count again.
-  const sales = await db.shopSale.findMany({ where: { clubId, createdAt: range, method: { not: "WALLET" } } });
+  const sales = await db.shopSale.findMany({ where: { clubId, createdAt: range, status: "PAID", method: { not: "WALLET" } } });
   for (const s of sales) {
     const items = JSON.parse(s.items) as { name: string; qty: number }[];
-    lines.push({ date: s.createdAt, category: "Pro shop", description: items.map((i) => `${i.qty}× ${i.name}`).join(", "), customer: "", amountKr: s.totalKr, feeKr: 0, currency: s.currency, method: s.method === "CASH" ? "Cash" : "Card (desk)", ref: s.id });
+    lines.push({ date: s.createdAt, category: "Pro shop", description: items.map((i) => `${i.qty}× ${i.name}`).join(", "), customer: "", amountKr: s.totalKr, feeKr: 0, currency: s.currency, method: s.method === "CASH" ? "Cash" : s.method === "READER" ? "Card (reader)" : "Card (desk)", ref: s.id });
   }
 
   const gifts = await db.giftCard.findMany({ where: { clubId, paidAt: range, status: { in: ["ACTIVE", "REDEEMED"] } } });

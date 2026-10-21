@@ -23,6 +23,7 @@ export const REQUIRED_EVENTS = [
   "checkout.session.expired",
   "charge.refunded",
   "charge.dispute.created",
+  "payment_intent.succeeded",
   "account.updated",
   "customer.subscription.created",
   "customer.subscription.updated",

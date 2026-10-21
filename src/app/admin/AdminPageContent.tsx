@@ -487,7 +487,11 @@ export default async function AdminPageContent({
     db.giftCard.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 50 }),
   ]);
   const buyers = new Map((await db.user.findMany({ where: { id: { in: sales.map((s) => s.userId).filter((x): x is string => Boolean(x)) } }, select: { id: true, name: true } })).map((u) => [u.id, u.name]));
-  return <ShopPanel slug={club.slug} items={items} gifts={gifts} sales={sales.map((s) => ({ id: s.id, items: s.items, totalKr: s.totalKr, method: s.method, createdAt: s.createdAt, buyer: s.userId ? buyers.get(s.userId) ?? null : null }))} />;
+  const { readersWithStatus } = await import('../../lib/terminal');
+  const readers = (await readersWithStatus(club.id).catch(() => [])).map((r) => ({ id: r.id, label: r.label, status: r.status, deviceType: r.deviceType }));
+  const { getSettings: settingsForShop } = await import('../../lib/settings');
+  const stripeReady = (await settingsForShop()).paymentProvider !== 'stripe' || Boolean(club.stripeAccountId && club.stripeChargesEnabled);
+  return <ShopPanel slug={club.slug} items={items} gifts={gifts} readers={readers} stripeReady={stripeReady} sales={sales.map((s) => ({ id: s.id, items: s.items, totalKr: s.totalKr, method: s.method, status: s.status, createdAt: s.createdAt, buyer: s.userId ? buyers.get(s.userId) ?? null : null }))} />;
 })()}
 {section === 'vagtplan' && await (async () => {
   const todayKey = dayKey(new Date(), club.timeZone);
