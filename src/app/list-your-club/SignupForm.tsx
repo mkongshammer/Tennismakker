@@ -22,7 +22,7 @@ import { Icon } from "../../components/ui";
 const FEATURE_EN: Record<string, { label: string; body: string }> = {
   medlemmer: { label: "Members and memberships", body: "Plans, seasons, renewals, member pricing." },
   hold: { label: "Teams and clinics", body: "Season teams with sign-up and payment." },
-  "lys-adgang": { label: "Lights and door access", body: "Bookings switch on lights and open doors." },
+  "lys-adgang": { label: "Lights and door access", body: "Bookings switch on lights and open doors. Works with your existing fobs and card readers, and with Kisi." },
   priser: { label: "Wallet, pricing rules and punch cards", body: "Peak pricing, prepaid credit, bundles." },
   hjemmeside: { label: "Club website and contacts", body: "Your page on your own domain, photos, news." },
   nyheder: { label: "Club news", body: "Posts on your public page." },
@@ -30,9 +30,9 @@ const FEATURE_EN: Record<string, { label: string; body: string }> = {
   import: { label: "Import from another system", body: "Members and bookings via CSV." },
   events: { label: "Events, tournaments and ladder", body: "Sign-up, payment, automatic draws (knockout, round robin, groups), match schedules on your courts, and a club ladder." },
   kommunikation: { label: "Member emails and SMS", body: "One email to every member; text reminders." },
-  butik: { label: "Pro shop and gift cards", body: "Front-desk register, stock, gift cards." },
-  vagtplan: { label: "Staff schedule", body: "Shifts for desk and pros." },
-  rapporter: { label: "Reports and accounting export", body: "Revenue by month and category; CSV and QuickBooks." },
+  butik: { label: "Pro shop, card reader and gift cards", body: "Front-desk register with a Stripe Terminal card reader, stock, gift cards." },
+  vagtplan: { label: "Staff schedule, time clock and payroll", body: "Shifts, PIN clock-in on the desk tablet, overtime, pay runs exported to Gusto, QuickBooks Payroll or ADP." },
+  rapporter: { label: "Reports and QuickBooks", body: "Revenue by month and category; CSV export or live posting into QuickBooks Online every night." },
 };
 
 const STEPS = ["Price", "Facility", "Courts", "Account"] as const;

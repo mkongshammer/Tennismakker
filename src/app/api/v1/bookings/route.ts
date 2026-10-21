@@ -13,6 +13,7 @@ import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integ
 import { releaseExpiredHolds, startCheckout } from "../../../../lib/payments";
 import { apiError, json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { bookingDoorAccess } from "../../../../lib/club-control";
+import { kisiDoorAccess } from "../../../../lib/access";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -46,6 +47,7 @@ export async function GET(req: Request) {
         include: {
           club: {
             include: {
+              access: { select: { kisiLockId: true, kisiLockName: true, beforeMinutes: true, afterMinutes: true } },
               control: {
                 select: {
                   enabled: true,
@@ -88,7 +90,7 @@ export async function GET(req: Request) {
       // Coach lessons: the player's note with the request and the coach's reply.
       requestNote: b.requestNote ?? null,
       coachNote: b.coachNote ?? null,
-      access: bookingDoorAccess(b, now),
+      access: bookingDoorAccess(b, now) ?? kisiDoorAccess(b as any, now),
       guestCount: b.guestCount ?? 0,
       checkIn: b.kind === "COURT" && b.court?.club.checkInEnabled ? { checkedInAt: b.checkedInAt?.toISOString() ?? null, opensAt: new Date(b.startsAt.getTime() - CHECKIN_OPEN_MIN * 60_000).toISOString(), closesAt: new Date(b.startsAt.getTime() + CHECKIN_CLOSE_MIN * 60_000).toISOString() } : null,
     })),

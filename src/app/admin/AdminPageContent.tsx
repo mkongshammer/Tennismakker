@@ -51,6 +51,7 @@ import { smsConfigured } from "../../lib/sms";
 import { revenueLines, summarize, CATEGORIES } from "../../lib/reports";
 import { ladderStandings } from "../../lib/events";
 import { tournamentView } from "../../lib/tournament";
+import { AccessPanel } from "./AccessPanel";
 import { clubBillingOverview } from "../../lib/member-billing";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -643,6 +644,16 @@ export default async function AdminPageContent({
                   } : null} />
 
       </section>
+{await (async () => {
+  const { ensureAccessSettings, accessApiKey, listCredentials, recentAccessEvents, kisiLocksForClub } = await import('../../lib/access');
+  const { settingsSnapshot } = await import('../../lib/settings');
+  const [settings, apiKey, creds, events, staff] = await Promise.all([ensureAccessSettings(club.id), accessApiKey(club.id), listCredentials(club.id), recentAccessEvents(club.id), db.staffMember.findMany({ where: { clubId: club.id, active: true }, select: { id: true, name: true }, orderBy: { name: 'asc' } })]);
+  const kisiLocks = settings.kisiApiKeyCipher ? await kisiLocksForClub(club.id) : [];
+  return <AccessPanel apiKey={apiKey} checkUrl={`${settingsSnapshot().appUrl}/api/access/check`} staff={staff} kisiLocks={kisiLocks.map((l) => ({ id: String(l.id), name: l.name, online: l.online }))}
+    settings={{ beforeMinutes: settings.beforeMinutes, afterMinutes: settings.afterMinutes, memberWithoutBooking: settings.memberWithoutBooking, memberFromHour: settings.memberFromHour, memberUntilHour: settings.memberUntilHour, kisiConnected: Boolean(settings.kisiApiKeyCipher), kisiLockId: settings.kisiLockId, kisiLockName: settings.kisiLockName, kisiPlaceName: settings.kisiPlaceName }}
+    credentials={creds.map((c) => ({ id: c.id, label: c.label, kind: c.kind, uidTail: c.uidTail, active: c.active, validUntil: c.validUntil, lastUsedAt: c.lastUsedAt, holder: c.staff?.name ?? c.user?.name ?? '?', holderKind: c.staffId ? 'staff' as const : 'member' as const }))}
+    events={events.map((e) => ({ id: e.id, at: e.at, uidTail: e.uidTail, door: e.door, allowed: e.allowed, reason: e.reason, source: e.source, who: e.credential?.staff?.name ?? e.credential?.user?.name ?? null }))} />;
+})()}
 </>}
 {section === 'priser' && <>
 <WalletForm enabled={club.walletEnabled} tiers={JSON.parse(club.walletTiers || '[]')} />

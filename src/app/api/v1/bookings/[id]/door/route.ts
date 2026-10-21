@@ -2,6 +2,7 @@ import {
   ClubControlError,
   unlockDoorForBooking,
 } from "../../../../../../lib/club-control";
+import { AccessError, unlockKisiForBooking } from "../../../../../../lib/access";
 import {
   apiError,
   json,
@@ -24,6 +25,11 @@ export async function POST(
   try {
     return json(await unlockDoorForBooking(auth.user.id, id));
   } catch (error) {
+    // No Shelly door at this club: maybe the door is on Kisi.
+    if (error instanceof ClubControlError && error.status === 409) {
+      try { return json(await unlockKisiForBooking(auth.user.id, id)); }
+      catch (e) { if (e instanceof AccessError && e.status !== 409) return apiError(e.message, e.status); }
+    }
     if (error instanceof ClubControlError) {
       return apiError(error.message, error.status);
     }

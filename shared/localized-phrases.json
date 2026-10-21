@@ -7348,6 +7348,9 @@
   },
   "Skjul": {
     "en": "Hide",
+    "de": "Ausblenden",
+    "sv": "Dölj",
+    "no": "Skjul",
     "fr": "Masquer",
     "es": "Ocultar"
   },
@@ -8191,9 +8194,12 @@
     "es": "Disponible desde"
   },
   "Gyldig til": {
-    "en": "Available until",
-    "fr": "Disponible jusqu’au",
-    "es": "Disponible hasta"
+    "en": "Valid until",
+    "de": "Gültig bis",
+    "sv": "Giltig till",
+    "no": "Gyldig til",
+    "fr": "Valide jusqu'au",
+    "es": "Válido hasta"
   },
   "Navn": {
     "en": "Name",
@@ -14094,5 +14100,517 @@
     "no": "Beløpet er sendt til kortleseren: {amount} {currency}.",
     "fr": "Le montant a été envoyé au lecteur : {amount} {currency}.",
     "es": "El importe se ha enviado al lector: {amount} {currency}."
+  },
+  "API-nøgle": {
+    "en": "API key",
+    "de": "API-Schlüssel",
+    "sv": "API-nyckel",
+    "no": "API-nøkkel",
+    "fr": "Clé API",
+    "es": "Clave API"
+  },
+  "Adgang": {
+    "en": "Access",
+    "de": "Zutritt",
+    "sv": "Tillträde",
+    "no": "Adgang",
+    "fr": "Accès",
+    "es": "Acceso"
+  },
+  "Afvist": {
+    "en": "Denied",
+    "de": "Abgelehnt",
+    "sv": "Nekad",
+    "no": "Avvist",
+    "fr": "Refusé",
+    "es": "Denegado"
+  },
+  "Ansattes brikker virker altid. Medlemmer lukkes ind i vinduet omkring deres egen bekræftede booking, og i medlemstiden hvis det er slået til.": {
+    "en": "Staff fobs always work. Members get in within the window around their own confirmed booking, and during member hours if that is on.",
+    "de": "Mitarbeiter-Chips funktionieren immer. Mitglieder kommen im Zeitfenster um ihre eigene bestätigte Buchung hinein, und in der Mitgliederzeit, falls aktiviert.",
+    "sv": "Personalens brickor fungerar alltid. Medlemmar släpps in i fönstret runt sin egen bekräftade bokning, och under medlemstid om det är påslaget.",
+    "no": "Ansattes brikker virker alltid. Medlemmer slippes inn i vinduet rundt sin egen bekreftede booking, og i medlemstiden hvis det er slått på.",
+    "fr": "Les badges du personnel fonctionnent toujours. Les membres entrent dans la fenêtre autour de leur propre réservation confirmée, et pendant les heures membres si c'est activé.",
+    "es": "Los llaveros del personal siempre funcionan. Los socios entran en la ventana alrededor de su propia reserva confirmada, y en el horario de socios si está activado."
+  },
+  "Betalende medlemmer må komme ind uden booking i medlemstiden (fx til fitness, lounge eller walk-in)": {
+    "en": "Paying members may enter without a booking during member hours (e.g. for the gym, lounge or walk-ins)",
+    "de": "Zahlende Mitglieder dürfen in der Mitgliederzeit ohne Buchung hinein (z. B. Fitness, Lounge oder spontan)",
+    "sv": "Betalande medlemmar får komma in utan bokning under medlemstid (t.ex. gym, lounge eller drop-in)",
+    "no": "Betalende medlemmer kan komme inn uten booking i medlemstiden (f.eks. trening, lounge eller drop-in)",
+    "fr": "Les membres à jour peuvent entrer sans réservation pendant les heures membres (salle de sport, lounge, sans rendez-vous)",
+    "es": "Los socios al día pueden entrar sin reserva en el horario de socios (gimnasio, lounge o sin cita)"
+  },
+  "Booking i gang": {
+    "en": "Booking in progress",
+    "de": "Buchung läuft",
+    "sv": "Bokning pågår",
+    "no": "Booking pågår",
+    "fr": "Réservation en cours",
+    "es": "Reserva en curso"
+  },
+  "Brik": {
+    "en": "Fob",
+    "de": "Chip",
+    "sv": "Bricka",
+    "no": "Brikke",
+    "fr": "Badge",
+    "es": "Llavero"
+  },
+  "Brik deaktiveret": {
+    "en": "Fob deactivated",
+    "de": "Chip deaktiviert",
+    "sv": "Bricka inaktiverad",
+    "no": "Brikke deaktivert",
+    "fr": "Badge désactivé",
+    "es": "Llavero desactivado"
+  },
+  "Brik udløbet": {
+    "en": "Fob expired",
+    "de": "Chip abgelaufen",
+    "sv": "Bricka utgången",
+    "no": "Brikke utløpt",
+    "fr": "Badge expiré",
+    "es": "Llavero caducado"
+  },
+  "Brikker": {
+    "en": "Fobs",
+    "de": "Chips",
+    "sv": "Brickor",
+    "no": "Brikker",
+    "fr": "Badges",
+    "es": "Llaveros"
+  },
+  "Brikker og kort fra jeres eget dørsystem": {
+    "en": "Fobs and cards from your own door system",
+    "de": "Chips und Karten aus eurem eigenen Türsystem",
+    "sv": "Brickor och kort från ert eget dörrsystem",
+    "no": "Brikker og kort fra deres eget dørsystem",
+    "fr": "Badges et cartes de votre propre système de porte",
+    "es": "Llaveros y tarjetas de vuestro propio sistema de puerta"
+  },
+  "Brug denne dør": {
+    "en": "Use this door",
+    "de": "Diese Tür verwenden",
+    "sv": "Använd den här dörren",
+    "no": "Bruk denne døren",
+    "fr": "Utiliser cette porte",
+    "es": "Usar esta puerta"
+  },
+  "Controllerens opslag": {
+    "en": "The controller's lookup",
+    "de": "Die Abfrage des Controllers",
+    "sv": "Controllerns uppslag",
+    "no": "Kontrollerens oppslag",
+    "fr": "La requête du contrôleur",
+    "es": "La consulta del controlador"
+  },
+  "Den gamle nøgle holder op med at virke med det samme. Fortsæt?": {
+    "en": "The old key stops working immediately. Continue?",
+    "de": "Der alte Schlüssel funktioniert sofort nicht mehr. Fortfahren?",
+    "sv": "Den gamla nyckeln slutar fungera direkt. Fortsätt?",
+    "no": "Den gamle nøkkelen slutter å virke med en gang. Fortsette?",
+    "fr": "L'ancienne clé cesse de fonctionner immédiatement. Continuer ?",
+    "es": "La clave antigua deja de funcionar de inmediato. ¿Continuar?"
+  },
+  "Eksempel": {
+    "en": "Example",
+    "de": "Beispiel",
+    "sv": "Exempel",
+    "no": "Eksempel",
+    "fr": "Exemple",
+    "es": "Ejemplo"
+  },
+  "Forbind Kisi": {
+    "en": "Connect Kisi",
+    "de": "Kisi verbinden",
+    "sv": "Anslut Kisi",
+    "no": "Koble til Kisi",
+    "fr": "Connecter Kisi",
+    "es": "Conectar Kisi"
+  },
+  "Gyldig til (valgfri)": {
+    "en": "Valid until (optional)",
+    "de": "Gültig bis (optional)",
+    "sv": "Giltig till (valfritt)",
+    "no": "Gyldig til (valgfritt)",
+    "fr": "Valide jusqu'au (facultatif)",
+    "es": "Válido hasta (opcional)"
+  },
+  "Har klubben allerede en kortlæser ved døren, bliver den ved med at virke: controlleren spørger RacketBuddy ved hvert tryk, og vi svarer ja eller nej ud fra bookinger, medlemskab og vagter. Brikkerne registreres her; vi gemmer kun et fingeraftryk af UID'et.": {
+    "en": "If the club already has a card reader at the door, it keeps working: the controller asks RacketBuddy on every tap and we answer yes or no from bookings, membership and shifts. Fobs are registered here; we store only a fingerprint of the UID.",
+    "de": "Hat der Club schon einen Kartenleser an der Tür, funktioniert er weiter: Der Controller fragt bei jedem Tippen RacketBuddy, und wir antworten mit Ja oder Nein anhand von Buchungen, Mitgliedschaft und Schichten. Chips werden hier registriert; wir speichern nur einen Fingerabdruck der UID.",
+    "sv": "Har klubben redan en kortläsare vid dörren fortsätter den att fungera: controllern frågar RacketBuddy vid varje blipp och vi svarar ja eller nej utifrån bokningar, medlemskap och pass. Brickorna registreras här; vi sparar bara ett fingeravtryck av UID:t.",
+    "no": "Har klubben allerede en kortleser ved døren, fortsetter den å virke: kontrolleren spør RacketBuddy ved hvert tapp, og vi svarer ja eller nei ut fra bookinger, medlemskap og vakter. Brikkene registreres her; vi lagrer bare et fingeravtrykk av UID-en.",
+    "fr": "Si le club a déjà un lecteur de badge à la porte, il continue de fonctionner : le contrôleur interroge RacketBuddy à chaque passage et nous répondons oui ou non selon les réservations, l'adhésion et les plannings. Les badges sont enregistrés ici ; nous ne conservons qu'une empreinte de l'UID.",
+    "es": "Si el club ya tiene un lector en la puerta, sigue funcionando: el controlador consulta a RacketBuddy en cada pasada y respondemos sí o no según reservas, membresía y turnos. Los llaveros se registran aquí; solo guardamos una huella del UID."
+  },
+  "Hvem": {
+    "en": "Who",
+    "de": "Wer",
+    "sv": "Vem",
+    "no": "Hvem",
+    "fr": "Qui",
+    "es": "Quién"
+  },
+  "Importér": {
+    "en": "Import",
+    "de": "Importieren",
+    "sv": "Importera",
+    "no": "Importer",
+    "fr": "Importer",
+    "es": "Importar"
+  },
+  "Importér fra jeres gamle system (CSV)": {
+    "en": "Import from your old system (CSV)",
+    "de": "Aus eurem alten System importieren (CSV)",
+    "sv": "Importera från ert gamla system (CSV)",
+    "no": "Importer fra deres gamle system (CSV)",
+    "fr": "Importer depuis votre ancien système (CSV)",
+    "es": "Importar desde vuestro sistema anterior (CSV)"
+  },
+  "Indehaver": {
+    "en": "Holder",
+    "de": "Inhaber",
+    "sv": "Innehavare",
+    "no": "Innehaver",
+    "fr": "Titulaire",
+    "es": "Titular"
+  },
+  "Ingen booking nu": {
+    "en": "No booking now",
+    "de": "Keine Buchung jetzt",
+    "sv": "Ingen bokning nu",
+    "no": "Ingen booking nå",
+    "fr": "Pas de réservation en ce moment",
+    "es": "Sin reserva ahora"
+  },
+  "Ingen endnu.": {
+    "en": "None yet.",
+    "de": "Noch keine.",
+    "sv": "Inga ännu.",
+    "no": "Ingen ennå.",
+    "fr": "Aucun pour l'instant.",
+    "es": "Ninguno todavía."
+  },
+  "Kisi API-nøgle": {
+    "en": "Kisi API key",
+    "de": "Kisi-API-Schlüssel",
+    "sv": "Kisi API-nyckel",
+    "no": "Kisi API-nøkkel",
+    "fr": "Clé API Kisi",
+    "es": "Clave API de Kisi"
+  },
+  "Kobl Kisi fra": {
+    "en": "Disconnect Kisi",
+    "de": "Kisi trennen",
+    "sv": "Koppla från Kisi",
+    "no": "Koble fra Kisi",
+    "fr": "Déconnecter Kisi",
+    "es": "Desconectar Kisi"
+  },
+  "Kører døren på Kisi, forbindes den her: spillere med en booking åbner døren fra appen i deres tidsvindue, og Kisi låser selv igen. Opret en API-nøgle i Kisi under Organization → API.": {
+    "en": "If the door runs on Kisi, connect it here: players with a booking open the door from the app within their window, and Kisi relocks on its own. Create an API key in Kisi under Organization → API.",
+    "de": "Läuft die Tür über Kisi, verbinde sie hier: Spieler mit Buchung öffnen die Tür in ihrem Zeitfenster aus der App, und Kisi verriegelt selbst wieder. Erstelle einen API-Schlüssel in Kisi unter Organization → API.",
+    "sv": "Går dörren på Kisi ansluts den här: spelare med bokning öppnar dörren från appen i sitt tidsfönster, och Kisi låser själv igen. Skapa en API-nyckel i Kisi under Organization → API.",
+    "no": "Går døren på Kisi, kobles den til her: spillere med booking åpner døren fra appen i sitt tidsvindu, og Kisi låser selv igjen. Opprett en API-nøkkel i Kisi under Organization → API.",
+    "fr": "Si la porte fonctionne avec Kisi, connectez-la ici : les joueurs ayant une réservation ouvrent la porte depuis l'app dans leur créneau, et Kisi reverrouille seul. Créez une clé API dans Kisi sous Organization → API.",
+    "es": "Si la puerta funciona con Kisi, conéctala aquí: los jugadores con reserva abren la puerta desde la app en su franja, y Kisi vuelve a cerrar sola. Crea una clave API en Kisi en Organization → API."
+  },
+  "Medlem (via e-mail)": {
+    "en": "Member (by e-mail)",
+    "de": "Mitglied (per E-Mail)",
+    "sv": "Medlem (via e-post)",
+    "no": "Medlem (via e-post)",
+    "fr": "Membre (par e-mail)",
+    "es": "Socio (por correo)"
+  },
+  "Medlem i åbningstiden": {
+    "en": "Member, within member hours",
+    "de": "Mitglied in der Mitgliederzeit",
+    "sv": "Medlem under medlemstid",
+    "no": "Medlem i medlemstiden",
+    "fr": "Membre, pendant les heures membres",
+    "es": "Socio, en horario de socios"
+  },
+  "Medlemmer fra kl.": {
+    "en": "Members from",
+    "de": "Mitglieder ab",
+    "sv": "Medlemmar från kl.",
+    "no": "Medlemmer fra kl.",
+    "fr": "Membres à partir de",
+    "es": "Socios desde las"
+  },
+  "Medlemmer til kl.": {
+    "en": "Members until",
+    "de": "Mitglieder bis",
+    "sv": "Medlemmar till kl.",
+    "no": "Medlemmer til kl.",
+    "fr": "Membres jusqu'à",
+    "es": "Socios hasta las"
+  },
+  "Minutter efter booking": {
+    "en": "Minutes after booking",
+    "de": "Minuten nach der Buchung",
+    "sv": "Minuter efter bokning",
+    "no": "Minutter etter booking",
+    "fr": "Minutes après la réservation",
+    "es": "Minutos después de la reserva"
+  },
+  "Minutter før booking": {
+    "en": "Minutes before booking",
+    "de": "Minuten vor der Buchung",
+    "sv": "Minuter före bokning",
+    "no": "Minutter før booking",
+    "fr": "Minutes avant la réservation",
+    "es": "Minutos antes de la reserva"
+  },
+  "Mærkat (valgfri)": {
+    "en": "Label (optional)",
+    "de": "Bezeichnung (optional)",
+    "sv": "Etikett (valfritt)",
+    "no": "Merkelapp (valgfritt)",
+    "fr": "Étiquette (facultatif)",
+    "es": "Etiqueta (opcional)"
+  },
+  "Nummerplade": {
+    "en": "License plate",
+    "de": "Kennzeichen",
+    "sv": "Registreringsskylt",
+    "no": "Nummerskilt",
+    "fr": "Plaque d'immatriculation",
+    "es": "Matrícula"
+  },
+  "Ny nøgle": {
+    "en": "New key",
+    "de": "Neuer Schlüssel",
+    "sv": "Ny nyckel",
+    "no": "Ny nøkkel",
+    "fr": "Nouvelle clé",
+    "es": "Nueva clave"
+  },
+  "Prøv et UID": {
+    "en": "Try a UID",
+    "de": "Eine UID testen",
+    "sv": "Prova ett UID",
+    "no": "Prøv en UID",
+    "fr": "Essayer un UID",
+    "es": "Probar un UID"
+  },
+  "Registrér brik": {
+    "en": "Register fob",
+    "de": "Chip registrieren",
+    "sv": "Registrera bricka",
+    "no": "Registrer brikke",
+    "fr": "Enregistrer le badge",
+    "es": "Registrar llavero"
+  },
+  "Regler": {
+    "en": "Rules",
+    "de": "Regeln",
+    "sv": "Regler",
+    "no": "Regler",
+    "fr": "Règles",
+    "es": "Reglas"
+  },
+  "Seneste tryk ved døren": {
+    "en": "Latest taps at the door",
+    "de": "Letzte Zutrittsversuche an der Tür",
+    "sv": "Senaste blipp vid dörren",
+    "no": "Siste tapp ved døren",
+    "fr": "Derniers passages à la porte",
+    "es": "Últimas pasadas en la puerta"
+  },
+  "Sidst brugt": {
+    "en": "Last used",
+    "de": "Zuletzt benutzt",
+    "sv": "Senast använd",
+    "no": "Sist brukt",
+    "fr": "Dernière utilisation",
+    "es": "Último uso"
+  },
+  "Sæt controlleren (eller integratorens middleware) til at kalde denne adresse med brikkens UID ved hvert tryk. Svaret er JSON med \"allow\": true eller false. Virker med alt, der kan kalde en URL: Wiegand-til-IP-moduler, Raspberry Pi, Paxton/Salto via middleware.": {
+    "en": "Point the controller (or the integrator's middleware) at this address with the fob's UID on every tap. The reply is JSON with \"allow\": true or false. Works with anything that can call a URL: Wiegand-to-IP modules, a Raspberry Pi, Paxton/Salto via middleware.",
+    "de": "Lass den Controller (oder die Middleware des Integrators) bei jedem Tippen diese Adresse mit der UID des Chips aufrufen. Die Antwort ist JSON mit \"allow\": true oder false. Funktioniert mit allem, was eine URL aufrufen kann: Wiegand-zu-IP-Module, Raspberry Pi, Paxton/Salto über Middleware.",
+    "sv": "Låt controllern (eller integratörens middleware) anropa den här adressen med brickans UID vid varje blipp. Svaret är JSON med \"allow\": true eller false. Fungerar med allt som kan anropa en URL: Wiegand-till-IP-moduler, Raspberry Pi, Paxton/Salto via middleware.",
+    "no": "La kontrolleren (eller integratorens mellomvare) kalle denne adressen med brikkens UID ved hvert tapp. Svaret er JSON med \"allow\": true eller false. Virker med alt som kan kalle en URL: Wiegand-til-IP-moduler, Raspberry Pi, Paxton/Salto via mellomvare.",
+    "fr": "Faites appeler cette adresse par le contrôleur (ou le middleware de l'intégrateur) avec l'UID du badge à chaque passage. La réponse est du JSON avec \"allow\": true ou false. Fonctionne avec tout ce qui peut appeler une URL : modules Wiegand-vers-IP, Raspberry Pi, Paxton/Salto via middleware.",
+    "es": "Haz que el controlador (o el middleware del integrador) llame a esta dirección con el UID del llavero en cada pasada. La respuesta es JSON con \"allow\": true o false. Funciona con cualquier cosa que pueda llamar a una URL: módulos Wiegand a IP, Raspberry Pi, Paxton/Salto vía middleware."
+  },
+  "Test opslag": {
+    "en": "Test lookup",
+    "de": "Abfrage testen",
+    "sv": "Testa uppslag",
+    "no": "Test oppslag",
+    "fr": "Tester la requête",
+    "es": "Probar consulta"
+  },
+  "UID": {
+    "en": "UID",
+    "de": "UID",
+    "sv": "UID",
+    "no": "UID",
+    "fr": "UID",
+    "es": "UID"
+  },
+  "Uden for medlemstid": {
+    "en": "Outside member hours",
+    "de": "Außerhalb der Mitgliederzeit",
+    "sv": "Utanför medlemstid",
+    "no": "Utenfor medlemstid",
+    "fr": "Hors heures membres",
+    "es": "Fuera del horario de socios"
+  },
+  "Ukendt brik": {
+    "en": "Unknown fob",
+    "de": "Unbekannter Chip",
+    "sv": "Okänd bricka",
+    "no": "Ukjent brikke",
+    "fr": "Badge inconnu",
+    "es": "Llavero desconocido"
+  },
+  "Vælg døren nedenfor": {
+    "en": "Choose the door below",
+    "de": "Wähle unten die Tür",
+    "sv": "Välj dörren nedan",
+    "no": "Velg døren nedenfor",
+    "fr": "Choisissez la porte ci-dessous",
+    "es": "Elige la puerta abajo"
+  },
+  "ansat": {
+    "en": "staff",
+    "de": "Mitarbeiter",
+    "sv": "personal",
+    "no": "ansatt",
+    "fr": "personnel",
+    "es": "personal"
+  },
+  "deaktiveret": {
+    "en": "deactivated",
+    "de": "deaktiviert",
+    "sv": "inaktiverad",
+    "no": "deaktivert",
+    "fr": "désactivé",
+    "es": "desactivado"
+  },
+  "fx Blå brik": {
+    "en": "e.g. Blue fob",
+    "de": "z. B. Blauer Chip",
+    "sv": "t.ex. Blå bricka",
+    "no": "f.eks. Blå brikke",
+    "fr": "par ex. Badge bleu",
+    "es": "p. ej. Llavero azul"
+  },
+  "medlem": {
+    "en": "member",
+    "de": "Mitglied",
+    "sv": "medlem",
+    "no": "medlem",
+    "fr": "membre",
+    "es": "socio"
+  },
+  "Én linje pr. brik: e-mail, UID, mærkat. Eksportér listen fra jeres nuværende adgangssystem og indsæt den her. Medlemmer matches på e-mail.": {
+    "en": "One line per fob: e-mail, UID, label. Export the list from your current access system and paste it here. Members are matched by e-mail.",
+    "de": "Eine Zeile pro Chip: E-Mail, UID, Bezeichnung. Exportiere die Liste aus eurem aktuellen Zutrittssystem und füge sie hier ein. Mitglieder werden per E-Mail zugeordnet.",
+    "sv": "En rad per bricka: e-post, UID, etikett. Exportera listan från ert nuvarande passersystem och klistra in den här. Medlemmar matchas på e-post.",
+    "no": "Én linje per brikke: e-post, UID, merkelapp. Eksporter listen fra deres nåværende adgangssystem og lim den inn her. Medlemmer matches på e-post.",
+    "fr": "Une ligne par badge : e-mail, UID, étiquette. Exportez la liste de votre système d'accès actuel et collez-la ici. Les membres sont reconnus par e-mail.",
+    "es": "Una línea por llavero: correo, UID, etiqueta. Exporta la lista de vuestro sistema de acceso actual y pégala aquí. Los socios se emparejan por correo."
+  },
+  "Indstillingerne er gemt.": {
+    "en": "Settings saved.",
+    "de": "Einstellungen gespeichert.",
+    "sv": "Inställningarna är sparade.",
+    "no": "Innstillingene er lagret.",
+    "fr": "Paramètres enregistrés.",
+    "es": "Ajustes guardados."
+  },
+  "Kontrollér tallene.": {
+    "en": "Check the numbers.",
+    "de": "Prüfe die Zahlen.",
+    "sv": "Kontrollera siffrorna.",
+    "no": "Kontroller tallene.",
+    "fr": "Vérifiez les chiffres.",
+    "es": "Revisa los números."
+  },
+  "Brikken er registreret.": {
+    "en": "The fob has been registered.",
+    "de": "Der Chip wurde registriert.",
+    "sv": "Brickan är registrerad.",
+    "no": "Brikken er registrert.",
+    "fr": "Le badge a été enregistré.",
+    "es": "El llavero se ha registrado."
+  },
+  "Ingen linjer med e-mail og UID fundet.": {
+    "en": "No lines with e-mail and UID found.",
+    "de": "Keine Zeilen mit E-Mail und UID gefunden.",
+    "sv": "Inga rader med e-post och UID hittades.",
+    "no": "Ingen linjer med e-post og UID funnet.",
+    "fr": "Aucune ligne avec e-mail et UID trouvée.",
+    "es": "No se encontraron líneas con correo y UID."
+  },
+  "{count} brikker registreret.": {
+    "en": "{count} fobs registered.",
+    "de": "{count} Chips registriert.",
+    "sv": "{count} brickor registrerade.",
+    "no": "{count} brikker registrert.",
+    "fr": "{count} badges enregistrés.",
+    "es": "{count} llaveros registrados."
+  },
+  "Kisi er koblet fra.": {
+    "en": "Kisi has been disconnected.",
+    "de": "Kisi wurde getrennt.",
+    "sv": "Kisi har kopplats från.",
+    "no": "Kisi er koblet fra.",
+    "fr": "Kisi a été déconnecté.",
+    "es": "Kisi se ha desconectado."
+  },
+  "Vælg en dør.": {
+    "en": "Choose a door.",
+    "de": "Wähle eine Tür.",
+    "sv": "Välj en dörr.",
+    "no": "Velg en dør.",
+    "fr": "Choisissez une porte.",
+    "es": "Elige una puerta."
+  },
+  "Døren er valgt.": {
+    "en": "The door has been chosen.",
+    "de": "Die Tür wurde gewählt.",
+    "sv": "Dörren är vald.",
+    "no": "Døren er valgt.",
+    "fr": "La porte a été choisie.",
+    "es": "La puerta se ha elegido."
+  },
+  "Indsæt API-nøglen fra Kisi.": {
+    "en": "Paste the API key from Kisi.",
+    "de": "Füge den API-Schlüssel aus Kisi ein.",
+    "sv": "Klistra in API-nyckeln från Kisi.",
+    "no": "Lim inn API-nøkkelen fra Kisi.",
+    "fr": "Collez la clé API de Kisi.",
+    "es": "Pega la clave API de Kisi."
+  },
+  "Kisi er forbundet, og døren \"{name}\" er valgt.": {
+    "en": "Kisi is connected and the door \"{name}\" is chosen.",
+    "de": "Kisi ist verbunden und die Tür \"{name}\" gewählt.",
+    "sv": "Kisi är anslutet och dörren \"{name}\" är vald.",
+    "no": "Kisi er tilkoblet, og døren \"{name}\" er valgt.",
+    "fr": "Kisi est connecté et la porte « {name} » est choisie.",
+    "es": "Kisi está conectado y la puerta \"{name}\" está elegida."
+  },
+  "Kisi er forbundet. Vælg døren blandt {count} låse.": {
+    "en": "Kisi is connected. Choose the door among {count} locks.",
+    "de": "Kisi ist verbunden. Wähle die Tür aus {count} Schlössern.",
+    "sv": "Kisi är anslutet. Välj dörren bland {count} lås.",
+    "no": "Kisi er tilkoblet. Velg døren blant {count} låser.",
+    "fr": "Kisi est connecté. Choisissez la porte parmi {count} serrures.",
+    "es": "Kisi está conectado. Elige la puerta entre {count} cerraduras."
+  },
+  "Ikke fundet som medlem: {names}": {
+    "en": "Not found as a member: {names}",
+    "de": "Nicht als Mitglied gefunden: {names}",
+    "sv": "Hittades inte som medlem: {names}",
+    "no": "Ikke funnet som medlem: {names}",
+    "fr": "Introuvable comme membre : {names}",
+    "es": "No encontrado como socio: {names}"
   }
 }

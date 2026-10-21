@@ -25,6 +25,7 @@ model User {
   phone             String?
   /// Text-message reminders for bookings (needs a phone number).
   smsOptIn          Boolean            @default(false)
+  credentials       AccessCredential[]
   waiverAcceptances WaiverAcceptance[]
   waitlist          Waitlist[]
   eventSignups      EventSignup[]
@@ -140,6 +141,9 @@ model Club {
   payrollRuns    PayrollRun[]
   accounting     ClubAccounting?
   readers        ClubReader[]
+  access         AccessSettings?
+  credentials    AccessCredential[]
+  accessEvents   AccessEvent[]
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -1674,6 +1678,7 @@ model StaffMember {
   createdAt          DateTime    @default(now())
   entries            TimeEntry[]
   shifts             StaffShift[]
+  credentials        AccessCredential[]
 
   @@unique([clubId, pin])
   @@index([clubId, active])
@@ -1770,4 +1775,66 @@ model ClubReader {
   createdAt      DateTime @default(now())
 
   @@index([clubId])
+}
+
+/// Door access with the club's own fobs and cards, and the Kisi connector.
+model AccessSettings {
+  id                   String  @id @default(cuid())
+  clubId               String  @unique
+  club                 Club    @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  /// Bearer key the door controller sends; sealed with AUTH_SECRET
+  apiKeyCipher         String
+  beforeMinutes        Int     @default(15)
+  afterMinutes         Int     @default(15)
+  /// Paid members may enter without a booking between these hours
+  memberWithoutBooking Boolean @default(false)
+  memberFromHour       Int     @default(7)
+  memberUntilHour      Int     @default(22)
+  kisiApiKeyCipher     String?
+  kisiLockId           String?
+  kisiLockName         String?
+  kisiPlaceName        String?
+  updatedAt            DateTime @updatedAt
+  createdAt            DateTime @default(now())
+}
+
+/// A fob, card or code someone taps at the door. Only a hash of the UID is kept.
+model AccessCredential {
+  id         String    @id @default(cuid())
+  clubId     String
+  club       Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  staffId    String?
+  staff      StaffMember? @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  label      String?
+  /// "FOB" | "CARD" | "CODE" | "PLATE"
+  kind       String    @default("FOB")
+  uidHash    String
+  uidTail    String
+  active     Boolean   @default(true)
+  validUntil DateTime?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  events     AccessEvent[]
+
+  @@unique([clubId, uidHash])
+  @@index([clubId, active])
+}
+
+model AccessEvent {
+  id           String   @id @default(cuid())
+  clubId       String
+  club         Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  credentialId String?
+  credential   AccessCredential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+  uidTail      String
+  door         String?
+  allowed      Boolean
+  reason       String
+  /// "API" | "TEST" | "KISI"
+  source       String   @default("API")
+  at           DateTime @default(now())
+
+  @@index([clubId, at])
 }

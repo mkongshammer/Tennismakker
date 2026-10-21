@@ -29,7 +29,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
   }
   const club = {currency:"DKK",timeZone:"Europe/Copenhagen",country:"DK",solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
   const db: any = { club: {findUnique: async ({where}: any) => { assert.equal(where.id, 'club-a'); return club; }} };
-  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel','clubBroadcast','clubEvent','ladder','shopItem','shopSale','giftCard','staffShift','staffMember','payrollRun','timeEntry','tournamentMatch','clubAccounting','clubReader','user']) {
+  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel','clubBroadcast','clubEvent','ladder','shopItem','shopSale','giftCard','staffShift','staffMember','payrollRun','timeEntry','tournamentMatch','clubAccounting','clubReader','accessSettings','accessCredential','accessEvent','user']) {
     db[model] = {findMany: async () => {queries.push(model);return [];}, findUnique: async () => {queries.push(model);return null;}};
   }
   Object.assign(mocks, {
@@ -39,11 +39,11 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
     react: React, 'date-fns': dates, 'date-fns/locale': {},
     '../../lib/admin-navigation': navigation, '../../lib/club-features':features, '../../lib/sports': sports, '../../lib/club-sports': clubSports,
     '../../lib/db': {db}, '../../lib/session': {getCurrentUser:async()=>role ? {role,clubId:'club-a'} : null},
-    '../../lib/settings': {getSettings:async()=>({commissionPct:0.1})},
+    '../../lib/settings': {getSettings:async()=>({commissionPct:0.1,paymentProvider:'mock'}),settingsSnapshot:()=>({appUrl:'https://racketbuddy.app'})},
     '../../lib/stripe': {stripeEnabled:async()=>true}, '../../lib/billing': {subscriptionIsActive:()=>true},
     '../../lib/club-dashboard': {loadClubDashboard:async()=>({club:{...club,courts:[]},today:{bookings:0,hours:0,utilization:0,hoursElapsed:0,remaining:[],revenueKr:0},week:{bookings:0,bookingsChange:0,utilization:0,utilizationLastWeek:0,paidOutKr:0,paidOutChange:0,days:[],trend:[]},upcoming:[],tasks:[],members:0,stripeOn:true})},
     '../../lib/integrations/types': {INTEGRATION_LABELS:{MANUAL:'Manual'}},
-    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/broadcast': {broadcastRecipients:async()=>[]}, '../../lib/payroll': {timeEntriesBetween:async()=>[],payrollPreview:async()=>({lines:[],unpaidOpen:0}),onTheClock:async()=>[]}, '../../lib/payroll-core': {workedMinutes:()=>0}, '../../lib/terminal': {readersWithStatus:async()=>[]}, '../../lib/quickbooks': {accountingStatus:async()=>null,quickBooksConfigured:()=>false}, '../../lib/tournament': {tournamentView:async()=>({matches:[],groups:[],koRounds:0,champion:null})}, '../../lib/club-onboarding': {clubSignupPrices:async()=>({standard:50,annual:500,custom:null,currency:'USD'})}, '../../lib/sms': {smsConfigured:()=>false}, '../../lib/reports': {revenueLines:async()=>[],summarize:()=>[],CATEGORIES:[]}, '../../lib/events': {ladderStandings:async()=>[]}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
+    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/broadcast': {broadcastRecipients:async()=>[]}, '../../lib/payroll': {timeEntriesBetween:async()=>[],payrollPreview:async()=>({lines:[],unpaidOpen:0}),onTheClock:async()=>[]}, '../../lib/payroll-core': {workedMinutes:()=>0}, '../../lib/terminal': {readersWithStatus:async()=>[]}, '../../lib/access': {ensureAccessSettings:async()=>({beforeMinutes:15,afterMinutes:15,memberWithoutBooking:false,memberFromHour:7,memberUntilHour:22,kisiApiKeyCipher:null,kisiLockId:null,kisiLockName:null,kisiPlaceName:null}),accessApiKey:async()=>'rbak_test',listCredentials:async()=>[],recentAccessEvents:async()=>[],kisiLocksForClub:async()=>[]}, '../../lib/quickbooks': {accountingStatus:async()=>null,quickBooksConfigured:()=>false}, '../../lib/tournament': {tournamentView:async()=>({matches:[],groups:[],koRounds:0,champion:null})}, '../../lib/club-onboarding': {clubSignupPrices:async()=>({standard:50,annual:500,custom:null,currency:'USD'})}, '../../lib/sms': {smsConfigured:()=>false}, '../../lib/reports': {revenueLines:async()=>[],summarize:()=>[],CATEGORIES:[]}, '../../lib/events': {ladderStandings:async()=>[]}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
     'next/navigation': {redirect:(path:string)=>{throw Error(`redirect:${path}`);}},
   });
   return {run:loadIsolatedModule(file,mocks).default,queries};
@@ -61,7 +61,7 @@ for(const page of navigation.ADMIN_PAGES) test(`admin page ${page.id} renders on
   const f=fixture(); const tree=await f.run({section:page.id,searchParams:Promise.resolve({})});
   const names=componentNames(tree);
   for(const [section,expected] of Object.entries(forms)) for(const name of expected) assert.equal(names.includes(name),section===page.id,`${page.id}: ${name}`);
-  if(page.id==='lys-adgang') assert.deepEqual(f.queries,['clubControl','clubControlChannel']);
+  if(page.id==='lys-adgang') assert.deepEqual(f.queries,['clubControl','clubControlChannel','staffMember']);
   if(page.id==='baner') assert.deepEqual(f.queries,[]);
 });
 test('unknown admin routes are not accepted',()=>{
