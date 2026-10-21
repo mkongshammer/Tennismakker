@@ -2,6 +2,10 @@
 import {UiText} from "../../components/InternationalProvider";
 import {formatMoney,formatDate} from "../../lib/international";
 import { memberBills } from "../../lib/member-billing";
+import { checkInWindow, CHECKIN_OPEN_MIN } from "../../lib/waiver";
+import { myWaitlist } from "../../lib/waitlist";
+import { leaveWaitlistAction } from "../../lib/waitlist-actions";
+import { checkInAction } from "../../lib/booking-rules-actions";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -13,7 +17,7 @@ import { translator } from "../../lib/i18n";
 import { DeleteAccount } from "../../components/DeleteAccount";
 import { CoachRequests } from "../../components/CoachRequests";
 import { RepeatLessons } from "../../components/RepeatLessons";
-import { closeMatchRequest, logout } from "../../lib/actions";
+import { closeMatchRequest, logout, toggleAutoRenew } from "../../lib/actions";
 import { CancelBookingButton } from "../../components/CancelBookingButton";
 import { refundDecision, REFUND_WINDOW_HOURS } from "../../lib/cancellation-policy";
 import { LevelBadge } from "../../components/LevelBadge";
@@ -72,6 +76,7 @@ export default async function ProfilPage({
 
   const coachSummary = user.coachProfile ? await coachReviewSummary(user.coachProfile.id) : null;
   const bills = await memberBills(user.id);
+  const waiting = await myWaitlist(user.id);
   const openBills = bills.filter((b) => b.status === "OPEN" || b.status === "OVERDUE");
   const paidBills = bills.filter((b) => b.status === "PAID");
   const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
@@ -192,6 +197,21 @@ export default async function ProfilPage({
         ))}
       </nav>
 
+      {waiting.length > 0 && (
+        <section className="min-w-0">
+          <h2 className="display mb-3 text-2xl">{en ? "Waitlist" : "Venteliste"}</h2>
+          <ul className="space-y-2">
+            {waiting.map((w) => (
+              <li key={w.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate/15 bg-chalk px-4 py-3 text-sm">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-mist text-slate"><Icon name="calendar" size={18} /></span>
+                <span className="min-w-0 flex-1"><span className="font-semibold">{w.clubName}</span> · {w.kind === "COURT" && w.slotAt ? formatDate(w.slotAt, prefs.locale, w.timeZone, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : w.label}<span className="block text-xs text-slate">{en ? "We'll email and push you if a spot opens." : "Vi sender mail og push, hvis der bliver plads."}</span></span>
+                <form action={leaveWaitlistAction}><input type="hidden" name="id" value={w.id} /><button className="text-xs font-semibold text-slate hover:text-ink">{en ? "Remove" : "Fjern"}</button></form>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {bills.length > 0 && (
         <section className="min-w-0" id="dues">
           <h2 className="display mb-3 text-2xl">{en ? "Membership dues" : "Kontingent"}</h2>
@@ -213,8 +233,23 @@ export default async function ProfilPage({
                 <div className="min-w-0 flex-1">
                   <p className="font-bold">{b.clubName} · {b.typeName}</p>
                   <p className="text-sm text-slate">{b.seasonName} · {en ? "Paid" : "Betalt"}{b.paidAt ? ` ${formatDate(b.paidAt, prefs.locale, b.timeZone, { month: "short", day: "numeric" })}` : ""}</p>
+                  {b.dependents.length > 0 && <p className="text-sm text-slate">{en ? "Covers" : "Dækker"}: {b.dependents.join(", ")}</p>}
+                  {b.interval === "MONTH" && (
+                    <p className="mt-1 text-sm text-slate">
+                      {b.autoRenew && b.nextChargeAt
+                        ? (en ? `Renews monthly · next charge ${formatDate(b.nextChargeAt, prefs.locale, b.timeZone, { month: "short", day: "numeric" })}` : `Fornyes hver måned · næste træk ${formatDate(b.nextChargeAt, prefs.locale, b.timeZone, { month: "short", day: "numeric" })}`)
+                        : (en ? "Monthly plan · ends after the current month" : "Månedlig · stopper efter den betalte måned")}
+                    </p>
+                  )}
                 </div>
-                <p className="font-semibold text-slate">{formatMoney(b.amount, b.currency, prefs.locale)}</p>
+                <p className="font-semibold text-slate">{formatMoney(b.amount, b.currency, prefs.locale)}{b.interval === "MONTH" ? (en ? "/mo" : "/md.") : ""}</p>
+                {b.interval === "MONTH" && (
+                  <form action={toggleAutoRenew}>
+                    <input type="hidden" name="membershipId" value={b.id} />
+                    <input type="hidden" name="on" value={b.autoRenew ? "0" : "1"} />
+                    <button className="btn-ghost text-sm">{b.autoRenew ? (en ? "Stop renewal" : "Stop fornyelse") : (en ? "Resume renewal" : "Genoptag")}</button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>
@@ -318,7 +353,7 @@ export default async function ProfilPage({
                     : t("profile.coachSession", { name: b.coachProfile?.user.name ?? "" })}
                 </p>
                 <p className="break-words text-sm text-slate">
-                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)} ·{" "}
+                  {formatDate(b.startsAt,prefs.locale,b.timeZone,{weekday:"long",day:"numeric",month:"long",hour:"numeric",minute:"2-digit"})} · {formatMoney(b.priceKr,b.currency,prefs.locale)}{b.guestCount > 0 ? ` (${b.guestCount} ${en ? (b.guestCount === 1 ? "guest" : "guests") : (b.guestCount === 1 ? "gæst" : "gæster")})` : ""} ·{" "}
                   {t(
                     b.status === "REQUESTED"
                       ? "profile.awaitingCoach"
@@ -351,6 +386,13 @@ export default async function ProfilPage({
               <div className="flex max-w-full flex-wrap gap-2">
                 {b.status === "HOLD" && (
                   <a href={`/checkout/${b.id}/start`} className="btn-court text-sm"><UiText text="Betal nu"/></a>
+                )}
+                {b.kind === "COURT" && b.status === "CONFIRMED" && b.court?.club.checkInEnabled && (
+                  b.checkedInAt
+                    ? <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-3 py-1.5 text-sm font-bold text-success-ink"><Icon name="check" size={16} />{en ? "Checked in" : "Tjekket ind"}</span>
+                    : checkInWindow(b.startsAt)
+                      ? <form action={checkInAction}><input type="hidden" name="bookingId" value={b.id} /><button className="btn-court text-sm">{en ? "Check in" : "Tjek ind"}</button></form>
+                      : <span className="self-center text-xs text-slate">{en ? `Check-in opens ${CHECKIN_OPEN_MIN} min before` : `Check-in åbner ${CHECKIN_OPEN_MIN} min før`}</span>
                 )}
                 <CancelBookingButton
                   bookingId={b.id}

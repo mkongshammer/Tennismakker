@@ -46,6 +46,8 @@ export async function handleStripeEvent(type:string,object:any){
       if(!checkoutIsSettled(session))return;
       if(session.metadata?.walletTopupId){await confirmWalletTopup(session);return;}
       const teamSignupId=session.metadata?.teamSignupId;if(teamSignupId){await confirmTeamSignup(teamSignupId,session);return;}
+      const eventSignupId=session.metadata?.eventSignupId;if(eventSignupId){const {confirmEventSignup}=await import('./events');await confirmEventSignup(eventSignupId,session);return;}
+      const giftCardId=session.metadata?.giftCardId;if(giftCardId){const {confirmGiftCard}=await import('./shop');await confirmGiftCard(giftCardId,session);return;}
       const punchPurchaseId=session.metadata?.punchPurchaseId;if(punchPurchaseId){await confirmPunchPurchase(punchPurchaseId,session);return;}
       const membershipId=session.metadata?.membershipId;if(membershipId){await confirmMembership(membershipId,session);return;}
       const purchaseId=session.metadata?.purchaseId;if(purchaseId){await confirmPackagePurchase(purchaseId,session);return;}

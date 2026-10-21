@@ -20,6 +20,9 @@ import { getClubAvailability } from "../lib/integrations";
 import { BookingGrid } from "./BookingGrid";
 import { clubRatings } from "../lib/reviews";
 import { countsAsMember, openTypes } from "../lib/memberships";
+import { waiverStatus } from "../lib/waiver";
+import { upcomingEvents } from "../lib/events";
+import { joinTeamWaitlist, joinCourtWaitlist } from "../lib/waitlist-actions";
 import { openTeams } from "../lib/teams";
 import { punchesIn } from "../lib/punch-cards";
 import { buyClubPunchCard, joinClubMembership, joinSeasonTeam } from "../lib/actions";
@@ -59,7 +62,7 @@ export async function ClubPage({
 
 
 
-}: {slug: string;searchParams: {dag?: string;date?: string;sport?: string;optaget?: string;fejl?: string;afvist?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
+}: {slug: string;searchParams: {dag?: string;date?: string;sport?: string;optaget?: string;fejl?: string;afvist?: string;venteliste?: string;kontingent?: string;}; /** Vises den på klubbens eget domæne? Så skjules vores egen navigation. */ownDomain?: boolean;}) {
   const club = await db.club.findUnique({
     where: { slug },
     include: {
@@ -73,17 +76,20 @@ export async function ClubPage({
   if (!club || club.status !== "APPROVED") notFound();
 
   const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
-  const tr = (text: string) => phrase(text, prefs.locale),money = (n: number) => formatMoney(n, club.currency, prefs.locale),date = (d: Date, options: Intl.DateTimeFormatOptions) => formatDate(d, prefs.locale, club.timeZone, options);
+  const tr = (text: string, params?: Record<string, string | number>) => phrase(text, prefs.locale, params),money = (n: number) => formatMoney(n, club.currency, prefs.locale),date = (d: Date, options: Intl.DateTimeFormatOptions) => formatDate(d, prefs.locale, club.timeZone, options);
   await releaseExpiredHolds();
 
   // Ikke bare "koblet til klubben", men "tæller som medlem" — har klubben
   // kontingent hos os, skal det være betalt og løbende. Se countsAsMember.
   const isMember = await countsAsMember(user?.clubId ?? null, club.id, user?.id ?? null);
-  const [memberships, teams, punchCards, myPunches] = await Promise.all([
+  const waiver = await waiverStatus(user?.id ?? null, club);
+  const [memberships, teams, punchCards, myPunches, events, ladders] = await Promise.all([
   openTypes(club.id),
   openTeams(club.id),
   db.clubPunchCard.findMany({ where: { clubId: club.id, active: true } }),
-  user ? punchesIn(user.id, club.id) : Promise.resolve([])]
+  user ? punchesIn(user.id, club.id) : Promise.resolve([]),
+  upcomingEvents(club.id, user?.id ?? null),
+  db.ladder.findMany({ where: { clubId: club.id, active: true }, select: { id: true, name: true, _count: { select: { entries: true } } } })]
   );
 
   const todayKey = dayKey(new Date(), club.timeZone),today = wallTime(todayKey, 0, 0, club.timeZone)!;
@@ -116,6 +122,10 @@ export async function ClubPage({
   const activeSport = sports.includes(String(searchParams.sport ?? "").toUpperCase()) ? String(searchParams.sport).toUpperCase() : sports[0];
   const pageHref = (dag: number, sport = activeSport) => `/clubs/${club.slug}?${new URLSearchParams({ ...(dag ? { dag: String(dag) } : {}), ...(sports.length > 1 && sport !== sports[0] ? { sport } : {}) }).toString()}`.replace(/\?$/, "");
   const loginHref = `/login?next=${encodeURIComponent(pageHref(dayOffset))}`;
+  // Hours with no free court at all, for the waitlist form under the grid.
+  const dayParam = dayKeyValue;
+  const freeHours = new Set(liveSlots.map((s) => wallParts(s.startsAt, club.timeZone).hour));
+  const fullHours = hours.filter((h) => !freeHours.has(h)).map((h) => { const at = wallTime(dayKeyValue, h, 0, club.timeZone)!; return { iso: at.toISOString(), label: formatDate(at, prefs.locale, club.timeZone, { hour: "numeric", minute: "2-digit" }) }; });
 
 
 
@@ -242,6 +252,8 @@ export async function ClubPage({
         <UiText text="Klubben kan ikke tage imod betaling endnu, så bookingen blev ikke gennemført. Vi har givet klubben besked."/> :
         searchParams.fejl === "passeret" ?
         <UiText text="Det tidspunkt er passeret. Vælg en anden tid."/> :
+        searchParams.fejl === "waiver" ?
+        <UiText text="Accepter klubbens ansvarsfraskrivelse for at booke."/> :
         <UiText text="Den tid var lige taget. Her er resten af dagen — vælg en anden."/>}
         </p>
       }
@@ -347,12 +359,28 @@ export async function ClubPage({
                 locale={prefs.locale}
                 currency={club.currency}
                 timeZone={club.timeZone}
+                guestFeeKr={club.guestFeeKr}
+                guestMax={club.guestMax}
+                waiverText={waiver.text}
+                waiverRequired={waiver.required}
               />
             </div>
           );
         })}
 
 
+        {user && fullHours.length > 0 && (
+          <form action={joinCourtWaitlist} className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-slate/15 bg-chalk p-4 text-sm">
+            <input type="hidden" name="slug" value={club.slug} />
+            <input type="hidden" name="date" value={dayParam} />
+            <span className="flex-1 font-semibold">{tr("Vil du have en tid, der er optaget? Vi giver besked, hvis den bliver ledig.")}</span>
+            <select name="slotAt" className="input w-auto py-1.5">
+              {fullHours.map((h) => <option key={h.iso} value={h.iso}>{h.label}</option>)}
+            </select>
+            <SubmitButton className="btn-ghost btn-sm" pendingText="…">{tr("Giv mig besked")}</SubmitButton>
+          </form>
+        )}
+        {searchParams.venteliste && <p className="mt-3 rounded-xl border border-court/25 bg-court/5 p-3 text-sm">{tr("Du står på ventelisten. Vi sender en mail og en push-besked, hvis der bliver plads.")}</p>}
         {!user && liveSlots.length > 0 &&
         <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate/15 bg-chalk p-4 text-sm sm:flex-row sm:items-center">
             <p className="flex-1 text-slate">Pick a time to reserve it. You’ll sign in or create a free account, then pay — the court is held for you for 10 minutes.</p>
@@ -386,6 +414,26 @@ export async function ClubPage({
         </section>
       }
 
+      {(events.length > 0 || ladders.length > 0) &&
+      <section className="card" id="events">
+          <h2 className="display text-2xl">{tr("Arrangementer og rangliste")}</h2>
+          {events.length > 0 && <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {events.map((e) => (
+              <li key={e.id} className="flex flex-col rounded-xl border border-slate/15 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate">{tr({ TOURNAMENT: "Turnering", LEAGUE: "Liga", SOCIAL: "Socialt arrangement", CLINIC: "Clinic" }[e.kind] ?? e.kind)}</p>
+                <p className="mt-1 font-bold">{e.name}</p>
+                <p className="text-sm text-slate">{date(e.startsAt, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · {e.priceKr > 0 ? money(e.priceKr) : tr("Gratis")}{e.capacity ? ` · ${Math.max(0, e.capacity - e.taken)} ${tr("pladser tilbage")}` : ""}</p>
+                <Link href={`/clubs/${club.slug}/events/${e.id}`} className={`mt-3 inline-block self-start ${e.mine === "PAID" ? "btn-ghost btn-sm" : "btn-court btn-sm"}`}>{e.mine === "PAID" ? tr("Du er tilmeldt") : e.full ? tr("Fuldt · venteliste") : tr("Se og tilmeld")}</Link>
+              </li>
+            ))}
+          </ul>}
+          {ladders.length > 0 && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-mist p-4">
+            <p className="text-sm"><span className="font-bold">{ladders.map((l) => l.name).join(" · ")}</span><span className="text-slate"> · {ladders.reduce((n, l) => n + l._count.entries, 0)} {tr("spillere")}</span></p>
+            <Link href={`/clubs/${club.slug}/ladder`} className="btn-ghost btn-sm">{tr("Se ranglisten")}</Link>
+          </div>}
+      </section>
+      }
+
       {teams.length > 0 &&
       <section className="card">
           <h2 className="display text-2xl">{tr("S\xE6sonhold")}</h2>
@@ -414,7 +462,10 @@ export async function ClubPage({
                   {team.priceKr > 0 ? money(team.priceKr) : "Gratis"}
                 </p>
                 {team.full ?
-            <p className="mt-2 text-sm font-semibold text-slate">{tr("Fuldtegnet")}</p> :
+            <div className="mt-2">
+              <p className="text-sm font-semibold text-slate">{tr("Fuldtegnet")}</p>
+              {user && <form action={joinTeamWaitlist} className="mt-2"><input type="hidden" name="teamId" value={team.id} /><input type="hidden" name="slug" value={club.slug} /><SubmitButton className="btn-ghost btn-sm" pendingText="…">{tr("Skriv mig på ventelisten")}</SubmitButton></form>}
+            </div> :
             user ?
             <form action={joinSeasonTeam} className="mt-3">
                     <input type="hidden" name="teamId" value={team.id} />
@@ -512,14 +563,19 @@ export async function ClubPage({
             <p className="mt-1 text-sm text-chalk/70">{m.description}</p>
             }
                   <p className="display mt-2 text-xl text-optic">
-                    {m.priceKr > 0 ? money(m.priceKr) : "Gratis"}
+                    {m.priceKr > 0 ? money(m.priceKr) : tr("Gratis")}{m.priceKr > 0 && m.interval === "MONTH" && <span className="text-sm text-chalk/70"> / {tr("måned")}</span>}
                   </p>
+                  {m.familySize > 1 && <p className="mt-0.5 text-xs text-chalk/60">{tr("Familie: op til {p0} personer", { p0: m.familySize })}</p>}
                   {m.full ?
             <p className="mt-2 text-sm font-semibold text-chalk/60">{tr("Fuldtegnet")}</p> :
             user ?
             <form action={joinClubMembership} className="mt-3">
                       <input type="hidden" name="typeId" value={m.id} />
                       <input type="hidden" name="slug" value={club.slug} />
+                      {m.familySize > 1 && <div className="mb-3 space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-chalk/60">{tr("Hvem er med? (ud over dig)")}</p>
+                        {Array.from({ length: m.familySize - 1 }).map((_, i) => <input key={i} name="dependent" className="input bg-chalk/10 text-chalk placeholder:text-chalk/40" placeholder={`${tr("Navn")} ${i + 2}`} maxLength={80} />)}
+                      </div>}
                       <SubmitButton className="btn-court" pendingText={tr("\xC5bner\u2026")}>{tr("Tilmeld")}
 
               </SubmitButton>

@@ -8,7 +8,7 @@ import { Icon } from "../../../components/ui";
 import { saveProfileSettings, type SettingsState } from "./actions";
 
 type Props = {
-  user: { name: string; email: string; phone: string | null; area: string | null; level: number; sports: string[]; bio: string | null };
+  user: { name: string; email: string; phone: string | null; smsOptIn?: boolean; area: string | null; level: number; sports: string[]; bio: string | null };
   levels: { value: number; label: string }[];
   sports: { value: string; label: string }[];
 };
@@ -83,6 +83,7 @@ export function SettingsForm({ user, levels, sports }: Props) {
             <label className="label" htmlFor="phone">Phone <span className="font-normal text-slate">(optional)</span></label>
             <input className="input" id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" placeholder="(555) 123-4567" />
             {err("phone") ?? <p className="hint">Only shared with a club or coach you book.</p>}
+            <label className="mt-3 flex items-start gap-3 text-sm"><input type="checkbox" name="smsOptIn" defaultChecked={user.smsOptIn} className="mt-1" /><span><span className="font-semibold">Text me a reminder before court bookings</span><br /><span className="text-slate">About two hours before, from clubs that offer it. Message rates may apply. Reply STOP any time.</span></span></label>
           </div>
         </div>
       </section>

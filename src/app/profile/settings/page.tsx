@@ -28,7 +28,7 @@ export default async function ProfileSettingsPage() {
         <p className="mt-2 text-slate">Update how you appear to players, coaches and clubs.</p>
       </header>
       <SettingsForm
-        user={{ name: user.name, email: user.email, phone: user.phone ?? null, area: user.area ?? null, level: user.level, sports: String(user.sports ?? "TENNIS").split(",").filter(Boolean), bio: user.bio ?? null }}
+        user={{ name: user.name, email: user.email, phone: user.phone ?? null, smsOptIn: Boolean((user as any).smsOptIn), area: user.area ?? null, level: user.level, sports: String(user.sports ?? "TENNIS").split(",").filter(Boolean), bio: user.bio ?? null }}
         levels={levels}
         sports={sports}
       />

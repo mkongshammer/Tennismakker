@@ -6,6 +6,7 @@ import { isOffered, isTaken } from "../../../../lib/coaching";
 import { lessonEnd, lessonPriceKr } from "../../../../lib/slots";
 import { creditsWith } from "../../../../lib/packages";
 import { countsAsMember } from "../../../../lib/memberships";
+import { waiverStatus, acceptWaiver, guestCharge, CHECKIN_OPEN_MIN, CHECKIN_CLOSE_MIN } from "../../../../lib/waiver";
 import { coachRequestNotice, sendMail } from "../../../../lib/email";
 import { db } from "../../../../lib/db";
 import { getClubAvailability, refreshBeforeBooking } from "../../../../lib/integrations";
@@ -88,6 +89,8 @@ export async function GET(req: Request) {
       requestNote: b.requestNote ?? null,
       coachNote: b.coachNote ?? null,
       access: bookingDoorAccess(b, now),
+      guestCount: b.guestCount ?? 0,
+      checkIn: b.kind === "COURT" && b.court?.club.checkInEnabled ? { checkedInAt: b.checkedInAt?.toISOString() ?? null, opensAt: new Date(b.startsAt.getTime() - CHECKIN_OPEN_MIN * 60_000).toISOString(), closesAt: new Date(b.startsAt.getTime() + CHECKIN_CLOSE_MIN * 60_000).toISOString() } : null,
     })),
   });
 }
@@ -129,6 +132,13 @@ export async function POST(req: Request) {
     );
     if (!slot) return apiError("Tiden er ikke længere ledig.", 409);
 
+    const waiver = await waiverStatus(auth.user.id, rules);
+    if (waiver.required) {
+      if (body.acceptWaiver !== true) return json({ error: "Please accept the club's waiver to book.", waiverRequired: true, waiverText: waiver.text }, 409);
+      await acceptWaiver(auth.user.id, rules.id, rules.waiverVersion);
+    }
+    const guests = guestCharge(rules, body.guests);
+
     let booking;
     try { booking = await createCourtReservation({
       data: {
@@ -136,7 +146,9 @@ export async function POST(req: Request) {
         status: "HOLD",
         startsAt,
         endsAt,
-        priceKr: slot.priceKr,
+        priceKr: slot.priceKr + guests.guestFeeKr,
+        guestCount: guests.guestCount,
+        guestFeeKr: guests.guestFeeKr,
         holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
         userId: auth.user.id,
         courtId: court.id,
@@ -146,7 +158,7 @@ export async function POST(req: Request) {
       if (error instanceof CourtReservationConflict) return apiError(error.message, 409);
       throw error;
     }
-    if(slot.priceKr<=0){
+    if(slot.priceKr+guests.guestFeeKr<=0){
       await db.booking.update({where:{id:booking.id},data:{status:'CONFIRMED',holdExpiresAt:null}});
       return json({id:booking.id,status:'CONFIRMED'},201);
     }

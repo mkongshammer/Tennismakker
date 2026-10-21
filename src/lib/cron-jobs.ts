@@ -12,6 +12,9 @@ import { syncClubCalendar } from "./integrations";
 import { releaseExpiredHolds } from "./payments";
 import { runRenewals } from "./renewals";
 import { runBillReminders } from "./member-billing";
+import { runMonthlyCharges } from "./memberships";
+import { runSmsReminders } from "./sms";
+import { releaseNoShows } from "./waiver";
 import { runEngagementEmails } from "./engagement-emails";
 import { runScheduledAgentSweep } from "./agent-scheduler";
 import { getSettings } from "./settings";
@@ -41,6 +44,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const blocks = await processBlocks(10).catch((err) => { console.error("Spærringer fejlede:", err); return { blocked: 0, failed: 0, skipped: 0 }; });
 
   const renewals = await runRenewals().catch((err) => { console.error("Fornyelser fejlede:", err); return { notified: 0, charged: 0, failed: 0 }; });
+  const monthly = await runMonthlyCharges().catch((err) => { console.error("Monthly charges failed:", err); return { charged: 0, failed: 0, ended: 0 }; });
   const billReminders = await runBillReminders().catch((err) => { console.error("Bill reminders failed:", err); return { sent: 0 }; });
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
@@ -60,6 +64,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     resultater: results,
     fornyelser: renewals,
     billReminders,
+    monthly,
     engagement,
     reviewPrompts,
     spaerringer: blocks,
@@ -70,8 +75,12 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
 export async function runClubControlJob() {
   const results = await reconcileAllClubControls();
   const push = await runPushNotifications().catch(() => ({ error: "Push job failed" }));
+  const noShows = await releaseNoShows().catch((err) => { console.error("No-show release failed:", err); return { released: 0 }; });
+  const sms = await runSmsReminders().catch((err) => { console.error("SMS reminders failed:", err); return { sent: 0 }; });
   return {
     push,
+    sms,
+    noShows,
     koert: new Date().toISOString(),
     region: deploymentRegion(),
     klubber: results.length,

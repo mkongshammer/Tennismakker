@@ -15,7 +15,7 @@ import crypto from "node:crypto";
 import { db } from "./db";
 import { stripe } from "./stripe";
 import { getSettings } from "./settings";
-import { confirmMembership } from "./memberships";
+import { confirmMembership, ensureStripeCustomer } from "./memberships";
 import { dataRegionForCountry } from "./region";
 import { billNotice, billReminder, sendMail } from "./email";
 
@@ -187,10 +187,12 @@ export async function payBill(membershipId: string): Promise<PayResult> {
   }
   const region = dataRegionForCountry(club.country);
   const back = `${settings.appUrl}/pay/${m.payToken}`;
+  const monthly = m.type.interval === "MONTH";
   const session = await (await stripe()).checkout.sessions.create({
     adaptive_pricing: { enabled: false },
     mode: "payment",
-    payment_intent_data: { transfer_data: { destination: club.stripeAccountId }, metadata: { membershipId: m.id, region } },
+    ...(monthly ? { customer: await ensureStripeCustomer(m.userId) } : {}),
+    payment_intent_data: { transfer_data: { destination: club.stripeAccountId }, metadata: { membershipId: m.id, region }, ...(monthly ? { setup_future_usage: "off_session" as const } : {}) },
     line_items: [{
       price_data: {
         currency: m.currency.toLowerCase(),
@@ -236,6 +238,11 @@ export async function memberBills(userId: string) {
     currency: m.currency,
     dueDate: m.dueDate,
     paidAt: m.paidAt,
+    interval: m.type.interval,
+    nextChargeAt: m.nextChargeAt,
+    autoRenew: m.autoRenew,
+    dependents: m.dependents ? (JSON.parse(m.dependents) as string[]) : [],
+    familySize: m.type.familySize,
   }));
 }
 

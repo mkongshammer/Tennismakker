@@ -44,7 +44,7 @@ export async function saveProfileSettings(_prev: SettingsState, formData: FormDa
 
   await db.user.update({
     where: { id: user.id },
-    data: { name, phone: phone || null, level, sports: sports.join(","), bio: bio || null, area },
+    data: { name, phone: phone || null, smsOptIn: Boolean(phone) && formData.get("smsOptIn") === "on", level, sports: sports.join(","), bio: bio || null, area },
   });
   revalidatePath("/profile");
   revalidatePath("/players");

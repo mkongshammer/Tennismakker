@@ -8,11 +8,20 @@ export const CUSTOM_FEATURES = [
  {id:'nyheder',label:'Klubnyheder'},
  {id:'faste-bookinger',label:'Faste og gentagne banebookinger'},
  {id:'import',label:'Import og flytning fra andre systemer'},
+ {id:'events',label:'Events, turneringer og rangliste'},
+ {id:'kommunikation',label:'Mails og sms til medlemmer'},
+ {id:'butik',label:'Butik og gavekort'},
+ {id:'vagtplan',label:'Vagtplan'},
+ {id:'rapporter',label:'Rapporter og regnskabseksport'},
 ] as const;
+// Added after the one-plan launch: every full-system club has them, also
+// clubs whose stored feature list predates them.
+const ALWAYS_ON: readonly string[] = ['events','kommunikation','butik','vagtplan','rapporter'];
 export type CustomFeature=typeof CUSTOM_FEATURES[number]['id'];
 export const STANDARD_SECTIONS: AdminSection[] = ['oversigt','bookinger','tider','baner','betaling','integrationer','indstillinger'];
 export function clubHasFeature(mode:string|undefined,features:string|null|undefined,feature:CustomFeature){
  if(mode!=='CUSTOM')return false;
+ if(ALWAYS_ON.includes(feature))return true;
  if(features==null)return true; // Existing bespoke agreements keep their modules.
  try{const selected=JSON.parse(features);return Array.isArray(selected)&&selected.includes(feature);}catch{return false;}
 }

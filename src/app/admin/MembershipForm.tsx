@@ -8,6 +8,7 @@
 import { useWebsiteInternational } from "../../components/InternationalProvider";import { useFormState } from "react-dom";
 import { closeMembershipType, createMembershipType, openMembershipType } from "../../lib/actions";
 import { SubmitButton } from "../../components/SubmitButton";
+import { Select } from "../../components/ui/Select";
 
 type Type = {
   id: string;
@@ -20,6 +21,8 @@ type Type = {
   capacity: number;
   active: boolean;
   paid: number;
+  interval?: string;
+  familySize?: number;
 };
 
 
@@ -46,7 +49,7 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
                 </p>
                 <p className="text-sm text-slate">
                   {dk(t.fromDate)} – {dk(t.toDate)} ·{" "}
-                  {t.priceKr > 0 ? `${money(t.priceKr)}` : tr("gratis")} · {t.paid} {tr("betalt")}
+                  {t.priceKr > 0 ? `${money(t.priceKr)}${t.interval === "MONTH" ? `/${tr("md.")}` : ""}` : tr("gratis")}{(t.familySize ?? 1) > 1 ? ` · ${tr("familie")} (${t.familySize})` : ""} · {t.paid} {tr("betalt")}
               {t.capacity > 0 && ` af ${t.capacity} pladser`}
                 </p>
                 {t.description && <p className="text-sm text-slate-light">{t.description}</p>}
@@ -109,6 +112,22 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
               defaultValue={0} />
 
             <p className="mt-1 text-xs text-slate">{tr("0 = intet loft.")}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label" htmlFor="mtInterval">{tr("Betaling")}</label>
+            <Select className="input" id="mtInterval" name="interval" defaultValue="SEASON">
+              <option value="SEASON">{tr("Én gang for hele perioden")}</option>
+              <option value="MONTH">{tr("Hver måned (automatisk fra gemt kort)")}</option>
+            </Select>
+            <p className="mt-1 text-xs text-slate">{tr("Månedlig: prisen trækkes hver måned, så længe perioden løber. Medlemmet kan opsige når som helst.")}</p>
+          </div>
+          <div>
+            <label className="label" htmlFor="mtFamily">{tr("Personer pr. medlemskab")}</label>
+            <input className="input" id="mtFamily" name="familySize" type="number" min={1} max={10} defaultValue={1} />
+            <p className="mt-1 text-xs text-slate">{tr("1 = individuelt. 4 = familie med op til fire personer.")}</p>
           </div>
         </div>
 

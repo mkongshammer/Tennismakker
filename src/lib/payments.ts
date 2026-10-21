@@ -455,6 +455,11 @@ export async function cancelAndRefund(
   const counterparty =
     booking.kind === "COURT" ? booking.court?.club.name : booking.coachProfile?.user.name;
 
+  if (booking.kind === "COURT" && booking.court && booking.startsAt > new Date()) {
+    const { notifyCourtWaitlist } = await import("./waitlist");
+    await notifyCourtWaitlist(booking.court.clubId, booking.startsAt, booking.timeZone, booking.court.club.slug).catch((err) => console.error("Waitlist notice failed:", err));
+  }
+
   await sendMail(
     cancellationNotice({
       to: booking.user.email,

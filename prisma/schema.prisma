@@ -23,6 +23,12 @@ model User {
   passwordHash      String
   name              String
   phone             String?
+  /// Text-message reminders for bookings (needs a phone number).
+  smsOptIn          Boolean            @default(false)
+  waiverAcceptances WaiverAcceptance[]
+  waitlist          Waitlist[]
+  eventSignups      EventSignup[]
+  ladderEntries     LadderEntry[]
   role              String             @default("PLAYER")
   level             Int                @default(3) // 1-7, se src/lib/levels.ts
   area              String? // fx "København NV", "Aarhus C"
@@ -112,6 +118,23 @@ model Club {
   billingReminders      Boolean   @default(true)
   billingReplyTo        String?
   billingNote           String?
+  /// Guests, waiver, check-in and SMS: club-wide booking rules.
+  guestFeeKr            Int       @default(0)
+  guestMax              Int       @default(3)
+  waiverText            String?
+  waiverVersion         Int       @default(1)
+  checkInEnabled        Boolean   @default(false)
+  noShowReleaseMinutes  Int       @default(0)
+  smsReminders          Boolean   @default(false)
+  waiverAcceptances     WaiverAcceptance[]
+  broadcasts            ClubBroadcast[]
+  waitlist              Waitlist[]
+  events                ClubEvent[]
+  ladders               Ladder[]
+  shopItems             ShopItem[]
+  shopSales             ShopSale[]
+  giftCards             GiftCard[]
+  staffShifts           StaffShift[]
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -411,6 +434,12 @@ model Booking {
   // "skal indtastes", indtil klubben markerer den som ført ind.
   needsClubEntry Boolean   @default(false)
   clubEnteredAt  DateTime?
+  /// Guests brought by the member (fee per guest from the club's rules).
+  guestCount    Int       @default(0)
+  guestFeeKr    Int       @default(0)
+  checkedInAt   DateTime?
+  noShowAt      DateTime?
+  smsReminderAt DateTime?
 
   // Audit trail for cancellations: who (PLAYER | CLUB | COACH | SYSTEM),
   // which signed-in user acted, when, and the reason shown to the customer.
@@ -962,6 +991,12 @@ model MembershipType {
 
   priceKr Int
 
+  /// "SEASON": one price for the whole period. "MONTH": priceKr is charged
+  /// every month from the member's saved card while the period runs.
+  interval   String @default("SEASON")
+  /// How many people one membership covers (1 = individual; 4 = family).
+  familySize Int    @default(1)
+
   /// Er den åben for tilmelding lige nu?
   active Boolean @default(true)
 
@@ -1021,6 +1056,12 @@ model Membership {
   lastReminderAt DateTime?
   /// "CARD" | "MANUAL" (kontant, check, bankoverførsel) | "FREE"
   paidMethod     String?
+  /// Monthly plans: when the next charge is due; null once ended.
+  nextChargeAt   DateTime?
+  lastChargeAt   DateTime?
+  chargeFailures Int       @default(0)
+  /// Family plans: the other people covered, as a JSON array of names.
+  dependents     String?
 
   createdAt DateTime @default(now())
 
@@ -1347,4 +1388,211 @@ model MarketInterest {
   @@index([placeKey, kind])
   @@index([state, kind, sport])
   @@index([confirmedAt, notifiedAt])
+}
+
+// ---------- Waiver ----------
+// Most US clubs require a signed liability waiver before the first visit.
+// One row per person per club; the version lets a club re-ask after a change.
+model WaiverAcceptance {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId     String
+  club       Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  version    Int
+  acceptedAt DateTime @default(now())
+
+  @@unique([userId, clubId])
+}
+
+// ---------- Member e-mails ----------
+model ClubBroadcast {
+  id         String   @id @default(cuid())
+  clubId     String
+  club       Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  subject    String
+  body       String
+  /// "ALL" members of the club, or "PAID" members with a current membership.
+  audience   String   @default("ALL")
+  sentCount  Int      @default(0)
+  sentById   String?
+  createdAt  DateTime @default(now())
+
+  @@index([clubId, createdAt])
+}
+
+// ---------- Waitlist ----------
+// A player who wanted a full court hour, team or event. When a spot frees
+// up, everyone waiting for it is told; first to book gets it.
+model Waitlist {
+  id         String    @id @default(cuid())
+  clubId     String
+  club       Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// "COURT" (any court, a given hour on a day) | "TEAM" | "EVENT"
+  kind       String
+  slotAt     DateTime?
+  teamId     String?
+  eventId    String?
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([clubId, kind, slotAt])
+  @@index([userId])
+}
+
+// ---------- Events: tournaments, leagues, socials ----------
+model ClubEvent {
+  id             String        @id @default(cuid())
+  clubId         String
+  club           Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  /// "TOURNAMENT" | "LEAGUE" | "SOCIAL" | "CLINIC"
+  kind           String        @default("SOCIAL")
+  sport          String        @default("TENNIS")
+  startsAt       DateTime
+  endsAt         DateTime
+  priceKr        Int           @default(0)
+  capacity       Int           @default(0)
+  signupClosesAt DateTime?
+  active         Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  signups        EventSignup[]
+
+  @@index([clubId, startsAt])
+}
+
+model EventSignup {
+  id              String    @id @default(cuid())
+  eventId         String
+  event           ClubEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          String    @default("PENDING") // "PENDING" | "PAID" | "CANCELLED"
+  priceKr         Int
+  currency        String    @default("USD")
+  stripeSessionId String?
+  paidAt          DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@unique([eventId, userId])
+  @@index([userId, status])
+}
+
+// ---------- Ladder ----------
+// A ranked list per club and sport. Beat someone above you and you take
+// their place. Results are reported by either player.
+model Ladder {
+  id        String        @id @default(cuid())
+  clubId    String
+  club      Club          @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name      String
+  sport     String        @default("TENNIS")
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  entries   LadderEntry[]
+  matches   LadderMatch[]
+
+  @@index([clubId, active])
+}
+
+model LadderEntry {
+  id       String   @id @default(cuid())
+  ladderId String
+  ladder   Ladder   @relation(fields: [ladderId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rank     Int
+  wins     Int      @default(0)
+  losses   Int      @default(0)
+  joinedAt DateTime @default(now())
+
+  @@unique([ladderId, userId])
+  @@index([ladderId, rank])
+}
+
+model LadderMatch {
+  id           String   @id @default(cuid())
+  ladderId     String
+  ladder       Ladder   @relation(fields: [ladderId], references: [id], onDelete: Cascade)
+  winnerId     String
+  loserId      String
+  score        String?
+  reportedById String
+  playedAt     DateTime @default(now())
+
+  @@index([ladderId, playedAt])
+}
+
+// ---------- Pro shop / front desk register ----------
+model ShopItem {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name      String
+  priceKr   Int
+  /// -1 = not tracked.
+  stock     Int      @default(-1)
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([clubId, active])
+}
+
+model ShopSale {
+  id        String   @id @default(cuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId    String?
+  /// JSON: [{name, priceKr, qty}]
+  items     String
+  totalKr   Int
+  currency  String   @default("USD")
+  /// "CASH" | "CARD" (taken at the desk) | "WALLET" (member's club wallet)
+  method    String
+  soldById  String?
+  createdAt DateTime @default(now())
+
+  @@index([clubId, createdAt])
+}
+
+// ---------- Gift cards ----------
+// Bought online, redeemed into the recipient's club wallet.
+model GiftCard {
+  id              String    @id @default(cuid())
+  clubId          String
+  club            Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  code            String    @unique
+  amountKr        Int
+  currency        String    @default("USD")
+  buyerId         String?
+  recipientEmail  String?
+  recipientName   String?
+  message         String?
+  status          String    @default("PENDING") // "PENDING" | "ACTIVE" | "REDEEMED" | "CANCELLED"
+  stripeSessionId String?
+  paidAt          DateTime?
+  redeemedById    String?
+  redeemedAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([clubId, status])
+}
+
+// ---------- Staff schedule ----------
+model StaffShift {
+  id         String   @id @default(cuid())
+  clubId     String
+  club       Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  personName String
+  role       String?
+  startsAt   DateTime
+  endsAt     DateTime
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([clubId, startsAt])
 }

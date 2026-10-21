@@ -7595,6 +7595,9 @@
   },
   "Besked": {
     "en": "Message",
+    "de": "Nachricht",
+    "sv": "Meddelande",
+    "no": "Melding",
     "fr": "Message",
     "es": "Mensaje"
   },
@@ -7726,6 +7729,9 @@
   },
   "I alt": {
     "en": "Total",
+    "de": "Gesamt",
+    "sv": "Totalt",
+    "no": "Totalt",
     "fr": "Total",
     "es": "Total"
   },
@@ -10235,11 +10241,19 @@
     "es": "Restablecer"
   },
   "Forrige": {
-    "fr": "Précédent",
+    "en": "Previous",
+    "de": "Zurück",
+    "sv": "Föregående",
+    "no": "Forrige",
+    "fr": "Précédente",
     "es": "Anterior"
   },
   "Næste": {
-    "fr": "Suivant",
+    "en": "Next",
+    "de": "Weiter",
+    "sv": "Nästa",
+    "no": "Neste",
+    "fr": "Suivante",
     "es": "Siguiente"
   },
   "Hvilket system bruger I?": {
@@ -11724,5 +11738,1013 @@
     "no": "En kolonne email er påkrevd. Bruk malen.",
     "fr": "Une colonne email est obligatoire. Utilisez le modèle.",
     "es": "Se necesita una columna email. Usa la plantilla."
+  },
+  "tjekket ind": {
+    "en": "checked in",
+    "de": "eingecheckt",
+    "sv": "incheckad",
+    "no": "sjekket inn",
+    "fr": "arrivé",
+    "es": "registrado"
+  },
+  "Gæster, ansvarsfraskrivelse og check-in": {
+    "en": "Guests, waiver and check-in",
+    "de": "Gäste, Haftungsverzicht und Check-in",
+    "sv": "Gäster, ansvarsfriskrivning och incheckning",
+    "no": "Gjester, ansvarsfraskrivelse og innsjekk",
+    "fr": "Invités, décharge et enregistrement",
+    "es": "Invitados, exención y registro"
+  },
+  "Gælder alle banebookinger hos jer.": {
+    "en": "Applies to every court booking at your club.",
+    "de": "Gilt für alle Platzbuchungen bei Ihnen.",
+    "sv": "Gäller alla banbokningar hos er.",
+    "no": "Gjelder alle banebookinger hos dere.",
+    "fr": "S'applique à toutes les réservations de terrain chez vous.",
+    "es": "Se aplica a todas las reservas de pista en tu club."
+  },
+  "Gæstegebyr pr. gæst": {
+    "en": "Guest fee per guest",
+    "de": "Gastgebühr pro Gast",
+    "sv": "Gästavgift per gäst",
+    "no": "Gjesteavgift per gjest",
+    "fr": "Frais par invité",
+    "es": "Tarifa por invitado"
+  },
+  "Et medlem kan tage gæster med på sin booking. 0 = gratis.": {
+    "en": "A member can bring guests on a booking. 0 = free.",
+    "de": "Ein Mitglied kann Gäste zu seiner Buchung mitbringen. 0 = kostenlos.",
+    "sv": "En medlem kan ta med gäster på sin bokning. 0 = gratis.",
+    "no": "Et medlem kan ta med gjester på bookingen. 0 = gratis.",
+    "fr": "Un membre peut amener des invités sur sa réservation. 0 = gratuit.",
+    "es": "Un socio puede traer invitados a su reserva. 0 = gratis."
+  },
+  "Højst gæster pr. booking": {
+    "en": "Max guests per booking",
+    "de": "Höchstens Gäste pro Buchung",
+    "sv": "Max antal gäster per bokning",
+    "no": "Maks gjester per booking",
+    "fr": "Invités max. par réservation",
+    "es": "Máximo de invitados por reserva"
+  },
+  "0 = ingen gæster.": {
+    "en": "0 = no guests.",
+    "de": "0 = keine Gäste.",
+    "sv": "0 = inga gäster.",
+    "no": "0 = ingen gjester.",
+    "fr": "0 = aucun invité.",
+    "es": "0 = sin invitados."
+  },
+  "Ansvarsfraskrivelse (waiver)": {
+    "en": "Liability waiver",
+    "de": "Haftungsverzicht (Waiver)",
+    "sv": "Ansvarsfriskrivning (waiver)",
+    "no": "Ansvarsfraskrivelse (waiver)",
+    "fr": "Décharge de responsabilité",
+    "es": "Exención de responsabilidad"
+  },
+  "Indsæt klubbens tekst. Tom = ingen waiver.": {
+    "en": "Paste the club's text. Empty = no waiver.",
+    "de": "Text des Clubs einfügen. Leer = kein Waiver.",
+    "sv": "Klistra in klubbens text. Tom = ingen waiver.",
+    "no": "Lim inn klubbens tekst. Tom = ingen waiver.",
+    "fr": "Collez le texte du club. Vide = pas de décharge.",
+    "es": "Pega el texto del club. Vacío = sin exención."
+  },
+  "Spillere accepterer den én gang, før de kan booke. Ændrer I teksten, skal alle acceptere igen. Dato og version gemmes.": {
+    "en": "Players accept it once before they can book. Change the text and everyone accepts again. Date and version are stored.",
+    "de": "Spieler akzeptieren ihn einmal, bevor sie buchen können. Ändern Sie den Text, müssen alle erneut zustimmen. Datum und Version werden gespeichert.",
+    "sv": "Spelare godkänner den en gång innan de kan boka. Ändrar ni texten måste alla godkänna igen. Datum och version sparas.",
+    "no": "Spillere godtar den én gang før de kan booke. Endrer dere teksten, må alle godta på nytt. Dato og versjon lagres.",
+    "fr": "Les joueurs l'acceptent une fois avant de réserver. Si vous modifiez le texte, tout le monde doit l'accepter à nouveau. Date et version sont enregistrées.",
+    "es": "Los jugadores la aceptan una vez antes de reservar. Si cambias el texto, todos deben aceptarla de nuevo. Se guardan fecha y versión."
+  },
+  "Check-in": {
+    "en": "Check-in",
+    "de": "Check-in",
+    "sv": "Incheckning",
+    "no": "Innsjekk",
+    "fr": "Enregistrement",
+    "es": "Registro"
+  },
+  "Spilleren tjekker ind på profilen eller i appen fra 30 minutter før starttid. I kan se, hvem der dukkede op.": {
+    "en": "Players check in on their profile or in the app from 30 minutes before start. You see who showed up.",
+    "de": "Spieler checken ab 30 Minuten vor Beginn im Profil oder in der App ein. Sie sehen, wer erschienen ist.",
+    "sv": "Spelaren checkar in på profilen eller i appen från 30 minuter före start. Ni ser vem som dök upp.",
+    "no": "Spilleren sjekker inn på profilen eller i appen fra 30 minutter før start. Dere ser hvem som møtte opp.",
+    "fr": "Le joueur s'enregistre sur son profil ou dans l'application dès 30 minutes avant l'heure. Vous voyez qui est venu.",
+    "es": "El jugador se registra en su perfil o en la app desde 30 minutos antes. Veis quién vino."
+  },
+  "Frigiv banen uden check-in efter (minutter)": {
+    "en": "Release the court without check-in after (minutes)",
+    "de": "Platz ohne Check-in freigeben nach (Minuten)",
+    "sv": "Släpp banan utan incheckning efter (minuter)",
+    "no": "Frigi banen uten innsjekk etter (minutter)",
+    "fr": "Libérer le terrain sans enregistrement après (minutes)",
+    "es": "Liberar la pista sin registro tras (minutos)"
+  },
+  "0 = aldrig. Fx 15: er der ikke tjekket ind 15 minutter efter start, bliver timen ledig igen. Betalingen refunderes ikke.": {
+    "en": "0 = never. E.g. 15: no check-in 15 minutes after start and the hour opens up again. No refund.",
+    "de": "0 = nie. Z. B. 15: ohne Check-in 15 Minuten nach Beginn wird die Stunde wieder frei. Keine Rückerstattung.",
+    "sv": "0 = aldrig. T.ex. 15: ingen incheckning 15 minuter efter start och timmen blir ledig igen. Ingen återbetalning.",
+    "no": "0 = aldri. F.eks. 15: ingen innsjekk 15 minutter etter start, og timen blir ledig igjen. Ingen refusjon.",
+    "fr": "0 = jamais. Ex. 15 : sans enregistrement 15 minutes après le début, le créneau est libéré. Pas de remboursement.",
+    "es": "0 = nunca. Ej. 15: sin registro 15 minutos tras el inicio, la hora se libera. Sin reembolso."
+  },
+  "Gem regler": {
+    "en": "Save rules",
+    "de": "Regeln speichern",
+    "sv": "Spara regler",
+    "no": "Lagre regler",
+    "fr": "Enregistrer les règles",
+    "es": "Guardar reglas"
+  },
+  "Send en mail til medlemmerne": {
+    "en": "E-mail your members",
+    "de": "E-Mail an die Mitglieder senden",
+    "sv": "Skicka ett mejl till medlemmarna",
+    "no": "Send en e-post til medlemmene",
+    "fr": "Envoyer un e-mail aux membres",
+    "es": "Enviar un correo a los socios"
+  },
+  "Nyt om baner, hold, arrangementer eller lukkedage. Mailen sendes fra RacketBuddy med klubbens navn, og svar går til klubbens egen adresse.": {
+    "en": "News about courts, teams, events or closures. Sent from RacketBuddy in the club's name; replies go to the club's own address.",
+    "de": "Neues zu Plätzen, Teams, Veranstaltungen oder Schließtagen. Gesendet von RacketBuddy im Namen des Clubs; Antworten gehen an die Adresse des Clubs.",
+    "sv": "Nytt om banor, lag, evenemang eller stängda dagar. Skickas från RacketBuddy i klubbens namn; svar går till klubbens egen adress.",
+    "no": "Nytt om baner, lag, arrangementer eller stengte dager. Sendes fra RacketBuddy i klubbens navn; svar går til klubbens egen adresse.",
+    "fr": "Infos sur les terrains, équipes, événements ou fermetures. Envoyé par RacketBuddy au nom du club ; les réponses vont à l'adresse du club.",
+    "es": "Noticias sobre pistas, equipos, eventos o cierres. Enviado desde RacketBuddy a nombre del club; las respuestas van a la dirección del club."
+  },
+  "Modtagere": {
+    "en": "Recipients",
+    "de": "Empfänger",
+    "sv": "Mottagare",
+    "no": "Mottakere",
+    "fr": "Destinataires",
+    "es": "Destinatarios"
+  },
+  "Alle medlemmer ({p0})": {
+    "en": "All members ({p0})",
+    "de": "Alle Mitglieder ({p0})",
+    "sv": "Alla medlemmar ({p0})",
+    "no": "Alle medlemmer ({p0})",
+    "fr": "Tous les membres ({p0})",
+    "es": "Todos los socios ({p0})"
+  },
+  "Kun medlemmer med betalt kontingent ({p0})": {
+    "en": "Only members with paid dues ({p0})",
+    "de": "Nur Mitglieder mit bezahltem Beitrag ({p0})",
+    "sv": "Bara medlemmar med betald avgift ({p0})",
+    "no": "Bare medlemmer med betalt kontingent ({p0})",
+    "fr": "Seulement les membres à jour de cotisation ({p0})",
+    "es": "Solo socios con cuota pagada ({p0})"
+  },
+  "Emne": {
+    "en": "Subject",
+    "de": "Betreff",
+    "sv": "Ämne",
+    "no": "Emne",
+    "fr": "Objet",
+    "es": "Asunto"
+  },
+  "Skriv som du ville skrive til ét medlem. Ingen formatering – bare tekst.": {
+    "en": "Write as you would to one member. No formatting, just text.",
+    "de": "Schreiben Sie wie an ein einzelnes Mitglied. Keine Formatierung, nur Text.",
+    "sv": "Skriv som till en enda medlem. Ingen formatering, bara text.",
+    "no": "Skriv som til ett medlem. Ingen formatering, bare tekst.",
+    "fr": "Écrivez comme à un seul membre. Pas de mise en forme, juste du texte.",
+    "es": "Escribe como a un solo socio. Sin formato, solo texto."
+  },
+  "Send til {p0} medlemmer nu. Det kan ikke fortrydes.": {
+    "en": "Send to {p0} members now. This can't be undone.",
+    "de": "Jetzt an {p0} Mitglieder senden. Das lässt sich nicht rückgängig machen.",
+    "sv": "Skicka till {p0} medlemmar nu. Det går inte att ångra.",
+    "no": "Send til {p0} medlemmer nå. Det kan ikke angres.",
+    "fr": "Envoyer à {p0} membres maintenant. Irréversible.",
+    "es": "Enviar a {p0} socios ahora. No se puede deshacer."
+  },
+  "Send mail": {
+    "en": "Send e-mail",
+    "de": "E-Mail senden",
+    "sv": "Skicka mejl",
+    "no": "Send e-post",
+    "fr": "Envoyer l'e-mail",
+    "es": "Enviar correo"
+  },
+  "Sms-påmindelser": {
+    "en": "Text reminders",
+    "de": "SMS-Erinnerungen",
+    "sv": "Sms-påminnelser",
+    "no": "Sms-påminnelser",
+    "fr": "Rappels par SMS",
+    "es": "Recordatorios por SMS"
+  },
+  "Medlemmer, der har sagt ja til sms på deres profil, får en sms cirka to timer før en banebooking. Færre udeblivelser, ingen ekstra arbejde.": {
+    "en": "Members who opted in on their profile get a text about two hours before a court booking. Fewer no-shows, no extra work.",
+    "de": "Mitglieder, die im Profil zugestimmt haben, erhalten etwa zwei Stunden vor einer Platzbuchung eine SMS. Weniger Nichterscheinen, kein Mehraufwand.",
+    "sv": "Medlemmar som sagt ja på sin profil får ett sms cirka två timmar före en banbokning. Färre uteblivna, inget extra arbete.",
+    "no": "Medlemmer som har sagt ja på profilen får en sms omtrent to timer før en banebooking. Færre som ikke møter, ingen ekstra arbeid.",
+    "fr": "Les membres qui ont accepté sur leur profil reçoivent un SMS environ deux heures avant une réservation. Moins d'absences, pas de travail en plus.",
+    "es": "Los socios que lo activaron en su perfil reciben un SMS unas dos horas antes de una reserva. Menos ausencias, sin trabajo extra."
+  },
+  "Sms er ikke aktiveret på platformen endnu. Indstillingen gemmes, og påmindelserne starter, når det er.": {
+    "en": "SMS isn't enabled on the platform yet. The setting is saved and reminders start once it is.",
+    "de": "SMS ist auf der Plattform noch nicht aktiviert. Die Einstellung wird gespeichert, und die Erinnerungen starten, sobald es so weit ist.",
+    "sv": "Sms är inte aktiverat på plattformen än. Inställningen sparas och påminnelserna startar när det är det.",
+    "no": "Sms er ikke aktivert på plattformen ennå. Innstillingen lagres, og påminnelsene starter når det er det.",
+    "fr": "Les SMS ne sont pas encore activés sur la plateforme. Le réglage est enregistré et les rappels démarreront ensuite.",
+    "es": "El SMS aún no está activado en la plataforma. El ajuste se guarda y los recordatorios empezarán cuando lo esté."
+  },
+  "Send sms-påmindelser til klubbens medlemmer": {
+    "en": "Send text reminders to the club's members",
+    "de": "SMS-Erinnerungen an die Mitglieder senden",
+    "sv": "Skicka sms-påminnelser till klubbens medlemmar",
+    "no": "Send sms-påminnelser til klubbens medlemmer",
+    "fr": "Envoyer des rappels SMS aux membres",
+    "es": "Enviar recordatorios por SMS a los socios"
+  },
+  "Sendte mails": {
+    "en": "Sent e-mails",
+    "de": "Gesendete E-Mails",
+    "sv": "Skickade mejl",
+    "no": "Sendte e-poster",
+    "fr": "E-mails envoyés",
+    "es": "Correos enviados"
+  },
+  "Ingen mails sendt endnu.": {
+    "en": "No e-mails sent yet.",
+    "de": "Noch keine E-Mails gesendet.",
+    "sv": "Inga mejl skickade än.",
+    "no": "Ingen e-poster sendt ennå.",
+    "fr": "Aucun e-mail envoyé pour l'instant.",
+    "es": "Aún no se han enviado correos."
+  },
+  "{p0} modtagere": {
+    "en": "{p0} recipients",
+    "de": "{p0} Empfänger",
+    "sv": "{p0} mottagare",
+    "no": "{p0} mottakere",
+    "fr": "{p0} destinataires",
+    "es": "{p0} destinatarios"
+  },
+  "betalende": {
+    "en": "paying",
+    "de": "zahlende",
+    "sv": "betalande",
+    "no": "betalende",
+    "fr": "cotisants",
+    "es": "de pago"
+  },
+  "alle": {
+    "en": "all",
+    "de": "alle",
+    "sv": "alla",
+    "no": "alle",
+    "fr": "tous",
+    "es": "todos"
+  },
+  "Sportsgren": {
+    "en": "Sport",
+    "de": "Sportart",
+    "sv": "Sport",
+    "no": "Idrett",
+    "fr": "Sport",
+    "es": "Deporte"
+  },
+  "Opret arrangement": {
+    "en": "Create event",
+    "de": "Veranstaltung anlegen",
+    "sv": "Skapa evenemang",
+    "no": "Opprett arrangement",
+    "fr": "Créer un événement",
+    "es": "Crear evento"
+  },
+  "Turneringer, ligaer, sociale aftener og clinics. Medlemmer tilmelder sig og betaler på klubbens side; pengene går til klubbens konto.": {
+    "en": "Tournaments, leagues, socials and clinics. Members sign up and pay on the club page; the money goes to the club's account.",
+    "de": "Turniere, Ligen, Social-Abende und Clinics. Mitglieder melden sich auf der Clubseite an und zahlen; das Geld geht auf das Clubkonto.",
+    "sv": "Turneringar, ligor, sociala kvällar och clinics. Medlemmar anmäler sig och betalar på klubbens sida; pengarna går till klubbens konto.",
+    "no": "Turneringer, ligaer, sosiale kvelder og clinics. Medlemmer melder seg på og betaler på klubbens side; pengene går til klubbens konto.",
+    "fr": "Tournois, ligues, soirées et stages. Les membres s'inscrivent et paient sur la page du club ; l'argent va sur le compte du club.",
+    "es": "Torneos, ligas, sociales y clinics. Los socios se apuntan y pagan en la página del club; el dinero va a la cuenta del club."
+  },
+  "fx Fredagsdoubler · Oktober": {
+    "en": "e.g. Friday doubles · October",
+    "de": "z. B. Freitagsdoppel · Oktober",
+    "sv": "t.ex. Fredagsdubbel · oktober",
+    "no": "f.eks. Fredagsdouble · oktober",
+    "fr": "ex. Doubles du vendredi · octobre",
+    "es": "ej. Dobles del viernes · octubre"
+  },
+  "Start": {
+    "en": "Start",
+    "de": "Beginn",
+    "sv": "Start",
+    "no": "Start",
+    "fr": "Début",
+    "es": "Inicio"
+  },
+  "Slut": {
+    "en": "End",
+    "de": "Ende",
+    "sv": "Slut",
+    "no": "Slutt",
+    "fr": "Fin",
+    "es": "Fin"
+  },
+  "Pris pr. deltager": {
+    "en": "Price per participant",
+    "de": "Preis pro Teilnehmer",
+    "sv": "Pris per deltagare",
+    "no": "Pris per deltaker",
+    "fr": "Prix par participant",
+    "es": "Precio por participante"
+  },
+  "0 = gratis.": {
+    "en": "0 = free.",
+    "de": "0 = kostenlos.",
+    "sv": "0 = gratis.",
+    "no": "0 = gratis.",
+    "fr": "0 = gratuit.",
+    "es": "0 = gratis."
+  },
+  "0 = intet loft. Er det fuldt, kan man skrive sig på venteliste.": {
+    "en": "0 = no cap. When full, players can join the waitlist.",
+    "de": "0 = kein Limit. Ist es voll, kann man sich auf die Warteliste setzen.",
+    "sv": "0 = inget tak. Är det fullt kan man ställa sig på väntelista.",
+    "no": "0 = ingen grense. Er det fullt, kan man sette seg på venteliste.",
+    "fr": "0 = pas de limite. Si c'est complet, on peut s'inscrire sur liste d'attente.",
+    "es": "0 = sin límite. Si está lleno, se puede entrar en la lista de espera."
+  },
+  "Tilmelding lukker (valgfri)": {
+    "en": "Sign-up closes (optional)",
+    "de": "Anmeldeschluss (optional)",
+    "sv": "Anmälan stänger (valfritt)",
+    "no": "Påmelding stenger (valgfritt)",
+    "fr": "Clôture des inscriptions (facultatif)",
+    "es": "Cierre de inscripciones (opcional)"
+  },
+  "Format, niveau, hvad der er inkluderet, hvad man skal medbringe.": {
+    "en": "Format, level, what's included, what to bring.",
+    "de": "Format, Niveau, was enthalten ist, was mitzubringen ist.",
+    "sv": "Format, nivå, vad som ingår, vad man ska ta med.",
+    "no": "Format, nivå, hva som er inkludert, hva man skal ta med.",
+    "fr": "Format, niveau, ce qui est inclus, ce qu'il faut apporter.",
+    "es": "Formato, nivel, qué incluye, qué traer."
+  },
+  "Arrangementer": {
+    "en": "Events",
+    "de": "Veranstaltungen",
+    "sv": "Evenemang",
+    "no": "Arrangementer",
+    "fr": "Événements",
+    "es": "Eventos"
+  },
+  "Ingen arrangementer endnu.": {
+    "en": "No events yet.",
+    "de": "Noch keine Veranstaltungen.",
+    "sv": "Inga evenemang än.",
+    "no": "Ingen arrangementer ennå.",
+    "fr": "Aucun événement pour l'instant.",
+    "es": "Aún no hay eventos."
+  },
+  "Luk tilmelding": {
+    "en": "Close sign-up",
+    "de": "Anmeldung schließen",
+    "sv": "Stäng anmälan",
+    "no": "Steng påmelding",
+    "fr": "Fermer les inscriptions",
+    "es": "Cerrar inscripciones"
+  },
+  "Deltagere": {
+    "en": "Participants",
+    "de": "Teilnehmer",
+    "sv": "Deltagare",
+    "no": "Deltakere",
+    "fr": "Participants",
+    "es": "Participantes"
+  },
+  "Rangliste": {
+    "en": "Ladder",
+    "de": "Rangliste",
+    "sv": "Rankinglista",
+    "no": "Rangliste",
+    "fr": "Classement (ladder)",
+    "es": "Ranking (ladder)"
+  },
+  "Medlemmer melder sig til, udfordrer hinanden og indberetter resultatet selv. Vinder man over én højere oppe, tager man pladsen.": {
+    "en": "Members join, challenge each other and report results themselves. Beat someone above you and you take their spot.",
+    "de": "Mitglieder treten bei, fordern sich heraus und melden Ergebnisse selbst. Wer jemanden über sich schlägt, übernimmt dessen Platz.",
+    "sv": "Medlemmar går med, utmanar varandra och rapporterar resultaten själva. Slår man någon högre upp tar man platsen.",
+    "no": "Medlemmer melder seg på, utfordrer hverandre og rapporterer resultatene selv. Slår man noen høyere oppe, tar man plassen.",
+    "fr": "Les membres s'inscrivent, se défient et saisissent les résultats eux-mêmes. Battez quelqu'un au-dessus et vous prenez sa place.",
+    "es": "Los socios se apuntan, se retan y registran los resultados. Si ganas a alguien por encima, ocupas su puesto."
+  },
+  "spillere": {
+    "en": "players",
+    "de": "Spieler",
+    "sv": "spelare",
+    "no": "spillere",
+    "fr": "joueurs",
+    "es": "jugadores"
+  },
+  "Ny rangliste": {
+    "en": "New ladder",
+    "de": "Neue Rangliste",
+    "sv": "Ny rankinglista",
+    "no": "Ny rangliste",
+    "fr": "Nouveau classement",
+    "es": "Nuevo ranking"
+  },
+  "fx Singles ladder 2026": {
+    "en": "e.g. Singles ladder 2026",
+    "de": "z. B. Einzel-Rangliste 2026",
+    "sv": "t.ex. Singelstege 2026",
+    "no": "f.eks. Single-stige 2026",
+    "fr": "ex. Ladder simple 2026",
+    "es": "ej. Ladder individual 2026"
+  },
+  "Opret": {
+    "en": "Create",
+    "de": "Anlegen",
+    "sv": "Skapa",
+    "no": "Opprett",
+    "fr": "Créer",
+    "es": "Crear"
+  },
+  "md.": {
+    "en": "mo",
+    "de": "Mon.",
+    "sv": "mån",
+    "no": "mnd",
+    "fr": "mois",
+    "es": "mes"
+  },
+  "familie": {
+    "en": "family",
+    "de": "Familie",
+    "sv": "familj",
+    "no": "familie",
+    "fr": "famille",
+    "es": "familia"
+  },
+  "Én gang for hele perioden": {
+    "en": "Once for the whole period",
+    "de": "Einmal für den ganzen Zeitraum",
+    "sv": "En gång för hela perioden",
+    "no": "Én gang for hele perioden",
+    "fr": "Une fois pour toute la période",
+    "es": "Una vez por todo el periodo"
+  },
+  "Hver måned (automatisk fra gemt kort)": {
+    "en": "Every month (charged to the saved card)",
+    "de": "Jeden Monat (automatisch von der gespeicherten Karte)",
+    "sv": "Varje månad (automatiskt från sparat kort)",
+    "no": "Hver måned (automatisk fra lagret kort)",
+    "fr": "Chaque mois (prélevé sur la carte enregistrée)",
+    "es": "Cada mes (cargo a la tarjeta guardada)"
+  },
+  "Månedlig: prisen trækkes hver måned, så længe perioden løber. Medlemmet kan opsige når som helst.": {
+    "en": "Monthly: the price is charged every month while the period runs. Members can stop any time.",
+    "de": "Monatlich: Der Preis wird jeden Monat abgebucht, solange der Zeitraum läuft. Mitglieder können jederzeit kündigen.",
+    "sv": "Månadsvis: priset dras varje månad så länge perioden pågår. Medlemmen kan säga upp när som helst.",
+    "no": "Månedlig: prisen trekkes hver måned så lenge perioden løper. Medlemmet kan si opp når som helst.",
+    "fr": "Mensuel : le prix est prélevé chaque mois pendant la période. Le membre peut arrêter à tout moment.",
+    "es": "Mensual: se cobra cada mes mientras dure el periodo. El socio puede cancelar cuando quiera."
+  },
+  "Personer pr. medlemskab": {
+    "en": "People per membership",
+    "de": "Personen pro Mitgliedschaft",
+    "sv": "Personer per medlemskap",
+    "no": "Personer per medlemskap",
+    "fr": "Personnes par adhésion",
+    "es": "Personas por cuota"
+  },
+  "1 = individuelt. 4 = familie med op til fire personer.": {
+    "en": "1 = individual. 4 = family of up to four.",
+    "de": "1 = Einzelperson. 4 = Familie mit bis zu vier Personen.",
+    "sv": "1 = individuellt. 4 = familj med upp till fyra personer.",
+    "no": "1 = individuelt. 4 = familie med opptil fire personer.",
+    "fr": "1 = individuel. 4 = famille jusqu'à quatre personnes.",
+    "es": "1 = individual. 4 = familia de hasta cuatro personas."
+  },
+  "Indtægter": {
+    "en": "Revenue",
+    "de": "Einnahmen",
+    "sv": "Intäkter",
+    "no": "Inntekter",
+    "fr": "Recettes",
+    "es": "Ingresos"
+  },
+  "Alt, der er betalt gennem RacketBuddy, plus salg og kontante betalinger I selv har registreret.": {
+    "en": "Everything paid through RacketBuddy, plus sales and cash payments you recorded yourselves.",
+    "de": "Alles, was über RacketBuddy bezahlt wurde, plus selbst erfasste Verkäufe und Barzahlungen.",
+    "sv": "Allt som betalats via RacketBuddy, plus försäljning och kontantbetalningar ni själva registrerat.",
+    "no": "Alt som er betalt gjennom RacketBuddy, pluss salg og kontantbetalinger dere selv har registrert.",
+    "fr": "Tout ce qui a été payé via RacketBuddy, plus les ventes et paiements en espèces que vous avez saisis.",
+    "es": "Todo lo pagado a través de RacketBuddy, más ventas y pagos en efectivo que registrasteis."
+  },
+  "Gebyrer": {
+    "en": "Fees",
+    "de": "Gebühren",
+    "sv": "Avgifter",
+    "no": "Gebyrer",
+    "fr": "Frais",
+    "es": "Comisiones"
+  },
+  "Kortgebyrer fra Stripe er ikke med.": {
+    "en": "Stripe card fees not included.",
+    "de": "Kartengebühren von Stripe nicht enthalten.",
+    "sv": "Stripes kortavgifter ingår inte.",
+    "no": "Kortgebyrer fra Stripe er ikke med.",
+    "fr": "Frais de carte Stripe non inclus.",
+    "es": "Sin incluir comisiones de tarjeta de Stripe."
+  },
+  "Til klubben": {
+    "en": "To the club",
+    "de": "An den Club",
+    "sv": "Till klubben",
+    "no": "Til klubben",
+    "fr": "Pour le club",
+    "es": "Para el club"
+  },
+  "Download CSV": {
+    "en": "Download CSV",
+    "de": "CSV herunterladen",
+    "sv": "Ladda ner CSV",
+    "no": "Last ned CSV",
+    "fr": "Télécharger le CSV",
+    "es": "Descargar CSV"
+  },
+  "QuickBooks-fil": {
+    "en": "QuickBooks file",
+    "de": "QuickBooks-Datei",
+    "sv": "QuickBooks-fil",
+    "no": "QuickBooks-fil",
+    "fr": "Fichier QuickBooks",
+    "es": "Archivo QuickBooks"
+  },
+  "CSV åbner i Excel og Google Sheets. QuickBooks-filen importeres under Transactions → Banking → Upload.": {
+    "en": "The CSV opens in Excel and Google Sheets. Import the QuickBooks file under Transactions → Banking → Upload.",
+    "de": "Die CSV öffnet sich in Excel und Google Sheets. Die QuickBooks-Datei importieren Sie unter Transactions → Banking → Upload.",
+    "sv": "CSV öppnas i Excel och Google Sheets. QuickBooks-filen importeras under Transactions → Banking → Upload.",
+    "no": "CSV åpnes i Excel og Google Sheets. QuickBooks-filen importeres under Transactions → Banking → Upload.",
+    "fr": "Le CSV s'ouvre dans Excel et Google Sheets. Importez le fichier QuickBooks via Transactions → Banking → Upload.",
+    "es": "El CSV se abre en Excel y Google Sheets. El archivo QuickBooks se importa en Transactions → Banking → Upload."
+  },
+  "Pr. måned": {
+    "en": "By month",
+    "de": "Pro Monat",
+    "sv": "Per månad",
+    "no": "Per måned",
+    "fr": "Par mois",
+    "es": "Por mes"
+  },
+  "Ingen betalinger i perioden.": {
+    "en": "No payments in this period.",
+    "de": "Keine Zahlungen im Zeitraum.",
+    "sv": "Inga betalningar under perioden.",
+    "no": "Ingen betalinger i perioden.",
+    "fr": "Aucun paiement sur la période.",
+    "es": "Sin pagos en el periodo."
+  },
+  "Måned": {
+    "en": "Month",
+    "de": "Monat",
+    "sv": "Månad",
+    "no": "Måned",
+    "fr": "Mois",
+    "es": "Mes"
+  },
+  "Seneste betalinger": {
+    "en": "Latest payments",
+    "de": "Letzte Zahlungen",
+    "sv": "Senaste betalningar",
+    "no": "Siste betalinger",
+    "fr": "Derniers paiements",
+    "es": "Últimos pagos"
+  },
+  "Ingen betalinger endnu.": {
+    "en": "No payments yet.",
+    "de": "Noch keine Zahlungen.",
+    "sv": "Inga betalningar än.",
+    "no": "Ingen betalinger ennå.",
+    "fr": "Aucun paiement pour l'instant.",
+    "es": "Aún no hay pagos."
+  },
+  "Kasse": {
+    "en": "Register",
+    "de": "Kasse",
+    "sv": "Kassa",
+    "no": "Kasse",
+    "fr": "Caisse",
+    "es": "Caja"
+  },
+  "Registrér et salg i receptionen: bolde, drikkevarer, leje af ketsjer. Kort trækkes på jeres egen terminal; vælg Wallet for at trække på medlemmets klubwallet.": {
+    "en": "Record a front-desk sale: balls, drinks, racket rental. Cards are charged on your own terminal; choose Wallet to debit the member's club wallet.",
+    "de": "Verkauf an der Rezeption erfassen: Bälle, Getränke, Schlägerverleih. Karten laufen über Ihr eigenes Terminal; wählen Sie Wallet, um das Club-Guthaben des Mitglieds zu belasten.",
+    "sv": "Registrera ett försäljning i receptionen: bollar, dryck, rackethyra. Kort dras på er egen terminal; välj Wallet för att dra på medlemmens klubbwallet.",
+    "no": "Registrer et salg i resepsjonen: baller, drikke, racketleie. Kort trekkes på deres egen terminal; velg Wallet for å trekke fra medlemmets klubbwallet.",
+    "fr": "Enregistrez une vente à l'accueil : balles, boissons, location de raquette. Les cartes passent sur votre terminal ; choisissez Wallet pour débiter le portefeuille club du membre.",
+    "es": "Registra una venta en recepción: pelotas, bebidas, alquiler de raqueta. Las tarjetas se cobran en vuestro terminal; elige Wallet para cargar al monedero del socio."
+  },
+  "Opret først nogle varer nedenfor.": {
+    "en": "First add some items below.",
+    "de": "Legen Sie zuerst unten einige Artikel an.",
+    "sv": "Lägg först till några varor nedan.",
+    "no": "Legg først til noen varer nedenfor.",
+    "fr": "Ajoutez d'abord des articles ci-dessous.",
+    "es": "Primero añade artículos abajo."
+  },
+  "på lager": {
+    "en": "in stock",
+    "de": "auf Lager",
+    "sv": "i lager",
+    "no": "på lager",
+    "fr": "en stock",
+    "es": "en stock"
+  },
+  "Betalt med": {
+    "en": "Paid with",
+    "de": "Bezahlt mit",
+    "sv": "Betalt med",
+    "no": "Betalt med",
+    "fr": "Payé par",
+    "es": "Pagado con"
+  },
+  "Kontant": {
+    "en": "Cash",
+    "de": "Bar",
+    "sv": "Kontant",
+    "no": "Kontant",
+    "fr": "Espèces",
+    "es": "Efectivo"
+  },
+  "Kort (egen terminal)": {
+    "en": "Card (own terminal)",
+    "de": "Karte (eigenes Terminal)",
+    "sv": "Kort (egen terminal)",
+    "no": "Kort (egen terminal)",
+    "fr": "Carte (votre terminal)",
+    "es": "Tarjeta (terminal propio)"
+  },
+  "Medlemmets wallet": {
+    "en": "Member's wallet",
+    "de": "Wallet des Mitglieds",
+    "sv": "Medlemmens wallet",
+    "no": "Medlemmets wallet",
+    "fr": "Portefeuille du membre",
+    "es": "Monedero del socio"
+  },
+  "Medlemmets e-mail": {
+    "en": "Member's e-mail",
+    "de": "E-Mail des Mitglieds",
+    "sv": "Medlemmens e-post",
+    "no": "Medlemmets e-post",
+    "fr": "E-mail du membre",
+    "es": "Correo del socio"
+  },
+  "valgfri": {
+    "en": "optional",
+    "de": "optional",
+    "sv": "valfritt",
+    "no": "valgfritt",
+    "fr": "facultatif",
+    "es": "opcional"
+  },
+  "Registrér": {
+    "en": "Record",
+    "de": "Erfassen",
+    "sv": "Registrera",
+    "no": "Registrer",
+    "fr": "Enregistrer",
+    "es": "Registrar"
+  },
+  "Varer": {
+    "en": "Items",
+    "de": "Artikel",
+    "sv": "Varor",
+    "no": "Varer",
+    "fr": "Articles",
+    "es": "Artículos"
+  },
+  "stk.": {
+    "en": "pcs",
+    "de": "Stk.",
+    "sv": "st",
+    "no": "stk.",
+    "fr": "pcs",
+    "es": "uds."
+  },
+  "ubegrænset": {
+    "en": "unlimited",
+    "de": "unbegrenzt",
+    "sv": "obegränsat",
+    "no": "ubegrenset",
+    "fr": "illimité",
+    "es": "ilimitado"
+  },
+  "Gendan": {
+    "en": "Restore",
+    "de": "Wiederherstellen",
+    "sv": "Återställ",
+    "no": "Gjenopprett",
+    "fr": "Restaurer",
+    "es": "Restaurar"
+  },
+  "Ny vare": {
+    "en": "New item",
+    "de": "Neuer Artikel",
+    "sv": "Ny vara",
+    "no": "Ny vare",
+    "fr": "Nouvel article",
+    "es": "Nuevo artículo"
+  },
+  "fx Dåse bolde": {
+    "en": "e.g. Can of balls",
+    "de": "z. B. Dose Bälle",
+    "sv": "t.ex. Bollrör",
+    "no": "f.eks. Boks baller",
+    "fr": "ex. Tube de balles",
+    "es": "ej. Bote de pelotas"
+  },
+  "Lager": {
+    "en": "Stock",
+    "de": "Lager",
+    "sv": "Lager",
+    "no": "Lager",
+    "fr": "Stock",
+    "es": "Stock"
+  },
+  "tom = ubegrænset": {
+    "en": "empty = unlimited",
+    "de": "leer = unbegrenzt",
+    "sv": "tom = obegränsat",
+    "no": "tom = ubegrenset",
+    "fr": "vide = illimité",
+    "es": "vacío = ilimitado"
+  },
+  "Gavekort": {
+    "en": "Gift cards",
+    "de": "Gutscheine",
+    "sv": "Presentkort",
+    "no": "Gavekort",
+    "fr": "Cartes cadeaux",
+    "es": "Tarjetas regalo"
+  },
+  "Se købssiden": {
+    "en": "View the purchase page",
+    "de": "Kaufseite ansehen",
+    "sv": "Visa köpsidan",
+    "no": "Se kjøpssiden",
+    "fr": "Voir la page d'achat",
+    "es": "Ver la página de compra"
+  },
+  "Købes på klubbens side og betales til klubbens konto. Modtageren indløser koden til sin klubwallet, som betaler for baner, hold og butik.": {
+    "en": "Bought on the club page and paid to the club's account. The recipient redeems the code into their club wallet, which pays for courts, teams and the shop.",
+    "de": "Wird auf der Clubseite gekauft und auf das Clubkonto gezahlt. Der Empfänger löst den Code in sein Club-Wallet ein, das Plätze, Teams und Shop bezahlt.",
+    "sv": "Köps på klubbens sida och betalas till klubbens konto. Mottagaren löser in koden till sin klubbwallet, som betalar banor, lag och butik.",
+    "no": "Kjøpes på klubbens side og betales til klubbens konto. Mottakeren løser inn koden til sin klubbwallet, som betaler for baner, lag og butikk.",
+    "fr": "Acheté sur la page du club et versé sur le compte du club. Le destinataire crédite le code sur son portefeuille club, qui paie terrains, équipes et boutique.",
+    "es": "Se compra en la página del club y se paga a la cuenta del club. El destinatario canjea el código en su monedero del club, que paga pistas, equipos y tienda."
+  },
+  "Ingen gavekort solgt endnu.": {
+    "en": "No gift cards sold yet.",
+    "de": "Noch keine Gutscheine verkauft.",
+    "sv": "Inga presentkort sålda än.",
+    "no": "Ingen gavekort solgt ennå.",
+    "fr": "Aucune carte cadeau vendue pour l'instant.",
+    "es": "Aún no se han vendido tarjetas regalo."
+  },
+  "Seneste salg": {
+    "en": "Latest sales",
+    "de": "Letzte Verkäufe",
+    "sv": "Senaste försäljningar",
+    "no": "Siste salg",
+    "fr": "Dernières ventes",
+    "es": "Últimas ventas"
+  },
+  "Ingen salg endnu.": {
+    "en": "No sales yet.",
+    "de": "Noch keine Verkäufe.",
+    "sv": "Inga försäljningar än.",
+    "no": "Ingen salg ennå.",
+    "fr": "Aucune vente pour l'instant.",
+    "es": "Aún no hay ventas."
+  },
+  "Uge fra": {
+    "en": "Week of",
+    "de": "Woche ab",
+    "sv": "Vecka från",
+    "no": "Uke fra",
+    "fr": "Semaine du",
+    "es": "Semana del"
+  },
+  "Ny vagt": {
+    "en": "New shift",
+    "de": "Neue Schicht",
+    "sv": "Nytt pass",
+    "no": "Ny vakt",
+    "fr": "Nouveau créneau",
+    "es": "Nuevo turno"
+  },
+  "fx Reception, Træner": {
+    "en": "e.g. Front desk, Coach",
+    "de": "z. B. Rezeption, Trainer",
+    "sv": "t.ex. Reception, Tränare",
+    "no": "f.eks. Resepsjon, Trener",
+    "fr": "ex. Accueil, Coach",
+    "es": "ej. Recepción, Entrenador"
+  },
+  "Dag": {
+    "en": "Day",
+    "de": "Tag",
+    "sv": "Dag",
+    "no": "Dag",
+    "fr": "Jour",
+    "es": "Día"
+  },
+  "Gentag i uger": {
+    "en": "Repeat for weeks",
+    "de": "Wochen wiederholen",
+    "sv": "Upprepa i veckor",
+    "no": "Gjenta i uker",
+    "fr": "Répéter (semaines)",
+    "es": "Repetir (semanas)"
+  },
+  "Tilføj vagt": {
+    "en": "Add shift",
+    "de": "Schicht hinzufügen",
+    "sv": "Lägg till pass",
+    "no": "Legg til vakt",
+    "fr": "Ajouter le créneau",
+    "es": "Añadir turno"
+  },
+  "Events og rangliste": {
+    "en": "Events and ladder",
+    "de": "Veranstaltungen und Rangliste",
+    "sv": "Evenemang och ranking",
+    "no": "Arrangementer og rangliste",
+    "fr": "Événements et classement",
+    "es": "Eventos y ranking"
+  },
+  "Turneringer, ligaer, sociale arrangementer og klubbens rangliste.": {
+    "en": "Tournaments, leagues, socials and the club ladder.",
+    "de": "Turniere, Ligen, Social-Events und die Club-Rangliste.",
+    "sv": "Turneringar, ligor, sociala evenemang och klubbens ranking.",
+    "no": "Turneringer, ligaer, sosiale arrangementer og klubbens rangliste.",
+    "fr": "Tournois, ligues, événements sociaux et classement du club.",
+    "es": "Torneos, ligas, eventos sociales y el ranking del club."
+  },
+  "Mails til medlemmer": {
+    "en": "Member e-mails",
+    "de": "E-Mails an Mitglieder",
+    "sv": "Mejl till medlemmar",
+    "no": "E-post til medlemmer",
+    "fr": "E-mails aux membres",
+    "es": "Correos a socios"
+  },
+  "Send en mail til alle medlemmer og se, hvad der er sendt.": {
+    "en": "E-mail every member and see what was sent.",
+    "de": "Alle Mitglieder anschreiben und sehen, was gesendet wurde.",
+    "sv": "Mejla alla medlemmar och se vad som skickats.",
+    "no": "Send e-post til alle medlemmer og se hva som er sendt.",
+    "fr": "Écrire à tous les membres et voir ce qui a été envoyé.",
+    "es": "Enviar un correo a todos los socios y ver lo enviado."
+  },
+  "Butik og gavekort": {
+    "en": "Shop and gift cards",
+    "de": "Shop und Gutscheine",
+    "sv": "Butik och presentkort",
+    "no": "Butikk og gavekort",
+    "fr": "Boutique et cartes cadeaux",
+    "es": "Tienda y tarjetas regalo"
+  },
+  "Salg i receptionen, varelager og gavekort.": {
+    "en": "Front-desk sales, stock and gift cards.",
+    "de": "Verkauf an der Rezeption, Lager und Gutscheine.",
+    "sv": "Försäljning i receptionen, lager och presentkort.",
+    "no": "Salg i resepsjonen, lager og gavekort.",
+    "fr": "Ventes à l'accueil, stock et cartes cadeaux.",
+    "es": "Ventas en recepción, stock y tarjetas regalo."
+  },
+  "Vagtplan": {
+    "en": "Staff schedule",
+    "de": "Dienstplan",
+    "sv": "Schema",
+    "no": "Vaktplan",
+    "fr": "Planning du personnel",
+    "es": "Turnos"
+  },
+  "Hvem er på arbejde hvornår.": {
+    "en": "Who works when.",
+    "de": "Wer wann arbeitet.",
+    "sv": "Vem som jobbar när.",
+    "no": "Hvem som jobber når.",
+    "fr": "Qui travaille quand.",
+    "es": "Quién trabaja cuándo."
+  },
+  "Rapporter": {
+    "en": "Reports",
+    "de": "Berichte",
+    "sv": "Rapporter",
+    "no": "Rapporter",
+    "fr": "Rapports",
+    "es": "Informes"
+  },
+  "Indtægter pr. måned og kategori, eksport til regnskab.": {
+    "en": "Revenue by month and category, export for accounting.",
+    "de": "Einnahmen pro Monat und Kategorie, Export für die Buchhaltung.",
+    "sv": "Intäkter per månad och kategori, export till bokföring.",
+    "no": "Inntekter per måned og kategori, eksport til regnskap.",
+    "fr": "Recettes par mois et catégorie, export comptable.",
+    "es": "Ingresos por mes y categoría, exportación contable."
+  },
+  "Events, turneringer og rangliste": {
+    "en": "Events, tournaments and ladder",
+    "de": "Veranstaltungen, Turniere und Rangliste",
+    "sv": "Evenemang, turneringar och ranking",
+    "no": "Arrangementer, turneringer og rangliste",
+    "fr": "Événements, tournois et classement",
+    "es": "Eventos, torneos y ranking"
+  },
+  "Mails og sms til medlemmer": {
+    "en": "Member e-mails and SMS",
+    "de": "E-Mails und SMS an Mitglieder",
+    "sv": "Mejl och sms till medlemmar",
+    "no": "E-post og sms til medlemmer",
+    "fr": "E-mails et SMS aux membres",
+    "es": "Correos y SMS a socios"
+  },
+  "Rapporter og regnskabseksport": {
+    "en": "Reports and accounting export",
+    "de": "Berichte und Buchhaltungsexport",
+    "sv": "Rapporter och bokföringsexport",
+    "no": "Rapporter og regnskapseksport",
+    "fr": "Rapports et export comptable",
+    "es": "Informes y exportación contable"
+  },
+  "Opretter…": {
+    "en": "Creating…",
+    "de": "Wird angelegt…",
+    "sv": "Skapar…",
+    "no": "Oppretter…",
+    "fr": "Création…",
+    "es": "Creando…"
+  },
+  "Sender…": {
+    "en": "Sending…",
+    "de": "Wird gesendet…",
+    "sv": "Skickar…",
+    "no": "Sender…",
+    "fr": "Envoi…",
+    "es": "Enviando…"
+  },
+  "Pris": {
+    "en": "Price",
+    "de": "Preis",
+    "sv": "Pris",
+    "no": "Pris",
+    "fr": "Prix",
+    "es": "Precio"
+  },
+  "Sendt til {n} af {m} medlemmer.": {
+    "en": "Sent to {n} of {m} members.",
+    "de": "An {n} von {m} Mitgliedern gesendet.",
+    "sv": "Skickat till {n} av {m} medlemmar.",
+    "no": "Sendt til {n} av {m} medlemmer.",
+    "fr": "Envoyé à {n} membres sur {m}.",
+    "es": "Enviado a {n} de {m} socios."
+  },
+  "{name} er oprettet. Medlemmer kan nu melde sig til på klubbens side.": {
+    "en": "{name} created. Members can now join from the club page.",
+    "de": "{name} wurde angelegt. Mitglieder können jetzt auf der Clubseite beitreten.",
+    "sv": "{name} har skapats. Medlemmar kan nu gå med på klubbens sida.",
+    "no": "{name} er opprettet. Medlemmer kan nå melde seg på klubbens side.",
+    "fr": "{name} a été créé. Les membres peuvent s'inscrire depuis la page du club.",
+    "es": "{name} se ha creado. Los socios ya pueden apuntarse desde la página del club."
+  },
+  "Salg registreret: {n} {c}.": {
+    "en": "Sale recorded: {n} {c}.",
+    "de": "Verkauf erfasst: {n} {c}.",
+    "sv": "Försäljning registrerad: {n} {c}.",
+    "no": "Salg registrert: {n} {c}.",
+    "fr": "Vente enregistrée : {n} {c}.",
+    "es": "Venta registrada: {n} {c}."
+  },
+  "{n} vagter oprettet.": {
+    "en": "{n} shifts created.",
+    "de": "{n} Schichten angelegt.",
+    "sv": "{n} pass skapade.",
+    "no": "{n} vakter opprettet.",
+    "fr": "{n} créneaux créés.",
+    "es": "{n} turnos creados."
+  },
+  "Vagten er oprettet.": {
+    "en": "Shift created.",
+    "de": "Schicht angelegt.",
+    "sv": "Passet har skapats.",
+    "no": "Vakten er opprettet.",
+    "fr": "Créneau créé.",
+    "es": "Turno creado."
   }
 }

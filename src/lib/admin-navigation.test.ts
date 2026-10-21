@@ -29,7 +29,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
   }
   const club = {currency:"DKK",timeZone:"Europe/Copenhagen",country:"DK",solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
   const db: any = { club: {findUnique: async ({where}: any) => { assert.equal(where.id, 'club-a'); return club; }} };
-  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel']) {
+  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel','clubBroadcast','clubEvent','ladder','shopItem','shopSale','giftCard','staffShift','user']) {
     db[model] = {findMany: async () => {queries.push(model);return [];}, findUnique: async () => {queries.push(model);return null;}};
   }
   Object.assign(mocks, {
@@ -43,7 +43,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
     '../../lib/stripe': {stripeEnabled:async()=>true}, '../../lib/billing': {subscriptionIsActive:()=>true},
     '../../lib/club-dashboard': {loadClubDashboard:async()=>({club:{...club,courts:[]},today:{bookings:0,hours:0,utilization:0,hoursElapsed:0,remaining:[],revenueKr:0},week:{bookings:0,bookingsChange:0,utilization:0,utilizationLastWeek:0,paidOutKr:0,paidOutChange:0,days:[],trend:[]},upcoming:[],tasks:[],members:0,stripeOn:true})},
     '../../lib/integrations/types': {INTEGRATION_LABELS:{MANUAL:'Manual'}},
-    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
+    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/broadcast': {broadcastRecipients:async()=>[]}, '../../lib/sms': {smsConfigured:()=>false}, '../../lib/reports': {revenueLines:async()=>[],summarize:()=>[],CATEGORIES:[]}, '../../lib/events': {ladderStandings:async()=>[]}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
     'next/navigation': {redirect:(path:string)=>{throw Error(`redirect:${path}`);}},
   });
   return {run:loadIsolatedModule(file,mocks).default,queries};
@@ -55,7 +55,7 @@ function componentNames(node:any): string[] {
 }
 const forms: Record<string,string[]> = {
   oversigt:[], bookinger:['FixedSlotForm'], tider:['ReleaseForm','RuleForm'], medlemmer:['MembershipForm','BillingPanel'], hold:['TeamForm'], nyheder:['PostForm'], baner:['CourtForm'],
-  'lys-adgang':['ClubControlPanel'], priser:['PriceRuleForm','PunchCardForm'], betaling:[], integrationer:['IntegrationForm','SystemLoginForm'], hjemmeside:['SiteForm','DomainForm','ImageForms'], indstillinger:['AdminsForm','PeopleForm'],
+  'lys-adgang':['ClubControlPanel'], priser:['PriceRuleForm','PunchCardForm'], events:['EventsPanel'], kommunikation:['CommunicationPanel'], butik:['ShopPanel'], vagtplan:['StaffPanel'], rapporter:['ReportsPanel'], betaling:[], integrationer:['IntegrationForm','SystemLoginForm'], hjemmeside:['SiteForm','DomainForm','ImageForms'], indstillinger:['AdminsForm','PeopleForm'],
 };
 for(const page of navigation.ADMIN_PAGES) test(`admin page ${page.id} renders only its own tools`, async()=>{
   const f=fixture(); const tree=await f.run({section:page.id,searchParams:Promise.resolve({})});

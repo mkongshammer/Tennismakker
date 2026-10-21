@@ -36,6 +36,7 @@ import { countsAsMember, joinMembership } from "./memberships";
 import { buyPunchCard, spendPunch } from "./punch-cards";
 import { signUpForTeam } from "./teams";
 import { setAutoRenew, startCardSetup } from "./renewals";
+import { waiverStatus, acceptWaiver, guestCharge } from "./waiver";
 import { creditsWith, spendCredit, startPackageCheckout } from "./packages";
 import {
   lessonEnd,
@@ -515,13 +516,23 @@ export async function bookCourtSlot(formData: FormData) {
     }
   }
 
+  // Waiver and guests: the club's rules, checked on the server like the rest.
+  const waiver = await waiverStatus(user.id, court.club);
+  if (waiver.required) {
+    if (formData.get("waiver") !== "on") fail("waiver");
+    await acceptWaiver(user.id, court.clubId, court.club.waiverVersion);
+  }
+  const guests = guestCharge(court.club, formData.get("guests"));
+
   const booking = await createCourtReservation({
     data: {
       kind: "COURT",
       status: "HOLD",
       startsAt,
       endsAt,
-      priceKr: slot!.priceKr,
+      priceKr: slot!.priceKr + guests.guestFeeKr,
+      guestCount: guests.guestCount,
+      guestFeeKr: guests.guestFeeKr,
       holdExpiresAt: addMinutes(new Date(), HOLD_MINUTES),
       userId: user.id,
       courtId,
@@ -535,7 +546,7 @@ export async function bookCourtSlot(formData: FormData) {
   //
   // Kun hvis timen koster noget. Er den gratis i forvejen, ville et klip
   // være spildt.
-  if (slot!.priceKr > 0) {
+  if (slot!.priceKr > 0 && guests.guestFeeKr === 0) {
     const punch = await spendPunch(user.id, court.clubId);
     if (punch) {
       const confirmed = await db.booking.update({
@@ -560,7 +571,7 @@ export async function bookCourtSlot(formData: FormData) {
   // Det er dét, der gør os til en erstatning frem for et tillæg: et medlem,
   // der betaler kontingent, skal ikke igennem en betalingsside for at
   // bruge sin egen klubs bane.
-  if (slot!.priceKr <= 0) {
+  if (slot!.priceKr + guests.guestFeeKr <= 0) {
     const confirmed = await db.booking.update({
       where: { id: booking.id },
       data: { status: "CONFIRMED", holdExpiresAt: null },
@@ -1602,10 +1613,12 @@ export async function createMembershipType(_prev: unknown, formData: FormData) {
   }
   if (toDate < fromDate) return { error: "Sæsonen skal slutte efter den begynder." };
 
+  const interval = formData.get("interval") === "MONTH" ? "MONTH" : "SEASON";
+  const familySize = Math.min(10, Math.max(1, Number(formData.get("familySize") ?? 1) || 1));
   const count = await db.membershipType.count({ where: { clubId } });
 
   await db.membershipType.create({
-    data: { clubId, name, seasonName, description, fromDate, toDate, priceKr, capacity, sortOrder: count },
+    data: { clubId, name, seasonName, description, fromDate, toDate, priceKr, capacity, sortOrder: count, interval, familySize },
   });
 
   revalidatePath("/admin", "layout");
@@ -1642,8 +1655,9 @@ export async function joinClubMembership(formData: FormData) {
 
   const typeId = String(formData.get("typeId") ?? "");
   const slug = String(formData.get("slug") ?? "");
+  const dependents = formData.getAll("dependent").map((d) => String(d).trim()).filter(Boolean).slice(0, 9);
 
-  const result = await joinMembership(user!.id, typeId);
+  const result = await joinMembership(user!.id, typeId, { dependents });
 
   if (!result.ok) {
     redirect(`/clubs/${slug}?kontingent=${encodeURIComponent(result.error)}`);

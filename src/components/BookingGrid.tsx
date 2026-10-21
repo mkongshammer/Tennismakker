@@ -53,8 +53,11 @@ function Book({
   style,
   children,
   loggedIn,
-  loginHref = "/login"
-}: {courtId: string;startsAt: string;className: string;style?: React.CSSProperties;children: React.ReactNode;loggedIn: boolean;loginHref?: string;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
+  loginHref = "/login",
+  guests = 0,
+  waiver = false,
+  disabled = false
+}: {courtId: string;startsAt: string;className: string;style?: React.CSSProperties;children: React.ReactNode;loggedIn: boolean;loginHref?: string;guests?: number;waiver?: boolean;disabled?: boolean;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   if (!loggedIn) {
     return (
       <a href={loginHref} className={className} style={style}>
@@ -66,7 +69,9 @@ function Book({
     <form action={bookCourtSlot}>
       <input type="hidden" name="courtId" value={courtId} />
       <input type="hidden" name="startsAt" value={startsAt} />
-      <button className={className} style={style}>
+      <input type="hidden" name="guests" value={guests} />
+      {waiver && <input type="hidden" name="waiver" value="on" />}
+      <button className={className} style={style} disabled={disabled} aria-disabled={disabled}>
         <BookButtonContent>{children}</BookButtonContent>
       </button>
     </form>);
@@ -80,8 +85,36 @@ export function BookingGrid({
   loggedIn,
   locale,
   currency = "DKK", timeZone = "Europe/Copenhagen",
-  loginHref = "/login"
-}: {courts: Court[];slots: Slot[];hours: number[];loggedIn: boolean;locale: Locale;currency?: string;timeZone?: string;loginHref?: string;}) {const { tr } = useWebsiteInternational();
+  loginHref = "/login",
+  guestFeeKr = 0,
+  guestMax = 0,
+  waiverText = null,
+  waiverRequired = false
+}: {courts: Court[];slots: Slot[];hours: number[];loggedIn: boolean;locale: Locale;currency?: string;timeZone?: string;loginHref?: string;guestFeeKr?: number;guestMax?: number;waiverText?: string | null;waiverRequired?: boolean;}) {const { tr } = useWebsiteInternational();
+  const [guests, setGuests] = useState(0);
+  const [waiverOk, setWaiverOk] = useState(false);
+  const blocked = loggedIn && waiverRequired && !waiverOk;
+  const bookProps = { guests, waiver: waiverOk, disabled: blocked };
+  const options = loggedIn && (guestMax > 0 || waiverRequired) ? (
+    <div className="mb-3 space-y-3 rounded-2xl border border-slate/15 bg-chalk p-4 text-sm">
+      {guestMax > 0 && (
+        <label className="flex flex-wrap items-center gap-3">
+          <span className="font-semibold">{tr("Gæster med på bookingen")}</span>
+          <select className="input w-auto py-1.5" value={guests} onChange={(e) => setGuests(Number(e.target.value))}>
+            {Array.from({ length: guestMax + 1 }).map((_, n) => <option key={n} value={n}>{n === 0 ? tr("Ingen") : `${n}`}</option>)}
+          </select>
+          <span className="text-slate">{guestFeeKr > 0 ? `${formatMoney(guestFeeKr, currency, locale)} ${tr("pr. gæst, lægges til prisen")}` : tr("Gratis")}</span>
+        </label>
+      )}
+      {waiverRequired && (
+        <details className="rounded-xl bg-mist p-3" open>
+          <summary className="cursor-pointer font-semibold">{tr("Klubbens ansvarsfraskrivelse")}</summary>
+          <p className="mt-2 max-h-48 overflow-y-auto whitespace-pre-line text-xs leading-relaxed text-slate">{waiverText}</p>
+          <label className="mt-3 flex items-start gap-2 font-semibold"><input type="checkbox" className="mt-0.5" checked={waiverOk} onChange={(e) => setWaiverOk(e.target.checked)} />{tr("Jeg har læst og accepterer ansvarsfraskrivelsen")}</label>
+        </details>
+      )}
+    </div>
+  ) : null;
   // Americans read "8:00 AM"; everyone else keeps the 24-hour clock.
   const twelveHour = locale === "en-US";
   const money = (n: number) => formatMoney(n, currency, locale),clock = (iso: string) => formatDate(iso, locale, timeZone, { hour: twelveHour ? "numeric" : "2-digit", minute: "2-digit", hour12: twelveHour });
@@ -112,6 +145,7 @@ export function BookingGrid({
 
   return (
     <>
+      {options}
       {/* Telefon */}
       <div className="space-y-2.5 sm:hidden">
         {hoursWithSlots.map((hour) => {
@@ -129,6 +163,7 @@ export function BookingGrid({
                 startsAt={slot.startsAt}
                 loggedIn={loggedIn}
                 loginHref={loginHref}
+                {...bookProps}
                 style={{ ["--sport" as any]: tint }}
                 className="court-tile flex w-full items-center justify-between px-4 pb-6 pt-4 text-left">
 
@@ -181,6 +216,7 @@ export function BookingGrid({
                       startsAt={slot.startsAt}
                       loggedIn={loggedIn}
                 loginHref={loginHref}
+                      {...bookProps}
                       style={{ ["--sport" as any]: tint }}
                       className="court-tile px-3 pb-6 pt-3 text-left">
 
@@ -244,6 +280,7 @@ export function BookingGrid({
                         startsAt={slot.startsAt}
                         loggedIn={loggedIn}
                 loginHref={loginHref}
+                        {...bookProps}
                         style={{ ["--sport" as any]: tint }}
                         className="court-tile block w-full pb-4 pt-2.5 text-center">
 

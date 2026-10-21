@@ -27,6 +27,7 @@ import { INTEGRATION_LABELS } from "../../lib/integrations/types";
 import { SURFACES } from "../../lib/levels";
 import { IntegrationForm } from "./IntegrationForm";
 import { ReleaseForm } from "./ReleaseForm";
+import { BookingRulesForm } from "./BookingRulesForm";
 import { RuleForm } from "./RuleForm";
 import { SiteForm, PostForm } from "./SiteForm";
 import { PeopleForm } from "./PeopleForm";
@@ -39,6 +40,15 @@ import { ClubControlPanel } from "./ClubControlPanel";
 import { blockSummary } from "../../lib/system-blocks";
 import { MembershipForm } from "./MembershipForm";
 import { BillingPanel } from "./BillingPanel";
+import { CommunicationPanel } from "./CommunicationPanel";
+import { ReportsPanel } from "./ReportsPanel";
+import { EventsPanel } from "./EventsPanel";
+import { ShopPanel } from "./ShopPanel";
+import { StaffPanel } from "./StaffPanel";
+import { broadcastRecipients } from "../../lib/broadcast";
+import { smsConfigured } from "../../lib/sms";
+import { revenueLines, summarize, CATEGORIES } from "../../lib/reports";
+import { ladderStandings } from "../../lib/events";
 import { clubBillingOverview } from "../../lib/member-billing";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -62,7 +72,7 @@ export default async function AdminPageContent({
 
 
 
-}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;}>;section?: AdminSection;}) {
+}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;from?: string;to?: string;uge?: string;}>;section?: AdminSection;}) {
   const query = await searchParams;
   const prefs = await getPreferences();const tr=(text:string,params?:Record<string,string|number>)=>phrase(text,prefs.locale,params);
   if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][]).toString()}`);
@@ -250,7 +260,7 @@ export default async function AdminPageContent({
                 {formatDate(b.startsAt, prefs.locale, b.timeZone, { weekday: "short", day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" })}–{formatDate(b.endsAt, prefs.locale, b.timeZone, { hour: "2-digit", minute: "2-digit" })} ·{" "}
                 {b.court?.name}
               </span>
-              <span>{b.user.name}</span>
+              <span>{b.user.name}{b.guestCount > 0 && <span className="text-slate"> +{b.guestCount}</span>}{club.checkInEnabled && b.checkedInAt && <span className="ml-2 rounded-full bg-success-soft px-2 py-0.5 text-xs font-bold text-success-ink">{tr("tjekket ind")}</span>}</span>
               <span className="text-slate">
                 {formatMoney(b.priceKr, b.currency, prefs.locale)}
                 {b.needsClubEntry && !b.clubEnteredAt &&
@@ -277,6 +287,7 @@ export default async function AdminPageContent({
       </section>}
 </>}
 {section === 'tider' && <>
+<BookingRulesForm club={{ guestFeeKr: club.guestFeeKr, guestMax: club.guestMax, waiverText: club.waiverText, checkInEnabled: club.checkInEnabled, noShowReleaseMinutes: club.noShowReleaseMinutes }} />
 {club.integrationType === "MANUAL" &&
               <section>
           <h2 className="display mb-1 text-2xl">{tr("Frigiv tider til g\xE6ster")}</h2>
@@ -425,7 +436,9 @@ export default async function AdminPageContent({
                     priceKr: t.priceKr,
                     capacity: t.capacity,
                     active: t.active,
-                    paid: t._count.memberships
+                    paid: t._count.memberships,
+                    interval: t.interval,
+                    familySize: t.familySize
                   }))} />
 
       </section>
@@ -434,6 +447,49 @@ export default async function AdminPageContent({
 <BillingPanel part="settings" types={[]} members={0} chargesEnabled={club.stripeChargesEnabled}
   settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />
 </>}
+{section === 'kommunikation' && await (async () => {
+  const [all, paid, history] = await Promise.all([broadcastRecipients(club.id, 'ALL'), broadcastRecipients(club.id, 'PAID'), db.clubBroadcast.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 30 })]);
+  return <CommunicationPanel counts={{ all: all.length, paid: paid.length }} history={history} smsReminders={club.smsReminders} smsReady={smsConfigured()} />;
+})()}
+{section === 'rapporter' && await (async () => {
+  const todayKey = dayKey(new Date(), club.timeZone);
+  const defaultFrom = `${todayKey.slice(0, 4)}-01-01`;
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(String(query.from ?? '')) ? String(query.from) : defaultFrom;
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(String(query.to ?? '')) ? String(query.to) : todayKey;
+  const lines = await revenueLines(club.id, wallTime(from, 0, 0, club.timeZone)!, new Date(wallTime(to, 0, 0, club.timeZone)!.getTime() + 86_400_000), club.timeZone);
+  return <ReportsPanel months={summarize(lines, club.timeZone)} categories={CATEGORIES} from={from} to={to} recent={lines.slice(-25).reverse().map((l) => ({ ...l, date: l.date.toISOString() }))} />;
+})()}
+{section === 'events' && await (async () => {
+  const [events, ladders] = await Promise.all([
+    db.clubEvent.findMany({ where: { clubId: club.id }, orderBy: { startsAt: 'desc' }, take: 40, include: { signups: { where: { status: 'PAID' }, include: { user: { select: { name: true, email: true } } } } } }),
+    db.ladder.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, include: { _count: { select: { entries: true } } } }),
+  ]);
+  const ladderViews = [];
+  for (const l of ladders) ladderViews.push({ id: l.id, name: l.name, sport: l.sport, active: l.active, players: l._count.entries, top: (await ladderStandings(l.id)).slice(0, 6) });
+  const sports = selectedSports.length ? selectedSports : ['TENNIS'];
+  return <EventsPanel slug={club.slug} sports={sports as string[]} sportLabels={Object.fromEntries((sports as string[]).map((s) => [s, sportLabel(s as any, prefs.locale)]))} ladders={ladderViews}
+    events={events.map((e) => ({ id: e.id, name: e.name, kind: e.kind, sport: e.sport, startsAt: e.startsAt, endsAt: e.endsAt, priceKr: e.priceKr, capacity: e.capacity, active: e.active, signups: e.signups.map((s) => ({ id: s.id, name: s.user.name, email: s.user.email, status: s.status, paidAt: s.paidAt })) }))} />;
+})()}
+{section === 'butik' && await (async () => {
+  const [items, sales, gifts] = await Promise.all([
+    db.shopItem.findMany({ where: { clubId: club.id }, orderBy: [{ active: 'desc' }, { sortOrder: 'asc' }] }),
+    db.shopSale.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 30 }),
+    db.giftCard.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 50 }),
+  ]);
+  const buyers = new Map((await db.user.findMany({ where: { id: { in: sales.map((s) => s.userId).filter((x): x is string => Boolean(x)) } }, select: { id: true, name: true } })).map((u) => [u.id, u.name]));
+  return <ShopPanel slug={club.slug} items={items} gifts={gifts} sales={sales.map((s) => ({ id: s.id, items: s.items, totalKr: s.totalKr, method: s.method, createdAt: s.createdAt, buyer: s.userId ? buyers.get(s.userId) ?? null : null }))} />;
+})()}
+{section === 'vagtplan' && await (async () => {
+  const todayKey = dayKey(new Date(), club.timeZone);
+  const offset = Math.max(-52, Math.min(52, Number(query.uge ?? 0) || 0));
+  const monday = (() => { const d = new Date(`${todayKey}T00:00:00Z`); const dow = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - dow + offset * 7); return d.toISOString().slice(0, 10); })();
+  const keys = Array.from({ length: 7 }, (_, i) => { const d = new Date(`${monday}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10); });
+  const start = wallTime(keys[0], 0, 0, club.timeZone)!, end = new Date(wallTime(keys[6], 0, 0, club.timeZone)!.getTime() + 86_400_000);
+  const shifts = await db.staffShift.findMany({ where: { clubId: club.id, startsAt: { gte: start, lt: end } }, orderBy: { startsAt: 'asc' } });
+  const people = [...new Set((await db.staffShift.findMany({ where: { clubId: club.id }, select: { personName: true }, distinct: ['personName'], take: 50 })).map((p) => p.personName))];
+  return <StaffPanel weekStart={start} prevHref={`/admin/vagtplan?uge=${offset - 1}`} nextHref={`/admin/vagtplan?uge=${offset + 1}`} people={people}
+    days={keys.map((k) => ({ key: k, date: wallTime(k, 12, 0, club.timeZone)!, shifts: shifts.filter((s) => dayKey(s.startsAt, club.timeZone) === k) }))} />;
+})()}
 {section === 'hold' && <>
 <section className="card">
         <h2 className="display mb-1 text-2xl">{tr("S\xE6sonhold")}</h2>
