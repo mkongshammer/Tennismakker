@@ -9,5 +9,5 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user || user.role !== "CLUB_ADMIN" || !user.clubId) return new Response("Forbidden", { status: 403 });
   if (!quickBooksConfigured()) redirect("/admin/rapporter?quickbooks=not-configured");
-  redirect(authorizeUrl(user.clubId));
+  redirect(await authorizeUrl(user.clubId));
 }

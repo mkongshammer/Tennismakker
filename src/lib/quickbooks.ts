@@ -39,11 +39,29 @@ export const redirectUri = () => `${settingsSnapshot().appUrl}/api/quickbooks/ca
 
 // ---------- OAuth ----------
 
+// Intuit publishes its OAuth endpoints in a discovery document. We read it
+// (cached for a day) and fall back to the well-known addresses if it is
+// unreachable, so a moved endpoint never takes the integration down.
+const DISCOVERY = { production: "https://developer.api.intuit.com/.well-known/openid_configuration", sandbox: "https://developer.api.intuit.com/.well-known/openid_sandbox_configuration" };
+let discovered: { at: number; authorization_endpoint?: string; token_endpoint?: string; revocation_endpoint?: string } | null = null;
+async function endpoints() {
+  const e = env();
+  if (process.env.INTUIT_TOKEN_URL && !e.production) return { auth: e.authUrl, token: e.tokenUrl, revoke: e.revokeUrl }; // the local test double
+  if (!discovered || Date.now() - discovered.at > 86_400_000) {
+    try {
+      const res = await fetch(DISCOVERY[e.production ? "production" : "sandbox"], { signal: AbortSignal.timeout(5000) });
+      if (res.ok) discovered = { at: Date.now(), ...(await res.json()) };
+    } catch { /* keep the fallback */ }
+  }
+  return { auth: discovered?.authorization_endpoint ?? e.authUrl, token: discovered?.token_endpoint ?? e.tokenUrl, revoke: discovered?.revocation_endpoint ?? e.revokeUrl };
+}
+
+
 const sign = (s: string) => crypto.createHmac("sha256", process.env.AUTH_SECRET ?? "").update(s).digest("base64url");
-export function authorizeUrl(clubId: string) {
+export async function authorizeUrl(clubId: string) {
   const state = `${clubId}.${Date.now()}`;
   const q = new URLSearchParams({ client_id: env().id, response_type: "code", scope: SCOPE, redirect_uri: redirectUri(), state: `${state}.${sign(state)}` });
-  return `${env().authUrl}?${q}`;
+  return `${(await endpoints()).auth}?${q}`;
 }
 export function clubFromState(state: string): string | null {
   const [clubId, ts, sig] = state.split(".");
@@ -52,11 +70,17 @@ export function clubFromState(state: string): string | null {
   return clubId;
 }
 
+export class QuickBooksAuthError extends Error { code: string; constructor(code: string, message: string) { super(message); this.code = code; } }
+
 async function tokenRequest(body: Record<string, string>) {
   const basic = Buffer.from(`${env().id}:${env().secret}`).toString("base64");
-  const res = await fetch(env().tokenUrl, { method: "POST", headers: { Authorization: `Basic ${basic}`, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(body) });
+  const res = await fetch((await endpoints()).token, { method: "POST", headers: { Authorization: `Basic ${basic}`, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(body) });
   const json = (await res.json().catch(() => ({}))) as { access_token?: string; refresh_token?: string; expires_in?: number; x_refresh_token_expires_in?: number; error?: string; error_description?: string };
-  if (!res.ok || !json.access_token || !json.refresh_token) throw Error(`QuickBooks token error: ${json.error_description ?? json.error ?? res.status}`);
+  const tid = res.headers.get("intuit_tid");
+  if (!res.ok || !json.access_token || !json.refresh_token) {
+    console.error("QuickBooks token error", { status: res.status, error: json.error, intuit_tid: tid });
+    throw new QuickBooksAuthError(json.error ?? `http_${res.status}`, `QuickBooks token error: ${json.error_description ?? json.error ?? res.status}${tid ? ` (intuit_tid ${tid})` : ""}`);
+  }
   return { accessToken: json.access_token, refreshToken: json.refresh_token, accessExpiresAt: new Date(Date.now() + (json.expires_in ?? 3600) * 1000 - 60_000), refreshExpiresAt: new Date(Date.now() + (json.x_refresh_token_expires_in ?? 100 * 86_400) * 1000) };
 }
 
@@ -78,7 +102,7 @@ export async function disconnectQuickBooks(clubId: string) {
   const acct = await db.clubAccounting.findUnique({ where: { clubId } });
   if (!acct) return;
   const basic = Buffer.from(`${env().id}:${env().secret}`).toString("base64");
-  await fetch(env().revokeUrl, { method: "POST", headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" }, body: JSON.stringify({ token: open(acct.refreshToken) }) }).catch(() => {});
+  await fetch((await endpoints()).revoke, { method: "POST", headers: { Authorization: `Basic ${basic}`, "Content-Type": "application/json" }, body: JSON.stringify({ token: open(acct.refreshToken) }) }).catch(() => {});
   await db.clubAccounting.delete({ where: { id: acct.id } });
 }
 
@@ -86,7 +110,15 @@ async function freshAccessToken(accountingId: string) {
   const acct = await db.clubAccounting.findUniqueOrThrow({ where: { id: accountingId } });
   if (acct.accessExpiresAt > new Date()) return { token: open(acct.accessToken), realmId: acct.realmId };
   if (acct.refreshExpiresAt < new Date()) throw Error("The QuickBooks connection has expired. Connect again.");
-  const t = await tokenRequest({ grant_type: "refresh_token", refresh_token: open(acct.refreshToken) });
+  let t;
+  try {
+    t = await tokenRequest({ grant_type: "refresh_token", refresh_token: open(acct.refreshToken) });
+  } catch (e) {
+    // invalid_grant means the refresh token is dead (revoked in QuickBooks, or
+    // rotated elsewhere): mark the connection expired so the club is asked to reconnect.
+    if (e instanceof QuickBooksAuthError && /invalid_grant|invalid_token/.test(e.code)) await db.clubAccounting.update({ where: { id: accountingId }, data: { refreshExpiresAt: new Date(0), lastError: "The QuickBooks connection was revoked. Connect again." } });
+    throw e;
+  }
   await db.clubAccounting.update({ where: { id: accountingId }, data: { accessToken: seal(t.accessToken), refreshToken: seal(t.refreshToken), accessExpiresAt: t.accessExpiresAt, refreshExpiresAt: t.refreshExpiresAt } });
   return { token: t.accessToken, realmId: acct.realmId };
 }
@@ -98,8 +130,12 @@ export async function qbo(accountingId: string, path: string, init?: { method?: 
   const res = await fetch(url, { method: init?.method ?? "GET", headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json" }, body: init?.body ? JSON.stringify(init.body) : undefined });
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) {
-    const fault = (json as { Fault?: { Error?: { Message?: string; Detail?: string }[] } }).Fault?.Error?.[0];
-    throw Error(`QuickBooks ${res.status}: ${fault?.Detail ?? fault?.Message ?? "request failed"}`);
+    // intuit_tid is the request id Intuit support asks for; it goes in the log and the error.
+    const tid = res.headers.get("intuit_tid");
+    const fault = (json as { Fault?: { Error?: { Message?: string; Detail?: string; code?: string }[] } }).Fault?.Error?.[0];
+    console.error("QuickBooks API error", { status: res.status, path: path.split("?")[0], code: fault?.code, message: fault?.Message, detail: fault?.Detail, intuit_tid: tid });
+    if (res.status === 401) await db.clubAccounting.update({ where: { id: accountingId }, data: { accessExpiresAt: new Date(0) } }).catch(() => {}); // force a refresh next time
+    throw Error(`QuickBooks ${res.status}: ${fault?.Detail ?? fault?.Message ?? "request failed"}${tid ? ` (intuit_tid ${tid})` : ""}`);
   }
   return json;
 }
