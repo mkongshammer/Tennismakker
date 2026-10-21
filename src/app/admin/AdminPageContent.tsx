@@ -50,6 +50,7 @@ import { broadcastRecipients } from "../../lib/broadcast";
 import { smsConfigured } from "../../lib/sms";
 import { revenueLines, summarize, CATEGORIES } from "../../lib/reports";
 import { ladderStandings } from "../../lib/events";
+import { tournamentView } from "../../lib/tournament";
 import { clubBillingOverview } from "../../lib/member-billing";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
@@ -469,9 +470,12 @@ export default async function AdminPageContent({
   ]);
   const ladderViews = [];
   for (const l of ladders) ladderViews.push({ id: l.id, name: l.name, sport: l.sport, active: l.active, players: l._count.entries, top: (await ladderStandings(l.id)).slice(0, 6) });
+  const whenOf = (d: Date | null) => (d ? formatDate(d, prefs.locale, club.timeZone, { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : null);
+  const draws = new Map<string, Awaited<ReturnType<typeof tournamentView>>>();
+  for (const e of events) if (e.drawnAt) draws.set(e.id, await tournamentView(e.id));
   const sports = selectedSports.length ? selectedSports : ['TENNIS'];
   return <EventsPanel slug={club.slug} sports={sports as string[]} sportLabels={Object.fromEntries((sports as string[]).map((s) => [s, sportLabel(s as any, prefs.locale)]))} ladders={ladderViews}
-    events={events.map((e) => ({ id: e.id, name: e.name, kind: e.kind, sport: e.sport, startsAt: e.startsAt, endsAt: e.endsAt, priceKr: e.priceKr, capacity: e.capacity, active: e.active, signups: e.signups.map((s) => ({ id: s.id, name: s.user.name, email: s.user.email, status: s.status, paidAt: s.paidAt })) }))} />;
+    events={events.map((e) => ({ id: e.id, name: e.name, kind: e.kind, sport: e.sport, startsAt: e.startsAt, endsAt: e.endsAt, priceKr: e.priceKr, capacity: e.capacity, active: e.active, format: e.format, drawnAt: e.drawnAt, draw: draws.has(e.id) ? { ...draws.get(e.id)!, matches: draws.get(e.id)!.matches.map((m) => ({ ...m, when: whenOf(m.scheduledAt) })) } : null, signups: e.signups.map((s) => ({ id: s.id, name: s.user.name, email: s.user.email, status: s.status, paidAt: s.paidAt })) }))} />;
 })()}
 {section === 'butik' && await (async () => {
   const [items, sales, gifts] = await Promise.all([

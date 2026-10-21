@@ -1460,8 +1460,17 @@ model ClubEvent {
   capacity       Int           @default(0)
   signupClosesAt DateTime?
   active         Boolean       @default(true)
+  /// Tournament format: "NONE" | "SINGLE_ELIM" | "ROUND_ROBIN" | "GROUPS_KNOCKOUT"
+  format         String        @default("NONE")
+  /// "LEVEL" seeds by player level, "RANDOM" draws blind
+  seeding        String        @default("LEVEL")
+  matchMinutes   Int           @default(60)
+  parallelCourts Int           @default(2)
+  groupSize      Int           @default(4)
+  drawnAt        DateTime?
   createdAt      DateTime      @default(now())
   signups        EventSignup[]
+  matches        TournamentMatch[]
 
   @@index([clubId, startsAt])
 }
@@ -1478,9 +1487,44 @@ model EventSignup {
   stripeSessionId String?
   paidAt          DateTime?
   createdAt       DateTime  @default(now())
+  homeMatches     TournamentMatch[] @relation("home")
+  awayMatches     TournamentMatch[] @relation("away")
 
   @@unique([eventId, userId])
   @@index([userId, status])
+}
+
+/// One match in a tournament draw. Knockout matches point at the match the
+/// winner goes to; group matches carry the group letter. Participants are
+/// sign-ups, so a withdrawn player is visible in the bracket.
+model TournamentMatch {
+  id          String       @id @default(cuid())
+  eventId     String
+  event       ClubEvent    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  /// "GROUP" | "KO"
+  stage       String       @default("KO")
+  group       String?
+  round       Int
+  slot        Int
+  homeId      String?
+  home        EventSignup? @relation("home", fields: [homeId], references: [id], onDelete: SetNull)
+  awayId      String?
+  away        EventSignup? @relation("away", fields: [awayId], references: [id], onDelete: SetNull)
+  /// Group placing that fills the side once the groups are done, e.g. "A1"
+  homeFrom    String?
+  awayFrom    String?
+  winnerId    String?
+  score       String?
+  /// "PENDING" | "PLAYED" | "BYE"
+  status      String       @default("PENDING")
+  scheduledAt DateTime?
+  courtName   String?
+  nextMatchId String?
+  /// "home" | "away": which side of the next match the winner takes
+  nextSide    String?
+  createdAt   DateTime     @default(now())
+
+  @@index([eventId, stage, round, slot])
 }
 
 // ---------- Ladder ----------

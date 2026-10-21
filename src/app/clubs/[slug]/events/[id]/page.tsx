@@ -9,6 +9,9 @@ import { joinEventAction, withdrawEventAction } from "../../../../../lib/event-a
 import { joinEventWaitlist } from "../../../../../lib/waitlist-actions";
 import { sportLabel } from "../../../../../lib/sports";
 import { Icon } from "../../../../../components/ui";
+import { tournamentView } from "../../../../../lib/tournament";
+import { TournamentDraw, MatchSchedule } from "../../../../../components/TournamentDraw";
+import { FORMAT_LABEL } from "../../../../../lib/tournament-draw";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +28,9 @@ export default async function EventPage({ params, searchParams }: { params: Prom
   const locale = prefs.locale, tz = ev.club.timeZone;
   const d = (x: Date, o: Intl.DateTimeFormatOptions) => formatDate(x, locale, tz, o);
   const joined = mine?.status === "PAID";
+  const draw = ev.drawnAt ? await tournamentView(ev.id) : null;
+  const drawView = draw ? { ...draw, matches: draw.matches.map((m) => ({ ...m, when: m.scheduledAt ? d(m.scheduledAt, { weekday: "short", hour: "numeric", minute: "2-digit" }) : null })) } : null;
+  const myNext = drawView?.matches.find((m) => m.status === "PENDING" && m.home && m.away && user && (m.home.userId === user.id || m.away.userId === user.id));
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -33,7 +39,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
         <p className="eyebrow text-white/60">{EVENT_KIND_LABEL[ev.kind as EventKind] ?? "Event"} · {sportLabel(ev.sport as any, "en-US")}</p>
         <h1 className="display mt-2 text-3xl sm:text-4xl">{ev.name}</h1>
         <p className="mt-3 text-white/80">{d(ev.startsAt, { weekday: "long", month: "long", day: "numeric" })} · {d(ev.startsAt, { hour: "numeric", minute: "2-digit" })} – {d(ev.endsAt, { hour: "numeric", minute: "2-digit" })}</p>
-        <p className="mt-1 text-white/80">{ev.priceKr > 0 ? formatMoney(ev.priceKr, ev.club.currency, locale) : "Free"} · {ev._count.signups}{ev.capacity ? ` of ${ev.capacity}` : ""} signed up</p>
+        <p className="mt-1 text-white/80">{ev.priceKr > 0 ? formatMoney(ev.priceKr, ev.club.currency, locale) : "Free"} · {ev._count.signups}{ev.capacity ? ` of ${ev.capacity}` : ""} signed up{ev.format !== "NONE" ? ` · ${FORMAT_LABEL[ev.format as keyof typeof FORMAT_LABEL] ?? ev.format}` : ""}</p>
       </header>
       {ev.description && <p className="whitespace-pre-line leading-relaxed">{ev.description}</p>}
 
@@ -61,6 +67,15 @@ export default async function EventPage({ params, searchParams }: { params: Prom
           </form>
         )}
       </div>
+
+      {drawView && (
+        <section id="draw" className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3"><h2 className="display text-xl">Draw and schedule</h2><a className="text-sm font-semibold text-court" href={`/clubs/${slug}/events/${ev.id}/schedule`}>Printable schedule</a></div>
+          {myNext && <p className="rounded-xl bg-court-tint p-4 text-sm font-semibold text-court-dark">Your next match: {myNext.when ?? "time to be set"}{myNext.courtName ? ` on ${myNext.courtName}` : ""} against {myNext.home!.userId === user!.id ? myNext.away!.name : myNext.home!.name}.</p>}
+          <TournamentDraw {...drawView} meUserId={user?.id ?? null} />
+        </section>
+      )}
+      {!drawView && ev.format !== "NONE" && joined && <p className="text-sm text-slate">The draw and match schedule will appear here once the club has made the draw. You'll get an e-mail with your first match time.</p>}
 
       {participants.length > 0 && (
         <section><h2 className="display mb-2 text-xl">Who's in</h2><ul className="flex flex-wrap gap-2">{participants.map((p) => <li key={p.id} className="rounded-full bg-chalk px-3 py-1 text-sm">{p.user.name}</li>)}</ul></section>

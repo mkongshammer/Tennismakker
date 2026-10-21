@@ -28,7 +28,7 @@ const FEATURE_EN: Record<string, { label: string; body: string }> = {
   nyheder: { label: "Club news", body: "Posts on your public page." },
   "faste-bookinger": { label: "Recurring reservations", body: "Same court, same weekday, all season." },
   import: { label: "Import from another system", body: "Members and bookings via CSV." },
-  events: { label: "Events, tournaments and ladder", body: "Sign-up, payment, capacity and a club ladder." },
+  events: { label: "Events, tournaments and ladder", body: "Sign-up, payment, automatic draws (knockout, round robin, groups), match schedules on your courts, and a club ladder." },
   kommunikation: { label: "Member emails and SMS", body: "One email to every member; text reminders." },
   butik: { label: "Pro shop and gift cards", body: "Front-desk register, stock, gift cards." },
   vagtplan: { label: "Staff schedule", body: "Shifts for desk and pros." },

@@ -3,14 +3,52 @@
 import { useFormState, useFormStatus } from 'react-dom';
 import { useWebsiteInternational } from '../../components/InternationalProvider';
 import { Select } from '../../components/ui/Select';
-import { createEvent, createLadder, eventAdminAction, ladderAdminAction } from '../../lib/event-actions';
+import { createEvent, createLadder, drawAction, eventAdminAction, ladderAdminAction, matchResultAction } from '../../lib/event-actions';
+import { TournamentDraw, MatchSchedule, type DrawMatchView, type DrawGroupView } from '../../components/TournamentDraw';
 
 type Signup = { id: string; name: string; email: string; status: string; paidAt: Date | null };
-type Ev = { id: string; name: string; kind: string; sport: string; startsAt: Date; endsAt: Date; priceKr: number; capacity: number; active: boolean; signups: Signup[] };
+type Draw = { matches: DrawMatchView[]; groups: DrawGroupView[]; koRounds: number; champion: { name: string } | null };
+type Ev = { id: string; name: string; kind: string; sport: string; startsAt: Date; endsAt: Date; priceKr: number; capacity: number; active: boolean; format: string; drawnAt: Date | null; draw: Draw | null; signups: Signup[] };
 type Lad = { id: string; name: string; sport: string; active: boolean; players: number; top: { name: string; rank: number; wins: number; losses: number }[] };
 
 function Pending({ children, ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement>) { const { pending } = useFormStatus(); return <button {...rest} disabled={pending}>{children}</button>; }
 const KINDS: [string, string][] = [['TOURNAMENT', 'Turnering'], ['LEAGUE', 'Liga'], ['SOCIAL', 'Socialt arrangement'], ['CLINIC', 'Clinic']];
+const FORMATS: [string, string][] = [['NONE', 'Ingen lodtrækning'], ['SINGLE_ELIM', 'Cup (single elimination)'], ['ROUND_ROBIN', 'Alle mod alle (round robin)'], ['GROUPS_KNOCKOUT', 'Puljer og derefter slutspil']];
+
+function DrawControls({ ev, tr }: { ev: Ev; tr: (s: string) => string }) {
+  const [state, action] = useFormState(drawAction, null);
+  const played = ev.draw?.matches.some((m) => m.status === 'PLAYED') ?? false;
+  return (
+    <div className="mt-3 space-y-3 rounded-2xl bg-mist p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm"><span className="font-bold">{tr(FORMATS.find(([id]) => id === ev.format)?.[1] ?? ev.format)}</span>{ev.drawnAt ? <span className="text-slate"> · {tr('Lodtrækning lavet')}</span> : <span className="text-slate"> · {tr('Ikke trukket endnu')}</span>}</p>
+        <form action={action} className="flex gap-2">
+          <input type="hidden" name="eventId" value={ev.id} />
+          {!ev.drawnAt && <Pending name="intent" value="draw" className="btn-ink btn-sm">{tr('Lav lodtrækning og kampprogram')}</Pending>}
+          {ev.drawnAt && !played && <Pending name="intent" value="draw" className="btn-ghost btn-sm">{tr('Træk om')}</Pending>}
+          {ev.drawnAt && <Pending name="intent" value="reset" className="btn-ghost btn-sm" onClick={(e) => { if (played && !confirm(tr('Alle resultater slettes. Fortsæt?'))) e.preventDefault(); }}>{tr('Nulstil')}</Pending>}
+        </form>
+      </div>
+      {state?.error && <p role="alert" className="text-sm font-semibold text-[#a2401c]">{tr(state.error)}</p>}{state?.ok && <p role="status" className="text-sm font-semibold text-success">{tr(state.ok)}</p>}
+      {!ev.drawnAt && <p className="text-xs text-slate">{tr('Lodtrækningen bruger de betalte tilmeldinger, seeder efter niveau (eller trækker blindt), lægger kampene på klubbens baner fra starttidspunktet og sender alle deres første kamptid.')}</p>}
+      {ev.draw && (
+        <TournamentDraw {...ev.draw} t={tr} renderResult={(m) => (
+          m.status === 'PLAYED' ? (
+            <form action={matchResultAction}><input type="hidden" name="matchId" value={m.id} /><Pending name="intent" value="clear" className="text-xs font-semibold text-slate hover:text-[#a2401c]">{tr('Ret resultat')}</Pending></form>
+          ) : (
+            <form action={matchResultAction} className="flex flex-wrap items-center gap-2">
+              <input type="hidden" name="matchId" value={m.id} />
+              <Select className="input !min-h-9 !py-1 text-xs" name="winnerId" defaultValue="" required><option value="" disabled>{tr('Vinder')}</option><option value={m.home!.id}>{m.home!.name}</option><option value={m.away!.id}>{m.away!.name}</option></Select>
+              <input className="input !min-h-9 w-28 !py-1 text-xs" name="score" placeholder="6-3 6-4" maxLength={40} />
+              <Pending className="btn-court btn-sm">{tr('Gem')}</Pending>
+            </form>
+          )
+        )} />
+      )}
+      {ev.draw && ev.draw.matches.some((m) => m.when) && <details><summary className="cursor-pointer text-sm font-semibold text-court">{tr('Kampprogram i tidsorden (til print)')}</summary><div className="mt-2"><MatchSchedule matches={ev.draw.matches} t={tr} /></div></details>}
+    </div>
+  );
+}
 
 export function EventsPanel({ events, ladders, sports, sportLabels, slug }: { events: Ev[]; ladders: Lad[]; sports: string[]; sportLabels: Record<string, string>; slug: string }) {
   const { tr, money, date } = useWebsiteInternational();
@@ -30,6 +68,15 @@ export function EventsPanel({ events, ladders, sports, sportLabels, slug }: { ev
           <label className="label block">{tr('Pris pr. deltager')}<input className="input" name="priceKr" type="number" min={0} max={5000} defaultValue={0} /><span className="hint">{tr('0 = gratis.')}</span></label>
           <label className="label block">{tr('Pladser')}<input className="input" name="capacity" type="number" min={0} max={500} defaultValue={0} /><span className="hint">{tr('0 = intet loft. Er det fuldt, kan man skrive sig på venteliste.')}</span></label>
           <label className="label block">{tr('Tilmelding lukker (valgfri)')}<input className="input" name="signupClosesAt" type="datetime-local" /></label>
+          <label className="label block">{tr('Turneringsformat')}<Select className="input" name="format" defaultValue="NONE">{FORMATS.map(([id, l]) => <option key={id} value={id}>{tr(l)}</option>)}</Select><span className="hint">{tr('Kun for turneringer og ligaer. Lodtrækning og kampprogram laves med ét klik, når tilmeldingen er lukket.')}</span></label>
+          <details className="sm:col-span-2"><summary className="cursor-pointer text-sm font-semibold text-court">{tr('Indstillinger for lodtrækning')}</summary>
+            <div className="mt-3 grid gap-4 sm:grid-cols-4">
+              <label className="label block">{tr('Seedning')}<Select className="input" name="seeding" defaultValue="LEVEL"><option value="LEVEL">{tr('Efter niveau')}</option><option value="RANDOM">{tr('Blind lodtrækning')}</option></Select></label>
+              <label className="label block">{tr('Minutter pr. kamp')}<input className="input" name="matchMinutes" type="number" min={15} max={240} defaultValue={60} /></label>
+              <label className="label block">{tr('Baner ad gangen')}<input className="input" name="parallelCourts" type="number" min={1} max={20} defaultValue={2} /></label>
+              <label className="label block">{tr('Spillere pr. pulje')}<input className="input" name="groupSize" type="number" min={3} max={8} defaultValue={4} /></label>
+            </div>
+          </details>
           <label className="label block sm:col-span-2">{tr('Beskrivelse')}<textarea className="input min-h-24" name="description" maxLength={2000} placeholder={tr('Format, niveau, hvad der er inkluderet, hvad man skal medbringe.')} /></label>
           <div className="flex items-center gap-3 sm:col-span-2"><Pending className="btn-court">{tr('Opret arrangement')}</Pending>{state?.error && <p role="alert" className="text-sm font-semibold text-[#a2401c]">{tr(state.error)}</p>}{state?.ok && <p role="status" className="text-sm font-semibold text-success">{tr(state.ok)}</p>}</div>
         </form>
@@ -53,6 +100,7 @@ export function EventsPanel({ events, ladders, sports, sportLabels, slug }: { ev
                       <form action={eventAdminAction}><input type="hidden" name="eventId" value={e.id} /><Pending name="intent" value={e.active ? 'close' : 'open'} className="btn-ghost btn-sm">{e.active ? tr('Luk tilmelding') : tr('Åbn igen')}</Pending></form>
                     </div>
                   </div>
+                  {e.format !== 'NONE' && <DrawControls ev={e} tr={tr} />}
                   {paid.length > 0 && (
                     <details className="mt-3"><summary className="cursor-pointer text-sm font-semibold text-court">{tr('Deltagere')} ({paid.length})</summary>
                       <ul className="mt-2 divide-y divide-slate/10 text-sm">

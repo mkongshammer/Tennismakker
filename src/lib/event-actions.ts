@@ -6,6 +6,8 @@ import { getCurrentUser } from './session';
 import { requireCustomClub } from './club-management-actions';
 import { EVENT_KINDS, joinLadder, reportLadderResult, signUpForEvent, withdrawFromEvent } from './events';
 import { SPORTS } from './sports';
+import { FORMATS, type Format } from './tournament-draw';
+import { clearResult, drawTournament, recordResult, resetDraw } from './tournament';
 
 type State = { ok?: string; error?: string } | null;
 const fail = (e: unknown) => ({ error: e instanceof Error ? e.message : 'Noget gik galt. Prøv igen.' });
@@ -28,10 +30,18 @@ export async function createEvent(_prev: State, form: FormData): Promise<State> 
     const closes = String(form.get('signupClosesAt') ?? '');
     const signupClosesAt = closes ? new Date(closes) : null;
     const description = String(form.get('description') ?? '').trim().slice(0, 2000) || null;
+    // Tournament format and the knobs the schedule needs.
+    const format = kind === 'TOURNAMENT' || kind === 'LEAGUE' ? String(form.get('format') ?? 'NONE') : 'NONE';
+    if (format !== 'NONE' && !(FORMATS as string[]).includes(format)) throw Error('Vælg et turneringsformat.');
+    const seeding = form.get('seeding') === 'RANDOM' ? 'RANDOM' : 'LEVEL';
+    const matchMinutes = Number(form.get('matchMinutes') ?? 60), parallelCourts = Number(form.get('parallelCourts') ?? 2), groupSize = Number(form.get('groupSize') ?? 4);
+    if (!Number.isInteger(matchMinutes) || matchMinutes < 15 || matchMinutes > 240) throw Error('Kamplængde: 15–240 minutter.');
+    if (!Number.isInteger(parallelCourts) || parallelCourts < 1 || parallelCourts > 20) throw Error('Baner ad gangen: 1–20.');
+    if (!Number.isInteger(groupSize) || groupSize < 3 || groupSize > 8) throw Error('Puljestørrelse: 3–8.');
     // Times are entered in the club's time zone.
     const { wallTime } = await import('./international');
     const toUtc = (local: string) => { const [d, t] = local.split('T'); const [h, m] = (t ?? '00:00').split(':').map(Number); return wallTime(d, h, m, club.timeZone)!; };
-    await db.clubEvent.create({ data: { clubId: club.id, name, kind, sport, description, startsAt: toUtc(String(form.get('startsAt'))), endsAt: toUtc(String(form.get('endsAt'))), priceKr, capacity, signupClosesAt: signupClosesAt && !Number.isNaN(signupClosesAt.getTime()) ? toUtc(closes) : null } });
+    await db.clubEvent.create({ data: { clubId: club.id, name, kind, sport, description, startsAt: toUtc(String(form.get('startsAt'))), endsAt: toUtc(String(form.get('endsAt'))), priceKr, capacity, signupClosesAt: signupClosesAt && !Number.isNaN(signupClosesAt.getTime()) ? toUtc(closes) : null, format: format as Format | 'NONE', seeding, matchMinutes, parallelCourts, groupSize } });
     revalidatePath('/admin/events');
     return { ok: `${name} er oprettet.` };
   } catch (e) { return fail(e); }
@@ -46,6 +56,30 @@ export async function eventAdminAction(form: FormData) {
     if (s) { await db.eventSignup.update({ where: { id: s.id }, data: { status: 'CANCELLED' } }); const { notifyEventWaitlist } = await import('./waitlist'); await notifyEventWaitlist(s.eventId).catch(() => {}); }
   }
   revalidatePath('/admin/events');
+}
+
+// ----- tournament draw -----
+export async function drawAction(_prev: State, form: FormData): Promise<State> {
+  try {
+    const { club } = await requireCustomClub('events');
+    const eventId = String(form.get('eventId') ?? '');
+    const intent = String(form.get('intent') ?? 'draw');
+    if (intent === 'reset') { await resetDraw(club.id, eventId); revalidatePath('/admin/events'); revalidatePath('/clubs', 'layout'); return { ok: 'Lodtrækningen er nulstillet.' }; }
+    const r = await drawTournament(club.id, eventId);
+    revalidatePath('/admin/events'); revalidatePath('/clubs', 'layout');
+    return r.ok ? { ok: `Lodtrækningen er lavet: ${r.matches} kampe. Deltagerne har fået en e-mail med deres første kamp.` } : { error: r.error };
+  } catch (e) { return fail(e); }
+}
+
+export async function matchResultAction(form: FormData) {
+  const { club } = await requireCustomClub('events');
+  const matchId = String(form.get('matchId') ?? '');
+  if (form.get('intent') === 'clear') { await clearResult(club.id, matchId); }
+  else {
+    const winnerId = String(form.get('winnerId') ?? '');
+    if (winnerId) await recordResult(club.id, matchId, winnerId, String(form.get('score') ?? '').trim() || null);
+  }
+  revalidatePath('/admin/events'); revalidatePath('/clubs', 'layout');
 }
 
 export async function createLadder(_prev: State, form: FormData): Promise<State> {

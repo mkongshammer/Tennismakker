@@ -10237,6 +10237,10 @@
     "es": "Todas las regiones"
   },
   "Nulstil": {
+    "en": "Reset",
+    "de": "Zurücksetzen",
+    "sv": "Nollställ",
+    "no": "Nullstill",
     "fr": "Réinitialiser",
     "es": "Restablecer"
   },
@@ -12818,5 +12822,421 @@
     "no": "Bytt tilbake til månedlig",
     "fr": "Repasser au mensuel",
     "es": "Volver a mensual"
+  },
+  "Alle mod alle (round robin)": {
+    "en": "Everyone plays everyone (round robin)",
+    "de": "Jeder gegen jeden (Round Robin)",
+    "sv": "Alla mot alla (round robin)",
+    "no": "Alle mot alle (round robin)",
+    "fr": "Tous contre tous (round robin)",
+    "es": "Todos contra todos (round robin)"
+  },
+  "Alle resultater slettes. Fortsæt?": {
+    "en": "All results will be deleted. Continue?",
+    "de": "Alle Ergebnisse werden gelöscht. Fortfahren?",
+    "sv": "Alla resultat raderas. Fortsätt?",
+    "no": "Alle resultater slettes. Fortsette?",
+    "fr": "Tous les résultats seront supprimés. Continuer ?",
+    "es": "Se borrarán todos los resultados. ¿Continuar?"
+  },
+  "Baner ad gangen": {
+    "en": "Courts at a time",
+    "de": "Plätze gleichzeitig",
+    "sv": "Banor åt gången",
+    "no": "Baner om gangen",
+    "fr": "Courts en parallèle",
+    "es": "Pistas a la vez"
+  },
+  "Blind lodtrækning": {
+    "en": "Blind draw",
+    "de": "Blinde Auslosung",
+    "sv": "Blind lottning",
+    "no": "Blind trekning",
+    "fr": "Tirage au sort aveugle",
+    "es": "Sorteo ciego"
+  },
+  "Clinic": {
+    "en": "Clinic",
+    "de": "Clinic",
+    "sv": "Clinic",
+    "no": "Clinic",
+    "fr": "Stage",
+    "es": "Clínica"
+  },
+  "Cup (single elimination)": {
+    "en": "Knockout (single elimination)",
+    "de": "K.-o.-System (Single Elimination)",
+    "sv": "Cup (utslagning)",
+    "no": "Cup (utslagning)",
+    "fr": "Élimination directe",
+    "es": "Eliminación directa"
+  },
+  "Efter niveau": {
+    "en": "By level",
+    "de": "Nach Spielstärke",
+    "sv": "Efter nivå",
+    "no": "Etter nivå",
+    "fr": "Par niveau",
+    "es": "Por nivel"
+  },
+  "Ikke trukket endnu": {
+    "en": "Not drawn yet",
+    "de": "Noch nicht ausgelost",
+    "sv": "Inte lottad ännu",
+    "no": "Ikke trukket ennå",
+    "fr": "Pas encore tiré",
+    "es": "Aún sin sortear"
+  },
+  "Indstillinger for lodtrækning": {
+    "en": "Draw settings",
+    "de": "Einstellungen für die Auslosung",
+    "sv": "Inställningar för lottning",
+    "no": "Innstillinger for trekning",
+    "fr": "Paramètres du tirage",
+    "es": "Ajustes del sorteo"
+  },
+  "Ingen lodtrækning": {
+    "en": "No draw",
+    "de": "Keine Auslosung",
+    "sv": "Ingen lottning",
+    "no": "Ingen trekning",
+    "fr": "Pas de tirage",
+    "es": "Sin sorteo"
+  },
+  "Kampprogram i tidsorden (til print)": {
+    "en": "Schedule in time order (for printing)",
+    "de": "Spielplan in zeitlicher Reihenfolge (zum Drucken)",
+    "sv": "Spelschema i tidsordning (för utskrift)",
+    "no": "Kampprogram i tidsrekkefølge (for utskrift)",
+    "fr": "Programme dans l'ordre chronologique (à imprimer)",
+    "es": "Calendario en orden cronológico (para imprimir)"
+  },
+  "Kun for turneringer og ligaer. Lodtrækning og kampprogram laves med ét klik, når tilmeldingen er lukket.": {
+    "en": "Tournaments and leagues only. The draw and schedule are made with one click once sign-up has closed.",
+    "de": "Nur für Turniere und Ligen. Auslosung und Spielplan entstehen mit einem Klick, sobald die Anmeldung geschlossen ist.",
+    "sv": "Endast turneringar och ligor. Lottning och spelschema görs med ett klick när anmälan har stängt.",
+    "no": "Kun for turneringer og ligaer. Trekning og kampprogram lages med ett klikk når påmeldingen er stengt.",
+    "fr": "Tournois et ligues uniquement. Le tirage et le programme se font en un clic une fois les inscriptions closes.",
+    "es": "Solo torneos y ligas. El sorteo y el calendario se hacen con un clic cuando cierra la inscripción."
+  },
+  "Lav lodtrækning og kampprogram": {
+    "en": "Make the draw and schedule",
+    "de": "Auslosung und Spielplan erstellen",
+    "sv": "Gör lottning och spelschema",
+    "no": "Lag trekning og kampprogram",
+    "fr": "Faire le tirage et le programme",
+    "es": "Hacer el sorteo y el calendario"
+  },
+  "Liga": {
+    "en": "League",
+    "de": "Liga",
+    "sv": "Liga",
+    "no": "Liga",
+    "fr": "Ligue",
+    "es": "Liga"
+  },
+  "Lodtrækning lavet": {
+    "en": "Draw made",
+    "de": "Auslosung erstellt",
+    "sv": "Lottning gjord",
+    "no": "Trekning laget",
+    "fr": "Tirage effectué",
+    "es": "Sorteo hecho"
+  },
+  "Lodtrækningen bruger de betalte tilmeldinger, seeder efter niveau (eller trækker blindt), lægger kampene på klubbens baner fra starttidspunktet og sender alle deres første kamptid.": {
+    "en": "The draw takes the paid sign-ups, seeds by level (or draws blind), lays the matches out on the club's courts from the start time and e-mails everyone their first match time.",
+    "de": "Die Auslosung nimmt die bezahlten Anmeldungen, setzt nach Spielstärke (oder lost blind), verteilt die Spiele ab der Startzeit auf die Plätze des Clubs und schickt allen ihre erste Spielzeit per E-Mail.",
+    "sv": "Lottningen använder de betalda anmälningarna, seedar efter nivå (eller lottar blint), lägger matcherna på klubbens banor från starttiden och mejlar alla deras första matchtid.",
+    "no": "Trekningen bruker de betalte påmeldingene, seeder etter nivå (eller trekker blindt), legger kampene på klubbens baner fra starttidspunktet og sender alle deres første kamptid på e-post.",
+    "fr": "Le tirage prend les inscriptions payées, fait les têtes de série par niveau (ou tire au sort), place les matchs sur les courts du club à partir de l'heure de début et envoie à chacun l'heure de son premier match.",
+    "es": "El sorteo toma las inscripciones pagadas, siembra por nivel (o sortea a ciegas), coloca los partidos en las pistas del club desde la hora de inicio y envía a todos la hora de su primer partido."
+  },
+  "Minutter pr. kamp": {
+    "en": "Minutes per match",
+    "de": "Minuten pro Spiel",
+    "sv": "Minuter per match",
+    "no": "Minutter per kamp",
+    "fr": "Minutes par match",
+    "es": "Minutos por partido"
+  },
+  "Puljer og derefter slutspil": {
+    "en": "Groups, then knockout",
+    "de": "Gruppen, dann K.-o.-Runde",
+    "sv": "Grupper och sedan slutspel",
+    "no": "Puljer og deretter sluttspill",
+    "fr": "Poules puis phase finale",
+    "es": "Grupos y luego eliminatorias"
+  },
+  "Ret resultat": {
+    "en": "Change result",
+    "de": "Ergebnis ändern",
+    "sv": "Ändra resultat",
+    "no": "Endre resultat",
+    "fr": "Modifier le résultat",
+    "es": "Cambiar resultado"
+  },
+  "Seedning": {
+    "en": "Seeding",
+    "de": "Setzliste",
+    "sv": "Seedning",
+    "no": "Seeding",
+    "fr": "Têtes de série",
+    "es": "Siembra"
+  },
+  "Socialt arrangement": {
+    "en": "Social",
+    "de": "Geselliges Event",
+    "sv": "Socialt evenemang",
+    "no": "Sosialt arrangement",
+    "fr": "Événement convivial",
+    "es": "Evento social"
+  },
+  "Spillere pr. pulje": {
+    "en": "Players per group",
+    "de": "Spieler pro Gruppe",
+    "sv": "Spelare per grupp",
+    "no": "Spillere per pulje",
+    "fr": "Joueurs par poule",
+    "es": "Jugadores por grupo"
+  },
+  "Træk om": {
+    "en": "Redraw",
+    "de": "Neu auslosen",
+    "sv": "Lotta om",
+    "no": "Trekk på nytt",
+    "fr": "Refaire le tirage",
+    "es": "Volver a sortear"
+  },
+  "Turnering": {
+    "en": "Tournament",
+    "de": "Turnier",
+    "sv": "Turnering",
+    "no": "Turnering",
+    "fr": "Tournoi",
+    "es": "Torneo"
+  },
+  "Turneringsformat": {
+    "en": "Tournament format",
+    "de": "Turnierformat",
+    "sv": "Turneringsformat",
+    "no": "Turneringsformat",
+    "fr": "Format du tournoi",
+    "es": "Formato del torneo"
+  },
+  "Vinder": {
+    "en": "Winner",
+    "de": "Sieger",
+    "sv": "Vinnare",
+    "no": "Vinner",
+    "fr": "Vainqueur",
+    "es": "Ganador"
+  },
+  "Lodtrækningen er nulstillet.": {
+    "en": "The draw has been reset.",
+    "de": "Die Auslosung wurde zurückgesetzt.",
+    "sv": "Lottningen är nollställd.",
+    "no": "Trekningen er nullstilt.",
+    "fr": "Le tirage a été réinitialisé.",
+    "es": "El sorteo se ha restablecido."
+  },
+  "Lodtrækningen er lavet: {matches} kampe. Deltagerne har fået en e-mail med deres første kamp.": {
+    "en": "The draw is made: {matches} matches. Participants have been e-mailed their first match.",
+    "de": "Die Auslosung steht: {matches} Spiele. Die Teilnehmer haben ihr erstes Spiel per E-Mail erhalten.",
+    "sv": "Lottningen är klar: {matches} matcher. Deltagarna har fått sin första match per mejl.",
+    "no": "Trekningen er laget: {matches} kamper. Deltakerne har fått e-post om sin første kamp.",
+    "fr": "Le tirage est fait : {matches} matchs. Les participants ont reçu leur premier match par e-mail.",
+    "es": "El sorteo está hecho: {matches} partidos. Los participantes han recibido su primer partido por correo."
+  },
+  "Vælg et turneringsformat på arrangementet først.": {
+    "en": "Choose a tournament format on the event first.",
+    "de": "Wähle zuerst ein Turnierformat für die Veranstaltung.",
+    "sv": "Välj ett turneringsformat för evenemanget först.",
+    "no": "Velg et turneringsformat på arrangementet først.",
+    "fr": "Choisissez d'abord un format de tournoi pour l'événement.",
+    "es": "Elige primero un formato de torneo para el evento."
+  },
+  "Der er allerede indtastet resultater. Nulstil lodtrækningen først.": {
+    "en": "Results have already been entered. Reset the draw first.",
+    "de": "Es wurden bereits Ergebnisse eingetragen. Setze die Auslosung zuerst zurück.",
+    "sv": "Resultat har redan matats in. Nollställ lottningen först.",
+    "no": "Det er allerede lagt inn resultater. Nullstill trekningen først.",
+    "fr": "Des résultats ont déjà été saisis. Réinitialisez d'abord le tirage.",
+    "es": "Ya se han introducido resultados. Restablece primero el sorteo."
+  },
+  "Der skal være mindst {minimum} tilmeldte.": {
+    "en": "At least {minimum} sign-ups are needed.",
+    "de": "Es sind mindestens {minimum} Anmeldungen nötig.",
+    "sv": "Det krävs minst {minimum} anmälda.",
+    "no": "Det må være minst {minimum} påmeldte.",
+    "fr": "Il faut au moins {minimum} inscrits.",
+    "es": "Se necesitan al menos {minimum} inscritos."
+  },
+  "Kamplængde: 15–240 minutter.": {
+    "en": "Match length: 15–240 minutes.",
+    "de": "Spieldauer: 15–240 Minuten.",
+    "sv": "Matchlängd: 15–240 minuter.",
+    "no": "Kamplengde: 15–240 minutter.",
+    "fr": "Durée du match : 15–240 minutes.",
+    "es": "Duración del partido: 15–240 minutos."
+  },
+  "Baner ad gangen: 1–20.": {
+    "en": "Courts at a time: 1–20.",
+    "de": "Plätze gleichzeitig: 1–20.",
+    "sv": "Banor åt gången: 1–20.",
+    "no": "Baner om gangen: 1–20.",
+    "fr": "Courts en parallèle : 1–20.",
+    "es": "Pistas a la vez: 1–20."
+  },
+  "Puljestørrelse: 3–8.": {
+    "en": "Group size: 3–8.",
+    "de": "Gruppengröße: 3–8.",
+    "sv": "Gruppstorlek: 3–8.",
+    "no": "Puljestørrelse: 3–8.",
+    "fr": "Taille des poules : 3–8.",
+    "es": "Tamaño del grupo: 3–8."
+  },
+  "Vælg et turneringsformat.": {
+    "en": "Choose a tournament format.",
+    "de": "Wähle ein Turnierformat.",
+    "sv": "Välj ett turneringsformat.",
+    "no": "Velg et turneringsformat.",
+    "fr": "Choisissez un format de tournoi.",
+    "es": "Elige un formato de torneo."
+  },
+  "Winner": {
+    "en": "Winner",
+    "de": "Sieger",
+    "sv": "Vinnare",
+    "no": "Vinner",
+    "fr": "Vainqueur",
+    "es": "Ganador"
+  },
+  "Group": {
+    "en": "Group",
+    "de": "Gruppe",
+    "sv": "Grupp",
+    "no": "Pulje",
+    "fr": "Poule",
+    "es": "Grupo"
+  },
+  "Round robin": {
+    "en": "Round robin",
+    "de": "Round Robin",
+    "sv": "Round robin",
+    "no": "Round robin",
+    "fr": "Round robin",
+    "es": "Round robin"
+  },
+  "Player": {
+    "en": "Player",
+    "de": "Spieler",
+    "sv": "Spelare",
+    "no": "Spiller",
+    "fr": "Joueur",
+    "es": "Jugador"
+  },
+  "Sets": {
+    "en": "Sets",
+    "de": "Sätze",
+    "sv": "Set",
+    "no": "Sett",
+    "fr": "Sets",
+    "es": "Sets"
+  },
+  "Pts": {
+    "en": "Pts",
+    "de": "Pkt",
+    "sv": "P",
+    "no": "P",
+    "fr": "Pts",
+    "es": "Pts"
+  },
+  "Round": {
+    "en": "Round",
+    "de": "Runde",
+    "sv": "Omgång",
+    "no": "Runde",
+    "fr": "Tour",
+    "es": "Ronda"
+  },
+  "Knockout": {
+    "en": "Knockout",
+    "de": "K.-o.-Runde",
+    "sv": "Slutspel",
+    "no": "Sluttspill",
+    "fr": "Phase finale",
+    "es": "Eliminatorias"
+  },
+  "Bracket": {
+    "en": "Bracket",
+    "de": "Turnierbaum",
+    "sv": "Spelträd",
+    "no": "Turneringstre",
+    "fr": "Tableau",
+    "es": "Cuadro"
+  },
+  "Time": {
+    "en": "Time",
+    "de": "Zeit",
+    "sv": "Tid",
+    "no": "Tid",
+    "fr": "Heure",
+    "es": "Hora"
+  },
+  "Court": {
+    "en": "Court",
+    "de": "Platz",
+    "sv": "Bana",
+    "no": "Bane",
+    "fr": "Court",
+    "es": "Pista"
+  },
+  "Match": {
+    "en": "Match",
+    "de": "Spiel",
+    "sv": "Match",
+    "no": "Kamp",
+    "fr": "Match",
+    "es": "Partido"
+  },
+  "Stage": {
+    "en": "Stage",
+    "de": "Phase",
+    "sv": "Fas",
+    "no": "Fase",
+    "fr": "Phase",
+    "es": "Fase"
+  },
+  "Final": {
+    "en": "Final",
+    "de": "Finale",
+    "sv": "Final",
+    "no": "Finale",
+    "fr": "Finale",
+    "es": "Final"
+  },
+  "Semifinals": {
+    "en": "Semifinals",
+    "de": "Halbfinale",
+    "sv": "Semifinaler",
+    "no": "Semifinaler",
+    "fr": "Demi-finales",
+    "es": "Semifinales"
+  },
+  "Quarterfinals": {
+    "en": "Quarterfinals",
+    "de": "Viertelfinale",
+    "sv": "Kvartsfinaler",
+    "no": "Kvartfinaler",
+    "fr": "Quarts de finale",
+    "es": "Cuartos de final"
+  },
+  "Round of 16": {
+    "en": "Round of 16",
+    "de": "Achtelfinale",
+    "sv": "Åttondelsfinaler",
+    "no": "Åttendedelsfinaler",
+    "fr": "Huitièmes de finale",
+    "es": "Octavos de final"
   }
 }
