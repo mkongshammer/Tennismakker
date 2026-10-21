@@ -249,8 +249,10 @@ textarea {
 }
 
 /* Room for the tab bar on phones */
-.has-tabbar {
-  padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
+@media (max-width: 767.98px) {
+  .has-tabbar {
+    padding-bottom: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
+  }
 }
 
 .no-scrollbar {

@@ -100,11 +100,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter+Tight:wght@400;500;600;700&family=Martian+Mono:wght@500;700&display=swap"
         />
       </head>
-      <body className="min-h-screen">
+      <body className="flex min-h-screen flex-col">
         <InternationalProvider locale={prefs.locale} country={prefs.country}>
           {onOwnDomain ? null : <SiteHeader user={user ? { name: user.name, role: user.role } : null} locale={prefs.locale} />}
 
-          <main className={`mx-auto max-w-page px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}>{children}</main>
+          <main className={`mx-auto w-full max-w-page flex-1 px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}>{children}</main>
 
           {onOwnDomain ? (
             <footer className="mt-16 border-t border-slate/15 px-4 py-6 text-center text-xs text-slate-light">
@@ -112,35 +112,54 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <a href="https://racketbuddy.app" className="underline">RacketBuddy</a>
             </footer>
           ) : (
-            <footer className={`mt-20 border-t border-slate/10 bg-chalk ${user ? "has-tabbar md:pb-0" : ""}`}>
-              <div className="mx-auto max-w-page px-4 py-12">
-                <div className="grid gap-10 md:grid-cols-[1.2fr_repeat(3,1fr)]">
+            <footer className={`relative isolate mt-20 overflow-hidden bg-ink-deep text-white ${user ? "has-tabbar" : ""}`}>
+              {/* Court lines, faint, running off the corner: the brand without a picture. */}
+              <svg aria-hidden="true" viewBox="0 0 360 780" className="pointer-events-none absolute -right-24 -top-40 -z-10 hidden h-[640px] w-[300px] rotate-[32deg] opacity-[0.07] md:block">
+                <g fill="none" stroke="#fff" strokeWidth="4">
+                  <rect x="2" y="2" width="356" height="776" />
+                  <line x1="47" y1="2" x2="47" y2="778" /><line x1="313" y1="2" x2="313" y2="778" />
+                  <line x1="47" y1="212" x2="313" y2="212" /><line x1="47" y1="568" x2="313" y2="568" />
+                  <line x1="180" y1="212" x2="180" y2="568" />
+                </g>
+              </svg>
+              <div aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-court-light/60 to-transparent" />
+
+              <div className="mx-auto max-w-page px-4 pb-8 pt-14 md:pt-16">
+                <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-8">
                   <div>
-                    <p className="display text-xl">
-                      Racket<span className="text-court">Buddy</span>
-                    </p>
-                    <p className="mt-2 max-w-xs text-sm leading-relaxed text-slate">
+                    <Link href="/" className="display text-2xl text-white">
+                      Racket<span className="text-optic">Buddy</span>
+                    </Link>
+                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/60">
                       The easiest way to play racquet sports and the smartest way to run a club. Made for the United States.
                     </p>
-                  </div>
-                  {Object.entries(FOOTER_LINKS).map(([group, links]) => (
-                    <div key={group}>
-                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate">{group}</p>
-                      <ul className="mt-3 space-y-2 text-sm font-medium text-slate">
-                        {links.map((link) => (
-                          <li key={link.href}>
-                            <Link href={link.href} className="hover:text-ink">{link.label}</Link>
-                          </li>
-                        ))}
-                      </ul>
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      <Link href="/courts" className="inline-flex items-center rounded-full bg-optic px-4 py-2 text-sm font-bold text-ink transition hover:bg-white">Reserve a court</Link>
+                      <Link href="/list-your-club" className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/5">List your club</Link>
                     </div>
-                  ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:contents">
+                    {Object.entries(FOOTER_LINKS).map(([group, links]) => (
+                      <div key={group}>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/40">{group}</p>
+                        <ul className="mt-4 space-y-2.5 text-sm">
+                          {links.map((link) => (
+                            <li key={link.href}>
+                              <Link href={link.href} className="text-white/75 transition hover:text-optic">{link.label}</Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-slate/10 pt-6 text-xs text-slate-light">
-                  <p>© {new Date().getFullYear()} RacketBuddy. All prices in USD.</p>
-                  <p>
-                    <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="hover:text-slate">IP Geolocation by DB-IP</a>
-                  </p>
+
+                <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+                  <p>© {new Date().getFullYear()} PTMove LLC · RacketBuddy. All prices in USD.</p>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <a href="mailto:support@racketbuddy.app" className="transition hover:text-white">support@racketbuddy.app</a>
+                    <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="transition hover:text-white">IP Geolocation by DB-IP</a>
+                  </div>
                 </div>
               </div>
             </footer>
