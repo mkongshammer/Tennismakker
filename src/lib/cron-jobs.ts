@@ -48,6 +48,8 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const monthly = await runMonthlyCharges().catch((err) => { console.error("Monthly charges failed:", err); return { charged: 0, failed: 0, ended: 0 }; });
   const billReminders = await runBillReminders().catch((err) => { console.error("Bill reminders failed:", err); return { sent: 0 }; });
   // Yesterday's revenue into each connected club's QuickBooks.
+  const { addMissingWebhookEvents } = await import("./webhook-setup");
+  const webhookEvents = await addMissingWebhookEvents().catch((err) => { console.error("Webhook event check failed:", err); return { added: [] as string[] }; });
   const quickbooks = await runQuickBooksPosting().catch((err) => { console.error("QuickBooks posting failed:", err); return { clubs: 0, posted: 0, failed: 0 }; });
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
@@ -68,6 +70,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     fornyelser: renewals,
     billReminders,
     quickbooks,
+    webhookEvents,
     monthly,
     engagement,
     reviewPrompts,

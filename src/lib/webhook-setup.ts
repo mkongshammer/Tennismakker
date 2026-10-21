@@ -157,3 +157,22 @@ export async function ensureWebhookEndpoint(): Promise<string> {
 
   return `Endpointet er oprettet i ${mode} på ${url}, og signeringsnøglen er gemt. Kør selvtesten for at se det grønt.`;
 }
+
+/**
+ * Adds any events the app needs to the existing endpoint, and nothing else.
+ * Safe to run unattended: it never creates an endpoint (that would mint a new
+ * signing secret) and never touches one that is switched off.
+ */
+export async function addMissingWebhookEvents(): Promise<{ added: string[] }> {
+  if (!(await stripeEnabled())) return { added: [] };
+  const settings = await getSettings();
+  const wanted = `${settings.appUrl}${WEBHOOK_PATH}`;
+  const client = await stripe();
+  const ours = (await client.webhookEndpoints.list({ limit: 100 })).data.find((e) => sameUrl(e.url, wanted));
+  if (!ours || ours.status !== "enabled" || ours.enabled_events.includes("*")) return { added: [] };
+  const missing = REQUIRED_EVENTS.filter((e) => !ours.enabled_events.includes(e));
+  if (!missing.length) return { added: [] };
+  await client.webhookEndpoints.update(ours.id, { enabled_events: [...new Set([...ours.enabled_events, ...missing])] as any });
+  console.log(`Stripe webhook: added ${missing.join(", ")}`);
+  return { added: missing };
+}
