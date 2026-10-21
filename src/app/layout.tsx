@@ -33,9 +33,9 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "en_US",
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
-      images: [{ url: "/images/club-life-hero.webp", width: 1536, height: 1024, alt: "Tennis players beside a clubhouse in the afternoon sun" }],
+      images: [{ url: "/images/og-racketbuddy.jpg", width: 1200, height: 630, alt: "RacketBuddy: your next court, one tap away" }],
     },
-    twitter: { card: "summary_large_image", title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION },
+    twitter: { card: "summary_large_image", title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION, images: ["/images/og-racketbuddy.jpg"] },
     robots: { index: true, follow: true },
   };
 }
