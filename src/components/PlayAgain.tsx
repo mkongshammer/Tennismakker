@@ -2,18 +2,10 @@
 import {getPreferences} from "../lib/preferences";
 import {formatDate,marketFor} from "../lib/international";
 import {UiText} from "./InternationalProvider";
-import {phrase} from "../lib/phrases";
 import { rebookNextWeek } from "../lib/actions";
-import { getCurrentUser } from "../lib/session";
-import { userProfilePhotoId } from "../lib/profile-images";
-import { imageUrl } from "../lib/imageUrl";
-import { uploadProfilePhoto, deleteProfilePhoto } from "../app/profile/photo-actions";
 import { SubmitButton } from "./SubmitButton";
 
 // "Spil igen": gentag en tid, man allerede har spillet.
-// Komponenten ligger kun på profilsiden, så profilbilledet bor her sammen
-// med de øvrige profilværktøjer og vises også, når der endnu ikke er noget
-// at booke igen.
 
 const DAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
 
@@ -27,60 +19,8 @@ export type Repeatable = {
 export async function PlayAgain({ items }: { items: Repeatable[] }) {
   const {locale,country}=await getPreferences();
   const zone=marketFor(country)!.timeZone;
-  const user = await getCurrentUser();
-  const photoId = user ? await userProfilePhotoId(user.id) : null;
-  const initials = user?.name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("") ?? "RB";
-
   return (
     <>
-      {user && (
-        <section>
-          <h2 className="display mb-3 text-2xl"><UiText text="Profilbillede"/></h2>
-          <div className="card flex flex-wrap items-center gap-5">
-            {photoId ? (
-              <img
-                src={imageUrl(photoId)}
-                alt={`Profilbillede af ${user.name}`}
-                className="h-24 w-24 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-ink text-chalk">
-                <span className="display text-2xl">{initials}</span>
-              </div>
-            )}
-
-            <div className="min-w-0 flex-1">
-              <p className="font-bold"><UiText text="Dit profilbillede"/></p>
-              <p className="mt-1 text-sm text-slate"><UiText text="Billedet bruges på din RacketBuddy-profil. Både spillere og trænere kan vælge et."/></p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <form action={uploadProfilePhoto} className="flex flex-wrap items-center gap-2">
-                  <input
-                    type="file"
-                    name="photo"
-                    aria-label={phrase("Vælg et billede", locale)}
-                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                    className="text-sm"
-                    required
-                  />
-                  <button className="btn-court text-sm">
-                    {photoId ? <UiText text="Skift billede"/> : <UiText text="Tilføj billede"/>}
-                  </button>
-                </form>
-                {photoId && (
-                  <form action={deleteProfilePhoto}>
-                    <button className="btn-ghost text-sm"><UiText text="Fjern billede"/></button>
-                  </form>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {items.length > 0 && (
         <section>
           <h2 className="display mb-1 text-2xl"><UiText text="Spil igen"/></h2>

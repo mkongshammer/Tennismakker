@@ -24,6 +24,10 @@ import { getRepeatableBookings, getRepeatableLessons } from "../../lib/rebook";
 import { checkDeletion } from "../../lib/deletion-guards";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { BookingConfirmation } from "../../components/BookingConfirmation";
+import { Icon, type IconName } from "../../components/ui";
+import { userProfilePhotoId } from "../../lib/profile-images";
+import { imageUrl } from "../../lib/imageUrl";
+import { ProfilePhoto } from "./ProfilePhoto";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +115,21 @@ export default async function ProfilPage({
     ? await db.booking.findFirst({ where: { id: query.betalt, userId: user.id, status: "CONFIRMED" }, include: { court: { include: { club: true } }, coachProfile: { include: { user: true } } } })
     : null;
   const hasConfirmedBooking = Boolean(confirmedPayment);
+  const photoId = await userProfilePhotoId(user.id);
+  const initials = user.name.split(" ").filter(Boolean).map((part: string) => part[0]).slice(0, 2).join("").toUpperCase() || "RB";
+  const en = prefs.locale !== "da";
+  const stats: { value: string; label: string }[] = [
+    { value: String(bookings.length), label: en ? (bookings.length === 1 ? "Upcoming booking" : "Upcoming bookings") : "Kommende bookinger" },
+    { value: String(myRequests.length + myMatches.length), label: en ? "Partner posts" : "Makker-opslag" },
+    ...(user.coachProfile
+      ? [{ value: coachSummary && coachSummary.count > 0 ? `★ ${coachSummary.average.toFixed(1)}` : "—", label: en ? "Coach rating" : "Trænerrating" }]
+      : [{ value: formatDate(user.createdAt, prefs.locale, undefined, { month: "short", year: "numeric" }), label: en ? "Member since" : "Medlem siden" }]),
+  ];
+  const quick: { href: string; icon: IconName; title: string; body: string }[] = [
+    { href: "/courts", icon: "court", title: en ? "Reserve a court" : "Book en bane", body: en ? "Open hours near you" : "Ledige tider nær dig" },
+    { href: "/coaches", icon: "coach", title: en ? "Book a coach" : "Find en træner", body: en ? "Lessons at your level" : "Træning på dit niveau" },
+    { href: "/matches/new", icon: "players", title: en ? "Find a partner" : "Find en makker", body: en ? "Post a game" : "Opret et opslag" },
+  ];
 
   return (
     <div className="min-w-0 max-w-full space-y-10 overflow-x-hidden">
@@ -128,33 +147,64 @@ export default async function ProfilPage({
         </div>
       )}
 
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <h1 className="display max-w-full break-words text-3xl">{user.name}</h1>
-          <LevelBadge level={user.level} />
-          {user.area && <span className="max-w-full break-words text-slate">{user.area}</span>}
+      <section className="relative isolate overflow-hidden rounded-3xl bg-ink p-6 text-white sm:p-8">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(90%_120%_at_100%_0%,#1B3554_0%,#0F2138_55%,#081527_100%)]" />
+        <div aria-hidden="true" className="absolute -right-16 -top-24 -z-10 h-64 w-40 rotate-[32deg] rounded-2xl border-4 border-white/10" />
+        <div className="flex min-w-0 flex-col gap-6 sm:flex-row sm:items-center">
+          <ProfilePhoto photoUrl={photoId ? imageUrl(photoId) : null} initials={initials} name={user.name} />
+          <div className="min-w-0 flex-1 text-center sm:text-left">
+            <p className="eyebrow text-white/60"><UiText text="Din profil"/></p>
+            <h1 className="display mt-1 break-words text-3xl text-white sm:text-4xl">{user.name}</h1>
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-white/70 sm:justify-start">
+              <LevelBadge level={user.level} locale={prefs.locale} tone="light" />
+              {user.area && <span className="inline-flex items-center gap-1"><Icon name="pin" size={15} />{user.area}</span>}
+              <span className="max-w-full break-all">{user.email}</span>
+            </div>
+          </div>
         </div>
-        <div className="flex max-w-full flex-wrap items-center gap-3">
-          {user.clubId && <Link href="/wallet" className="btn-ghost"><UiText text="Min klubwallet"/></Link>}
-          <ChangePasswordForm />
-          <form action={logout}>
-            <button className="btn-ghost"><UiText text="Log ud"/></button>
-          </form>
-        </div>
-      </div>
+        <dl className={`mt-7 grid gap-px overflow-hidden rounded-2xl bg-white/10 ${stats.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+          {stats.map((s) => (
+            <div key={s.label} className="flex flex-col-reverse bg-ink/60 px-3 py-3.5 text-center sm:px-5 sm:text-left">
+              <dt className="mt-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/55 sm:text-xs">{s.label}</dt>
+              <dd className="whitespace-nowrap text-lg font-extrabold tabular-nums text-white sm:text-2xl">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
+      <nav aria-label={en ? "Quick actions" : "Genveje"} className="grid grid-cols-3 gap-2 sm:gap-3">
+        {quick.map((q) => (
+          <Link key={q.href} href={q.href} className="card-interactive group flex flex-col items-center gap-2 rounded-2xl border border-slate/15 bg-chalk p-3 text-center sm:flex-row sm:gap-4 sm:p-4 sm:text-left">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-court-tint text-court"><Icon name={q.icon} size={22} /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-bold leading-tight sm:text-base">{q.title}</span>
+              <span className="hidden text-sm text-slate sm:block">{q.body}</span>
+            </span>
+            <Icon name="arrow" size={18} className="hidden text-slate transition group-hover:translate-x-0.5 group-hover:text-court sm:block" />
+          </Link>
+        ))}
+      </nav>
 
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Dine profiler"/></h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="card min-w-0">
-            <p className="font-bold"><UiText text="Spillerprofil"/></p>
-            <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — find medspillere og book baner."/></p>
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-court-tint text-court"><Icon name="players" size={20} /></span>
+              <p className="flex-1 font-bold"><UiText text="Spillerprofil"/></p>
+              <span className="rounded-full bg-success-soft px-2.5 py-1 text-xs font-bold text-success-ink"><UiText text="Aktiv"/></span>
+            </div>
+            <p className="mt-3 text-sm text-slate"><UiText text="Find medspillere og book baner."/></p>
           </div>
           <div className="card min-w-0">
-            <p className="font-bold"><UiText text="Trænerprofil"/></p>
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf3e6] text-grass"><Icon name="coach" size={20} /></span>
+              <p className="flex-1 font-bold"><UiText text="Trænerprofil"/></p>
+              {user.coachProfile && <span className="rounded-full bg-success-soft px-2.5 py-1 text-xs font-bold text-success-ink"><UiText text="Aktiv"/></span>}
+            </div>
             {user.coachProfile ? (
               <>
-                <p className="mt-1 text-sm text-slate"><UiText text="Aktiv — tilbyd træning og modtag bookinger."/></p>
+                <p className="mt-3 text-sm text-slate"><UiText text="Tilbyd træning og modtag bookinger."/></p>
                 {(() => {
                   const r = coachSummary;
                   return (
@@ -169,7 +219,7 @@ export default async function ProfilPage({
               </>
             ) : (
               <>
-                <p className="mt-1 text-sm text-slate"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
+                <p className="mt-3 text-sm text-slate"><UiText text="Opret også en trænerprofil på samme konto. Din spillerprofil bliver stående."/></p>
                 <Link href="/profile/coaching/new" className="btn-court mt-4 inline-block px-4 py-2.5 text-sm"><UiText text="Opret trænerprofil"/></Link>
               </>
             )}
@@ -212,12 +262,15 @@ export default async function ProfilPage({
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Kommende bookinger"/></h2>
         {bookings.length === 0 && (
-          <p className="max-w-full break-words text-slate">
-            {t("profile.noBookings")}{" "}
-            <Link href="/courts" className="font-semibold text-court underline">{prefs.locale === "en-US" ? "reserve a court" : t("nav.book")}</Link>{" "}
-            {t("common.or")}{" "}
-            <Link href="/coaches" className="font-semibold text-court underline">{prefs.locale === "en-US" ? "find a coach" : t("nav.coaches")}</Link>.
-          </p>
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate/25 bg-chalk/60 px-6 py-8 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-court-tint text-court"><Icon name="calendar" size={24} /></span>
+            <p className="mt-4 font-bold">{en ? "No bookings yet" : "Ingen bookinger endnu"}</p>
+            <p className="mt-1 max-w-sm text-sm text-slate">{en ? "Your courts and lessons show up here, with times, prices and access details." : "Dine baner og træninger vises her med tid, pris og adgang."}</p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <Link href="/courts" className="btn-court text-sm">{en ? "Reserve a court" : t("nav.book")}</Link>
+              <Link href="/coaches" className="btn-ghost text-sm">{en ? "Find a coach" : t("nav.coaches")}</Link>
+            </div>
+          </div>
         )}
         <ul className="space-y-3">
           {bookings.map((b: any) => (
@@ -281,10 +334,12 @@ export default async function ProfilPage({
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Dine makker-opslag"/></h2>
         {myRequests.length === 0 && myMatches.length === 0 && (
-          <p className="max-w-full break-words text-slate">
-            {t("profile.noPosts")}{" "}
-            <Link href="/matches/new" className="font-semibold text-court underline">{t("profile.createOne")}</Link>.
-          </p>
+          <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate/25 bg-chalk/60 px-6 py-8 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fff0e5] text-clay"><Icon name="players" size={24} /></span>
+            <p className="mt-4 font-bold">{en ? "No partner posts" : "Ingen makker-opslag"}</p>
+            <p className="mt-1 max-w-sm text-sm text-slate">{en ? "Post when and where you want to play, and players at your level can reply." : "Skriv hvornår og hvor du vil spille, så kan spillere på dit niveau svare."}</p>
+            <Link href="/matches/new" className="btn-court mt-5 text-sm">{en ? "Post a game" : t("profile.createOne")}</Link>
+          </div>
         )}
         <ul className="space-y-3">
           {myRequests.map((r) => (
@@ -348,10 +403,33 @@ export default async function ProfilPage({
         }}
       />
 
-      <p className="max-w-full break-words text-sm">
-        <a href="/profile/receipts" className="font-semibold text-court underline"><UiText text="Se dine kvitteringer"/></a>
-        <span className="text-slate">{" "}<UiText text="— alt du har betalt, til dit eget regnskab."/></span>
-      </p>
+      <section className="min-w-0">
+        <h2 className="display mb-3 text-2xl"><UiText text="Konto"/></h2>
+        <div className="divide-y divide-slate/10 overflow-hidden rounded-2xl border border-slate/15 bg-chalk">
+          <a href="/profile/receipts" className="flex items-center gap-3 px-5 py-4 transition hover:bg-mist">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="receipt" size={18} /></span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-semibold"><UiText text="Kvitteringer"/></span>
+              <span className="block text-sm text-slate"><UiText text="Alt du har betalt, til dit eget regnskab."/></span>
+            </span>
+            <Icon name="chevron" size={18} className="text-slate" />
+          </a>
+          {user.clubId && (
+            <Link href="/wallet" className="flex items-center gap-3 px-5 py-4 transition hover:bg-mist">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="wallet" size={18} /></span>
+              <span className="flex-1 font-semibold"><UiText text="Min klubwallet"/></span>
+              <Icon name="chevron" size={18} className="text-slate" />
+            </Link>
+          )}
+          <ChangePasswordForm />
+          <form action={logout}>
+            <button className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-mist">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="logout" size={18} /></span>
+              <span className="flex-1 font-semibold"><UiText text="Log ud"/></span>
+            </button>
+          </form>
+        </div>
+      </section>
 
       <DeleteAccount blockers={deletion.blockers} canDelete={deletion.canDelete} />
     </div>

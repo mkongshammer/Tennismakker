@@ -5,6 +5,7 @@ import {UiText} from "../../components/InternationalProvider";
 import { useState } from "react";
 import { useFormState } from "react-dom";
 import { changePassword } from "../../lib/actions";
+import { Icon } from "../../components/ui";
 
 // Til klubadministratorer, der har modtaget en midlertidig adgangskode
 // på mail, og til alle andre der bare vil skifte deres.
@@ -14,12 +15,16 @@ export function ChangePasswordForm() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="text-sm font-semibold text-court underline"><UiText text="Skift adgangskode"/></button>
+      <button onClick={() => setOpen(true)} className="flex w-full items-center gap-3 px-5 py-4 text-left transition hover:bg-mist">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-mist text-ink"><Icon name="key" size={18} /></span>
+        <span className="flex-1 font-semibold"><UiText text="Skift adgangskode"/></span>
+        <Icon name="chevron" size={18} className="text-slate" />
+      </button>
     );
   }
 
   return (
-    <form action={action} className="card mt-2 max-w-sm space-y-3">
+    <form action={action} className="max-w-sm space-y-3 px-5 py-4">
       <div>
         <label className="label" htmlFor="current"><UiText text="Nuværende adgangskode"/></label>
         <input className="input" id="current" name="current" type="password" required />

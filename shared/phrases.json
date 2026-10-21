@@ -1218,5 +1218,11 @@
   "er slået til. RacketBuddy låses, når du forlader appen.": "is on. RacketBuddy locks when you leave the app.",
   "Du forbliver logget ind. Slå biometrisk applås til, hvis appen skal kræve godkendelse, hver gang du åbner den.": "You stay signed in. Turn on biometric app lock if you want the app to ask for verification every time you open it.",
   "Slå {method} fra": "Turn off {method}",
-  "Slå {method} til": "Turn on {method}"
+  "Slå {method} til": "Turn on {method}",
+  "Din profil": "Your profile",
+  "Find medspillere og book baner.": "Find playing partners and reserve courts.",
+  "Tilbyd træning og modtag bookinger.": "Offer lessons and take bookings.",
+  "Konto": "Account",
+  "Alt du har betalt, til dit eget regnskab.": "Everything you have paid, for your own records.",
+  "Skift billede": "Change photo"
 }
