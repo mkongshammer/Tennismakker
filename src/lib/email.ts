@@ -14,6 +14,8 @@ type Mail = {
   to: string;
   subject: string;
   body: string; // ren tekst, én besked pr. linje
+  /** Svar går hertil i stedet for til afsenderen, fx klubbens kasserer. */
+  replyTo?: string;
 };
 
 /**
@@ -48,6 +50,7 @@ export async function sendMail(mail: Mail): Promise<boolean> {
         to: [mail.to],
         subject: mail.subject,
         text: mail.body,
+        ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
       }),
     });
     if (!res.ok) {
@@ -485,6 +488,82 @@ export function membershipReceipt(opts: {
       phrase("her: {p0}/profile",messageLocale(opts.locale),{p0:baseUrl()}),
       "",
       phrase("Denne mail er din kvittering. Gem den til dit eget regnskab.",messageLocale(opts.locale)),
+    ].join("\n"),
+  };
+}
+
+type BillMail = {
+  to: string;
+  name: string;
+  clubName: string;
+  typeName: string;
+  seasonName: string;
+  fromDate: Date;
+  toDate: Date;
+  priceKr: number;
+  currency?: string;
+  locale?: string;
+  timeZone?: string;
+  dueDate: Date | null;
+  payToken: string;
+  note?: string | null;
+  replyTo?: string;
+};
+
+function billLines(o: BillMail) {
+  const l = messageLocale(o.locale), tz = messageTimeZone(o.timeZone);
+  // Season dates are calendar dates stored at UTC midnight, like the admin shows them.
+  const period = `${formatDate(o.fromDate, l, "UTC", { dateStyle: "long" })} – ${formatDate(o.toDate, l, "UTC", { dateStyle: "long" })}`;
+  return [
+    phrase("Kontingent: {p0} ({p1})", l, { p0: o.typeName, p1: o.seasonName }),
+    phrase("Gælder: {p0}", l, { p0: period }),
+    phrase("Beløb: {p0}", l, { p0: formatMoney(o.priceKr, messageCurrency(o.currency), l) }),
+    ...(o.dueDate ? [phrase("Betales senest: {p0}", l, { p0: formatDate(o.dueDate, l, tz, { dateStyle: "long" }) })] : []),
+    "",
+    phrase("Betal med kort her (du skal ikke logge ind):", l),
+    `${baseUrl()}/pay/${o.payToken}`,
+    "",
+    phrase("Du kan også betale i RacketBuddy-appen under Profil.", l),
+    ...(o.note ? ["", o.note] : []),
+    "",
+    phrase("Spørgsmål? Svar på denne mail, så går den til {p0}.", l, { p0: o.clubName }),
+  ];
+}
+
+/** Klubben sender regningen for sæsonens kontingent. */
+export function billNotice(o: BillMail): Mail {
+  const l = messageLocale(o.locale);
+  return {
+    to: o.to,
+    replyTo: o.replyTo,
+    subject: phrase("{p0}: kontingent for {p1}", l, { p0: o.clubName, p1: o.seasonName }),
+    body: [
+      phrase("Hej {p0}", l, { p0: o.name }),
+      "",
+      phrase("Her er din regning for kontingent i {p0}.", l, { p0: o.clubName }),
+      "",
+      ...billLines(o),
+    ].join("\n"),
+  };
+}
+
+/** Påmindelse før forfald, eller én gang efter. */
+export function billReminder(o: BillMail & { overdue: boolean }): Mail {
+  const l = messageLocale(o.locale);
+  return {
+    to: o.to,
+    replyTo: o.replyTo,
+    subject: o.overdue
+      ? phrase("{p0}: dit kontingent er ikke betalt", l, { p0: o.clubName })
+      : phrase("{p0}: påmindelse om kontingent", l, { p0: o.clubName }),
+    body: [
+      phrase("Hej {p0}", l, { p0: o.name }),
+      "",
+      o.overdue
+        ? phrase("Vi har endnu ikke modtaget dit kontingent til {p0}. Har du allerede betalt, kan du se bort fra denne mail.", l, { p0: o.clubName })
+        : phrase("En venlig påmindelse: dit kontingent til {p0} skal snart betales.", l, { p0: o.clubName }),
+      "",
+      ...billLines(o),
     ].join("\n"),
   };
 }

@@ -10,7 +10,7 @@ import { useAppLock } from "../lib/AppLock";
 import { PlayAgain } from "../lib/PlayAgain";
 import { Avatar, Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
 import { colors, LEVELS } from "../lib/theme";
-import { dateTimeLong } from "../lib/dates";
+import { dateMedium, dateTimeLong } from "../lib/dates";
 
 import { NotificationSettings } from "../lib/NotificationSettings";
 import { ReviewPrompt } from "../lib/ReviewPrompt";
@@ -22,10 +22,10 @@ export default function ProfileScreen({ navigation }) {useInternational();
   const { user, logout, deleteAccount } = useAuth();
   const appLock = useAppLock();
   const state = useScreenData(useCallback(async () => {
-    const [bookings, repeatable] = await Promise.all([
-    api.bookings(), api.repeatableBookings().catch(() => ({ items: [] }))]
+    const [bookings, repeatable, bills] = await Promise.all([
+    api.bookings(), api.repeatableBookings().catch(() => ({ items: [] })), api.bills().catch(() => ({ bills: [] }))]
     );
-    return { bookings: bookings.bookings, repeatable: repeatable.items };
+    return { bookings: bookings.bookings, repeatable: repeatable.items, bills: bills.bills ?? [] };
   }, []));
   const load = state.refresh;
   const repeatable = state.data?.repeatable ?? [];
@@ -54,6 +54,19 @@ export default function ProfileScreen({ navigation }) {useInternational();
       if (result.status === "CONFIRMED") Alert.alert("Bookingen er bekræftet", "Du behøver ikke betale igen.");else
       await Linking.openURL(checkoutUrl(result.checkoutUrl));
     } catch (error) {Alert.alert("Kunne ikke åbne betaling", error.message);} finally
+    {paymentLock.current = false;setPaying(null);load();}
+  };
+
+  const bills = state.data?.bills ?? [];
+  const payBill = async (id) => {
+    if (paymentLock.current) return;
+    paymentLock.current = true;
+    setPaying(id);
+    try {
+      const result = await api.payBill(id);
+      if (result.status === "PAID") Alert.alert(tr("Kontingentet er betalt"), tr("Du behøver ikke betale igen."));else
+      await Linking.openURL(checkoutUrl(result.checkoutUrl));
+    } catch (error) {Alert.alert(tr("Kunne ikke åbne betaling"), error.message);} finally
     {paymentLock.current = false;setPaying(null);load();}
   };
 
@@ -137,6 +150,26 @@ export default function ProfileScreen({ navigation }) {useInternational();
       </View>}
 
       <ReviewPrompt />
+
+      {bills.length > 0 && <>
+        <Text style={styles.section}>{tr("Kontingent")}</Text>
+        {bills.map((b) => {
+          const open = b.status === "OPEN" || b.status === "OVERDUE";
+          return (
+            <Card key={b.id} style={open ? { borderColor: b.status === "OVERDUE" ? "#E9B6A2" : colors.court, borderWidth: 1 } : null}>
+              <Text style={styles.bookingTitle}>{b.clubName} · {b.typeName}</Text>
+              <Text style={styles.meta}>{b.seasonName} · {money(b.amount, b.currency)}</Text>
+              {open ? <>
+                <Text style={[styles.warn, b.status === "OVERDUE" ? { color: "#A2401C" } : null]}>
+                  {b.dueDate ? `${b.status === "OVERDUE" ? tr("Forfalden siden") : tr("Betales senest")} ${dateMedium(new Date(b.dueDate), b.timeZone)}` : tr("Afventer betaling")}
+                </Text>
+                <View style={{ marginTop: 12 }}>
+                  <Button title={`${tr("Betal")} ${money(b.amount, b.currency)}`} onPress={() => payBill(b.id)} loading={paying === b.id} disabled={paying !== null} />
+                </View>
+              </> : <Text style={styles.meta}>{tr("Betalt")}</Text>}
+            </Card>);
+        })}
+      </>}
 
       <Text style={styles.section}>{tr("Kommende bookinger")}</Text>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}

@@ -46,7 +46,7 @@ export function MembershipForm({ types }: {types: Type[];}) {const { tr, money, 
                 </p>
                 <p className="text-sm text-slate">
                   {dk(t.fromDate)} – {dk(t.toDate)} ·{" "}
-                  {t.priceKr > 0 ? `${money(t.priceKr)}` : tr("gratis")} · {t.paid}{tr("betalt")}
+                  {t.priceKr > 0 ? `${money(t.priceKr)}` : tr("gratis")} · {t.paid} {tr("betalt")}
               {t.capacity > 0 && ` af ${t.capacity} pladser`}
                 </p>
                 {t.description && <p className="text-sm text-slate-light">{t.description}</p>}

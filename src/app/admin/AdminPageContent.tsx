@@ -38,6 +38,8 @@ import { SystemLoginForm } from "./SystemLoginForm";
 import { ClubControlPanel } from "./ClubControlPanel";
 import { blockSummary } from "../../lib/system-blocks";
 import { MembershipForm } from "./MembershipForm";
+import { BillingPanel } from "./BillingPanel";
+import { clubBillingOverview } from "../../lib/member-billing";
 import { PunchCardForm, TeamForm } from "./TeamAndPunchForms";
 import { DomainForm } from "./DomainForm";
 import { ImageForms } from "./ImageForms";
@@ -399,8 +401,12 @@ export default async function AdminPageContent({
         </section>
               }
 </>}
+{section === 'medlemmer' && await (async () => { const billing = await clubBillingOverview(club.id); return <BillingPanel
+  types={billing.types}
+  members={billing.members}
+  chargesEnabled={club.stripeChargesEnabled}
+  settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />; })()}
 {section === 'medlemmer' && <>
-<MemberForm types={membershipTypes.map((t) => ({ id: t.id, name: t.name }))} />
 <section className="card">
         <h2 className="display mb-1 text-2xl">{tr("Kontingent")}</h2>
         <p className="mb-4 text-sm text-slate">{tr("Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene g\xE5r direkte til klubbens konto. Er kontingentet betalt og s\xE6sonen i gang, booker medlemmet til medlemspris.")}
@@ -423,6 +429,10 @@ export default async function AdminPageContent({
                   }))} />
 
       </section>
+<MemberForm types={membershipTypes.map((t) => ({ id: t.id, name: t.name }))} />
+{clubHasFeature(club.solutionMode, club.customFeatures, 'import') && <ImportForm membersOnly />}
+<BillingPanel part="settings" types={[]} members={0} chargesEnabled={club.stripeChargesEnabled}
+  settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />
 </>}
 {section === 'hold' && <>
 <section className="card">

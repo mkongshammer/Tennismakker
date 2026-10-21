@@ -9,6 +9,7 @@ export const time=(d,zone)=>stamp(d,zone,clock());
 export const dayShort=(d,zone)=>stamp(d,zone,{weekday:'short',day:'numeric',month:'numeric'});
 export const dayLong=(d,zone)=>stamp(d,zone,{weekday:'long',day:'numeric',month:'long'});
 export const dateTimeLong=(d,zone)=>stamp(d,zone,{weekday:'short',day:'numeric',month:'short',...clock()});
+export const dateMedium=(d,zone)=>stamp(d,zone,{month:'short',day:'numeric',year:'numeric'});
 export const weekday=(d,zone)=>stamp(d,zone,{weekday:'long'});
 export const isoDay=(d,zone)=>dayKey(d,zone??'America/New_York');
 export function groupByDay(items,getDate,zone){const map=new Map();for(const item of items){const d=getDate(item),key=isoDay(d,zone);if(!map.has(key))map.set(key,{date:d,items:[]});map.get(key).items.push(item);}return Array.from(map.values());}

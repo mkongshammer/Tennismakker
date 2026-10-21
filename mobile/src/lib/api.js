@@ -184,6 +184,8 @@ export const api = {
   book:payload=>request("/bookings",{method:"POST",body:payload}),
   openDoor:bookingId=>request(`/bookings/${bookingId}/door`,{method:"POST"}),
   resumePayment:bookingId=>request(`/bookings/${bookingId}/checkout`,{method:"POST"}),
+  bills:()=>request("/me/bills"),
+  payBill:id=>request(`/me/bills/${id}/pay`,{method:"POST"}),
 };
 
 export const checkoutUrl=(path)=>resolveCheckoutUrl(path,apiBaseUrl());

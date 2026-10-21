@@ -11,10 +11,20 @@ export function parseClubCsv(text:string) {
  }
  if(quoted)throw Error('CSV-filen har et uafsluttet tekstfelt.');
  row.push(cell.replace(/\r$/,''));if(row.some(Boolean))rows.push(row);
- const headers=rows.shift()?.map(h=>h.trim().replace(/^\uFEFF/,'').toLowerCase())??[];
- if(!headers.includes('type')||!headers.includes('email')||new Set(headers).size!==headers.length)throw Error('Kolonnerne type og email er påkrævet. Brug skabelonen.');
+ // Member lists come straight out of spreadsheets and other systems, so the
+ // usual header spellings are accepted, and a list without a type column is
+ // read as members only.
+ const ALIASES:Record<string,string>={'e-mail':'email','email address':'email','e-mail address':'email','mail':'email','full name':'name','member name':'name','navn':'name','first name':'first_name','firstname':'first_name','fornavn':'first_name','last name':'last_name','lastname':'last_name','surname':'last_name','efternavn':'last_name','phone number':'phone','mobile':'phone','mobile phone':'phone','cell':'phone','cell phone':'phone','telefon':'phone','mobil':'phone'};
+ const headers=rows.shift()?.map(h=>{const k=h.trim().replace(/^\uFEFF/,'').toLowerCase();return ALIASES[k]??k;})??[];
+ if(!headers.includes('email')||new Set(headers).size!==headers.length)throw Error('Kolonnen email er påkrævet. Brug skabelonen.');
  if(rows.length>500||!rows.length)throw Error('Importér mellem 1 og 500 rækker.');
- return rows.map((cells,index)=>{if(cells.length!==headers.length)throw Error(`Række ${index+2}: forkert antal kolonner.`);return Object.fromEntries(headers.map((h,i)=>[h,cells[i].trim()]));});
+ return rows.map((cells,index)=>{
+  if(cells.length!==headers.length)throw Error(`Række ${index+2}: forkert antal kolonner.`);
+  const r:Record<string,string>=Object.fromEntries(headers.map((h,i)=>[h,cells[i].trim()]));
+  if(!headers.includes('type'))r.type='member';
+  if(!r.name&&(r.first_name||r.last_name))r.name=[r.first_name,r.last_name].filter(Boolean).join(' ');
+  return r;
+ });
 }
 export function importDate(value:string) {
  if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d)?(?:Z|[+-]\d\d:\d\d)$/.test(value))throw Error('Bookingtid skal indeholde tidszone, fx 2027-01-10T18:00:00+01:00.');

@@ -46,3 +46,10 @@ test('reservation lock preserves holds with a prepared checkout even after local
  await assert.rejects(createCourtReservation({data:{courtId:'c',startsAt:new Date(),endsAt:new Date(Date.now()+3600000)}}),/optaget/);
  assert.ok(query.OR[1].OR.some((x:any)=>x.checkoutParams?.not===null));assert.equal(writes,0);
 });
+test('member lists from spreadsheets import without a type column and with common headers',()=>{
+ const rows=parseClubCsv('Email Address,First Name,Last Name,Mobile\njane@example.com,Jane,Doe,617-555-0101\nsam@example.com,,,');
+ assert.equal(rows.length,2);
+ assert.deepEqual([rows[0].type,rows[0].email,rows[0].name,rows[0].phone],['member','jane@example.com','Jane Doe','617-555-0101']);
+ assert.equal(rows[1].type,'member');
+ assert.throws(()=>parseClubCsv('name,phone\nJane,1'),/email/);
+});

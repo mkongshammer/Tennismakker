@@ -13,6 +13,7 @@ export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:s
   const courts=await db.court.findMany({where:{clubId:club.id}});
   for(const [i,r] of rows.entries()){
    if(!['member','booking'].includes(r.type)||!/^\S+@\S+\.\S+$/.test(r.email))throw Error(`Række ${i+2}: kontrollér type og e-mail.`);
+   if(r.type==='member'&&!r.name)r.name=r.email.split('@')[0];
    if(r.type==='member'&&(!r.name||r.name.length>150||(r.phone??'').length>40))throw Error(`Række ${i+2}: kontrollér navn og telefon.`);
    if(r.type==='booking'){
     if(!r.external_id||r.external_id.length>150||courts.filter(c=>c.name===r.court).length!==1)throw Error(`Række ${i+2}: eksternt ID og entydigt banenavn er påkrævet.`);
@@ -46,6 +47,6 @@ export async function importClubData(_prev:unknown,form:FormData):Promise<{ok?:s
    }
    return {members,bookings,skipped};
   },{timeout:60000,isolationLevel:'Serializable'});
-  revalidatePath('/admin','layout');return {ok:`Importeret: ${result.members} nye medlemmer, ${result.bookings} bookinger. ${result.skipped} eksisterende rækker blev bevaret. Nye medlemmer bruger “Glemt adgangskode” for at vælge eget login. Kontingent og gamle betalinger er ikke importeret.`};
+  revalidatePath('/admin','layout');return {ok:`Importeret: ${result.members} nye medlemmer, ${result.bookings} bookinger. ${result.skipped} eksisterende rækker blev bevaret. Nye medlemmer bruger “Glemt adgangskode” for at vælge eget login. Send dem kontingentet under Medlemmer → Send regninger.`};
  }catch(e){return {error:e instanceof Error?e.message:'Importen kunne ikke gennemføres.'};}
 }

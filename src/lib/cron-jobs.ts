@@ -11,6 +11,7 @@ import { db } from "./db";
 import { syncClubCalendar } from "./integrations";
 import { releaseExpiredHolds } from "./payments";
 import { runRenewals } from "./renewals";
+import { runBillReminders } from "./member-billing";
 import { runEngagementEmails } from "./engagement-emails";
 import { runScheduledAgentSweep } from "./agent-scheduler";
 import { getSettings } from "./settings";
@@ -40,6 +41,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const blocks = await processBlocks(10).catch((err) => { console.error("Spærringer fejlede:", err); return { blocked: 0, failed: 0, skipped: 0 }; });
 
   const renewals = await runRenewals().catch((err) => { console.error("Fornyelser fejlede:", err); return { notified: 0, charged: 0, failed: 0 }; });
+  const billReminders = await runBillReminders().catch((err) => { console.error("Bill reminders failed:", err); return { sent: 0 }; });
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
   // One review prompt per finished coach lesson (e-mail + push).
@@ -57,6 +59,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     klubber: results.length,
     resultater: results,
     fornyelser: renewals,
+    billReminders,
     engagement,
     reviewPrompts,
     spaerringer: blocks,

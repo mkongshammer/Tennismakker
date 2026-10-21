@@ -4,14 +4,15 @@ import {useState} from 'react';
 import {useWebsiteInternational} from '../../components/InternationalProvider';
 import {importClubData} from '../../lib/club-import-actions';
 const EXAMPLE='type;email;name;phone;court;start;end;external_id\nmember;member@example.invalid;Example Name;12345678;;;;\nbooking;member@example.invalid;;;Court 1;2027-01-10T18:00:00+01:00;2027-01-10T19:00:00+01:00;booking-123';
-export function ImportForm({initialCsv='',initialSource=''}:{initialCsv?:string;initialSource?:string}={}) {
+const MEMBERS_EXAMPLE='email,first_name,last_name,phone\njane@example.com,Jane,Doe,617-555-0101\nsam@example.com,Sam,Lee,';
+export function ImportForm({initialCsv='',initialSource='',membersOnly=false}:{initialCsv?:string;initialSource?:string;membersOnly?:boolean}={}) {
  const {tr}=useWebsiteInternational(),[state,action]=useFormState(importClubData,null),[csv,setCsv]=useState(initialCsv),[fileError,setFileError]=useState('');
  return <section className="card space-y-4">
-  <h2 className="display text-2xl">{tr('Flyt medlemmer og bookinger')}</h2>
-  <p className="text-sm text-slate">{tr('Eksportér fra det gamle system og tilpas kolonnerne til skabelonen. Importér højst 500 rækker ad gangen. Banenavne skal matche jeres baner præcist. Dette er en engangsimport; kalenderfeed er til løbende synkronisering.')}</p>
-  <pre className="overflow-x-auto rounded-xl bg-mist p-3 text-xs">{EXAMPLE}</pre>
+  <h2 className="display text-2xl">{tr(membersOnly?'Importér medlemmer':'Flyt medlemmer og bookinger')}</h2>
+  <p className="text-sm text-slate">{tr(membersOnly?'Gem jeres medlemsliste som CSV fra Excel, Google Sheets eller det gamle system. Kolonnen email er påkrævet; navn og telefon er valgfri. Højst 500 rækker ad gangen. Der sendes ingen mail ved import — I sender regningerne bagefter.':'Eksportér fra det gamle system og tilpas kolonnerne til skabelonen. Importér højst 500 rækker ad gangen. Banenavne skal matche jeres baner præcist. Dette er en engangsimport; kalenderfeed er til løbende synkronisering.')}</p>
+  <pre className="overflow-x-auto rounded-xl bg-mist p-3 text-xs">{membersOnly?MEMBERS_EXAMPLE:EXAMPLE}</pre>
   <form action={action} className="space-y-3">
-   <label className="label">{tr('Kildesystem')}<input className="input" name="source" defaultValue={initialSource} placeholder="Resasports" required/></label>
+   {membersOnly?<input type="hidden" name="source" value="Member list"/>:<label className="label">{tr('Kildesystem')}<input className="input" name="source" defaultValue={initialSource} placeholder="Resasports" required/></label>}
    <label className="label block">{tr('Vælg CSV-fil')}<input type="file" accept=".csv,text/csv" className="input" onChange={async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>200000){setFileError('Filen må højst være 200 KB.');return;}setFileError('');setCsv(await file.text());}}/></label>
    <label className="label">{tr('Eller indsæt CSV')}<textarea name="csv" className="input min-h-48" required value={csv} onChange={e=>setCsv(e.target.value)}/></label>
    {fileError&&<p role="alert">{tr(fileError)}</p>}

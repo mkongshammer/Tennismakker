@@ -305,11 +305,11 @@
   },
   "Kontingent": {
     "en": "Membership",
-    "de": "Mitgliedsbeitrag",
-    "sv": "Medlemsavgift",
+    "de": "Mitgliedschaft",
+    "sv": "Medlemskap",
     "no": "Kontingent",
     "fr": "Adhésion",
-    "es": "Afiliación"
+    "es": "Cuota"
   },
   "Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene går direkte til klubbens konto. Er kontingentet betalt og sæsonen i gang, booker medlemmet til medlemspris.": {
     "en": "Members sign up and pay online from your club page. Paid members receive member pricing during their membership period.",
@@ -7340,6 +7340,9 @@
   },
   "Vis": {
     "en": "Show",
+    "de": "Anzeigen",
+    "sv": "Visa",
+    "no": "Vis",
     "fr": "Afficher",
     "es": "Mostrar"
   },
@@ -11313,5 +11316,413 @@
   "For club subscriptions, the plan, billing currency, monthly renewal and any one-time fee are disclosed before payment. Canadian club subscriptions use USD; United Kingdom and Swiss club subscriptions use EUR. Your bank may charge conversion fees. Any applicable tax is shown before payment. Future club renewals can be cancelled in the billing portal; contact us if the portal is unavailable.": {
     "fr": "Pour les abonnements club, formule, devise, renouvellement mensuel et frais Custom uniques sont indiqués avant paiement. Les clubs canadiens paient en USD ; ceux du Royaume-Uni et de Suisse en EUR. Votre banque peut facturer le change. Les taxes sont affichées avant paiement. Résiliez les renouvellements via le portail ; contactez-nous s’il est indisponible.",
     "es": "Para clubes, plan, moneda, renovación mensual y cargo Custom único se indican antes de pagar. Canadá usa USD; Reino Unido y Suiza usan EUR. Tu banco puede cobrar cambio de moneda. Los impuestos se muestran antes de pagar. Cancela renovaciones en el portal; contacta si no está disponible."
+  },
+  "{n} regninger er sendt.": {
+    "en": "{n} bills sent.",
+    "de": "{n} Rechnungen gesendet.",
+    "sv": "{n} fakturor skickade.",
+    "no": "{n} regninger er sendt.",
+    "fr": "{n} factures envoyées.",
+    "es": "{n} facturas enviadas."
+  },
+  "{n} regninger er sendt. {m} gratis medlemskaber er registreret.": {
+    "en": "{n} bills sent. {m} free memberships registered.",
+    "de": "{n} Rechnungen gesendet. {m} kostenlose Mitgliedschaften registriert.",
+    "sv": "{n} fakturor skickade. {m} kostnadsfria medlemskap registrerade.",
+    "no": "{n} regninger er sendt. {m} gratis medlemskap er registrert.",
+    "fr": "{n} factures envoyées. {m} adhésions gratuites enregistrées.",
+    "es": "{n} facturas enviadas. {m} cuotas gratuitas registradas."
+  },
+  "Importeret: {a} nye medlemmer, {b} bookinger. {c} eksisterende rækker blev bevaret. Nye medlemmer bruger “Glemt adgangskode” for at vælge eget login. Send dem kontingentet under Medlemmer → Send regninger.": {
+    "en": "Imported: {a} new members, {b} bookings. {c} existing rows were kept. New members use “Forgot password” to choose their own login. Bill them under Members → Send bills.",
+    "de": "Importiert: {a} neue Mitglieder, {b} Buchungen. {c} vorhandene Zeilen wurden beibehalten. Neue Mitglieder wählen ihr Login über „Passwort vergessen“. Senden Sie die Rechnungen unter Mitglieder → Rechnungen senden.",
+    "sv": "Importerat: {a} nya medlemmar, {b} bokningar. {c} befintliga rader behölls. Nya medlemmar väljer inloggning via ”Glömt lösenord”. Skicka fakturorna under Medlemmar → Skicka fakturor.",
+    "no": "Importert: {a} nye medlemmer, {b} bookinger. {c} eksisterende rader ble beholdt. Nye medlemmer bruker «Glemt passord» for å velge egen innlogging. Send regningene under Medlemmer → Send regninger.",
+    "fr": "Importé : {a} nouveaux membres, {b} réservations. {c} lignes existantes conservées. Les nouveaux membres utilisent « Mot de passe oublié » pour choisir leur identifiant. Envoyez les factures sous Membres → Envoyer les factures.",
+    "es": "Importado: {a} socios nuevos, {b} reservas. Se conservaron {c} filas existentes. Los socios nuevos usan «He olvidado mi contraseña» para elegir su acceso. Envía las facturas en Socios → Enviar facturas."
+  },
+  "Send regninger": {
+    "en": "Send bills",
+    "de": "Rechnungen senden",
+    "sv": "Skicka fakturor",
+    "no": "Send regninger",
+    "fr": "Envoyer les factures",
+    "es": "Enviar facturas"
+  },
+  "Vælg et kontingent, og send en regning til alle medlemmer, der ikke har betalt det. Hver får en mail med et betalingslink og kan også betale på hjemmesiden og i appen. Pengene går direkte til klubbens konto.": {
+    "en": "Pick a membership and bill every member who hasn't paid it. Each gets an email with a pay link and can also pay on the website or in the app. The money goes straight to the club's account.",
+    "de": "Wählen Sie eine Mitgliedschaft und senden Sie allen Mitgliedern, die noch nicht bezahlt haben, eine Rechnung. Jedes Mitglied erhält eine E-Mail mit Zahlungslink und kann auch auf der Website und in der App bezahlen. Das Geld geht direkt auf das Konto des Clubs.",
+    "sv": "Välj ett medlemskap och skicka en faktura till alla medlemmar som inte har betalat. Var och en får ett mejl med en betalningslänk och kan också betala på webbplatsen och i appen. Pengarna går direkt till klubbens konto.",
+    "no": "Velg et kontingent og send en regning til alle medlemmer som ikke har betalt. Hver får en e-post med betalingslenke og kan også betale på nettsiden og i appen. Pengene går rett til klubbens konto.",
+    "fr": "Choisissez une adhésion et envoyez une facture à tous les membres qui ne l'ont pas réglée. Chacun reçoit un e-mail avec un lien de paiement et peut aussi payer sur le site ou dans l'application. L'argent va directement sur le compte du club.",
+    "es": "Elige una cuota y envía una factura a todos los socios que no la han pagado. Cada uno recibe un correo con un enlace de pago y también puede pagar en la web o en la app. El dinero va directamente a la cuenta del club."
+  },
+  "Fuldfør udbetalingsopsætningen under Betaling, før I sender regninger.": {
+    "en": "Finish your payout setup under Payments before you send bills.",
+    "de": "Schließen Sie die Auszahlungseinrichtung unter Zahlung ab, bevor Sie Rechnungen senden.",
+    "sv": "Slutför utbetalningsinställningen under Betalning innan ni skickar fakturor.",
+    "no": "Fullfør utbetalingsoppsettet under Betaling før dere sender regninger.",
+    "fr": "Terminez la configuration des versements sous Paiement avant d'envoyer des factures.",
+    "es": "Completa la configuración de pagos en Pagos antes de enviar facturas."
+  },
+  "Opret først et kontingent for sæsonen nedenfor.": {
+    "en": "First create a membership for the season below.",
+    "de": "Legen Sie zuerst unten eine Mitgliedschaft für die Saison an.",
+    "sv": "Skapa först ett medlemskap för säsongen nedan.",
+    "no": "Opprett først et kontingent for sesongen nedenfor.",
+    "fr": "Créez d'abord une adhésion pour la saison ci-dessous.",
+    "es": "Primero crea una cuota para la temporada abajo."
+  },
+  "{p0} af klubbens {p1} medlemmer har ikke fået en regning for dette kontingent.": {
+    "en": "{p0} of the club's {p1} members haven't been billed for this membership.",
+    "de": "{p0} von {p1} Mitgliedern des Clubs haben für diese Mitgliedschaft noch keine Rechnung erhalten.",
+    "sv": "{p0} av klubbens {p1} medlemmar har inte fått en faktura för detta medlemskap.",
+    "no": "{p0} av klubbens {p1} medlemmer har ikke fått regning for dette kontingentet.",
+    "fr": "{p0} des {p1} membres du club n'ont pas encore reçu de facture pour cette adhésion.",
+    "es": "{p0} de los {p1} socios del club no han recibido factura de esta cuota."
+  },
+  "Alle medlemmer har allerede fået en regning for dette kontingent.": {
+    "en": "Every member has already been billed for this membership.",
+    "de": "Alle Mitglieder haben für diese Mitgliedschaft bereits eine Rechnung erhalten.",
+    "sv": "Alla medlemmar har redan fått en faktura för detta medlemskap.",
+    "no": "Alle medlemmer har allerede fått regning for dette kontingentet.",
+    "fr": "Tous les membres ont déjà reçu une facture pour cette adhésion.",
+    "es": "Todos los socios ya han recibido factura de esta cuota."
+  },
+  "{p0} medlemmer får en mail med en regning på {p1}. Fortsæt?": {
+    "en": "{p0} members will get an email with a bill for {p1}. Continue?",
+    "de": "{p0} Mitglieder erhalten eine E-Mail mit einer Rechnung über {p1}. Fortfahren?",
+    "sv": "{p0} medlemmar får ett mejl med en faktura på {p1}. Fortsätta?",
+    "no": "{p0} medlemmer får en e-post med en regning på {p1}. Fortsette?",
+    "fr": "{p0} membres recevront un e-mail avec une facture de {p1}. Continuer ?",
+    "es": "{p0} socios recibirán un correo con una factura de {p1}. ¿Continuar?"
+  },
+  "Fortryd": {
+    "en": "Cancel",
+    "de": "Abbrechen",
+    "sv": "Ångra",
+    "no": "Angre",
+    "fr": "Annuler",
+    "es": "Cancelar"
+  },
+  "Ja, send {p0} regninger": {
+    "en": "Yes, send {p0} bills",
+    "de": "Ja, {p0} Rechnungen senden",
+    "sv": "Ja, skicka {p0} fakturor",
+    "no": "Ja, send {p0} regninger",
+    "fr": "Oui, envoyer {p0} factures",
+    "es": "Sí, enviar {p0} facturas"
+  },
+  "Send {p0} regninger": {
+    "en": "Send {p0} bills",
+    "de": "{p0} Rechnungen senden",
+    "sv": "Skicka {p0} fakturor",
+    "no": "Send {p0} regninger",
+    "fr": "Envoyer {p0} factures",
+    "es": "Enviar {p0} facturas"
+  },
+  "Regninger": {
+    "en": "Bills",
+    "de": "Rechnungen",
+    "sv": "Fakturor",
+    "no": "Regninger",
+    "fr": "Factures",
+    "es": "Facturas"
+  },
+  "{p0} betalt · {p1} mangler": {
+    "en": "{p0} paid · {p1} outstanding",
+    "de": "{p0} bezahlt · {p1} offen",
+    "sv": "{p0} betalda · {p1} kvar",
+    "no": "{p0} betalt · {p1} gjenstår",
+    "fr": "{p0} payées · {p1} en attente",
+    "es": "{p0} pagadas · {p1} pendientes"
+  },
+  "indbetalt": {
+    "en": "collected",
+    "de": "eingenommen",
+    "sv": "inbetalt",
+    "no": "innbetalt",
+    "fr": "encaissés",
+    "es": "cobrado"
+  },
+  "Alle": {
+    "en": "All",
+    "de": "Alle",
+    "sv": "Alla",
+    "no": "Alle",
+    "fr": "Toutes",
+    "es": "Todas"
+  },
+  "Mangler betaling": {
+    "en": "Unpaid",
+    "de": "Unbezahlt",
+    "sv": "Obetalda",
+    "no": "Ikke betalt",
+    "fr": "Impayées",
+    "es": "Sin pagar"
+  },
+  "Betalt": {
+    "en": "Paid",
+    "de": "Bezahlt",
+    "sv": "Betald",
+    "no": "Betalt",
+    "fr": "Payée",
+    "es": "Pagada"
+  },
+  "Åben": {
+    "en": "Open",
+    "de": "Offen",
+    "sv": "Öppen",
+    "no": "Åpen",
+    "fr": "Ouverte",
+    "es": "Abierta"
+  },
+  "Forfalden": {
+    "en": "Overdue",
+    "de": "Überfällig",
+    "sv": "Förfallen",
+    "no": "Forfalt",
+    "fr": "En retard",
+    "es": "Vencida"
+  },
+  "Annulleret": {
+    "en": "Cancelled",
+    "de": "Storniert",
+    "sv": "Makulerad",
+    "no": "Annullert",
+    "fr": "Annulée",
+    "es": "Anulada"
+  },
+  "Ingen regninger her.": {
+    "en": "No bills here.",
+    "de": "Hier gibt es keine Rechnungen.",
+    "sv": "Inga fakturor här.",
+    "no": "Ingen regninger her.",
+    "fr": "Aucune facture ici.",
+    "es": "No hay facturas aquí."
+  },
+  "manuelt": {
+    "en": "manual",
+    "de": "manuell",
+    "sv": "manuellt",
+    "no": "manuelt",
+    "fr": "manuel",
+    "es": "manual"
+  },
+  "Forfald": {
+    "en": "Due",
+    "de": "Fällig",
+    "sv": "Förfaller",
+    "no": "Forfall",
+    "fr": "Échéance",
+    "es": "Vence"
+  },
+  "Selvtilmeldt": {
+    "en": "Self sign-up",
+    "de": "Selbst angemeldet",
+    "sv": "Självanmäld",
+    "no": "Selvpåmeldt",
+    "fr": "Inscription en ligne",
+    "es": "Alta propia"
+  },
+  "Send igen": {
+    "en": "Resend",
+    "de": "Erneut senden",
+    "sv": "Skicka igen",
+    "no": "Send igjen",
+    "fr": "Renvoyer",
+    "es": "Reenviar"
+  },
+  "Flere handlinger": {
+    "en": "More actions",
+    "de": "Weitere Aktionen",
+    "sv": "Fler åtgärder",
+    "no": "Flere handlinger",
+    "fr": "Plus d'actions",
+    "es": "Más acciones"
+  },
+  "Markér som betalt (kontant, check, overførsel)": {
+    "en": "Mark as paid (cash, check, transfer)",
+    "de": "Als bezahlt markieren (bar, Scheck, Überweisung)",
+    "sv": "Markera som betald (kontant, check, överföring)",
+    "no": "Merk som betalt (kontant, sjekk, overføring)",
+    "fr": "Marquer comme payée (espèces, chèque, virement)",
+    "es": "Marcar como pagada (efectivo, cheque, transferencia)"
+  },
+  "Annullér regning": {
+    "en": "Cancel bill",
+    "de": "Rechnung stornieren",
+    "sv": "Makulera faktura",
+    "no": "Annuller regning",
+    "fr": "Annuler la facture",
+    "es": "Anular factura"
+  },
+  "Indstillinger for regninger": {
+    "en": "Billing settings",
+    "de": "Rechnungseinstellungen",
+    "sv": "Fakturainställningar",
+    "no": "Innstillinger for regninger",
+    "fr": "Paramètres de facturation",
+    "es": "Ajustes de facturación"
+  },
+  "Gælder alle regninger, klubben sender fremover.": {
+    "en": "Applies to every bill the club sends from now on.",
+    "de": "Gilt für alle Rechnungen, die der Club künftig versendet.",
+    "sv": "Gäller alla fakturor som klubben skickar framöver.",
+    "no": "Gjelder alle regninger klubben sender fremover.",
+    "fr": "S'applique à toutes les factures envoyées par le club à partir de maintenant.",
+    "es": "Se aplica a todas las facturas que el club envíe a partir de ahora."
+  },
+  "Dage til forfald": {
+    "en": "Days until due",
+    "de": "Tage bis zur Fälligkeit",
+    "sv": "Dagar till förfallodag",
+    "no": "Dager til forfall",
+    "fr": "Jours avant échéance",
+    "es": "Días hasta el vencimiento"
+  },
+  "Svar på regninger går til": {
+    "en": "Replies to bills go to",
+    "de": "Antworten auf Rechnungen gehen an",
+    "sv": "Svar på fakturor går till",
+    "no": "Svar på regninger går til",
+    "fr": "Les réponses aux factures vont à",
+    "es": "Las respuestas a las facturas van a"
+  },
+  "Note på regningen (valgfri)": {
+    "en": "Note on the bill (optional)",
+    "de": "Hinweis auf der Rechnung (optional)",
+    "sv": "Notering på fakturan (valfri)",
+    "no": "Merknad på regningen (valgfri)",
+    "fr": "Note sur la facture (facultatif)",
+    "es": "Nota en la factura (opcional)"
+  },
+  "Fx: Betaler du hellere med check, så læg den i postkassen ved klubhuset.": {
+    "en": "E.g. Prefer to pay by check? Drop it in the mailbox at the clubhouse.",
+    "de": "Z. B.: Lieber per Scheck? Werfen Sie ihn in den Briefkasten am Clubhaus.",
+    "sv": "T.ex.: Betalar du hellre med check? Lägg den i brevlådan vid klubbhuset.",
+    "no": "F.eks.: Betaler du heller med sjekk, legg den i postkassen ved klubbhuset.",
+    "fr": "Ex. : Vous préférez payer par chèque ? Déposez-le dans la boîte aux lettres du club-house.",
+    "es": "Ej.: ¿Prefieres pagar con cheque? Déjalo en el buzón de la sede."
+  },
+  "Send automatiske påmindelser": {
+    "en": "Send automatic reminders",
+    "de": "Automatische Erinnerungen senden",
+    "sv": "Skicka automatiska påminnelser",
+    "no": "Send automatiske påminnelser",
+    "fr": "Envoyer des rappels automatiques",
+    "es": "Enviar recordatorios automáticos"
+  },
+  "Én påmindelse 3 dage før forfald og én 3 dage efter, kun til dem der ikke har betalt.": {
+    "en": "One reminder 3 days before the due date and one 3 days after, only to members who haven't paid.",
+    "de": "Eine Erinnerung 3 Tage vor Fälligkeit und eine 3 Tage danach, nur an Mitglieder, die nicht bezahlt haben.",
+    "sv": "En påminnelse 3 dagar före förfallodagen och en 3 dagar efter, bara till dem som inte har betalat.",
+    "no": "Én påminnelse 3 dager før forfall og én 3 dager etter, bare til dem som ikke har betalt.",
+    "fr": "Un rappel 3 jours avant l'échéance et un 3 jours après, uniquement aux membres qui n'ont pas payé.",
+    "es": "Un recordatorio 3 días antes del vencimiento y otro 3 días después, solo a quienes no han pagado."
+  },
+  "Gemt.": {
+    "en": "Saved.",
+    "de": "Gespeichert.",
+    "sv": "Sparat.",
+    "no": "Lagret.",
+    "fr": "Enregistré.",
+    "es": "Guardado."
+  },
+  "Vælg mellem 1 og 90 dage til forfald.": {
+    "en": "Choose between 1 and 90 days until due.",
+    "de": "Wählen Sie 1 bis 90 Tage bis zur Fälligkeit.",
+    "sv": "Välj mellan 1 och 90 dagar till förfallodag.",
+    "no": "Velg mellom 1 og 90 dager til forfall.",
+    "fr": "Choisissez entre 1 et 90 jours avant échéance.",
+    "es": "Elige entre 1 y 90 días hasta el vencimiento."
+  },
+  "Skriv en gyldig e-mail til svar.": {
+    "en": "Enter a valid reply-to email.",
+    "de": "Geben Sie eine gültige Antwort-E-Mail ein.",
+    "sv": "Ange en giltig svarsadress.",
+    "no": "Skriv inn en gyldig svaradresse.",
+    "fr": "Saisissez une adresse de réponse valide.",
+    "es": "Introduce un correo de respuesta válido."
+  },
+  "Noten må højst være 500 tegn.": {
+    "en": "The note can be at most 500 characters.",
+    "de": "Der Hinweis darf höchstens 500 Zeichen lang sein.",
+    "sv": "Noteringen får vara högst 500 tecken.",
+    "no": "Merknaden kan være maks 500 tegn.",
+    "fr": "La note ne peut pas dépasser 500 caractères.",
+    "es": "La nota puede tener como máximo 500 caracteres."
+  },
+  "Kontingentet findes ikke.": {
+    "en": "That membership doesn't exist.",
+    "de": "Diese Mitgliedschaft existiert nicht.",
+    "sv": "Medlemskapet finns inte.",
+    "no": "Kontingentet finnes ikke.",
+    "fr": "Cette adhésion n'existe pas.",
+    "es": "Esa cuota no existe."
+  },
+  "Sæsonen er slut. Opret en ny sæson først.": {
+    "en": "That season has ended. Create a new season first.",
+    "de": "Die Saison ist vorbei. Legen Sie zuerst eine neue an.",
+    "sv": "Säsongen är slut. Skapa en ny säsong först.",
+    "no": "Sesongen er over. Opprett en ny sesong først.",
+    "fr": "La saison est terminée. Créez d'abord une nouvelle saison.",
+    "es": "La temporada ha terminado. Crea una nueva primero."
+  },
+  "Regningen findes ikke.": {
+    "en": "That bill doesn't exist.",
+    "de": "Diese Rechnung existiert nicht.",
+    "sv": "Fakturan finns inte.",
+    "no": "Regningen finnes ikke.",
+    "fr": "Cette facture n'existe pas.",
+    "es": "Esa factura no existe."
+  },
+  "Kun åbne regninger kan sendes igen.": {
+    "en": "Only open bills can be resent.",
+    "de": "Nur offene Rechnungen können erneut gesendet werden.",
+    "sv": "Bara öppna fakturor kan skickas igen.",
+    "no": "Bare åpne regninger kan sendes igjen.",
+    "fr": "Seules les factures ouvertes peuvent être renvoyées.",
+    "es": "Solo se pueden reenviar facturas abiertas."
+  },
+  "Regningen er annulleret.": {
+    "en": "The bill has been cancelled.",
+    "de": "Die Rechnung wurde storniert.",
+    "sv": "Fakturan är makulerad.",
+    "no": "Regningen er annullert.",
+    "fr": "La facture a été annulée.",
+    "es": "La factura ha sido anulada."
+  },
+  "Kun åbne regninger kan annulleres.": {
+    "en": "Only open bills can be cancelled.",
+    "de": "Nur offene Rechnungen können storniert werden.",
+    "sv": "Bara öppna fakturor kan makuleras.",
+    "no": "Bare åpne regninger kan annulleres.",
+    "fr": "Seules les factures ouvertes peuvent être annulées.",
+    "es": "Solo se pueden anular facturas abiertas."
+  },
+  "Importér medlemmer": {
+    "en": "Import members",
+    "de": "Mitglieder importieren",
+    "sv": "Importera medlemmar",
+    "no": "Importer medlemmer",
+    "fr": "Importer des membres",
+    "es": "Importar socios"
+  },
+  "Gem jeres medlemsliste som CSV fra Excel, Google Sheets eller det gamle system. Kolonnen email er påkrævet; navn og telefon er valgfri. Højst 500 rækker ad gangen. Der sendes ingen mail ved import — I sender regningerne bagefter.": {
+    "en": "Save your member list as a CSV from Excel, Google Sheets or your old system. The email column is required; name and phone are optional. Up to 500 rows at a time. No email goes out on import — you send the bills afterwards.",
+    "de": "Speichern Sie Ihre Mitgliederliste als CSV aus Excel, Google Sheets oder dem alten System. Die Spalte email ist Pflicht; Name und Telefon sind optional. Höchstens 500 Zeilen auf einmal. Beim Import wird keine E-Mail versendet — die Rechnungen senden Sie danach.",
+    "sv": "Spara medlemslistan som CSV från Excel, Google Sheets eller det gamla systemet. Kolumnen email krävs; namn och telefon är valfria. Högst 500 rader åt gången. Inget mejl skickas vid import — ni skickar fakturorna efteråt.",
+    "no": "Lagre medlemslisten som CSV fra Excel, Google Sheets eller det gamle systemet. Kolonnen email er påkrevd; navn og telefon er valgfritt. Maks 500 rader om gangen. Det sendes ingen e-post ved import — dere sender regningene etterpå.",
+    "fr": "Enregistrez votre liste de membres en CSV depuis Excel, Google Sheets ou l'ancien système. La colonne email est obligatoire ; le nom et le téléphone sont facultatifs. 500 lignes maximum à la fois. Aucun e-mail n'est envoyé à l'import — vous envoyez les factures ensuite.",
+    "es": "Guarda tu lista de socios como CSV desde Excel, Google Sheets o el sistema anterior. La columna email es obligatoria; nombre y teléfono son opcionales. Máximo 500 filas a la vez. No se envía ningún correo al importar: las facturas las envías después."
+  },
+  "Kolonnen email er påkrævet. Brug skabelonen.": {
+    "en": "An email column is required. Use the template.",
+    "de": "Eine Spalte email ist erforderlich. Verwenden Sie die Vorlage.",
+    "sv": "En kolumn email krävs. Använd mallen.",
+    "no": "En kolonne email er påkrevd. Bruk malen.",
+    "fr": "Une colonne email est obligatoire. Utilisez le modèle.",
+    "es": "Se necesita una columna email. Usa la plantilla."
   }
 }

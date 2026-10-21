@@ -106,6 +106,12 @@ model Club {
   signupCheckoutId      String?
   signupCheckoutAttempt Int       @default(0)
   walletEnabled         Boolean   @default(false)
+  /// Medlemsfakturering: dage til forfald, automatiske påmindelser,
+  /// svaradresse og en note, der står på hver regning.
+  billingDueDays        Int       @default(14)
+  billingReminders      Boolean   @default(true)
+  billingReplyTo        String?
+  billingNote           String?
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -1006,10 +1012,21 @@ model Membership {
   /// medlemmet får besked 14 dage før. Se src/lib/renewals.ts.
   autoRenew Boolean @default(false)
 
+  /// Regning sendt af klubben (ikke selvtilmelding). payToken giver adgang
+  /// til betalingssiden uden login, så importerede medlemmer kan betale.
+  billedAt       DateTime?
+  dueDate        DateTime?
+  payToken       String?
+  remindersSent  Int       @default(0)
+  lastReminderAt DateTime?
+  /// "CARD" | "MANUAL" (kontant, check, bankoverførsel) | "FREE"
+  paidMethod     String?
+
   createdAt DateTime @default(now())
 
   @@unique([typeId, userId])
   @@index([userId, status])
+  @@index([payToken])
 }
 
 // ---------- Sæsonhold ----------

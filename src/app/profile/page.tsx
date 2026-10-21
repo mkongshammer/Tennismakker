@@ -1,6 +1,7 @@
 
 import {UiText} from "../../components/InternationalProvider";
 import {formatMoney,formatDate} from "../../lib/international";
+import { memberBills } from "../../lib/member-billing";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { format } from "date-fns";
@@ -70,6 +71,9 @@ export default async function ProfilPage({
   }
 
   const coachSummary = user.coachProfile ? await coachReviewSummary(user.coachProfile.id) : null;
+  const bills = await memberBills(user.id);
+  const openBills = bills.filter((b) => b.status === "OPEN" || b.status === "OVERDUE");
+  const paidBills = bills.filter((b) => b.status === "PAID");
   const [bookings, myRequests, myMatches, coachBookings, toReview, pastLessons, deletion] = await Promise.all([
     db.booking.findMany({
       where: {
@@ -187,6 +191,35 @@ export default async function ProfilPage({
           </Link>
         ))}
       </nav>
+
+      {bills.length > 0 && (
+        <section className="min-w-0" id="dues">
+          <h2 className="display mb-3 text-2xl">{en ? "Membership dues" : "Kontingent"}</h2>
+          <ul className="space-y-2">
+            {openBills.map((b) => (
+              <li key={b.id} className={`flex flex-wrap items-center gap-4 rounded-2xl border bg-chalk p-4 ${b.status === "OVERDUE" ? "border-[#e9b6a2]" : "border-court/30"}`}>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-court-tint text-court"><Icon name="receipt" size={22} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold">{b.clubName} · {b.typeName}</p>
+                  <p className="text-sm text-slate">{b.seasonName}{b.dueDate ? ` · ${b.status === "OVERDUE" ? (en ? "Overdue since" : "Forfalden siden") : (en ? "Due" : "Forfald")} ${formatDate(b.dueDate, prefs.locale, b.timeZone, { month: "short", day: "numeric" })}` : ""}</p>
+                </div>
+                <p className="display text-xl">{formatMoney(b.amount, b.currency, prefs.locale)}</p>
+                <Link href={`/pay/${b.token}`} className="btn-court w-full sm:w-auto">{en ? "Pay now" : "Betal nu"}</Link>
+              </li>
+            ))}
+            {paidBills.map((b) => (
+              <li key={b.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate/15 bg-chalk p-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success"><Icon name="check" size={22} /></span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold">{b.clubName} · {b.typeName}</p>
+                  <p className="text-sm text-slate">{b.seasonName} · {en ? "Paid" : "Betalt"}{b.paidAt ? ` ${formatDate(b.paidAt, prefs.locale, b.timeZone, { month: "short", day: "numeric" })}` : ""}</p>
+                </div>
+                <p className="font-semibold text-slate">{formatMoney(b.amount, b.currency, prefs.locale)}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="min-w-0">
         <h2 className="display mb-3 text-2xl"><UiText text="Dine profiler"/></h2>
