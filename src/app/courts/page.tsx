@@ -180,7 +180,7 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-optic"><Icon name="court" size={24} /></span>
               <span className="min-w-0 flex-1">
                 <span className="block font-bold">Run a club? Be the first here.</span>
-                <span className="block text-sm text-white/70">Set up in minutes. $50/month, everything included, no contract.</span>
+                <span className="block text-sm text-white/70">Set up in minutes. $50/month or $500/year, everything included, no contract.</span>
               </span>
               <Icon name="chevron" className="text-white/70" />
             </Link>
@@ -192,7 +192,7 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
         <aside className="card-flat flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-bold">Is your club missing?</p>
-            <p className="text-sm text-slate">List your courts, take payments and go live in minutes. $50/month, everything included, no contract.</p>
+            <p className="text-sm text-slate">List your courts, take payments and go live in minutes. $50/month or $500/year, everything included, no contract.</p>
           </div>
           <Link href="/list-your-club" className="btn-court shrink-0">List your club</Link>
         </aside>

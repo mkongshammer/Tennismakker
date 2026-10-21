@@ -62,7 +62,7 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
           tax_behavior:taxEnabled?"exclusive":undefined,
           currency: club.billingCurrency.toLowerCase(),
           unit_amount: club.subscriptionKr * 100,
-          recurring: { interval: "month" },
+          recurring: { interval: club.subscriptionInterval === "YEAR" ? "year" : "month" },
           product_data: { name: `RacketBuddy Standard — ${club.name}` },
         },
         quantity: 1,

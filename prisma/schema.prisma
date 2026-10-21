@@ -153,6 +153,8 @@ model Club {
   // SUBSCRIPTION (fast beløb pr. måned, klubben beholder hele bookingen).
   billingModel    String @default("COMMISSION")
   subscriptionKr  Int    @default(199) // major units in billingCurrency
+  /// "MONTH" | "YEAR": how often subscriptionKr is charged.
+  subscriptionInterval String @default("MONTH")
   billingCurrency String @default("DKK") // preserve existing contracts; new sales explicitly use EUR/USD
 
   // Abonnementet, klubben betaler TIL os. Ikke det samme som

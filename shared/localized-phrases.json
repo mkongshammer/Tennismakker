@@ -12746,5 +12746,13 @@
     "no": "Vakten er opprettet.",
     "fr": "Créneau créé.",
     "es": "Turno creado."
+  },
+  "år": {
+    "en": "year",
+    "de": "Jahr",
+    "sv": "år",
+    "no": "år",
+    "fr": "an",
+    "es": "año"
   }
 }

@@ -34,11 +34,12 @@ export function describeSubscription(club: {
   subscriptionStatus: string | null;
   subscriptionKr: number;
   billingCurrency?: string;
+  subscriptionInterval?: string;
 }): string {
   switch (club.subscriptionStatus) {
     case "active":
     case "trialing":
-      return `Betaler ${club.billingCurrency ? formatMoney(club.subscriptionKr,club.billingCurrency,"da") : `${club.subscriptionKr} kr`}/md.`;
+      return `Betaler ${club.billingCurrency ? formatMoney(club.subscriptionKr,club.billingCurrency,"da") : `${club.subscriptionKr} kr`}/${club.subscriptionInterval === "YEAR" ? "år" : "md."}`;
     case "past_due":
     case "unpaid":
       return "Betalingen fejlede. Kortet skal fornys.";

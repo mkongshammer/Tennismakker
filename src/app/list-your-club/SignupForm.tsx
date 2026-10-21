@@ -51,7 +51,9 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
 
   const prices = pricesForCountry(priceBook, "US");
   const money = (p: number) => formatMoney(p, prices.currency, "en-US");
-  const price = prices.standard;
+  const [billing, setBilling] = useState<"MONTH" | "YEAR">("MONTH");
+  const price = billing === "YEAR" ? prices.annual : prices.standard;
+  const saving = prices.standard * 12 - prices.annual;
   const tr = (value: string) => phrase(value, locale);
 
   const courtTotal = useMemo(() => sports.reduce((s, sport) => s + (counts[sport] ?? 1), 0), [sports, counts]);
@@ -82,6 +84,7 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
       <input type="hidden" name="monthlyQuote" value={prices.standard} />
       <input type="hidden" name="billingCurrency" value={prices.currency} />
       <input type="hidden" name="quote" value={price} />
+      <input type="hidden" name="billing" value={billing} />
       <input type="hidden" name="mode" value="CUSTOM" />
 
       <div className="min-w-0 space-y-5">
@@ -101,14 +104,19 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
             <h2 className="display text-display-md">One plan. The whole system.</h2>
             <p className="mt-1 text-sm text-slate">Every club gets everything. No setup fee, no contract — you pay from the day you start and can cancel any month.</p>
           </div>
-          <div className="flex flex-wrap items-end justify-between gap-4 rounded-2xl border-2 border-court bg-court-tint/40 p-5">
-            <div>
-              <p className="eyebrow text-court-dark">RacketBuddy for clubs</p>
-              <p className="mt-1"><span className="display text-display-lg">{money(prices.standard)}</span><span className="text-slate"> / month</span></p>
-              <p className="mt-1 text-sm text-slate">Billed monthly from today · cancel anytime · 0% commission on court bookings</p>
-            </div>
-            <Icon name="check" size={28} className="text-court" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {([["MONTH", prices.standard, "/ month", "Billed monthly from today · cancel any month"], ["YEAR", prices.annual, "/ year", `Billed once a year · save ${money(saving)} (two months free)`]] as const).map(([id, amount, unit, note]) => (
+              <button key={id} type="button" onClick={() => setBilling(id)} aria-pressed={billing === id} className={`flex items-start justify-between gap-3 rounded-2xl border-2 p-5 text-left transition ${billing === id ? "border-court bg-court-tint/40" : "border-slate/15 bg-chalk hover:border-slate/30"}`}>
+                <span>
+                  <span className="eyebrow block text-court-dark">{id === "YEAR" ? "Annual" : "Monthly"}</span>
+                  <span className="mt-1 block"><span className="display text-display-md">{money(amount)}</span><span className="text-slate"> {unit}</span></span>
+                  <span className="mt-1 block text-sm text-slate">{note}</span>
+                </span>
+                {billing === id && <Icon name="check" size={24} className="shrink-0 text-court" />}
+              </button>
+            ))}
           </div>
+          <p className="text-sm text-slate">Same system either way: everything included, 0% commission on court bookings, no setup fee.</p>
           <ul className="grid gap-2 text-sm sm:grid-cols-2">
             {[
               ["Court calendar and online booking", "Courts, hours, pricing, guest and member booking."],
@@ -197,7 +205,7 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
             <input className="mt-1" type="checkbox" name="terms" required />
             <span>
               I’m authorized to register this club and accept the <a className="underline" href={termsHref("US")} target="_blank" rel="noreferrer">terms of service</a> and the <a className="underline" href="/dpa" target="_blank" rel="noreferrer">data processing agreement</a>.{" "}
-              The {money(prices.standard)}/month subscription starts at payment and renews monthly until you cancel — no setup fee, no minimum term. The club goes public after RacketBuddy’s review.
+              The {money(price)}{billing === "YEAR" ? "/year" : "/month"} subscription starts at payment and renews {billing === "YEAR" ? "yearly" : "monthly"} until you cancel — no setup fee{billing === "YEAR" ? "" : ", no minimum term"}. The club goes public after RacketBuddy’s review.
             </span>
           </label>
           {state?.error && <p role="alert" className="field-error">{phrase(state.error, locale)}</p>}
@@ -225,7 +233,7 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
         </div>
         <div className="mt-4 rounded-2xl bg-mist p-4 text-sm">
           <p className="font-bold">Your plan</p>
-          <p className="mt-1 text-slate">RacketBuddy for clubs · {money(prices.standard)}/month · cancel anytime</p>
+          <p className="mt-1 text-slate">RacketBuddy for clubs · {money(price)}{billing === "YEAR" ? "/year" : "/month"} · cancel anytime</p>
           <p className="mt-2 text-xs text-slate">Everything included. No commission on court bookings. Payouts to your Stripe account.</p>
         </div>
       </aside>

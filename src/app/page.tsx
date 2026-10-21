@@ -47,7 +47,7 @@ const JOURNEYS: { href: string; icon: IconName; tint: string; title: string; bod
     tint: "bg-[#fff0e5] text-clay",
     title: "Clubs",
     body: "Run the whole facility from one place — bookings, members, payments, even the lights.",
-    points: ["Self-serve setup, live the same day", "Stripe payouts to your club’s own account", "One plan, $50/month, no commission on court bookings"],
+    points: ["Self-serve setup, live the same day", "Stripe payouts to your club’s own account", "One plan, $50/month or $500/year, no commission on court bookings"],
     cta: "List your club",
   },
 ];
@@ -88,6 +88,8 @@ export default async function Home() {
   const [prefs, settings] = await Promise.all([getPreferences(), getSettings()]);
   const prices = await clubSignupPrices("US");
   const monthly = formatMoney(prices.standard, prices.currency, "en-US");
+  const annual = formatMoney(prices.annual, prices.currency, "en-US");
+  const annualSaving = formatMoney(prices.standard * 12 - prices.annual, prices.currency, "en-US");
   const filters = parseDiscoveryFilters({}, prefs.sport);
 
   const jsonLd = {
@@ -243,6 +245,7 @@ export default async function Home() {
               <span className="display text-display-lg">{monthly}</span>
               <span className="ml-1 text-sm text-slate">/month</span>
             </p>
+            <p className="mt-1 text-sm text-slate">or <span className="font-bold text-ink">{annual}/year</span> — save {annualSaving}, two months free</p>
             <p className="mt-2 text-sm font-semibold text-court">No setup fee · no contract · cancel any month</p>
             <p className="mt-4 flex-1 leading-relaxed text-slate">The whole system: court calendar and online booking, Stripe payouts to your own account, members and memberships, teams and clinics, lights and door access, wallet and pricing rules, recurring reservations, club website and data import. Billed from the day you start.</p>
             <Link href="/list-your-club" className="btn-court mt-7">Start today</Link>
@@ -290,7 +293,7 @@ export default async function Home() {
             { q: "Is RacketBuddy only for clubs?", a: "No. Players reserve courts, book coaches and find hitting partners. Clubs get the tools to run the facility and get found." },
             { q: "Do I need a membership to book?", a: "That depends on the club. Each club decides what members and guests can book and at what price. You see the price and availability before you reserve." },
             { q: "What does it cost a player?", a: "Nothing beyond the club’s court price or the coach’s lesson price. There are no booking fees added at checkout." },
-            { q: "What does it cost a club or a coach?", a: "Clubs pay $50 a month for the whole system — no setup fee, no contract, cancel any month — and keep 100% of their court revenue. Coaches pay nothing up front; RacketBuddy keeps 10% of each lesson booked through the platform." },
+            { q: "What does it cost a club or a coach?", a: `Clubs pay ${monthly} a month, or ${annual} a year (two months free), for the whole system — no setup fee, no contract — and keep 100% of their court revenue. Coaches pay nothing up front; RacketBuddy keeps 10% of each lesson booked through the platform.` },
             { q: "How do refunds work?", a: "Cancel at least 24 hours before your start time and you get a full refund to your card. Later than that, the club keeps the booking." },
             { q: "Which sports?", a: SPORTS.map((s) => sportLabel(s, "en-US")).join(", ") + "." },
             { q: "Is there an app?", a: "Yes — RacketBuddy for iPhone and Android uses the same account, bookings and messages as the website." },
