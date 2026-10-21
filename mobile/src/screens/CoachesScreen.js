@@ -33,7 +33,7 @@ export default function CoachesScreen({ navigation }) {
                 </View>
                 {item.rating?.count > 0 &&
             <Text style={styles.rating}>
-                    <Text style={{ color: colors.court }}>★</Text> {item.rating.average.toFixed(1)}{" "}
+                    <Text style={{ color: colors.courtText }}>★</Text> {item.rating.average.toFixed(1)}{" "}
                     <Text style={styles.meta}>({item.rating.count})</Text>
                   </Text>
             }
@@ -63,16 +63,16 @@ export default function CoachesScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
-  name: { fontWeight: "800", fontSize: 17, flexShrink: 1, color: colors.ink },
-  price: { fontWeight: "800", color: colors.court, fontSize: 16 },
-  rating: { marginTop: 4, fontSize: 12, fontWeight: "700", color: colors.ink },
+  name: { fontWeight: "800", fontSize: 17, flexShrink: 1, color: colors.text },
+  price: { fontWeight: "800", color: colors.courtText, fontSize: 16 },
+  rating: { marginTop: 4, fontSize: 12, fontWeight: "700", color: colors.text },
   headline: { marginTop: 6, lineHeight: 20 },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: { backgroundColor: colors.mist, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
-  tagText: { fontSize: 12, fontWeight: "600", color: colors.ink },
-  packages: { marginTop: 8, fontSize: 13, fontWeight: "700", color: colors.court },
+  tagText: { fontSize: 12, fontWeight: "600", color: colors.text },
+  packages: { marginTop: 8, fontSize: 13, fontWeight: "700", color: colors.courtText },
   coachTop: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 8 },
   footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, borderTopWidth: 1, borderColor: colors.border, marginTop: 20, paddingTop: 16 },
-  action: { color: colors.court, fontWeight: "700", fontSize: 14 }
+  action: { color: colors.courtText, fontWeight: "700", fontSize: 14 }
 });

@@ -11,8 +11,9 @@ import { colors } from "./theme";
 // Quiet variants keep account actions subordinate to booking actions.
 export function Button({ title, onPress, variant = "court", disabled, loading }) {useInternational();
   const quiet = variant === "quiet" || variant === "dangerQuiet";
-  const bg = quiet ? "transparent" : variant === "ink" ? colors.ink : colors.court;
-  const foreground = variant === "dangerQuiet" ? "#9B2525" : quiet ? colors.ink : colors.chalk;
+  // "ink" is the optic button: the one thing on the screen you should press.
+  const bg = quiet ? "transparent" : variant === "ink" ? colors.optic : colors.court;
+  const foreground = variant === "dangerQuiet" ? colors.danger : quiet ? colors.text : variant === "ink" ? colors.ink : colors.chalk;
   return (
     <Pressable
       onPress={onPress}
@@ -41,7 +42,7 @@ export function Badge({ children, tone = "ink" }) {useInternational();
     <View
       style={[
       styles.badge,
-      { backgroundColor: tone === "court" ? colors.court : colors.ink }]
+      { backgroundColor: tone === "court" ? colors.court : colors.raised }]
       }>
 
       <Text style={styles.badgeText}>{children}</Text>
@@ -52,7 +53,7 @@ export function Badge({ children, tone = "ink" }) {useInternational();
 export function Loading({ label = "Henter…" }) {useInternational();
   return (
     <View style={styles.center}>
-      <ActivityIndicator color={colors.court} />
+      <ActivityIndicator color={colors.courtText} />
       <Text style={styles.muted}>{tr(label)}</Text>
     </View>);
 
@@ -80,7 +81,7 @@ export function Empty({ children, title = "Her er lidt stille endnu", icon = "�
 
 export function Avatar({ name = "", size = 48, tone = "light" }) {useInternational();
   const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-  return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? colors.inkSoft : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.court, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
+  return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? colors.raised : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.courtText, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
 }
 
 export function AppHeading({ eyebrow, title, subtitle, trailing }) {useInternational();
@@ -104,14 +105,14 @@ const styles = StyleSheet.create({
   },
   buttonText: { color: colors.chalk, fontWeight: "700", fontSize: 16, textAlign: "center" },
   card: {
-    backgroundColor: colors.chalk,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: 12,
     // Samme bløde skygge som websitets .card
-    shadowColor: colors.ink,
+    shadowColor: "#000000",
     shadowOpacity: 0.035,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 4 },
@@ -126,13 +127,13 @@ const styles = StyleSheet.create({
   badgeText: { color: colors.chalk, fontSize: 12, fontWeight: "700" },
   center: { padding: 32, alignItems: "center", gap: 12 },
   muted: { color: colors.slate, textAlign: "center", fontSize: 15, lineHeight: 23, maxWidth: 420 },
-  error: { color: colors.court, fontWeight: "600", textAlign: "center" },
-  empty: { padding: 28, marginVertical: 12, alignItems: "center", gap: 12, borderRadius: 24, backgroundColor: colors.chalk, borderColor: colors.border, borderWidth: 1 },
+  error: { color: colors.courtText, fontWeight: "600", textAlign: "center" },
+  empty: { padding: 28, marginVertical: 12, alignItems: "center", gap: 12, borderRadius: 24, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
   emptyIcon: { width: 56, height: 56, borderRadius: 18, backgroundColor: colors.courtTint, alignItems: "center", justifyContent: "center" },
-  emptySymbol: { color: colors.court, fontSize: 28 },
-  emptyTitle: { color: colors.ink, fontSize: 20, fontWeight: "700", textAlign: "center" },
+  emptySymbol: { color: colors.courtText, fontSize: 28 },
+  emptyTitle: { color: colors.text, fontSize: 20, fontWeight: "700", textAlign: "center" },
   headingWrap: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 20 },
   eyebrow: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 8 },
-  heading: { color: colors.ink, fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
+  heading: { color: colors.text, fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.8 },
   subtitle: { color: colors.slate, fontSize: 15, lineHeight: 23, marginTop: 8, maxWidth: 560 }
 });

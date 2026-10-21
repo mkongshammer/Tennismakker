@@ -46,7 +46,7 @@ export function HeroVisual() {
     <figure
       role="img"
       aria-label="RacketBuddy on a phone: choose an open hour on a court, get it confirmed instantly, and book a coach"
-      className="relative isolate h-[400px] overflow-hidden rounded-3xl bg-ink-deep sm:h-[440px] lg:h-[520px]"
+      className="keep-light relative isolate h-[400px] overflow-hidden rounded-3xl bg-ink-deep sm:h-[440px] lg:h-[520px]"
     >
       <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(120%_90%_at_85%_10%,#1B3554_0%,#0F2138_45%,#081527_100%)]" />
 

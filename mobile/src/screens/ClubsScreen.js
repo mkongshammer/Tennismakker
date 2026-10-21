@@ -21,7 +21,7 @@ function Stars({ average, count }) {useInternational();
   if (!count) return <Text style={styles.newBadge}>{tr("Ny p\xE5 RacketBuddy")}</Text>;
   return (
     <Text style={styles.rating}>
-      <Text style={{ color: colors.court }}>★</Text> {average.toFixed(1)}{" "}
+      <Text style={{ color: colors.courtText }}>★</Text> {average.toFixed(1)}{" "}
       <Text style={styles.meta}>({count})</Text>
     </Text>);
 
@@ -105,28 +105,28 @@ export default function ClubsScreen({ navigation }) {
 const styles = StyleSheet.create({
   thumb: { width: 84, height: 84, borderRadius: 18, overflow: "hidden" },
   row: { gap: 4 },
-  name: { fontWeight: "800", fontSize: 19, lineHeight: 24, flexShrink: 1, color: colors.ink },
+  name: { fontWeight: "800", fontSize: 19, lineHeight: 24, flexShrink: 1, color: colors.text },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
-  price: { fontWeight: "800", marginTop: 4, color: colors.ink },
-  rating: { fontSize: 12, color: colors.ink, fontWeight: "700" },
+  price: { fontWeight: "800", marginTop: 4, color: colors.text },
+  rating: { fontSize: 12, color: colors.text, fontWeight: "700" },
   newBadge: { fontSize: 13, color: colors.slate },
   openBadge: { fontSize: 12, fontWeight: "700", color: colors.success, marginTop: 4 },
-  hero: { backgroundColor: colors.ink, borderRadius: 24, marginBottom: 24, flexDirection: "row", overflow: "hidden", alignItems: "center" },
+  hero: { backgroundColor: colors.raised, borderRadius: 24, marginBottom: 24, flexDirection: "row", overflow: "hidden", alignItems: "center" },
   heroCopy: { flex: 1, padding: 22, paddingRight: 0, zIndex: 1 },
   heroEyebrow: { fontSize: 10, color: colors.optic, fontWeight: "800", letterSpacing: 1.5, marginBottom: 10 },
   heroTitle: { color: colors.chalk, fontSize: 29, fontWeight: "800", lineHeight: 32, letterSpacing: -0.8 },
   heroHint: { color: "#CCD8E8", fontSize: 13, lineHeight: 19, marginTop: 10 },
   heroArt: { width: "43%", maxWidth: 270 },
-  label: { fontSize: 14, color: colors.ink, fontWeight: "700", marginBottom: 12 },
-  search: { backgroundColor: colors.chalk, borderColor: colors.border, borderWidth: 1, borderRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 14, minHeight: 54 },
+  label: { fontSize: 14, color: colors.text, fontWeight: "700", marginBottom: 12 },
+  search: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 14, minHeight: 54 },
   searchIcon: { color: colors.slate, fontSize: 26, marginRight: 10 },
-  searchInput: { flex: 1, minWidth: 0, color: colors.ink, fontSize: 15, paddingVertical: 16 },
+  searchInput: { flex: 1, minWidth: 0, color: colors.text, fontSize: 15, paddingVertical: 16 },
   clear: { minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center" },
   resultRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 24, marginBottom: 14 },
-  resultTitle: { fontSize: 19, fontWeight: "800", color: colors.ink, flexShrink: 1 },
+  resultTitle: { fontSize: 19, fontWeight: "800", color: colors.text, flexShrink: 1 },
   clubBody: { flexDirection: "row", gap: 16, padding: 20, alignItems: "center" },
   cardFoot: { flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderColor: colors.border },
   cardAction: { flexDirection: "row", alignItems: "center", gap: 10 },
-  actionText: { color: colors.court, fontWeight: "700", fontSize: 14 },
-  arrow: { color: colors.court, fontSize: 22 }
+  actionText: { color: colors.courtText, fontWeight: "700", fontSize: 14 },
+  arrow: { color: colors.courtText, fontSize: 22 }
 });

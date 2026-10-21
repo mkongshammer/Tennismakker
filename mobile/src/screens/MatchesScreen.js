@@ -82,8 +82,8 @@ export default function MatchesScreen({ navigation }) {useInternational();
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  name: { color: colors.ink, fontWeight: "800", fontSize: 18, flexShrink: 1 },
-  type: { color: colors.court, fontWeight: "700", fontSize: 12, marginTop: 6 },
+  name: { color: colors.text, fontWeight: "800", fontSize: 18, flexShrink: 1 },
+  type: { color: colors.courtText, fontWeight: "700", fontSize: 12, marginTop: 6 },
   message: { marginTop: 6, lineHeight: 20 },
   meta: { color: colors.slate, marginTop: 6, fontSize: 13 },
   mine: { color: colors.slate, marginTop: 10, fontStyle: "italic" }

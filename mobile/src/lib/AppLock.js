@@ -135,8 +135,8 @@ export function AppLockGate({ children }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28, backgroundColor: colors.mist }}>
       <View style={{ width: "100%", maxWidth: 420, gap: 18, alignItems: "center" }}>
-        <Text style={{ color: colors.court, fontSize: 18, fontWeight: "800" }}>RacketBuddy</Text>
-        <Text accessibilityRole="header" style={{ color: colors.ink, fontSize: 28, fontWeight: "800", textAlign: "center" }}>Appen er låst</Text>
+        <Text style={{ color: colors.courtText, fontSize: 18, fontWeight: "800" }}>RacketBuddy</Text>
+        <Text accessibilityRole="header" style={{ color: colors.text, fontSize: 28, fontWeight: "800", textAlign: "center" }}>Appen er låst</Text>
         <Text style={{ color: colors.slate, fontSize: 15, lineHeight: 22, textAlign: "center" }}>Bekræft med {lock.biometricLabel} for at fortsætte.</Text>
         <View style={{ width: "100%" }}><Button title={`Lås op med ${lock.biometricLabel}`} onPress={lock.unlock} /></View>
       </View>

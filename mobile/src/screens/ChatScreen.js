@@ -163,7 +163,7 @@ export default function ChatScreen({ route }) {useInternational();
         </View>
       }
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-      {sendError && <Text accessibilityRole="alert" style={{ padding: 12, color: colors.court }}>{sendError}</Text>}
+      {sendError && <Text accessibilityRole="alert" style={{ padding: 12, color: colors.courtText }}>{sendError}</Text>}
 
       <FlatList
         ref={listRef}
@@ -194,7 +194,7 @@ export default function ChatScreen({ route }) {useInternational();
         } />
 
 
-      <View style={{ backgroundColor: colors.chalk, paddingBottom: Math.max(12, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border }}><View style={styles.composer}>
+      <View style={{ backgroundColor: colors.surface, paddingBottom: Math.max(12, insets.bottom), borderTopWidth: 1, borderTopColor: colors.border }}><View style={styles.composer}>
         <TextInput
             style={styles.input}
             value={draft}
@@ -224,18 +224,18 @@ const styles = StyleSheet.create({
     color: colors.slate,
     fontSize: 13,
   },
-  otherName: { color: colors.ink, fontSize: 15, fontWeight: "700", marginTop: 3 },
+  otherName: { color: colors.text, fontSize: 15, fontWeight: "700", marginTop: 3 },
   moderationActions: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 4 },
-  blockedBanner: { backgroundColor: "#FFF4F1", borderBottomWidth: 1, borderBottomColor: "#E9C9C1", paddingHorizontal: 16, paddingVertical: 10 },
-  blockedTitle: { color: "#7E2727", fontWeight: "800", fontSize: 14 },
-  blockedText: { color: "#7E4A4A", marginTop: 2, fontSize: 13, lineHeight: 18 },
+  blockedBanner: { backgroundColor: colors.dangerTint, borderBottomWidth: 1, borderBottomColor: "rgba(252,165,165,0.35)", paddingHorizontal: 16, paddingVertical: 10 },
+  blockedTitle: { color: colors.danger, fontWeight: "800", fontSize: 14 },
+  blockedText: { color: colors.danger, marginTop: 2, fontSize: 13, lineHeight: 18 },
   rowMine: { alignItems: "flex-end" },
   rowTheirs: { alignItems: "flex-start" },
   bubble: { maxWidth: "85%", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 12 },
   mine: { backgroundColor: colors.court, borderBottomRightRadius: 6 },
   theirs: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border },
   textMine: { color: colors.chalk, lineHeight: 23, fontSize: 15 },
-  textTheirs: { color: colors.ink, lineHeight: 23, fontSize: 15 },
+  textTheirs: { color: colors.text, lineHeight: 23, fontSize: 15 },
   timeMine: { color: "#E1ECFF", fontSize: 11, marginTop: 6, alignSelf: "flex-end" },
   timeTheirs: { color: colors.slate, fontSize: 11, marginTop: 3 },
   empty: { textAlign: "center", color: colors.slate, marginTop: 32 },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     maxHeight: 100,
     fontSize: 16,
-    color: colors.ink,
+    color: colors.text,
     minHeight: 48
   }
 });

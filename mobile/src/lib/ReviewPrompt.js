@@ -47,7 +47,7 @@ function ReviewCard({ item, onSubmitted }) {
       <View style={styles.stars} accessibilityRole="radiogroup" accessibilityLabel="Rating">
         {[1, 2, 3, 4, 5].map((n) =>
           <Pressable key={n} onPress={() => setRating(n)} hitSlop={6} accessibilityRole="radio" accessibilityState={{ checked: rating === n }} accessibilityLabel={`${n} out of 5 stars`} style={styles.starButton}>
-            <Text style={[styles.star, { color: n <= rating ? colors.court : colors.border }]}>★</Text>
+            <Text style={[styles.star, { color: n <= rating ? colors.optic : colors.border }]}>★</Text>
           </Pressable>
         )}
       </View>
@@ -70,12 +70,12 @@ function ReviewCard({ item, onSubmitted }) {
 }
 
 const styles = StyleSheet.create({
-  section: { fontSize: 20, fontWeight: "900", marginBottom: 10, color: colors.ink },
-  title: { fontWeight: "800", fontSize: 16, color: colors.ink },
+  section: { fontSize: 20, fontWeight: "900", marginBottom: 10, color: colors.text },
+  title: { fontWeight: "800", fontSize: 16, color: colors.text },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
   stars: { flexDirection: "row", gap: 4, marginVertical: 10 },
   starButton: { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
   star: { fontSize: 32 },
-  input: { minHeight: 80, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, fontSize: 16, lineHeight: 22, color: colors.ink, textAlignVertical: "top", marginBottom: 12 },
-  error: { color: "#9B2525", marginBottom: 8 }
+  input: { minHeight: 80, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, fontSize: 16, lineHeight: 22, color: colors.text, textAlignVertical: "top", marginBottom: 12 },
+  error: { color: colors.danger, marginBottom: 8 }
 });

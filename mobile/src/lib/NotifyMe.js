@@ -53,7 +53,7 @@ export function NotifyMe({ sport, q, kind = "COURTS" }) {
 const styles = StyleSheet.create({
   card: { marginTop: 4, gap: 8 },
   label: { fontSize: 13, fontWeight: "700", color: colors.slate },
-  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: colors.ink, backgroundColor: colors.chalk, marginBottom: 4 },
+  input: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, color: colors.text, backgroundColor: colors.surface, marginBottom: 4 },
   error: { color: colors.danger, fontWeight: "600", fontSize: 13 },
   hint: { fontSize: 12, color: colors.slateLight, textAlign: "center" },
   done: { color: colors.success, fontWeight: "600", fontSize: 15, lineHeight: 22 },

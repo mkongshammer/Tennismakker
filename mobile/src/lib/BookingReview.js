@@ -46,18 +46,18 @@ export function BookingReview({ visible, title, details, priceKr, currency = "DK
 
 }
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.chalk },
+  safe: { flex: 1, backgroundColor: colors.surface },
   content: { padding: 24, gap: 16, width: "100%", maxWidth: 600, alignSelf: "center", flexGrow: 1 },
-  heading: { color: colors.ink, fontSize: 28, fontWeight: "800" },
-  title: { color: colors.ink, fontSize: 20, fontWeight: "700" },
+  heading: { color: colors.text, fontSize: 28, fontWeight: "800" },
+  title: { color: colors.text, fontSize: 20, fontWeight: "700" },
   handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: "center", marginBottom: 12 },
   eyebrow: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.6 },
   details: { gap: 8, padding: 20, borderRadius: 20, backgroundColor: colors.mist },
-  detail: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  detail: { color: colors.text, fontSize: 17, lineHeight: 26 },
   total: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", borderTopWidth: 1, borderColor: colors.border, paddingTop: 20, gap: 12 },
-  price: { color: colors.ink, fontSize: 30, fontWeight: "800" },
+  price: { color: colors.text, fontSize: 30, fontWeight: "800" },
   hint: { color: colors.slate, fontSize: 16, lineHeight: 24 },
-  error: { color: "#9B2525", fontSize: 16, lineHeight: 24 },
-  noteLabel: { color: colors.ink, fontSize: 15, fontWeight: "700" },
-  note: { minHeight: 96, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, fontSize: 16, lineHeight: 22, color: colors.ink, textAlignVertical: "top" }
+  error: { color: colors.danger, fontSize: 16, lineHeight: 24 },
+  noteLabel: { color: colors.text, fontSize: 15, fontWeight: "700" },
+  note: { minHeight: 96, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 12, fontSize: 16, lineHeight: 22, color: colors.text, textAlignVertical: "top" }
 });

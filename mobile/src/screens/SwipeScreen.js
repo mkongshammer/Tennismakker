@@ -91,7 +91,7 @@ export default function SwipeScreen({ navigation }) {useInternational();
 
 const styles = StyleSheet.create({
   header: { marginBottom: 14, gap: 8 },
-  title: { fontSize: 22, fontWeight: "900", color: colors.ink },
+  title: { fontSize: 22, fontWeight: "900", color: colors.text },
   subtitle: { color: colors.slate, lineHeight: 20, marginBottom: 4 },
   playerRow: { flexDirection: "row", gap: 12, alignItems: "center" },
   avatar: {
@@ -102,11 +102,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  initials: { color: colors.court, fontWeight: "800", fontSize: 17 },
+  initials: { color: colors.courtText, fontWeight: "800", fontSize: 17 },
   info: { flex: 1 },
   nameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  name: { color: colors.ink, fontWeight: "800", fontSize: 19 },
+  name: { color: colors.text, fontWeight: "800", fontSize: 19 },
   meta: { color: colors.slate, marginTop: 2, fontSize: 13 },
-  sports: { color: colors.court, fontWeight: "700", marginTop: 4, fontSize: 12 },
+  sports: { color: colors.courtText, fontWeight: "700", marginTop: 4, fontSize: 12 },
   bio: { marginTop: 12, lineHeight: 20 }
 });

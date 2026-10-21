@@ -351,3 +351,66 @@ textarea {
     transition: none !important;
   }
 }
+
+/* ---------------------------------------------------------------
+   Night court: the platform theme.
+   The footer's palette (deep navy, optic accents) applied everywhere.
+   Utilities keep their names; this layer remaps the ones that carry
+   surface and text roles. Anything inside .keep-light (the hero's
+   phone-style cards) is left as drawn.
+   --------------------------------------------------------------- */
+:root {
+  --nc-bg: #081527;
+  --nc-surface: #0F2138;
+  --nc-surface-2: #13294A;
+  --nc-raised: #1A3A61;
+  --nc-text: #F4F8FF;
+  --nc-muted: #A9B8CC;
+  --nc-muted-2: #8596AE;
+  --nc-line: rgba(255, 255, 255, 0.12);
+  --nc-court-text: #7AB0FF;
+}
+  body { background-color: var(--nc-bg); color: var(--nc-text); }
+  .bg-mist:not(.keep-light *), .bg-mist-deep:not(.keep-light *), .badge-neutral:not(.keep-light *) { background-color: var(--nc-surface-2); }
+  .bg-mist\/40:not(.keep-light *), .bg-mist\/60:not(.keep-light *) { background-color: rgba(19, 41, 74, 0.6); }
+  .bg-chalk:not(.keep-light *), .bg-white:not(.keep-light *), .card:not(.keep-light *), .card-flat:not(.keep-light *), .court-tile:not(.keep-light *) { background-color: var(--nc-surface); }
+  .bg-chalk\/60:not(.keep-light *), .bg-chalk\/80:not(.keep-light *) { background-color: rgba(15, 33, 56, 0.8); }
+  .bg-chalk\/90:not(.keep-light *), .bg-chalk\/95:not(.keep-light *) { background-color: rgba(8, 21, 39, 0.92); }
+  .bg-ink:not(.keep-light *), .badge-ink:not(.keep-light *), .card-dark:not(.keep-light *), .pill[aria-pressed="true"]:not(.keep-light *), .pill.is-active:not(.keep-light *) { background-color: var(--nc-raised); }
+  .bg-ink-deep:not(.keep-light *) { background-color: #050E1C; }
+  .hover\:bg-ink-soft:hover:not(.keep-light *) { background-color: #23497A; }
+  .text-ink:not(.keep-light *), .court-tile:not(.keep-light *), .input:not(.keep-light *), .pill:not(.keep-light *), .btn-ghost:not(.keep-light *), .hover\:text-ink:hover:not(.keep-light *), .group:hover .group-hover\:text-ink:not(.keep-light *) { color: var(--nc-text); }
+  [class~="bg-optic"][class~="text-ink"], [class~="bg-optic"] [class~="text-ink"], [class~="bg-optic/90"][class~="text-ink"] { color: #0F2138 !important; }
+  .text-slate:not(.keep-light *), .label:not(.keep-light *), .hint:not(.keep-light *), .lead:not(.keep-light *), .tile-muted:not(.keep-light *) { color: var(--nc-muted); }
+  .text-slate-light:not(.keep-light *), .placeholder\:text-slate-light::placeholder, .input::placeholder { color: var(--nc-muted-2); }
+  .text-court:not(.keep-light *), .text-court-dark:not(.keep-light *), .hover\:text-court:hover:not(.keep-light *), .group:hover .group-hover\:text-court:not(.keep-light *) { color: var(--nc-court-text); }
+  .border-slate\/10:not(.keep-light *), .border-slate\/15:not(.keep-light *), .border-slate\/20:not(.keep-light *), .border-slate\/25:not(.keep-light *), .border-slate-line:not(.keep-light *), .card:not(.keep-light *), .card-flat:not(.keep-light *), .input:not(.keep-light *), .court-tile:not(.keep-light *), .pill:not(.keep-light *), .btn-ghost:not(.keep-light *), .border-chalk:not(.keep-light *) { border-color: var(--nc-line); }
+  .divide-slate\/10 > :not([hidden]) ~ :not([hidden]), .divide-slate\/15 > :not([hidden]) ~ :not([hidden]), .divide-y > :not([hidden]) ~ :not([hidden]) { border-color: var(--nc-line); }
+  .hover\:border-ink:hover:not(.keep-light *), .hover\:border-slate\/30:hover:not(.keep-light *) { border-color: rgba(255, 255, 255, 0.35); }
+  .btn-ghost:not(.keep-light *) { background-color: var(--nc-surface-2); }
+  .btn-ghost:hover:not(.keep-light *), .hover\:bg-mist:hover:not(.keep-light *) { background-color: rgba(255, 255, 255, 0.08); }
+  .input:not(.keep-light *) { background-color: var(--nc-bg); }
+  .input:focus:not(.keep-light *) { border-color: var(--nc-court-text); }
+  .bg-slate\/10:not(.keep-light *), .bg-slate\/15:not(.keep-light *), .bg-slate\/20:not(.keep-light *) { background-color: rgba(255, 255, 255, 0.12); }
+  .bg-court-tint:not(.keep-light *), .bg-court-tint\/40:not(.keep-light *), .bg-court-tint\/30:not(.keep-light *), .bg-court-tint\/50:not(.keep-light *), .btn-soft:not(.keep-light *), .badge-court:not(.keep-light *), .bg-court\/5:not(.keep-light *), .bg-info-soft:not(.keep-light *) { background-color: rgba(59, 132, 232, 0.18); }
+  .hover\:bg-court-tint:hover:not(.keep-light *) { background-color: rgba(59, 132, 232, 0.28); }
+  .text-info-ink:not(.keep-light *) { color: var(--nc-court-text); }
+  .bg-success-soft:not(.keep-light *), .badge-success:not(.keep-light *) { background-color: rgba(34, 160, 90, 0.2); }
+  .text-success-ink:not(.keep-light *), .text-success:not(.keep-light *), .badge-success:not(.keep-light *) { color: #86E3A8; }
+  .bg-warning-soft:not(.keep-light *), .badge-warning:not(.keep-light *) { background-color: rgba(217, 119, 6, 0.2); }
+  .text-warning-ink:not(.keep-light *), .text-warning:not(.keep-light *), .badge-warning:not(.keep-light *) { color: #FBD38D; }
+  .bg-danger-soft:not(.keep-light *), .badge-danger:not(.keep-light *), .bg-\[\#fdeee8\]:not(.keep-light *) { background-color: rgba(220, 60, 60, 0.2); }
+  .text-danger-ink:not(.keep-light *), .text-danger:not(.keep-light *), .badge-danger:not(.keep-light *), .text-\[\#a2401c\]:not(.keep-light *) { color: #FCA5A5; }
+  /* The dark button becomes the optic button: the footer's call to action, everywhere. */
+  .btn-ink:not(.keep-light *) { background-color: #D8FF3E; color: #0F2138; }
+  .btn-ink:not(.keep-light *) [class~="text-chalk"], .btn-ink:not(.keep-light *) [class~="text-white"] { color: #0F2138; }
+  .btn-ink:hover:not(.keep-light *) { background-color: #E6FF72; }
+  .ring-chalk:not(.keep-light *) { --tw-ring-color: var(--nc-surface); }
+  .shadow-card:not(.keep-light *), .card:not(.keep-light *) { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5); }
+  .shadow-pop:not(.keep-light *) { box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7); }
+  .skeleton:not(.keep-light *) { background-image: linear-gradient(90deg, #13294A 0%, #1A3A61 40%, #13294A 80%); }
+  .border-court\/25:not(.keep-light *), .border-court\/30:not(.keep-light *) { border-color: rgba(122, 176, 255, 0.4); }
+  .text-ink-deep:not(.keep-light *) { color: var(--nc-text); }
+  select.input option { background-color: var(--nc-surface); color: var(--nc-text); }
+  input[type="date"]::-webkit-calendar-picker-indicator, input[type="time"]::-webkit-calendar-picker-indicator, input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.85); }
+  :root { color-scheme: dark; }

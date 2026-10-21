@@ -156,11 +156,11 @@ export default function ProfileScreen({ navigation }) {useInternational();
         {bills.map((b) => {
           const open = b.status === "OPEN" || b.status === "OVERDUE";
           return (
-            <Card key={b.id} style={open ? { borderColor: b.status === "OVERDUE" ? "#E9B6A2" : colors.court, borderWidth: 1 } : null}>
+            <Card key={b.id} style={open ? { borderColor: b.status === "OVERDUE" ? colors.danger : colors.court, borderWidth: 1 } : null}>
               <Text style={styles.bookingTitle}>{b.clubName} · {b.typeName}</Text>
               <Text style={styles.meta}>{b.seasonName} · {money(b.amount, b.currency)}</Text>
               {open ? <>
-                <Text style={[styles.warn, b.status === "OVERDUE" ? { color: "#A2401C" } : null]}>
+                <Text style={[styles.warn, b.status === "OVERDUE" ? { color: colors.danger } : null]}>
                   {b.dueDate ? `${b.status === "OVERDUE" ? tr("Forfalden siden") : tr("Betales senest")} ${dateMedium(new Date(b.dueDate), b.timeZone)}` : tr("Afventer betaling")}
                 </Text>
                 <View style={{ marginTop: 12 }}>
@@ -196,7 +196,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
               </Text>
               {b.status === "REQUESTED" && <Text style={styles.warn}>{tr("Afventer tr\xE6nerens svar")}</Text>}
               {b.requestNote ? <Text style={styles.meta}>Your note: {b.requestNote}</Text> : null}
-              {b.coachNote ? <Text style={[styles.meta, { color: colors.ink, marginTop: 6 }]}>{String(b.title).split(" ")[0]}: {b.coachNote}</Text> : null}
+              {b.coachNote ? <Text style={[styles.meta, { color: colors.text, marginTop: 6 }]}>{String(b.title).split(" ")[0]}: {b.coachNote}</Text> : null}
               {b.status === "CONFIRMED" && <Text style={styles.meta}>{tr("Bekr\xE6ftet")}</Text>}
               {b.status === "HOLD" &&
             <View style={{ marginTop: 12 }}>
@@ -247,7 +247,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
       {Platform.OS !== "web" && <>
         <Text style={styles.section}>{tr("Sikkerhed")}</Text>
         <Card>
-          <Text style={{ color: colors.ink, fontWeight: "800", fontSize: 16 }}>{tr("Applås")}</Text>
+          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{tr("Applås")}</Text>
           <Text style={{ color: colors.slate, lineHeight: 21, marginTop: 6, marginBottom: 14 }}>
             {appLock.enabled
               ? `${appLock.biometricLabel} ${tr("er slået til. RacketBuddy låses, når du forlader appen.")}`
@@ -286,14 +286,14 @@ export default function ProfileScreen({ navigation }) {useInternational();
 }
 
 const styles = StyleSheet.create({
-  profileCard: { backgroundColor: colors.ink, borderColor: colors.ink, padding: 24, borderRadius: 24 },
+  profileCard: { backgroundColor: colors.raised, borderColor: colors.raised, padding: 24, borderRadius: 24 },
   profileEyebrow: { fontSize: 10, letterSpacing: 1.6, fontWeight: "800", color: colors.optic, marginBottom: 6 },
   profileMeta: { color: "#CCD8E8", fontSize: 14, lineHeight: 22, marginTop: 4 },
   name: { fontSize: 25, fontWeight: "800", color: colors.chalk, letterSpacing: -0.6 },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
-  section: { fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12, color: colors.ink },
-  bookingTitle: { color: colors.ink, fontWeight: "800", fontSize: 18 },
-  warn: { color: colors.court, fontWeight: "700", marginBottom: 8, fontSize: 13 },
+  section: { fontSize: 18, fontWeight: "700", marginTop: 20, marginBottom: 12, color: colors.text },
+  bookingTitle: { color: colors.text, fontWeight: "800", fontSize: 18 },
+  warn: { color: colors.courtText, fontWeight: "700", marginBottom: 8, fontSize: 13 },
   accessBox: {
     marginTop: 12,
     padding: 16,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.courtTint,
     gap: 8
   },
-  accessTitle: { color: colors.ink, fontWeight: "800", fontSize: 14 },
+  accessTitle: { color: colors.text, fontWeight: "800", fontSize: 14 },
   accessInstructions: { color: colors.slate, fontSize: 13, lineHeight: 18 },
-  link: { color: colors.court, fontWeight: "700", paddingVertical: 8 }
+  link: { color: colors.courtText, fontWeight: "700", paddingVertical: 8 }
 });

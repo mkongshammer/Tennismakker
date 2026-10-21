@@ -70,7 +70,7 @@ export function PlayAgain({ items, onBooked }) {useInternational();
 }
 
 const styles = StyleSheet.create({
-  title: { fontSize: 20, fontWeight: "900", color: colors.ink },
+  title: { fontSize: 20, fontWeight: "900", color: colors.text },
   subtitle: { color: colors.slate, marginTop: 2, marginBottom: 10, fontSize: 13 },
   row: { gap: 12 },
   what: { fontWeight: "800" },

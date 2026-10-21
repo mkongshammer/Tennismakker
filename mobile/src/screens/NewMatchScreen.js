@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 13,
     fontSize: 16,
-    color: colors.ink
+    color: colors.text
   },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
@@ -140,9 +140,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: "#fff"
   },
-  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  chipText: { fontWeight: "600", color: colors.ink },
+  chipActive: { backgroundColor: colors.raised, borderColor: colors.raised },
+  chipText: { fontWeight: "600", color: colors.text },
   chipTextActive: { color: colors.chalk },
   hint: { color: colors.slate, marginTop: 6, fontSize: 13 },
-  error: { color: colors.court, fontWeight: "600", marginTop: 14 }
+  error: { color: colors.courtText, fontWeight: "600", marginTop: 14 }
 });

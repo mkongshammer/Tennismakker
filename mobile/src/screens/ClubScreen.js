@@ -112,7 +112,7 @@ export default function ClubScreen({ route }) {useInternational();
     <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
-      {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.chalk, lineHeight: 21 }} accessibilityLiveRegion="polite">{tr(notice)}</Text>}
+      {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.surface, lineHeight: 21 }} accessibilityLiveRegion="polite">{tr(notice)}</Text>}
       <View style={[styles.hero, { backgroundColor: hero.backgroundColor }]}>
         <Text style={[styles.heroTitle, { color: hero.color }]}>{club.name}</Text>
         <Text style={[styles.heroCity, { color: hero.color }]}>
@@ -196,22 +196,22 @@ const styles = StyleSheet.create({
   heroCity: { color: colors.chalk, marginTop: 2 },
   heroText: { color: colors.chalk, marginTop: 10, lineHeight: 22 },
   heroMeta: { color: colors.chalk, fontWeight: "700", marginTop: 12, fontSize: 13 },
-  section: { fontSize: 20, fontWeight: "900", marginBottom: 12, color: colors.ink },
+  section: { fontSize: 20, fontWeight: "900", marginBottom: 12, color: colors.text },
   dayChip: {
     minHeight: 48,
     minWidth: 48,
     justifyContent: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.chalk,
+    backgroundColor: colors.surface,
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 9
   },
-  dayChipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
-  dayChipText: { fontWeight: "700", color: colors.ink },
+  dayChipActive: { backgroundColor: colors.raised, borderColor: colors.raised },
+  dayChipText: { fontWeight: "700", color: colors.text },
   dayChipTextActive: { color: colors.chalk },
-  dayLabel: { fontWeight: "800", marginBottom: 4, textTransform: "capitalize", color: colors.ink },
+  dayLabel: { fontWeight: "800", marginBottom: 4, textTransform: "capitalize", color: colors.text },
   tile: {
     borderRadius: 18,
     paddingHorizontal: 16,

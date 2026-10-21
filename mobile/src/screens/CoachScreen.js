@@ -70,7 +70,7 @@ export default function CoachScreen({ route }) {useInternational();
         </View>
         {coach.rating?.count > 0 &&
           <Text style={styles.rating}>
-            <Text style={{ color: colors.court }}>★</Text> {coach.rating.average.toFixed(1)}{" "}
+            <Text style={{ color: colors.courtText }}>★</Text> {coach.rating.average.toFixed(1)}{" "}
             <Text style={styles.meta}>({coach.rating.count})</Text>
           </Text>
           }
@@ -163,7 +163,7 @@ export default function CoachScreen({ route }) {useInternational();
               {r.createdAt ? <Text style={styles.meta}>{new Date(r.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</Text> : null}
             </View>
           </View>
-          <Text style={{ color: colors.court, marginTop: 8 }} accessibilityLabel={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}</Text>
+          <Text style={{ color: colors.courtText, marginTop: 8 }} accessibilityLabel={`${r.rating} out of 5 stars`}>{"★".repeat(r.rating)}</Text>
           {r.comment ? <Text style={styles.comment}>{r.comment}</Text> : null}
         </Card>
       )}
@@ -198,26 +198,26 @@ function Fact({ label, value }) {
 }
 
 const styles = StyleSheet.create({
-  cardTitle: { fontWeight: "900", fontSize: 17, color: colors.ink },
+  cardTitle: { fontWeight: "900", fontSize: 17, color: colors.text },
   factLabel: { color: colors.slate, fontSize: 11, fontWeight: "800", letterSpacing: 1.2 },
-  factValue: { color: colors.ink, marginTop: 2, lineHeight: 20 },
+  factValue: { color: colors.text, marginTop: 2, lineHeight: 20 },
   barRow: { flexDirection: "row", alignItems: "center", gap: 10, marginVertical: 3 },
   barLabel: { width: 12, textAlign: "right", color: colors.slate, fontSize: 13 },
   barTrack: { flex: 1, height: 6, borderRadius: 3, backgroundColor: colors.mist, overflow: "hidden" },
-  barFill: { height: 6, borderRadius: 3, backgroundColor: colors.ink },
+  barFill: { height: 6, borderRadius: 3, backgroundColor: colors.raised },
   avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.mist, alignItems: "center", justifyContent: "center" },
   avatarText: { fontWeight: "800", color: colors.slate },
   row: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 12 },
-  name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.ink },
-  price: { fontWeight: "800", color: colors.court, fontSize: 17 },
-  rating: { marginTop: 6, fontSize: 13, fontWeight: "700", color: colors.ink },
+  name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.text },
+  price: { fontWeight: "800", color: colors.courtText, fontSize: 17 },
+  rating: { marginTop: 6, fontSize: 13, fontWeight: "700", color: colors.text },
   headline: { marginTop: 8, lineHeight: 20 },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
-  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.ink },
+  section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.text },
   sectionHint: { color: colors.slate, marginTop: -10, marginBottom: 10, fontSize: 13 },
-  packageName: { fontWeight: "800", flexShrink: 1, color: colors.ink },
+  packageName: { fontWeight: "800", flexShrink: 1, color: colors.text },
   packageDesc: { marginTop: 8, lineHeight: 19 },
-  dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.ink },
-  slotTime: { fontSize: 20, fontWeight: "800", color: colors.ink },
+  dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.text },
+  slotTime: { fontSize: 20, fontWeight: "800", color: colors.text },
   comment: { marginTop: 6, lineHeight: 19 }
 });

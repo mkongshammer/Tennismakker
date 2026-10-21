@@ -40,8 +40,8 @@ const ChatStack = createNativeStackNavigator();
 // Fælles udseende for hver fanes eget navigationshoved. Profil-knappen
 // sidder i hjørnet på alle skærme, ligesom på websitet.
 const screenOptions = {
-  headerStyle: { backgroundColor: colors.chalk },
-  headerTintColor: colors.ink,
+  headerStyle: { backgroundColor: colors.surface },
+  headerTintColor: colors.text,
   headerTitleStyle: { fontWeight: "700", fontSize: 17 },
   headerShadowVisible: false,
   headerRight: () => <ProfileButton />
@@ -109,9 +109,9 @@ function MainTabs() {useInternational();
       sceneContainerStyle={desktop ? { marginLeft: 232 } : undefined}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.court,
+        tabBarActiveTintColor: colors.courtText,
         tabBarInactiveTintColor: colors.slate,
-        tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.chalk, paddingTop: 6 },
+        tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.surface, paddingTop: 6 },
         tabBarItemStyle: { borderRadius: 16, marginHorizontal: 4, marginBottom: 4 },
         tabBarActiveBackgroundColor: colors.courtTint,
         tabBarHideOnKeyboard: true,
@@ -172,11 +172,11 @@ function Root() {useInternational();
         options={{
           title: tr("Min profil"),
           presentation: "modal",
-          headerStyle: { backgroundColor: colors.chalk },
-          headerTintColor: colors.ink,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text,
           headerShadowVisible: false,
           headerTitleStyle: { fontWeight: "700" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.court, fontWeight: "700" }}>{tr("Luk")}</Text></Pressable>
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.courtText, fontWeight: "700" }}>{tr("Luk")}</Text></Pressable>
         }} />
 
     </RootStack.Navigator>);
@@ -190,7 +190,7 @@ export default function App() {useInternational();
     <SafeAreaProvider>
       <AuthProvider>
         <AppLockProvider>
-          <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.chalk, text: colors.ink, border: colors.border } }}>
+          <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.surface, text: colors.text, border: colors.border } }}>
             <SessionStatusBar />
             <AppLockGate>
               <PushLifecycle />
@@ -206,4 +206,4 @@ export default function App() {useInternational();
 
 }
 
-function SessionStatusBar() {useInternational();return <StatusBar style="dark" />;}
+function SessionStatusBar() {useInternational();return <StatusBar style="light" />;}

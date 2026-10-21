@@ -220,7 +220,7 @@ export default function LoginScreen() {
           {!forgotMode && !socialPending && <>
             <Text style={styles.label}>{tr("Adgangskode")}</Text>
             <View style={styles.passwordWrap}><TextInput style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: "transparent" }]} value={password} onChangeText={setPassword} secureTextEntry={!showPassword} ref={passwordRef} accessibilityLabel={tr("Adgangskode")} editable={!busy} autoComplete={signupMode ? "new-password" : "current-password"} returnKeyType="go" onSubmitEditing={submit} />
-              <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? tr("Skjul adgangskode") : tr("Vis adgangskode")} disabled={busy} onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}><Text style={{ color: colors.court, fontWeight: "700", fontSize: 13 }}>{showPassword ? tr("Skjul") : tr("Vis")}</Text></Pressable></View>
+              <Pressable accessibilityRole="button" accessibilityLabel={showPassword ? tr("Skjul adgangskode") : tr("Vis adgangskode")} disabled={busy} onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}><Text style={{ color: colors.courtText, fontWeight: "700", fontSize: 13 }}>{showPassword ? tr("Skjul") : tr("Vis")}</Text></Pressable></View>
             {signupMode && <Text style={{ marginTop: 6, color: colors.slate }}>{tr("Mindst 8 tegn.")}</Text>}
           </>}
 
@@ -275,7 +275,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   wrap: { padding: 16, width: "100%", maxWidth: 560, alignSelf: "center", flexGrow: 1, gap: 16 },
   desktopWrap: { maxWidth: 1100, flexDirection: "row", alignItems: "center", justifyContent: "center", padding: 40, gap: 48 },
-  welcome: { backgroundColor: colors.ink, borderRadius: 28, overflow: "hidden", paddingTop: 24 },
+  welcome: { backgroundColor: colors.raised, borderRadius: 28, overflow: "hidden", paddingTop: 24 },
   desktopWelcome: { flex: 1, paddingTop: 36 },
   welcomeBody: { paddingHorizontal: 24, paddingTop: 28 },
   logo: { fontSize: 24, fontWeight: "800", color: colors.chalk, letterSpacing: -0.7, paddingHorizontal: 24 },
@@ -284,31 +284,31 @@ const styles = StyleSheet.create({
   tagline: { color: "#CCD8E8", marginTop: 12, lineHeight: 22, fontSize: 14, maxWidth: 340 },
   form: { padding: 12 },
   desktopForm: { flex: 1, maxWidth: 400 },
-  formTitle: { color: colors.ink, fontSize: 25, fontWeight: "800", letterSpacing: -0.5 },
+  formTitle: { color: colors.text, fontSize: 25, fontWeight: "800", letterSpacing: -0.5 },
   formHint: { color: colors.slate, marginTop: 6, marginBottom: 12, fontSize: 14, lineHeight: 22 },
-  label: { fontWeight: "700", color: colors.ink, marginBottom: 7, marginTop: 14, fontSize: 13 },
+  label: { fontWeight: "700", color: colors.text, marginBottom: 7, marginTop: 14, fontSize: 13 },
   optional:{fontWeight:"500",color:colors.slate},
   privateHint:{marginTop:6,color:colors.slate,fontSize:12,lineHeight:17},
-  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 15, fontSize: 16, color: colors.ink, minHeight: 52, justifyContent:"center" },
+  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 15, fontSize: 16, color: colors.text, minHeight: 52, justifyContent:"center" },
   readOnly: { backgroundColor: colors.mist, color: colors.slate },
-  passwordWrap: { flexDirection: "row", borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.chalk, alignItems: "center" },
+  passwordWrap: { flexDirection: "row", borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: "center" },
   passwordToggle: { minWidth: 52, minHeight: 52, alignItems: "center", justifyContent: "center" },
-  switch: { color: colors.court, textAlign: "center", marginTop: 20, fontWeight: "600" },
+  switch: { color: colors.courtText, textAlign: "center", marginTop: 20, fontWeight: "600" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { minHeight: 48, minWidth: 48, justifyContent: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.chalk },
+  chip: { minHeight: 48, minWidth: 48, justifyContent: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface },
   chipActive: { backgroundColor: colors.courtTint, borderColor: colors.court },
   chipText: { color: colors.slate, fontWeight: "600" },
-  chipTextActive: { color: colors.court, fontWeight: "800" },
-  error: { color: colors.court, fontWeight: "700", marginTop: 12, lineHeight: 20 },
-  notice: { color: colors.court, fontWeight: "700", marginTop: 12, lineHeight: 20, padding: 12, borderRadius: 12, backgroundColor: colors.courtTint },
-  statePicker:{marginTop:8,borderWidth:1,borderColor:colors.border,borderRadius:14,backgroundColor:colors.chalk,overflow:'hidden'},
+  chipTextActive: { color: colors.courtText, fontWeight: "800" },
+  error: { color: colors.courtText, fontWeight: "700", marginTop: 12, lineHeight: 20 },
+  notice: { color: colors.courtText, fontWeight: "700", marginTop: 12, lineHeight: 20, padding: 12, borderRadius: 12, backgroundColor: colors.courtTint },
+  statePicker:{marginTop:8,borderWidth:1,borderColor:colors.border,borderRadius:14,backgroundColor: colors.surface,overflow:'hidden'},
   stateRow:{minHeight:48,paddingHorizontal:14,flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderBottomWidth:StyleSheet.hairlineWidth,borderBottomColor:colors.border},
   stateRowActive:{backgroundColor:colors.courtTint},
-  stateRowText:{fontSize:15,color:colors.ink},
+  stateRowText:{fontSize:15,color: colors.text},
   stateCode:{fontSize:13,color:colors.slate,fontWeight:'700'},
   divider:{flexDirection:'row',alignItems:'center',gap:10,marginVertical:16},
   dividerLine:{height:1,backgroundColor:colors.border,flex:1},
   dividerText:{fontSize:12,color:colors.slate,fontWeight:'600'},
   termsText:{marginTop:16,color:colors.slate,fontSize:12,lineHeight:18,textAlign:'center'},
-  inlineLink:{color:colors.court,fontWeight:'700',textDecorationLine:'underline'},
+  inlineLink:{color: colors.courtText,fontWeight:'700',textDecorationLine:'underline'},
 });

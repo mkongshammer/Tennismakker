@@ -4,14 +4,14 @@
     "slug": "racketbuddy",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "scheme": "racketbuddy",
     "newArchEnabled": false,
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1E3D2F"
+      "backgroundColor": "#081527"
     },
     "plugins": [
       "expo-apple-authentication",
@@ -37,7 +37,7 @@
       "versionCode": 100,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1E3D2F"
+        "backgroundColor": "#081527"
       }
     },
     "web": {

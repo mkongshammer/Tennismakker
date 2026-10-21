@@ -1,23 +1,33 @@
-// Samme designsystem som websitet: hardcourt frem for grus. Kølig grå-blå
-// baggrund, banens blå som primær handling, kridhvide linjer. Optic-gult
-// fra bolden er reserveret til enkeltstående fremhævninger.
+// Night court: the same palette as the website's footer, everywhere. Deep
+// navy screens, navy cards, chalk text, the court's blue for actions and
+// optic yellow from the ball for the one thing you should press. It matches
+// the app icon.
 export const colors = {
-  ink: "#0F2138",
+  // Surfaces
+  screen: "#0B1C33",
+  surface: "#0F2138",
+  raised: "#1A3A61",
+  ink: "#0F2138", // the brand navy itself (icon, graphics)
   inkDeep: "#081527",
   inkSoft: "#1B3554",
+  mist: "#0B1C33", // screen background
+  // Text
+  text: "#F4F8FF",
+  chalk: "#FFFFFF", // text on blue and navy
+  slate: "#A9B8CC",
+  slateLight: "#8596AE",
+  // Actions and accents
   court: "#1B62C4",
   courtDark: "#14509F",
   courtLight: "#3B84E8",
+  courtText: "#7AB0FF", // links and blue text on dark surfaces
   optic: "#D8FF3E",
-  mist: "#F1F5F9",
-  chalk: "#FFFFFF",
-  slate: "#54677E",
-  slateLight: "#8496AB",
-  border: "#E2E8F0", // tynd kant, ligesom border-slate/10 på websitet
-  courtTint: "#EAF1FF",
-  success: "#187052",
-  successTint: "#EAF6EF",
-  danger: "#9B2525",
+  border: "rgba(255,255,255,0.12)",
+  courtTint: "rgba(59,132,232,0.2)",
+  success: "#86E3A8",
+  successTint: "rgba(34,160,90,0.2)",
+  danger: "#FCA5A5",
+  dangerTint: "rgba(220,60,60,0.2)",
 };
 
 // Shared reading width keeps forms and cards comfortable on larger screens.

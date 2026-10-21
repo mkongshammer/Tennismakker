@@ -68,8 +68,8 @@ export default function ThreadsScreen({ navigation }) {useInternational();
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 8 },
-  name: { color: colors.ink, fontWeight: "800", fontSize: 16, flexShrink: 1 },
-  badge: { color: colors.court, fontSize: 12, fontWeight: "800" },
+  name: { color: colors.text, fontWeight: "800", fontSize: 16, flexShrink: 1 },
+  badge: { color: colors.courtText, fontSize: 12, fontWeight: "800" },
   time: { color: colors.slate, fontSize: 12 },
   preview: { color: colors.slate, marginTop: 4 }
 });

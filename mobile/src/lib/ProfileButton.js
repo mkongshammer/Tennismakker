@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   initials: {
-    color: colors.court,
+    color: colors.courtText,
     fontWeight: "800",
     fontSize: 12
   }

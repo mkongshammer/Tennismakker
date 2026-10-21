@@ -70,10 +70,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.chalk,
+    backgroundColor: colors.surface,
   },
-  chipActive: { backgroundColor: colors.ink, borderColor: colors.ink },
+  chipActive: { backgroundColor: colors.raised, borderColor: colors.raised },
   dot: { width: 9, height: 9, borderRadius: 5 },
-  label: { fontWeight: "700", color: colors.ink, fontSize: 14 },
+  label: { fontWeight: "700", color: colors.text, fontSize: 14 },
   labelActive: { color: colors.chalk },
 });
