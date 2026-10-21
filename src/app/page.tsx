@@ -4,7 +4,6 @@
 // play racquet sports and the smartest way to run a club. Everything on the
 // page is true today — no invented testimonials, no fake club counts.
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { getPreferences } from "../lib/preferences";
 import { clubSignupPrices } from "../lib/club-onboarding";
@@ -14,6 +13,7 @@ import { getSettings } from "../lib/settings";
 import { DiscoverySearch } from "../components/discovery/DiscoverySearch";
 import { parseDiscoveryFilters } from "../lib/discovery";
 import { Icon, type IconName } from "../components/ui";
+import { HeroVisual } from "../components/landing/HeroVisual";
 
 export const dynamic = "force-dynamic";
 
@@ -131,12 +131,7 @@ export default async function Home() {
           </div>
           <p className="mt-4 text-sm text-slate">No account needed to look. Pay only when you reserve · Free cancellation up to 24 hours before</p>
         </div>
-        <figure className="relative isolate overflow-hidden rounded-3xl bg-[#e2e9df]">
-          <Image src="/images/club-life-hero.webp" alt="Tennis players beside a clubhouse in the afternoon sun" width={1536} height={1024} priority unoptimized className="h-[300px] w-full object-cover sm:h-[400px] lg:h-[520px]" />
-          <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent px-6 pb-6 pt-20 text-white">
-            <p className="text-lg font-semibold">More time on court. Less time arranging it.</p>
-          </figcaption>
-        </figure>
+        <HeroVisual />
       </section>
 
       {/* Three doors */}
