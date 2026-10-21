@@ -135,6 +135,9 @@ model Club {
   shopSales             ShopSale[]
   giftCards             GiftCard[]
   staffShifts           StaffShift[]
+  staffMembers   StaffMember[]
+  timeEntries    TimeEntry[]
+  payrollRuns    PayrollRun[]
   walletTiers           String    @default("[]")
   solutionMode          String    @default("STANDARD")
   sports                String    @default("") // tom = vælg sportsgrene; eksisterende baner bevares
@@ -1638,7 +1641,71 @@ model StaffShift {
   startsAt   DateTime
   endsAt     DateTime
   note       String?
+  staffId    String?
+  staff      StaffMember? @relation(fields: [staffId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
 
   @@index([clubId, startsAt])
+}
+
+/// Someone on the club's payroll. The PIN is what they type on the desk
+/// tablet to clock in and out; the rate is what payroll uses.
+model StaffMember {
+  id                 String      @id @default(cuid())
+  clubId             String
+  club               Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name               String
+  email              String?
+  role               String?
+  /// Hourly pay in cents of the club currency
+  hourlyRateCents    Int         @default(0)
+  /// 4–6 digits, unique within the club
+  pin                String
+  /// Weekly hours after which overtime (1.5x) applies; 0 = never
+  overtimeAfterHours Int         @default(40)
+  active             Boolean     @default(true)
+  createdAt          DateTime    @default(now())
+  entries            TimeEntry[]
+  shifts             StaffShift[]
+
+  @@unique([clubId, pin])
+  @@index([clubId, active])
+}
+
+/// A clocked or hand-entered stretch of work. Open while clockOut is null.
+model TimeEntry {
+  id           String      @id @default(cuid())
+  clubId       String
+  club         Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  staffId      String
+  staff        StaffMember @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  clockIn      DateTime
+  clockOut     DateTime?
+  breakMinutes Int         @default(0)
+  note         String?
+  /// "CLOCK" (desk tablet) | "MANUAL" (entered by the admin)
+  source       String      @default("CLOCK")
+  payrollRunId String?
+  payrollRun   PayrollRun? @relation(fields: [payrollRunId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+
+  @@index([clubId, clockIn])
+  @@index([staffId, clockOut])
+}
+
+/// A closed pay period: the entries it covered and the totals per person.
+model PayrollRun {
+  id          String      @id @default(cuid())
+  clubId      String
+  club        Club        @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  periodStart DateTime
+  periodEnd   DateTime
+  /// JSON: [{staffId,name,regularMinutes,overtimeMinutes,rateCents,grossCents}]
+  lines       String
+  totalCents  Int
+  currency    String
+  createdAt   DateTime    @default(now())
+  entries     TimeEntry[]
+
+  @@index([clubId, periodStart])
 }

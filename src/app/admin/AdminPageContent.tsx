@@ -74,7 +74,7 @@ export default async function AdminPageContent({
 
 
 
-}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;from?: string;to?: string;uge?: string;}>;section?: AdminSection;}) {
+}: {searchParams: Promise<{stripe?: string;abonnement?: string;dag?: string;from?: string;to?: string;uge?: string;fra?: string;til?: string;}>;section?: AdminSection;}) {
   const query = await searchParams;
   const prefs = await getPreferences();const tr=(text:string,params?:Record<string,string|number>)=>phrase(text,prefs.locale,params);
   if (section === "oversigt" && (query.stripe || query.abonnement)) redirect(`/admin/betaling?${new URLSearchParams(Object.entries(query).filter(([, v]) => v != null) as [string, string][]).toString()}`);
@@ -493,8 +493,23 @@ export default async function AdminPageContent({
   const keys = Array.from({ length: 7 }, (_, i) => { const d = new Date(`${monday}T00:00:00Z`); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10); });
   const start = wallTime(keys[0], 0, 0, club.timeZone)!, end = new Date(wallTime(keys[6], 0, 0, club.timeZone)!.getTime() + 86_400_000);
   const shifts = await db.staffShift.findMany({ where: { clubId: club.id, startsAt: { gte: start, lt: end } }, orderBy: { startsAt: 'asc' } });
-  const people = [...new Set((await db.staffShift.findMany({ where: { clubId: club.id }, select: { personName: true }, distinct: ['personName'], take: 50 })).map((p) => p.personName))];
-  return <StaffPanel weekStart={start} prevHref={`/admin/vagtplan?uge=${offset - 1}`} nextHref={`/admin/vagtplan?uge=${offset + 1}`} people={people}
+  const staff = await db.staffMember.findMany({ where: { clubId: club.id }, orderBy: [{ active: 'desc' }, { name: 'asc' }] });
+  const people = [...new Set([...staff.filter((s) => s.active).map((s) => s.name), ...(await db.staffShift.findMany({ where: { clubId: club.id }, select: { personName: true }, distinct: ['personName'], take: 50 })).map((p) => p.personName)])];
+  const { timeEntriesBetween, payrollPreview, onTheClock } = await import('../../lib/payroll');
+  const { workedMinutes } = await import('../../lib/payroll-core');
+  const weekEntries = await timeEntriesBetween(club.id, start, end);
+  const scheduledMinutes: Record<string, number> = {};
+  for (const sft of shifts) scheduledMinutes[sft.personName] = (scheduledMinutes[sft.personName] ?? 0) + Math.round((sft.endsAt.getTime() - sft.startsAt.getTime()) / 60_000);
+  // Pay period: the query's range, else the two weeks ending with this week.
+  const dayOf = (k: string) => k;
+  const periodFrom = /^\d{4}-\d{2}-\d{2}$/.test(String(query.fra ?? '')) ? String(query.fra) : (() => { const d = new Date(`${keys[0]}T00:00:00Z`); d.setUTCDate(d.getUTCDate() - 7); return d.toISOString().slice(0, 10); })();
+  const periodTo = /^\d{4}-\d{2}-\d{2}$/.test(String(query.til ?? '')) ? String(query.til) : dayOf(keys[6]);
+  const pStart = wallTime(periodFrom, 0, 0, club.timeZone)!, pEnd = new Date(wallTime(periodTo, 0, 0, club.timeZone)!.getTime() + 86_400_000);
+  const [{ lines: preview, unpaidOpen }, onClock, runs] = await Promise.all([payrollPreview(club.id, pStart, pEnd, club.timeZone), onTheClock(club.id), db.payrollRun.findMany({ where: { clubId: club.id }, orderBy: { periodStart: 'desc' }, take: 24 })]);
+  const payroll = { staff, currency: club.currency, onClock: onClock.length, clockUrl: `/clubs/${club.slug}/clock`, period: { from: periodFrom, to: periodTo }, preview, unpaidOpen, scheduledMinutes,
+    entries: weekEntries.map((e) => ({ id: e.id, staffId: e.staffId, name: e.staff.name, clockIn: e.clockIn, clockOut: e.clockOut, breakMinutes: e.breakMinutes, minutes: workedMinutes(e), note: e.note, source: e.source, locked: Boolean(e.payrollRunId) })),
+    runs: runs.map((r) => ({ id: r.id, periodStart: r.periodStart, periodEnd: r.periodEnd, totalCents: r.totalCents, currency: r.currency, people: (JSON.parse(r.lines) as unknown[]).length, createdAt: r.createdAt })) };
+  return <StaffPanel weekStart={start} prevHref={`/admin/vagtplan?uge=${offset - 1}`} nextHref={`/admin/vagtplan?uge=${offset + 1}`} people={people} payroll={payroll}
     days={keys.map((k) => ({ key: k, date: wallTime(k, 12, 0, club.timeZone)!, shifts: shifts.filter((s) => dayKey(s.startsAt, club.timeZone) === k) }))} />;
 })()}
 {section === 'hold' && <>

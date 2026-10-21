@@ -13238,5 +13238,461 @@
     "no": "Åttendedelsfinaler",
     "fr": "Huitièmes de finale",
     "es": "Octavos de final"
+  },
+  "Ansat": {
+    "en": "Employee",
+    "de": "Mitarbeiter",
+    "sv": "Anställd",
+    "no": "Ansatt",
+    "fr": "Employé",
+    "es": "Empleado"
+  },
+  "Ansatte": {
+    "en": "Staff",
+    "de": "Mitarbeiter",
+    "sv": "Personal",
+    "no": "Ansatte",
+    "fr": "Personnel",
+    "es": "Personal"
+  },
+  "Bruttoløn": {
+    "en": "Gross pay",
+    "de": "Bruttolohn",
+    "sv": "Bruttolön",
+    "no": "Bruttolønn",
+    "fr": "Salaire brut",
+    "es": "Salario bruto"
+  },
+  "De ansatte stempler ind og ud med deres PIN-kode på stempeluret (åbn det på tabletten i receptionen). Du kan også registrere timer her.": {
+    "en": "Staff clock in and out with their PIN on the time clock (open it on the front-desk tablet). You can also enter hours here.",
+    "de": "Die Mitarbeiter stempeln mit ihrer PIN an der Stempeluhr ein und aus (öffne sie auf dem Tablet an der Rezeption). Stunden kannst du auch hier eintragen.",
+    "sv": "Personalen stämplar in och ut med sin PIN-kod på stämpelklockan (öppna den på surfplattan i receptionen). Du kan också registrera timmar här.",
+    "no": "De ansatte stempler inn og ut med PIN-koden sin på stemplingsuret (åpne det på nettbrettet i resepsjonen). Du kan også registrere timer her.",
+    "fr": "Le personnel pointe avec son code PIN sur la pointeuse (ouvrez-la sur la tablette de l'accueil). Vous pouvez aussi saisir des heures ici.",
+    "es": "El personal ficha con su PIN en el reloj de fichar (ábrelo en la tableta de recepción). También puedes registrar horas aquí."
+  },
+  "Deaktivér": {
+    "en": "Deactivate",
+    "de": "Deaktivieren",
+    "sv": "Inaktivera",
+    "no": "Deaktiver",
+    "fr": "Désactiver",
+    "es": "Desactivar"
+  },
+  "E-mail (valgfri)": {
+    "en": "E-mail (optional)",
+    "de": "E-Mail (optional)",
+    "sv": "E-post (valfritt)",
+    "no": "E-post (valgfritt)",
+    "fr": "E-mail (facultatif)",
+    "es": "Correo (opcional)"
+  },
+  "Forhåndsvisning (CSV)": {
+    "en": "Preview (CSV)",
+    "de": "Vorschau (CSV)",
+    "sv": "Förhandsvisning (CSV)",
+    "no": "Forhåndsvisning (CSV)",
+    "fr": "Aperçu (CSV)",
+    "es": "Vista previa (CSV)"
+  },
+  "Genåbn": {
+    "en": "Reopen",
+    "de": "Wieder öffnen",
+    "sv": "Öppna igen",
+    "no": "Gjenåpne",
+    "fr": "Rouvrir",
+    "es": "Reabrir"
+  },
+  "Hent CSV": {
+    "en": "Download CSV",
+    "de": "CSV herunterladen",
+    "sv": "Hämta CSV",
+    "no": "Last ned CSV",
+    "fr": "Télécharger le CSV",
+    "es": "Descargar CSV"
+  },
+  "Ind": {
+    "en": "In",
+    "de": "Ein",
+    "sv": "In",
+    "no": "Inn",
+    "fr": "Entrée",
+    "es": "Entrada"
+  },
+  "Ingen registreringer i denne uge.": {
+    "en": "No entries this week.",
+    "de": "Keine Einträge in dieser Woche.",
+    "sv": "Inga registreringar den här veckan.",
+    "no": "Ingen registreringer denne uken.",
+    "fr": "Aucune saisie cette semaine.",
+    "es": "Sin registros esta semana."
+  },
+  "Ingen ubetalte timer i perioden.": {
+    "en": "No unpaid hours in this period.",
+    "de": "Keine unbezahlten Stunden in diesem Zeitraum.",
+    "sv": "Inga obetalda timmar i perioden.",
+    "no": "Ingen ubetalte timer i perioden.",
+    "fr": "Aucune heure impayée sur la période.",
+    "es": "Sin horas pendientes de pago en el periodo."
+  },
+  "Luk lønkørslen": {
+    "en": "Close the pay run",
+    "de": "Lohnlauf abschließen",
+    "sv": "Stäng lönekörningen",
+    "no": "Lukk lønnskjøringen",
+    "fr": "Clôturer la paie",
+    "es": "Cerrar la nómina"
+  },
+  "Lukkede lønkørsler": {
+    "en": "Closed pay runs",
+    "de": "Abgeschlossene Lohnläufe",
+    "sv": "Stängda lönekörningar",
+    "no": "Lukkede lønnskjøringer",
+    "fr": "Paies clôturées",
+    "es": "Nóminas cerradas"
+  },
+  "Lønkørsel": {
+    "en": "Payroll",
+    "de": "Lohnlauf",
+    "sv": "Lönekörning",
+    "no": "Lønnskjøring",
+    "fr": "Paie",
+    "es": "Nómina"
+  },
+  "Normaltimer": {
+    "en": "Regular hours",
+    "de": "Normalstunden",
+    "sv": "Ordinarie timmar",
+    "no": "Ordinære timer",
+    "fr": "Heures normales",
+    "es": "Horas normales"
+  },
+  "Overtid efter (t/uge)": {
+    "en": "Overtime after (h/week)",
+    "de": "Überstunden ab (Std./Woche)",
+    "sv": "Övertid efter (h/vecka)",
+    "no": "Overtid etter (t/uke)",
+    "fr": "Heures sup. après (h/sem.)",
+    "es": "Horas extra a partir de (h/semana)"
+  },
+  "Overtimer": {
+    "en": "Overtime",
+    "de": "Überstunden",
+    "sv": "Övertid",
+    "no": "Overtid",
+    "fr": "Heures sup.",
+    "es": "Horas extra"
+  },
+  "PIN-kode": {
+    "en": "PIN",
+    "de": "PIN",
+    "sv": "PIN-kod",
+    "no": "PIN-kode",
+    "fr": "Code PIN",
+    "es": "PIN"
+  },
+  "Pause": {
+    "en": "Break",
+    "de": "Pause",
+    "sv": "Rast",
+    "no": "Pause",
+    "fr": "Pause",
+    "es": "Descanso"
+  },
+  "Pause (min)": {
+    "en": "Break (min)",
+    "de": "Pause (Min.)",
+    "sv": "Rast (min)",
+    "no": "Pause (min)",
+    "fr": "Pause (min)",
+    "es": "Descanso (min)"
+  },
+  "Registrér timer": {
+    "en": "Enter hours",
+    "de": "Stunden eintragen",
+    "sv": "Registrera timmar",
+    "no": "Registrer timer",
+    "fr": "Saisir les heures",
+    "es": "Registrar horas"
+  },
+  "Stempl ud": {
+    "en": "Clock out",
+    "de": "Ausstempeln",
+    "sv": "Stämpla ut",
+    "no": "Stemple ut",
+    "fr": "Pointer la sortie",
+    "es": "Fichar salida"
+  },
+  "Tilføj ansat": {
+    "en": "Add employee",
+    "de": "Mitarbeiter hinzufügen",
+    "sv": "Lägg till anställd",
+    "no": "Legg til ansatt",
+    "fr": "Ajouter un employé",
+    "es": "Añadir empleado"
+  },
+  "Timeløn": {
+    "en": "Hourly rate",
+    "de": "Stundenlohn",
+    "sv": "Timlön",
+    "no": "Timelønn",
+    "fr": "Taux horaire",
+    "es": "Tarifa por hora"
+  },
+  "Timeløn og PIN-kode til stempeluret. Overtid betales med 1,5× over grænsen pr. uge.": {
+    "en": "Hourly rate and PIN for the time clock. Overtime is paid at 1.5× above the weekly threshold.",
+    "de": "Stundenlohn und PIN für die Stempeluhr. Überstunden werden mit dem 1,5-Fachen über der Wochengrenze bezahlt.",
+    "sv": "Timlön och PIN-kod till stämpelklockan. Övertid betalas med 1,5× över veckogränsen.",
+    "no": "Timelønn og PIN-kode til stemplingsuret. Overtid betales med 1,5× over ukegrensen.",
+    "fr": "Taux horaire et code PIN pour la pointeuse. Les heures sup. sont payées 1,5× au-delà du seuil hebdomadaire.",
+    "es": "Tarifa por hora y PIN para el reloj de fichar. Las horas extra se pagan a 1,5× por encima del límite semanal."
+  },
+  "Timer": {
+    "en": "Hours",
+    "de": "Stunden",
+    "sv": "Timmar",
+    "no": "Timer",
+    "fr": "Heures",
+    "es": "Horas"
+  },
+  "Timeregistrering": {
+    "en": "Time tracking",
+    "de": "Zeiterfassung",
+    "sv": "Tidsregistrering",
+    "no": "Timeregistrering",
+    "fr": "Suivi du temps",
+    "es": "Registro de horas"
+  },
+  "Timeseddel (CSV)": {
+    "en": "Timesheet (CSV)",
+    "de": "Stundenzettel (CSV)",
+    "sv": "Tidrapport (CSV)",
+    "no": "Timeliste (CSV)",
+    "fr": "Feuille de temps (CSV)",
+    "es": "Hoja de horas (CSV)"
+  },
+  "Ud": {
+    "en": "Out",
+    "de": "Aus",
+    "sv": "Ut",
+    "no": "Ut",
+    "fr": "Sortie",
+    "es": "Salida"
+  },
+  "Vælg": {
+    "en": "Choose",
+    "de": "Auswählen",
+    "sv": "Välj",
+    "no": "Velg",
+    "fr": "Choisir",
+    "es": "Elegir"
+  },
+  "Vælg lønperioden, tjek timerne og luk kørslen. Så låses registreringerne, og du får en CSV-fil, som Gusto, QuickBooks Payroll og ADP kan importere.": {
+    "en": "Pick the pay period, check the hours and close the run. The entries are then locked and you get a CSV file that Gusto, QuickBooks Payroll and ADP can import.",
+    "de": "Wähle den Abrechnungszeitraum, prüfe die Stunden und schließe den Lauf ab. Die Einträge werden gesperrt, und du erhältst eine CSV-Datei, die Gusto, QuickBooks Payroll und ADP importieren können.",
+    "sv": "Välj löneperiod, kontrollera timmarna och stäng körningen. Registreringarna låses och du får en CSV-fil som Gusto, QuickBooks Payroll och ADP kan importera.",
+    "no": "Velg lønnsperioden, sjekk timene og lukk kjøringen. Registreringene låses, og du får en CSV-fil som Gusto, QuickBooks Payroll og ADP kan importere.",
+    "fr": "Choisissez la période de paie, vérifiez les heures et clôturez. Les saisies sont alors verrouillées et vous obtenez un fichier CSV que Gusto, QuickBooks Payroll et ADP peuvent importer.",
+    "es": "Elige el periodo de pago, revisa las horas y cierra la nómina. Los registros quedan bloqueados y obtienes un CSV que Gusto, QuickBooks Payroll y ADP pueden importar."
+  },
+  "ansatte": {
+    "en": "employees",
+    "de": "Mitarbeiter",
+    "sv": "anställda",
+    "no": "ansatte",
+    "fr": "employés",
+    "es": "empleados"
+  },
+  "inaktiv": {
+    "en": "inactive",
+    "de": "inaktiv",
+    "sv": "inaktiv",
+    "no": "inaktiv",
+    "fr": "inactif",
+    "es": "inactivo"
+  },
+  "lønnet": {
+    "en": "paid",
+    "de": "bezahlt",
+    "sv": "utbetald",
+    "no": "utbetalt",
+    "fr": "payé",
+    "es": "pagado"
+  },
+  "overtid efter": {
+    "en": "overtime after",
+    "de": "Überstunden ab",
+    "sv": "övertid efter",
+    "no": "overtid etter",
+    "fr": "heures sup. après",
+    "es": "horas extra tras"
+  },
+  "planlagt": {
+    "en": "scheduled",
+    "de": "geplant",
+    "sv": "planerat",
+    "no": "planlagt",
+    "fr": "prévu",
+    "es": "previsto"
+  },
+  "på arbejde": {
+    "en": "on the clock",
+    "de": "eingestempelt",
+    "sv": "på jobb",
+    "no": "på jobb",
+    "fr": "en service",
+    "es": "trabajando"
+  },
+  "på arbejde nu": {
+    "en": "on the clock now",
+    "de": "gerade eingestempelt",
+    "sv": "på jobb nu",
+    "no": "på jobb nå",
+    "fr": "en service maintenant",
+    "es": "trabajando ahora"
+  },
+  "timer denne uge": {
+    "en": "hours this week",
+    "de": "Stunden diese Woche",
+    "sv": "timmar den här veckan",
+    "no": "timer denne uken",
+    "fr": "heures cette semaine",
+    "es": "horas esta semana"
+  },
+  "Åbn stempeluret": {
+    "en": "Open the time clock",
+    "de": "Stempeluhr öffnen",
+    "sv": "Öppna stämpelklockan",
+    "no": "Åpne stemplingsuret",
+    "fr": "Ouvrir la pointeuse",
+    "es": "Abrir el reloj de fichar"
+  },
+  "åbne registreringer i perioden. Stempl dem ud, før kørslen lukkes.": {
+    "en": "open entries in the period. Clock them out before closing the run.",
+    "de": "offene Einträge im Zeitraum. Stemple sie aus, bevor du den Lauf abschließt.",
+    "sv": "öppna registreringar i perioden. Stämpla ut dem innan körningen stängs.",
+    "no": "åpne registreringer i perioden. Stemple dem ut før kjøringen lukkes.",
+    "fr": "saisies ouvertes sur la période. Pointez leur sortie avant de clôturer.",
+    "es": "registros abiertos en el periodo. Ficha su salida antes de cerrar la nómina."
+  },
+  "Timelønnen skal være mellem 0 og 1000.": {
+    "en": "The hourly rate must be between 0 and 1000.",
+    "de": "Der Stundenlohn muss zwischen 0 und 1000 liegen.",
+    "sv": "Timlönen måste vara mellan 0 och 1000.",
+    "no": "Timelønnen må være mellom 0 og 1000.",
+    "fr": "Le taux horaire doit être entre 0 et 1000.",
+    "es": "La tarifa por hora debe estar entre 0 y 1000."
+  },
+  "PIN-koden skal være 4–6 cifre.": {
+    "en": "The PIN must be 4–6 digits.",
+    "de": "Die PIN muss 4–6 Ziffern haben.",
+    "sv": "PIN-koden ska vara 4–6 siffror.",
+    "no": "PIN-koden må være 4–6 sifre.",
+    "fr": "Le code PIN doit comporter 4 à 6 chiffres.",
+    "es": "El PIN debe tener de 4 a 6 dígitos."
+  },
+  "Overtid efter: 0–80 timer om ugen.": {
+    "en": "Overtime after: 0–80 hours a week.",
+    "de": "Überstunden ab: 0–80 Stunden pro Woche.",
+    "sv": "Övertid efter: 0–80 timmar i veckan.",
+    "no": "Overtid etter: 0–80 timer i uken.",
+    "fr": "Heures sup. après : 0–80 heures par semaine.",
+    "es": "Horas extra a partir de: 0–80 horas semanales."
+  },
+  "Den PIN-kode bruges allerede af en anden.": {
+    "en": "That PIN is already used by someone else.",
+    "de": "Diese PIN wird bereits von jemand anderem verwendet.",
+    "sv": "Den PIN-koden används redan av någon annan.",
+    "no": "Den PIN-koden brukes allerede av noen andre.",
+    "fr": "Ce code PIN est déjà utilisé par quelqu'un d'autre.",
+    "es": "Ese PIN ya lo usa otra persona."
+  },
+  "{name} er opdateret.": {
+    "en": "{name} has been updated.",
+    "de": "{name} wurde aktualisiert.",
+    "sv": "{name} har uppdaterats.",
+    "no": "{name} er oppdatert.",
+    "fr": "{name} a été mis à jour.",
+    "es": "{name} se ha actualizado."
+  },
+  "{name} er tilføjet. PIN-koden bruges på stempeluret.": {
+    "en": "{name} has been added. The PIN is used on the time clock.",
+    "de": "{name} wurde hinzugefügt. Die PIN gilt an der Stempeluhr.",
+    "sv": "{name} har lagts till. PIN-koden används på stämpelklockan.",
+    "no": "{name} er lagt til. PIN-koden brukes på stemplingsuret.",
+    "fr": "{name} a été ajouté. Le code PIN sert sur la pointeuse.",
+    "es": "{name} se ha añadido. El PIN se usa en el reloj de fichar."
+  },
+  "Vælg en ansat.": {
+    "en": "Choose an employee.",
+    "de": "Wähle einen Mitarbeiter.",
+    "sv": "Välj en anställd.",
+    "no": "Velg en ansatt.",
+    "fr": "Choisissez un employé.",
+    "es": "Elige un empleado."
+  },
+  "Den registrering er med i en lukket lønkørsel.": {
+    "en": "That entry is part of a closed pay run.",
+    "de": "Dieser Eintrag gehört zu einem abgeschlossenen Lohnlauf.",
+    "sv": "Den registreringen ingår i en stängd lönekörning.",
+    "no": "Den registreringen er med i en lukket lønnskjøring.",
+    "fr": "Cette saisie fait partie d'une paie clôturée.",
+    "es": "Ese registro forma parte de una nómina cerrada."
+  },
+  "Registreringen er rettet.": {
+    "en": "The entry has been corrected.",
+    "de": "Der Eintrag wurde korrigiert.",
+    "sv": "Registreringen har rättats.",
+    "no": "Registreringen er rettet.",
+    "fr": "La saisie a été corrigée.",
+    "es": "El registro se ha corregido."
+  },
+  "Timer registreret for {name}.": {
+    "en": "Hours entered for {name}.",
+    "de": "Stunden für {name} eingetragen.",
+    "sv": "Timmar registrerade för {name}.",
+    "no": "Timer registrert for {name}.",
+    "fr": "Heures saisies pour {name}.",
+    "es": "Horas registradas para {name}."
+  },
+  "Vælg en periode.": {
+    "en": "Choose a period.",
+    "de": "Wähle einen Zeitraum.",
+    "sv": "Välj en period.",
+    "no": "Velg en periode.",
+    "fr": "Choisissez une période.",
+    "es": "Elige un periodo."
+  },
+  "Perioden skal slutte efter den begynder.": {
+    "en": "The period must end after it begins.",
+    "de": "Der Zeitraum muss nach seinem Beginn enden.",
+    "sv": "Perioden måste sluta efter att den börjar.",
+    "no": "Perioden må slutte etter at den begynner.",
+    "fr": "La période doit se terminer après son début.",
+    "es": "El periodo debe terminar después de empezar."
+  },
+  "Lønkørslen er lukket: {count} ansatte, i alt {total} {currency}. Hent CSV-filen til lønsystemet nedenfor.": {
+    "en": "The pay run is closed: {count} employees, {total} {currency} in total. Download the CSV for your payroll system below.",
+    "de": "Der Lohnlauf ist abgeschlossen: {count} Mitarbeiter, insgesamt {total} {currency}. Lade unten die CSV für dein Lohnsystem herunter.",
+    "sv": "Lönekörningen är stängd: {count} anställda, totalt {total} {currency}. Hämta CSV-filen till lönesystemet nedan.",
+    "no": "Lønnskjøringen er lukket: {count} ansatte, totalt {total} {currency}. Last ned CSV-filen til lønnssystemet nedenfor.",
+    "fr": "La paie est clôturée : {count} employés, {total} {currency} au total. Téléchargez le CSV pour votre logiciel de paie ci-dessous.",
+    "es": "La nómina está cerrada: {count} empleados, {total} {currency} en total. Descarga el CSV para tu sistema de nóminas abajo."
+  },
+  "Åbne registreringer i perioden": {
+    "en": "Open entries in the period",
+    "de": "Offene Einträge im Zeitraum",
+    "sv": "Öppna registreringar i perioden",
+    "no": "Åpne registreringer i perioden",
+    "fr": "Saisies ouvertes sur la période",
+    "es": "Registros abiertos en el periodo"
+  },
+  "Stempl dem ud, før kørslen lukkes.": {
+    "en": "Clock them out before closing the run.",
+    "de": "Stemple sie aus, bevor du den Lauf abschließt.",
+    "sv": "Stämpla ut dem innan körningen stängs.",
+    "no": "Stemple dem ut før kjøringen lukkes.",
+    "fr": "Pointez leur sortie avant de clôturer.",
+    "es": "Ficha su salida antes de cerrar la nómina."
   }
 }

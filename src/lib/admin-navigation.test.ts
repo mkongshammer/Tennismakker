@@ -29,7 +29,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
   }
   const club = {currency:"DKK",timeZone:"Europe/Copenhagen",country:"DK",solutionMode:'CUSTOM',walletTiers:'[]',walletEnabled:false,id:'club-a', name:'Test club', slug:'test-club', sports:'BADMINTON', integrationType:'MANUAL', courts:[], members:[], posts:[], images:[], people:[], subscriptionStatus:'active', priceHour:100};
   const db: any = { club: {findUnique: async ({where}: any) => { assert.equal(where.id, 'club-a'); return club; }} };
-  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel','clubBroadcast','clubEvent','ladder','shopItem','shopSale','giftCard','staffShift','user']) {
+  for (const model of ['seasonTeam','clubPunchCard','clubSystemLogin','priceRule','membershipType','fixedSlot','clubControl','booking','payment','guestRule','guestSlot','clubControlChannel','clubBroadcast','clubEvent','ladder','shopItem','shopSale','giftCard','staffShift','staffMember','payrollRun','timeEntry','tournamentMatch','user']) {
     db[model] = {findMany: async () => {queries.push(model);return [];}, findUnique: async () => {queries.push(model);return null;}};
   }
   Object.assign(mocks, {
@@ -43,7 +43,7 @@ function fixture(role: string | null = 'CLUB_ADMIN') {
     '../../lib/stripe': {stripeEnabled:async()=>true}, '../../lib/billing': {subscriptionIsActive:()=>true},
     '../../lib/club-dashboard': {loadClubDashboard:async()=>({club:{...club,courts:[]},today:{bookings:0,hours:0,utilization:0,hoursElapsed:0,remaining:[],revenueKr:0},week:{bookings:0,bookingsChange:0,utilization:0,utilizationLastWeek:0,paidOutKr:0,paidOutChange:0,days:[],trend:[]},upcoming:[],tasks:[],members:0,stripeOn:true})},
     '../../lib/integrations/types': {INTEGRATION_LABELS:{MANUAL:'Manual'}},
-    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/broadcast': {broadcastRecipients:async()=>[]}, '../../lib/club-onboarding': {clubSignupPrices:async()=>({standard:50,annual:500,custom:null,currency:'USD'})}, '../../lib/sms': {smsConfigured:()=>false}, '../../lib/reports': {revenueLines:async()=>[],summarize:()=>[],CATEGORIES:[]}, '../../lib/events': {ladderStandings:async()=>[]}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
+    '../../lib/system-blocks': {blockSummary:async()=>null}, '../../lib/member-billing': {clubBillingOverview:async()=>({members:0,types:[]})}, '../../lib/broadcast': {broadcastRecipients:async()=>[]}, '../../lib/payroll': {timeEntriesBetween:async()=>[],payrollPreview:async()=>({lines:[],unpaidOpen:0}),onTheClock:async()=>[]}, '../../lib/payroll-core': {workedMinutes:()=>0}, '../../lib/tournament': {tournamentView:async()=>({matches:[],groups:[],koRounds:0,champion:null})}, '../../lib/club-onboarding': {clubSignupPrices:async()=>({standard:50,annual:500,custom:null,currency:'USD'})}, '../../lib/sms': {smsConfigured:()=>false}, '../../lib/reports': {revenueLines:async()=>[],summarize:()=>[],CATEGORIES:[]}, '../../lib/events': {ladderStandings:async()=>[]}, '../../lib/connect':{refreshAccountStatus:async()=>{}},
     'next/navigation': {redirect:(path:string)=>{throw Error(`redirect:${path}`);}},
   });
   return {run:loadIsolatedModule(file,mocks).default,queries};
