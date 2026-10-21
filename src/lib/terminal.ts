@@ -68,7 +68,7 @@ export async function startReaderPayment(clubId: string, saleId: string, readerI
   }
   const s = await stripe();
   const opts = { stripeAccount: club.stripeAccountId! };
-  const pi = await s.paymentIntents.create({ amount: sale.totalKr * 100, currency: club.currency.toLowerCase(), payment_method_types: ["card_present"], capture_method: "automatic", description: `Pro shop · ${club.name}`, metadata: { shopSaleId: sale.id, clubId } }, opts);
+  const pi = await s.paymentIntents.create({ amount: sale.totalKr * 100, currency: club.currency.toLowerCase(), payment_method_types: ["card_present"], capture_method: "automatic", description: `Pro shop · ${club.name}`, metadata: { shopSaleId: sale.id, clubId, region: "US" } }, opts);
   await db.shopSale.update({ where: { id: sale.id }, data: { paymentIntentId: pi.id, readerId: reader.id } });
   await s.terminal.readers.processPaymentIntent(reader.stripeReaderId, { payment_intent: pi.id }, opts);
   return { paymentIntentId: pi.id };
@@ -120,4 +120,22 @@ export async function cancelReaderSale(clubId: string, saleId: string) {
     await s.paymentIntents.cancel(sale.paymentIntentId, undefined, opts).catch(() => {});
   }
   await failReaderSale(saleId, "CANCELLED");
+}
+
+/**
+ * Reader sales are direct charges on the club's own Stripe account, so they
+ * never reach the platform webhook. The register polls while it is open;
+ * this sweep settles any sale the desk walked away from (tab closed, laptop
+ * asleep): paid ones become PAID, ones still unpaid after 15 minutes are
+ * cancelled and their stock is released.
+ */
+export async function sweepReaderSales() {
+  const pending = await db.shopSale.findMany({ where: { method: "READER", status: "PENDING", createdAt: { lt: new Date(Date.now() - 60_000) } }, select: { id: true, clubId: true, createdAt: true }, take: 50 });
+  let paid = 0, cancelled = 0;
+  for (const s of pending) {
+    const r = await readerSaleStatus(s.clubId, s.id).catch(() => ({ status: "PENDING" as const }));
+    if (r.status === "PAID") paid++;
+    else if (r.status === "PENDING" && Date.now() - s.createdAt.getTime() > 15 * 60_000) { await cancelReaderSale(s.clubId, s.id).catch(() => {}); cancelled++; }
+  }
+  return { checked: pending.length, paid, cancelled };
 }

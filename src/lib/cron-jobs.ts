@@ -83,10 +83,13 @@ export async function runClubControlJob() {
   const results = await reconcileAllClubControls();
   const push = await runPushNotifications().catch(() => ({ error: "Push job failed" }));
   const noShows = await releaseNoShows().catch((err) => { console.error("No-show release failed:", err); return { released: 0 }; });
+  const { sweepReaderSales } = await import("./terminal");
+  const readerSales = await sweepReaderSales().catch((err) => { console.error("Reader sale sweep failed:", err); return { checked: 0, paid: 0, cancelled: 0 }; });
   const sms = await runSmsReminders().catch((err) => { console.error("SMS reminders failed:", err); return { sent: 0 }; });
   return {
     push,
     sms,
+    readerSales,
     noShows,
     koert: new Date().toISOString(),
     region: deploymentRegion(),
