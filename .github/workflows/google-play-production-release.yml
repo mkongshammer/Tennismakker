@@ -1,0 +1,62 @@
+name: Google Play Production Release (draft)
+
+# Builds the Android app in the original Expo project (620ef3a3…), whose
+# keystore is the upload key Google Play knows, and puts it on the production
+# track as a DRAFT. Nothing is sent to Google for review: that is pressed by
+# hand in Play Console.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/google-play-production-release.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify Expo authentication
+        run: |
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@latest whoami
+      - name: Point the app at the original Expo project (Play upload key)
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+          delete app.expo.owner;
+          app.expo.extra = app.expo.extra || {};
+          app.expo.extra.eas = { projectId: '620ef3a3-d92c-4241-86bb-511817c9d3cb' };
+          fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
+          const eas = JSON.parse(fs.readFileSync('eas.json', 'utf8'));
+          eas.submit = eas.submit || {};
+          eas.submit['production-draft'] = { android: { track: 'production', releaseStatus: 'draft' } };
+          fs.writeFileSync('eas.json', JSON.stringify(eas, null, 2) + '\n');
+          NODE
+          npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Build Android production AAB
+        run: |
+          npx --yes eas-cli@latest build --platform android --profile production --non-interactive --wait --json > build.json
+          node -e "const b=JSON.parse(require('fs').readFileSync('build.json','utf8'))[0]; console.log('BUILD', b.id, 'versionCode', b.appBuildVersion, 'AAB', b.artifacts && b.artifacts.buildUrl)"
+      - name: Put the build on the production track as a draft
+        run: |
+          ID=$(node -e "console.log(JSON.parse(require('fs').readFileSync('build.json','utf8'))[0].id)")
+          npx --yes eas-cli@latest submit --platform android --id "$ID" --profile production-draft --non-interactive --wait
