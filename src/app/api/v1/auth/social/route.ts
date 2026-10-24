@@ -44,13 +44,14 @@ async function verifyApple(idToken: string, suppliedName: string): Promise<Ident
     issuer: "https://appleid.apple.com",
     audience: process.env.APPLE_CLIENT_ID ?? "dk.racketbuddy.app",
   });
-  if (!payload.sub || typeof payload.email !== "string" || !verifiedFlag(payload.email_verified)) {
-    throw new Error("INVALID_IDENTITY");
-  }
+  // Apple sends the e-mail claim on every sign-in, but a returning user is
+  // matched by subject alone, so a token without it still signs them in.
+  if (!payload.sub) throw new Error("INVALID_IDENTITY");
+  const email = typeof payload.email === "string" && verifiedFlag(payload.email_verified ?? true) ? payload.email.trim().toLowerCase() : "";
   return {
     provider: "apple",
     subject: payload.sub,
-    email: payload.email.trim().toLowerCase(),
+    email,
     name: suppliedName.trim(),
   };
 }
@@ -83,6 +84,8 @@ export async function POST(req: Request) {
   if (social) {
     return json({ ...(await createMobileSession(social.user.id)), user: publicUser(social.user) });
   }
+
+  if (!identity.email) return json({ error: "Apple delte ikke din e-mail. Prøv igen, eller log ind med e-mail." }, 401);
 
   const byEmail = await db.user.findUnique({
     where: { email: identity.email },
