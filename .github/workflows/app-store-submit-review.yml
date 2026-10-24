@@ -1,0 +1,75 @@
+name: App Store submit for review
+
+# Attaches the given build to iOS version 1.0.0 and submits that version to
+# App Review through the App Store Connect API. Manual trigger only.
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: "Build number to attach (e.g. 10)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      ASC_APP_ID: "6820186123"
+      BUILD_NUMBER: ${{ inputs.build }}
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Attach build and submit
+        run: |
+          node - <<'NODE'
+          const crypto = require('crypto');
+          const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const head = b64({ alg: 'ES256', kid: process.env.ASC_KEY_ID, typ: 'JWT' });
+          const body = b64({ iss: process.env.ASC_ISSUER_ID, iat: now, exp: now + 1200, aud: 'appstoreconnect-v1' });
+          const sig = crypto.sign('sha256', Buffer.from(`${head}.${body}`), { key: process.env.ASC_PRIVATE_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+          const jwt = `${head}.${body}.${sig}`;
+          const app = process.env.ASC_APP_ID;
+          const call = async (method, p, data) => {
+            const r = await fetch(`https://api.appstoreconnect.apple.com${p}`, { method, headers: { Authorization: `Bearer ${jwt}`, 'Content-Type': 'application/json' }, body: data ? JSON.stringify(data) : undefined });
+            const text = await r.text(); const j = text ? JSON.parse(text) : {};
+            if (!r.ok) throw Error(`${method} ${p} → ${r.status}: ${(j.errors || []).map((e) => `${e.title}: ${e.detail}`).join(' | ').slice(0, 900)}`);
+            return j;
+          };
+          const note = (s) => console.log(`::notice::${String(s).replace(/\n/g, ' ')}`);
+          (async () => {
+            const versions = await call('GET', `/v1/apps/${app}/appStoreVersions?filter[platform]=IOS&limit=5`);
+            const v = versions.data.find((x) => x.attributes.versionString === '1.0.0');
+            if (!v) throw Error('No iOS 1.0.0 version');
+            note(`VERSION ${v.id} state ${v.attributes.appStoreState}`);
+            const builds = await call('GET', `/v1/builds?filter[app]=${app}&filter[version]=${process.env.BUILD_NUMBER}&filter[preReleaseVersion.version]=1.0.0&limit=1`);
+            const b = builds.data[0];
+            if (!b) throw Error(`Build ${process.env.BUILD_NUMBER} not found`);
+            note(`BUILD ${b.id} ${b.attributes.version} ${b.attributes.processingState} encryption=${b.attributes.usesNonExemptEncryption}`);
+            if (b.attributes.usesNonExemptEncryption == null) await call('PATCH', `/v1/builds/${b.id}`, { data: { type: 'builds', id: b.id, attributes: { usesNonExemptEncryption: false } } });
+            await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } });
+            note(`ATTACHED build ${b.attributes.version} to 1.0.0`);
+            const detail = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreReviewDetail`).catch(() => null);
+            if (detail?.data) {
+              const notes = detail.data.attributes.notes || '';
+              const add = 'Players and coaches can also sign up and sign in with Sign in with Apple on the login screen.';
+              if (!notes.includes('Sign in with Apple')) await call('PATCH', `/v1/appStoreReviewDetails/${detail.data.id}`, { data: { type: 'appStoreReviewDetails', id: detail.data.id, attributes: { notes: `${notes}\n\n${add}`.trim() } } });
+              note(`REVIEW DETAIL demo account required=${detail.data.attributes.demoAccountRequired} user set=${Boolean(detail.data.attributes.demoAccountName)}`);
+            }
+            const open = await call('GET', `/v1/reviewSubmissions?filter[app]=${app}&filter[platform]=IOS&filter[state]=READY_FOR_REVIEW,UNRESOLVED_ISSUES,WAITING_FOR_REVIEW,IN_REVIEW&limit=5`);
+            for (const s of open.data) note(`OPEN SUBMISSION ${s.id} ${s.attributes.state}`);
+            let sub = open.data.find((s) => s.attributes.state === 'READY_FOR_REVIEW');
+            if (open.data.some((s) => ['WAITING_FOR_REVIEW', 'IN_REVIEW'].includes(s.attributes.state))) { note('Already with App Review; nothing submitted'); return; }
+            if (!sub) sub = (await call('POST', '/v1/reviewSubmissions', { data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: app } } } } })).data;
+            await call('POST', '/v1/reviewSubmissionItems', { data: { type: 'reviewSubmissionItems', relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: sub.id } }, appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } } } }).catch((e) => { if (!/already|ENTITY_ERROR.RELATIONSHIP.INVALID/i.test(e.message)) throw e; note(`item: ${e.message}`); });
+            const done = await call('PATCH', `/v1/reviewSubmissions/${sub.id}`, { data: { type: 'reviewSubmissions', id: sub.id, attributes: { submitted: true } } });
+            note(`SUBMITTED ${sub.id} state ${done.data.attributes.state}`);
+          })().catch((e) => { console.log(`::error::${e.message}`); process.exit(1); });
+          NODE
