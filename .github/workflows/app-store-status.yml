@@ -1,0 +1,53 @@
+name: App Store Connect status
+
+# Reads the iOS app's state from the App Store Connect API (read-only) and
+# prints it as notices on the run, so it can be read without the logs.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/app-store-status.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      ASC_APP_ID: "6820186123"
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Read App Store Connect
+        run: |
+          node - <<'NODE'
+          const crypto = require('crypto');
+          const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const head = b64({ alg: 'ES256', kid: process.env.ASC_KEY_ID, typ: 'JWT' });
+          const body = b64({ iss: process.env.ASC_ISSUER_ID, iat: now, exp: now + 900, aud: 'appstoreconnect-v1' });
+          const sig = crypto.sign('sha256', Buffer.from(`${head}.${body}`), { key: process.env.ASC_PRIVATE_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+          const jwt = `${head}.${body}.${sig}`;
+          const app = process.env.ASC_APP_ID;
+          const get = async (p) => { const r = await fetch(`https://api.appstoreconnect.apple.com${p}`, { headers: { Authorization: `Bearer ${jwt}` } }); const j = await r.json(); if (!r.ok) throw Error(`${r.status} ${p}: ${JSON.stringify(j.errors?.[0] ?? j).slice(0, 300)}`); return j; };
+          const note = (s) => console.log(`::notice::${s.replace(/\n/g, ' ')}`);
+          (async () => {
+            const a = await get(`/v1/apps/${app}`);
+            note(`APP ${a.data.attributes.name} · ${a.data.attributes.bundleId}`);
+            const v = await get(`/v1/apps/${app}/appStoreVersions?limit=5&fields[appStoreVersions]=versionString,appStoreState,appVersionState,createdDate,platform`);
+            for (const x of v.data) note(`VERSION ${x.attributes.platform} ${x.attributes.versionString} · state=${x.attributes.appVersionState ?? ''} / ${x.attributes.appStoreState} · created ${x.attributes.createdDate}`);
+            const s = await get(`/v1/reviewSubmissions?filter[app]=${app}&limit=5`).catch((e) => ({ data: [], err: e.message }));
+            if (s.err) note(`REVIEW-SUBMISSIONS error ${s.err}`);
+            for (const x of s.data) note(`REVIEW ${x.attributes.state} · submitted ${x.attributes.submittedDate ?? '-'} · platform ${x.attributes.platform}`);
+            const b = await get(`/v1/builds?filter[app]=${app}&sort=-uploadedDate&limit=5&fields[builds]=version,processingState,uploadedDate,expired`);
+            for (const x of b.data) note(`BUILD ${x.attributes.version} · ${x.attributes.processingState} · uploaded ${x.attributes.uploadedDate}${x.attributes.expired ? ' · expired' : ''}`);
+          })().catch((e) => { console.log(`::error::${e.message}`); process.exit(1); });
+          NODE
