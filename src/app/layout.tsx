@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+import { StoreBadges } from "../components/landing/StoreBadges";
 import { headers } from "next/headers";
 import "./globals.css";
 import { InternationalProvider } from "../components/InternationalProvider";
@@ -137,6 +138,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       <Link href="/courts" className="inline-flex items-center rounded-full bg-optic px-4 py-2 text-sm font-bold text-ink transition hover:bg-white">Reserve a court</Link>
                       <Link href="/list-your-club" className="inline-flex items-center rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:border-white/50 hover:bg-white/5">List your club</Link>
                     </div>
+                    <StoreBadges className="mt-4" />
                   </div>
                   <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:contents">
                     {Object.entries(FOOTER_LINKS).map(([group, links]) => (

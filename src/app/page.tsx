@@ -14,6 +14,7 @@ import { DiscoverySearch } from "../components/discovery/DiscoverySearch";
 import { parseDiscoveryFilters } from "../lib/discovery";
 import { Icon, type IconName } from "../components/ui";
 import { HeroVisual } from "../components/landing/HeroVisual";
+import { StoreBadges } from "../components/landing/StoreBadges";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,7 @@ export default async function Home() {
             <DiscoverySearch filters={filters} compact placeholder="Where do you want to play? City, state or ZIP" />
           </div>
           <p className="mt-4 text-sm text-slate">No account needed to look. Pay only when you reserve · Free cancellation up to 24 hours before</p>
+          <StoreBadges className="mt-6" />
         </div>
         <HeroVisual />
       </section>
@@ -310,7 +312,7 @@ export default async function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="rounded-3xl bg-[#eaf0e5] px-6 py-12 text-center sm:px-10 sm:py-16">
+      <section className="rounded-3xl border border-white/10 bg-white/5 px-6 py-12 text-center sm:px-10 sm:py-16">
         <h2 className="display mx-auto max-w-3xl text-display-md sm:text-display-lg">A home for your club. More room for your game.</h2>
         <p className="mx-auto mt-4 max-w-xl text-slate">Set up your club in minutes, or find a court, a coach or a partner for your next hour on court.</p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
