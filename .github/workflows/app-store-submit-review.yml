@@ -9,6 +9,10 @@ on:
       build:
         description: "Build number to attach (e.g. 10)"
         required: true
+      replace:
+        description: "Pull the version out of review first and resubmit with this build (true/false)"
+        required: false
+        default: "false"
 
 permissions:
   contents: read
@@ -22,6 +26,7 @@ jobs:
       ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
       ASC_APP_ID: "6820186123"
       BUILD_NUMBER: ${{ inputs.build }}
+      REPLACE: ${{ inputs.replace }}
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -54,8 +59,9 @@ jobs:
             if (!b) throw Error(`Build ${process.env.BUILD_NUMBER} not found`);
             note(`BUILD ${b.id} ${b.attributes.version} ${b.attributes.processingState} encryption=${b.attributes.usesNonExemptEncryption}`);
             if (b.attributes.usesNonExemptEncryption == null) await call('PATCH', `/v1/builds/${b.id}`, { data: { type: 'builds', id: b.id, attributes: { usesNonExemptEncryption: false } } });
-            await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } });
-            note(`ATTACHED build ${b.attributes.version} to 1.0.0`);
+            await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } })
+              .then(() => note(`ATTACHED build ${b.attributes.version} to 1.0.0`))
+              .catch((e) => note(`attach deferred: ${e.message.slice(0, 200)}`));
             const detail = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreReviewDetail`).catch(() => null);
             if (detail?.data) {
               const notes = detail.data.attributes.notes || '';
@@ -66,7 +72,22 @@ jobs:
             const open = await call('GET', `/v1/reviewSubmissions?filter[app]=${app}&filter[platform]=IOS&filter[state]=READY_FOR_REVIEW,UNRESOLVED_ISSUES,WAITING_FOR_REVIEW,IN_REVIEW&limit=5`);
             for (const s of open.data) note(`OPEN SUBMISSION ${s.id} ${s.attributes.state}`);
             let sub = open.data.find((s) => s.attributes.state === 'READY_FOR_REVIEW');
-            if (open.data.some((s) => ['WAITING_FOR_REVIEW', 'IN_REVIEW'].includes(s.attributes.state))) { note('Already with App Review; nothing submitted'); return; }
+            const waiting = open.data.filter((s) => ['WAITING_FOR_REVIEW', 'IN_REVIEW', 'UNRESOLVED_ISSUES'].includes(s.attributes.state));
+            if (waiting.length && process.env.REPLACE !== 'true') { note('Already with App Review; nothing submitted'); return; }
+            for (const s of waiting) {
+              await call('PATCH', `/v1/reviewSubmissions/${s.id}`, { data: { type: 'reviewSubmissions', id: s.id, attributes: { canceled: true } } });
+              note(`CANCELED submission ${s.id} (was ${s.attributes.state})`);
+            }
+            if (waiting.length) {
+              for (let i = 0; i < 30; i++) {
+                const v2 = await call('GET', `/v1/appStoreVersions/${v.id}`);
+                const st = v2.data.attributes.appStoreState;
+                if (!['WAITING_FOR_REVIEW', 'IN_REVIEW'].includes(st)) { note(`VERSION now ${st}`); break; }
+                await new Promise((r) => setTimeout(r, 10000));
+              }
+              await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } });
+              note(`RE-ATTACHED build ${b.attributes.version}`);
+            }
             if (!sub) sub = (await call('POST', '/v1/reviewSubmissions', { data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: app } } } } })).data;
             await call('POST', '/v1/reviewSubmissionItems', { data: { type: 'reviewSubmissionItems', relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: sub.id } }, appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } } } }).catch((e) => { if (!/already|ENTITY_ERROR.RELATIONSHIP.INVALID/i.test(e.message)) throw e; note(`item: ${e.message}`); });
             const done = await call('PATCH', `/v1/reviewSubmissions/${sub.id}`, { data: { type: 'reviewSubmissions', id: sub.id, attributes: { submitted: true } } });
