@@ -237,7 +237,7 @@ export default function LoginScreen() {
               <Text style={styles.label}>City</Text>
               <TextInput accessibilityLabel="City" style={styles.input} value={area} onChangeText={setArea} editable={!busy} autoComplete="address-line2" textContentType="addressCity" maxLength={100} autoCapitalize="words" placeholder="Boston" placeholderTextColor={colors.slateLight}/>
               <Text style={styles.label}>State</Text>
-              <Pressable accessibilityRole="button" accessibilityLabel="State" accessibilityState={{expanded:showStatePicker}} disabled={busy} onPress={() => setShowStatePicker(!showStatePicker)} style={styles.input}><Text style={{color:usState?colors.ink:colors.slateLight,fontSize:16}}>{usState ? `${stateName} (${usState})` : "Select state"}</Text></Pressable>
+              <Pressable accessibilityRole="button" accessibilityLabel="State" accessibilityState={{expanded:showStatePicker}} disabled={busy} onPress={() => setShowStatePicker(!showStatePicker)} style={styles.input}><Text style={{color:usState?colors.text:colors.slateLight,fontSize:16}}>{usState ? `${stateName} (${usState})` : "Select state"}</Text></Pressable>
               {showStatePicker&&<View style={styles.statePicker}><ScrollView nestedScrollEnabled style={{maxHeight:260}}>{US_STATES.map((state)=><Pressable key={state.code} accessibilityRole="button" accessibilityState={{selected:usState===state.code}} onPress={()=>{setUsState(state.code);setShowStatePicker(false);}} style={[styles.stateRow,usState===state.code&&styles.stateRowActive]}><Text style={styles.stateRowText}>{state.name}</Text><Text style={styles.stateCode}>{state.code}</Text></Pressable>)}</ScrollView></View>}
               <Text style={styles.label}>ZIP code</Text>
               <TextInput accessibilityLabel="ZIP code" style={styles.input} value={postalCode} onChangeText={text=>setPostalCode(text.replace(/[^0-9-]/g,''))} editable={!busy} autoComplete="postal-code" textContentType="postalCode" keyboardType="number-pad" maxLength={10} placeholder="02108" placeholderTextColor={colors.slateLight}/>
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   label: { fontWeight: "700", color: colors.text, marginBottom: 7, marginTop: 14, fontSize: 13 },
   optional:{fontWeight:"500",color:colors.slate},
   privateHint:{marginTop:6,color:colors.slate,fontSize:12,lineHeight:17},
-  input: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 15, fontSize: 16, color: colors.text, minHeight: 52, justifyContent:"center" },
+  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 15, fontSize: 16, color: colors.text, minHeight: 52, justifyContent:"center" },
   readOnly: { backgroundColor: colors.mist, color: colors.slate },
   passwordWrap: { flexDirection: "row", borderRadius: 14, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: "center" },
   passwordToggle: { minWidth: 52, minHeight: 52, alignItems: "center", justifyContent: "center" },

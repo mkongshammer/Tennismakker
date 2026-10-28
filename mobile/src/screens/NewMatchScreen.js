@@ -119,7 +119,7 @@ export default function NewMatchScreen({ navigation }) {useInternational();
 const styles = StyleSheet.create({
   label: { fontWeight: "700", color: colors.slate, marginBottom: 6, marginTop: 14, fontSize: 13 },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 16,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#fff"
+    backgroundColor: colors.surface
   },
   chipActive: { backgroundColor: colors.raised, borderColor: colors.raised },
   chipText: { fontWeight: "600", color: colors.text },

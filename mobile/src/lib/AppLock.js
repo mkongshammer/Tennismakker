@@ -66,11 +66,22 @@ export function AppLockProvider({ children }) {
       setReady(true);
       return () => { cancelled = true; };
     }
+    // Never hold the app on a spinner: a user who hasn't turned the lock on
+    // goes straight in, and the native checks get two seconds before we give
+    // up and open the app unlocked.
+    const withTimeout = (p, fallback) => Promise.race([Promise.resolve(p).catch(() => fallback), new Promise((r) => setTimeout(() => r(fallback), 2000))]);
     void (async () => {
-      const stored = await SecureStore.getItemAsync(lockKey(user.id));
-      const state = await inspectBiometrics();
+      let shouldLock = false;
+      try {
+        const stored = await withTimeout(SecureStore.getItemAsync(lockKey(user.id)), null);
+        if (stored === "1") {
+          const state = await withTimeout(inspectBiometrics(), { available: false });
+          shouldLock = Boolean(state?.available);
+        }
+      } catch {
+        shouldLock = false;
+      }
       if (cancelled) return;
-      const shouldLock = stored === "1" && state.available;
       setEnabled(shouldLock);
       setLocked(shouldLock);
       setReady(true);

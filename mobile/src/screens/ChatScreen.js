@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   threadHeader: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     gap: 8,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   rowTheirs: { alignItems: "flex-start" },
   bubble: { maxWidth: "85%", borderRadius: 20, paddingHorizontal: 18, paddingVertical: 12 },
   mine: { backgroundColor: colors.court, borderBottomRightRadius: 6 },
-  theirs: { backgroundColor: "#fff", borderWidth: 1, borderColor: colors.border },
+  theirs: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   textMine: { color: colors.chalk, lineHeight: 23, fontSize: 15 },
   textTheirs: { color: colors.text, lineHeight: 23, fontSize: 15 },
   timeMine: { color: "#E1ECFF", fontSize: 11, marginTop: 6, alignSelf: "flex-end" },
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     alignItems: "flex-end",
     width: "100%", maxWidth: 960, alignSelf: "center"
   },
