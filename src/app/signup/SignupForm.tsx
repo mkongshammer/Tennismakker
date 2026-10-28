@@ -89,6 +89,9 @@ export function SignupForm({
           </Select>
         </div>
         <>
+          <p className="sm:col-span-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate">
+            <strong className="text-chalk">Visiting the US?</strong> Enter the city where you'll be playing, for example where you're staying. You can book courts there right away.
+          </p>
           <div className="sm:col-span-2">
             <label className="label" htmlFor="streetAddress">Street address <span className="font-normal text-slate">(optional)</span></label>
             <input className="input" id="streetAddress" name="streetAddress" autoComplete="street-address" maxLength={150} placeholder="123 Main St"/>
