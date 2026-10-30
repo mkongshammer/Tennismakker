@@ -51,7 +51,7 @@ export function SiteAssistant() {
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">
             {messages.map((m, i) => (
               <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <p className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${m.role === "user" ? "rounded-br-md bg-[#1B62C4] text-white" : "rounded-bl-md bg-white/10 text-white"}`}>{m.content}</p>
+                <p className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${m.role === "user" ? "rounded-br-md bg-[#1B62C4] text-white" : "rounded-bl-md bg-white/10 text-white"}`}>{m.role === "assistant" ? m.content.split(/(\*\*[^*]+\*\*)/g).map((part, j) => part.startsWith("**") && part.endsWith("**") ? <strong key={j}>{part.slice(2, -2)}</strong> : part.replace(/^[-*] /gm, "• ")) : m.content}</p>
               </div>
             ))}
             {messages.length === 1 && (
