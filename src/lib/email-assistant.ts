@@ -16,6 +16,7 @@ import { getAgentConfig } from "./agent-config";
 import { getSettings } from "./settings";
 import { sendMail } from "./email";
 import { FACTS, SUPPORT_EMAIL } from "./site-assistant";
+import { takeAiBudget } from "./ai-budget";
 
 export type Channel = "support" | "sales";
 export type Decision = {
@@ -112,7 +113,8 @@ const SCHEMA = {
 
 export async function decide(channel: Channel, mail: { from: string; subject: string; text: string; context?: string }): Promise<Decision> {
   const config = await getAgentConfig();
-  if (!config.apiKey) return { action: "escalate", interest: "other", category: "no-ai", summary: "The AI has no OpenAI key, so a person must answer.", reply: "" };
+  if (!config.apiKey) return { action: "escalate", interest: "other", category: "no-ai", summary: "AI'en har ingen OpenAI-nøgle, så en person skal svare.", reply: "" };
+  if (!(await takeAiBudget("email").catch(() => false))) return { action: "escalate", interest: "other", category: "daily-cap", summary: "Dagens loft for AI-svar på mails er nået (beskyttelse mod at brænde kreditter af).", reply: "" };
   const instructions = `${channel === "support" ? SUPPORT_RULES : SALES_RULES}\n\n${COMMON}\n\ncategory: 1–3 words. summary: one sentence in Danish for the owner describing what the sender wants.\n\nFACTS\n${FACTS}\n\nCONTEXT\n${mail.context || "None."}`;
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -120,7 +122,7 @@ export async function decide(channel: Channel, mail: { from: string; subject: st
     body: JSON.stringify({
       model: config.smartModel, instructions, reasoning: { effort: "low" }, max_output_tokens: 900,
       text: { format: { type: "json_schema", name: "racketbuddy_mail_decision", strict: true, schema: SCHEMA } },
-      input: `From: ${mail.from}\nSubject: ${mail.subject}\n\n${mail.text}`,
+      input: `From: ${mail.from.slice(0, 200)}\nSubject: ${mail.subject.slice(0, 200)}\n\n${mail.text.slice(0, 4000)}`,
     }),
     signal: AbortSignal.timeout(60_000),
   });
@@ -174,6 +176,7 @@ async function escalate(channel: Channel, mail: { from: string; subject: string;
     "",
     `Fra: ${mail.from}`, `Emne: ${mail.subject}`, "", mail.text.slice(0, 3000),
   ].join("\n");
+  if (!(await takeAiBudget("escalationMail").catch(() => false))) { console.warn("[mail] escalation cap reached; logged only"); return; }
   for (const to of await ownerAddresses()) await sendMail({ to, subject: `[Skal besvares] ${mail.subject}`.slice(0, 180), body, replyTo: addressOf(mail.from) });
 }
 
