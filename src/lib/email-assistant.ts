@@ -225,6 +225,9 @@ export async function handleSupportMail(mail: ReceivedMail) {
     await writeLog(id, { ...base, reason: "gmail-forwarding-confirmation" });
     return { skipped: "gmail-forwarding-confirmation" };
   }
+  // Only mail actually addressed to support@ (never the owner's other mail, should more be forwarded).
+  const recipients = [...(mail.to ?? []), ...((mail as { cc?: string[] }).cc ?? []), String(mail.headers?.["to"] ?? ""), String(mail.headers?.["cc"] ?? ""), String(mail.headers?.["delivered-to"] ?? "")].join(" ").toLowerCase();
+  if (!recipients.includes(SUPPORT_EMAIL)) { await writeLog(id, { ...base, reason: "not-to-support" }); return { skipped: "not-to-support" }; }
   const why = ignoreReason(mail.from, subject, mail.headers);
   if (why) { await writeLog(id, { ...base, reason: why }); return { skipped: why }; }
   if (!text) { await writeLog(id, { ...base, reason: "empty" }); return { skipped: "empty" }; }
