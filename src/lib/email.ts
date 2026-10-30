@@ -64,6 +64,30 @@ export async function sendMail(mail: Mail): Promise<boolean> {
   }
 }
 
+/**
+ * Many e-mails at once (member invitations). Uses the provider's batch
+ * endpoint, 100 per call, so a 5,000-member club is invited in under a
+ * minute. Returns how many were accepted.
+ */
+export async function sendMailBatch(mails: Mail[]): Promise<number> {
+  const { emailApiKey: key, emailFrom: from } = await getSettings();
+  if (!key) { console.log("[e-mails ikke sendt — der er ingen mailnøgle]", mails.length); return 0; }
+  let sent = 0;
+  for (let i = 0; i < mails.length; i += 100) {
+    const chunk = mails.slice(i, i + 100);
+    try {
+      const res = await fetch("https://api.resend.com/emails/batch", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify(chunk.map((m) => ({ from, to: [m.to], subject: m.subject, text: m.body, ...(m.replyTo ? { reply_to: m.replyTo } : {}) }))),
+      });
+      if (res.ok) sent += chunk.length; else console.error("Batch afvist:", res.status, (await res.text()).slice(0, 300));
+    } catch (err) { console.error("Batch kunne ikke sendes:", err); }
+    if (i + 100 < mails.length) await new Promise((r) => setTimeout(r, 600));
+  }
+  return sent;
+}
+
 const DAYS = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
 const MONTHS = [
   "januar", "februar", "marts", "april", "maj", "juni",

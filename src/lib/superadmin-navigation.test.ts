@@ -12,7 +12,7 @@ function fixture(role: string | null = 'SUPERADMIN') {
     '../../lib/db':{db:Object.fromEntries(['club','clubLead','websiteOrder'].map(model=>[model,{findMany:async()=>{queries.push(model);return [];}}]))},
     '../../lib/superadmin-navigation':navigation,'../../lib/club-features':{},'../../lib/club-management-actions':{},'../../lib/billing':{},'date-fns':{},'date-fns/locale':{},'../../lib/actions':{},'../../components/ui/Select':{Select:()=>null},'../../lib/sports':{},
   };
-  for(const name of ['SuperadminAccess','Overblik','Aktivitet','CoachPhotos','Oekonomi','CreateClubForm','Demand'])mocks[`./${name}`]={[name]:name};
+  for(const name of ['SuperadminAccess','Overblik','Aktivitet','CoachPhotos','Oekonomi','CreateClubForm','Demand','Onboarding'])mocks[`./${name}`]={[name]:name};
   mocks['./OrderTools']={DomainForm:'DomainForm'};
   return {run:loadIsolatedModule('src/app/superadmin/SuperadminPageContent.tsx',mocks).default,queries};
 }
@@ -31,7 +31,7 @@ test('superadmin rejects other roles before querying administrative data',async(
 });
 test('superadmin pages load only their own data and forms',async()=>{
  const expected:Record<string,string[]>={klubber:['settings','club','club'],henvendelser:['clubLead'],hjemmesider:['websiteOrder'],domaener:['club']};
- const components:Record<string,string>={oversigt:'Overblik',aktivitet:'Aktivitet',traenere:'CoachPhotos',oekonomi:'Oekonomi',adgang:'SuperadminAccess','opret-klub':'CreateClubForm',domaener:'DomainForm'};
+ const components:Record<string,string>={oversigt:'Overblik',aktivitet:'Aktivitet',traenere:'CoachPhotos',oekonomi:'Oekonomi',adgang:'SuperadminAccess','opret-klub':'CreateClubForm',domaener:'DomainForm',onboarding:'Onboarding'};
  for(const section of ['oversigt','klubber','henvendelser','hjemmesider','domaener','aktivitet','traenere','oekonomi','adgang','opret-klub']){
   const f=fixture();const tree=await f.run({section});
   assert.deepEqual(f.queries,expected[section]??[],section);

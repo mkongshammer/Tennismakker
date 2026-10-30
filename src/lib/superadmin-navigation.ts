@@ -1,6 +1,7 @@
 export const SUPERADMIN_PAGES = [
   { id: 'oversigt', label: 'Overblik', description: 'Nøgletal og genveje til platformens administration.', group: 'Daglig drift' },
   { id: 'henvendelser', label: 'Klubhenvendelser', description: 'Følg op på interesserede klubber og opret dem direkte.', group: 'Daglig drift' },
+  { id: 'onboarding', label: 'Klubonboarding', description: 'Hvor langt hver ny klub er kommet, og hvor de sidder fast.', group: 'Daglig drift' },
   { id: 'klubber', label: 'Klubgodkendelser', description: 'Godkend nye klubber og se de senest behandlede.', group: 'Daglig drift' },
   { id: 'opret-klub', label: 'Opret klub', description: 'Opret en klub og udlever administratorens login.', group: 'Daglig drift' },
   { id: 'aktivitet', label: 'Aktivitet', description: 'Se platformens seneste aktivitet.', group: 'Daglig drift' },

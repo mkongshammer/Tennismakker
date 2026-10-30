@@ -84,8 +84,11 @@ export async function runClubControlJob() {
   const noShows = await releaseNoShows().catch((err) => { console.error("No-show release failed:", err); return { released: 0 }; });
   const { sweepReaderSales } = await import("./terminal");
   const readerSales = await sweepReaderSales().catch((err) => { console.error("Reader sale sweep failed:", err); return { checked: 0, paid: 0, cancelled: 0 }; });
+  const { purgeOldDrafts } = await import("./member-import-server");
+  const importDraftsPurged = await purgeOldDrafts().catch(() => 0);
   return {
     push,
+    importDraftsPurged,
     readerSales,
     noShows,
     koert: new Date().toISOString(),

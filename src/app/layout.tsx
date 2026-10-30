@@ -59,6 +59,7 @@ const FOOTER_LINKS = {
   Clubs: [
     { href: "/list-your-club", label: "List your club" },
     { href: "/#pricing", label: "Pricing" },
+    { href: "/switch", label: "Switching from another system" },
     { href: "/website", label: "Club website" },
     { href: "/login", label: "Club sign in" },
   ],

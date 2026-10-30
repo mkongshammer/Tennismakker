@@ -23,6 +23,7 @@ GETTING STARTED (self-serve, no sales call or onboarding needed)
 - Go to racketbuddy.app/list-your-club. Four short steps: club details, courts, pay the subscription, quick review by RacketBuddy, then the booking calendar goes live.
 - Connect Stripe afterwards so guests and members pay the club directly; payouts go to the club's own bank account through Stripe.
 - Most clubs can take their first booking the same day.
+- SWITCHING FROM ANOTHER SYSTEM (CourtReserve, ClubReady, PlayByPoint, Skedda, Mindbody, spreadsheets): go to racketbuddy.app/switch. Export the member list as Excel or CSV, upload it to the free import check (no account or payment needed) and see exactly which members move. After paying, the list imports with one click. Columns are detected automatically; up to 5,000 members per file. Importing sends no e-mails; an "Invite members" button e-mails members a link to set their password and get the app. Card details can't be moved between systems. There's a printable switching guide on the same page.
 
 WHAT'S INCLUDED FOR CLUBS
 - Online court booking with the club's own prices, opening hours, member and guest rules, and a public club page.

@@ -10,6 +10,8 @@ import { WalletForm } from "./WalletForm";
 import { ManualLights } from "./ManualLights";
 import { ResasportsForm } from "./ResasportsForm";
 import { ImportForm } from "./ImportForm";
+import { MoveChecklist, onboardingState } from "./MoveChecklist";
+import { MemberImport, InviteMembersButton } from "./MemberImport";
 import { WalletBalances } from "./WalletBalances";
 import React from "react";
 import { ADMIN_PAGES, adminHref, type AdminSection } from "../../lib/admin-navigation";
@@ -223,6 +225,7 @@ export default async function AdminPageContent({
 <AdminNavigation features={club.customFeatures} mode={club.solutionMode} section={section} facility={tr(facilityLabel(selectedSports))} locale={prefs.locale} />
 <div className="min-w-0 space-y-6">
 <header><h2 className="display text-2xl">{section === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(currentPage.label, prefs.locale)}</h2><p className="mt-1 text-sm text-slate">{phrase(currentPage.description, prefs.locale)}</p></header>
+{section === 'oversigt' && <MoveChecklist club={{ id: club.id, slug: club.slug, name: club.name, stripeChargesEnabled: club.stripeChargesEnabled, status: club.status }} />}
 {section === 'oversigt' && <ClubHome data={await loadClubDashboard(club.id)} locale={prefs.locale} />}
 {section === 'bookinger' && <>
 <CourtSchedule clubId={club.id} courts={club.courts.map((c: any) => ({ id: c.id, name: c.name, sport: c.sport, indoor: c.indoor }))} openHour={club.openHour} closeHour={club.closeHour} timeZone={club.timeZone} currency={club.currency} locale={prefs.locale} dayOffset={Math.min(6, Math.max(0, Number(query.dag ?? 0) || 0))} baseHref="/admin/bookinger" />
@@ -447,7 +450,7 @@ export default async function AdminPageContent({
 
       </section>
 <MemberForm types={membershipTypes.map((t) => ({ id: t.id, name: t.name }))} />
-{clubHasFeature(club.solutionMode, club.customFeatures, 'import') && <ImportForm membersOnly />}
+<section className="card space-y-3"><h3 className="display text-xl">Import members</h3><p className="text-sm text-slate">Upload the member export from your old system (Excel or CSV) as it is. Nothing is e-mailed until you press Invite.</p><MemberImport /><InviteMembersButton pending={(await onboardingState(club)).pendingInvites} /></section>
 <BillingPanel part="settings" types={[]} members={0} chargesEnabled={club.stripeChargesEnabled}
   settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />
 </>}

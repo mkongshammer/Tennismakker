@@ -9,6 +9,7 @@ import React from "react";
 // efter i sømmene. En klub der påstår at have baner, den ikke har, koster
 // os tilliden hos alle andre — og hos den gæst der står foran en låst låge.
 import { redirect } from "next/navigation";
+import { Onboarding } from "./Onboarding";
 import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
 import { Overblik } from "./Overblik";
@@ -79,13 +80,14 @@ export default async function SuperadminPageContent({ section }: { section: Supe
       </div>
       {section === 'oversigt' && <>
         <div className="grid gap-3 sm:grid-cols-2">
-          {SUPERADMIN_PAGES.filter(p => ['henvendelser', 'klubber', 'opret-klub', 'oekonomi'].includes(p.id)).map(p =>
+          {SUPERADMIN_PAGES.filter(p => ['onboarding', 'henvendelser', 'klubber', 'oekonomi'].includes(p.id)).map(p =>
             <Link key={p.id} href={superadminHref(p.id)} prefetch={false} className="card transition-colors hover:bg-mist focus-visible:outline focus-visible:outline-2 focus-visible:outline-court">
               <span className="font-bold">{p.label} →</span><p className="mt-1 text-sm text-slate">{p.description}</p>
             </Link>)}
         </div>
         <Overblik />
       </>}
+      {section === 'onboarding' && <Onboarding />}
       {section === 'traenere' && <CoachPhotos />}
       {section === 'aktivitet' && <Aktivitet />}
       {section === 'efterspoergsel' && <Demand />}
