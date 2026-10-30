@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
+import { SiteAssistant } from "../components/SiteAssistant";
 import { StoreBadges } from "../components/landing/StoreBadges";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -169,6 +170,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           {user && <TabBar locale={prefs.locale} unread={unread} />}
           {needsSportsOnboarding && <Suspense><BuddySportsOnboarding locale={prefs.locale} /></Suspense>}
+        {!onOwnDomain && !user && <SiteAssistant />}
         </InternationalProvider>
       </body>
     </html>
