@@ -53,6 +53,9 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   // Sender kun i sit eget tidsvindue og kun til brugere, hvis næste mail er forfalden.
   const engagement = await runEngagementEmails().catch((err) => { console.error("Engagement-mails fejlede:", err); return { sent: 0, skipped: 0, reason: "error" }; });
   // One review prompt per finished coach lesson (e-mail + push).
+  const { runDailySalesDigest } = await import("./sales-digest");
+  const salesDigest = await runDailySalesDigest().catch((err) => { console.error("Sales digest failed:", err); return { sent: false }; });
+  if (salesDigest.sent) console.log("[sales-digest]", JSON.stringify(salesDigest));
   const reviewPrompts = await runReviewPrompts().catch((err) => { console.error("Review prompts failed:", err); return { sent: 0 }; });
   // Autopilot: højst én gang i timen. Kun hvor den er slået til for regionen.
   const agentRun = agents
