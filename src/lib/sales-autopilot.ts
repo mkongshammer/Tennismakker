@@ -196,6 +196,25 @@ export async function discoverProspects(apiKey: string, model: string, wanted: n
   return Array.isArray(parsed.prospects) ? parsed.prospects : [];
 }
 
+/** Independent coaches and teaching pros with a business e-mail on their own site. */
+export async function discoverCoaches(apiKey: string, model: string, wanted: number, focus: { state: string; exclude?: string[] }): Promise<Prospect[]> {
+  const schema = {
+    type: "object",
+    properties: { prospects: { type: "array", items: { type: "object", properties: {
+      clubName: { type: "string" }, sport: { type: "string" }, city: { type: "string" }, state: { type: "string" }, website: { type: "string" },
+      contactEmail: { type: "string" }, sourceUrl: { type: "string" }, hook: { type: "string" }, contactFirstName: { type: "string" },
+    }, required: ["clubName", "sport", "city", "state", "website", "contactEmail", "sourceUrl", "hook", "contactFirstName"], additionalProperties: false } } },
+    required: ["prospects"], additionalProperties: false,
+  };
+  const response = await openAI(apiKey, {
+    model, reasoning: { effort: "low" }, tools: [{ type: "web_search" }], tool_choice: "required",
+    text: { format: { type: "json_schema", name: "racketbuddy_coach_prospects", strict: true, schema } },
+    max_output_tokens: 3200,
+    input: `Use live web search to find ${wanted} independent tennis, pickleball or padel coaches, teaching pros or small coaching businesses in ${focus.state}, USA, who sell private or group lessons and run their own website. Skip clubs, chains, national franchises, schools, colleges and government recreation departments. clubName = the coach's name or coaching business name. contactFirstName = the coach's first name when the site states it, else empty string. Use ONLY a business contact email visibly published on the coach's own official website; never infer an email, never use directories, social profiles or people-search sites. website = the official site; sourceUrl = the exact page on that site showing the email. hook = one short factual sentence from the site (e.g. what they teach and where).${focus.exclude?.length ? ` Skip these websites, already known: ${focus.exclude.slice(0, 60).join(", ")}.` : ""} If you cannot verify the fields, omit the coach. Return structured JSON only.`,
+  });
+  const parsed = JSON.parse(responseText(response) || "{}") as { prospects?: Prospect[] };
+  return Array.isArray(parsed.prospects) ? parsed.prospects : [];
+}
 export async function alreadyContacted(prospect: Prospect) {
   if (PREVIOUS_GMAIL_CLUB_CONTACTS.has(hash(prospect.contactEmail))) return true;
   const emailKey = `sales:sent:email:${hash(prospect.contactEmail)}`;
