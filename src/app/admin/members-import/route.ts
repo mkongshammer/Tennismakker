@@ -18,9 +18,11 @@ export async function POST(req: Request) {
   try {
     if (intent === "invite") {
       const r = await inviteMembers(user.clubId);
+      const later = r.later ? ` The other ${r.later.toLocaleString("en-US")} go out automatically over the next days.` : "";
+      if (r.sent === 0 && r.later) { revalidatePath("/admin", "layout"); return NextResponse.json({ ok: `Invitations are queued and go out automatically over the next days (${r.later.toLocaleString("en-US")} members).`, ...r }); }
       if (r.sent === 0 && r.pending > 0) return NextResponse.json({ error: "The invitations couldn't be sent right now. Try again in a few minutes." }, { status: 502 });
       revalidatePath("/admin", "layout");
-      return NextResponse.json({ ok: r.sent ? `Invitations sent to ${r.sent} members.` : r.total ? "Everyone has already been invited or has signed in." : "There are no members to invite yet." , ...r });
+      return NextResponse.json({ ok: r.sent ? `Invitations sent to ${r.sent.toLocaleString("en-US")} members.${later}` : r.total ? "Everyone has already been invited or has signed in." : "There are no members to invite yet." , ...r });
     }
     const jar = await cookies();
     const draftToken = jar.get(DRAFT_COOKIE)?.value;

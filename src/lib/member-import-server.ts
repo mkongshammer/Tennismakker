@@ -85,8 +85,14 @@ export async function inviteMembers(clubId: string) {
   const row = await db.platformSetting.findUnique({ where: { key } });
   const invited = new Set<string>(row ? JSON.parse(row.value) : []);
   const users = await db.user.findMany({ where: { clubId: club.id, role: "PLAYER", NOT: { passwordHash: { startsWith: "$2" } } }, select: { id: true, email: true, name: true } });
-  const pending = users.filter((u) => !invited.has(u.id));
-  if (!pending.length) return { sent: 0, pending: 0, total: users.length };
+  const waiting = users.filter((u) => !invited.has(u.id));
+  if (!waiting.length) { await setInviteQueued(club.id, false); return { sent: 0, pending: 0, total: users.length, later: 0 }; }
+  // Only what today's mail quota allows; the rest is sent automatically on the next days.
+  const { bulkHeadroom } = await import("./mail-quota");
+  const room = await bulkHeadroom();
+  const pending = waiting.slice(0, Number.isFinite(room) ? room : waiting.length);
+  await setInviteQueued(club.id, pending.length < waiting.length);
+  if (!pending.length) return { sent: 0, pending: waiting.length, total: users.length, later: waiting.length };
   const { appUrl } = await getSettings();
   // "Never chose a password" = the random hash the import set (real passwords are bcrypt, "$2…").
   const tokens = pending.map((u) => ({ user: u, token: crypto.randomBytes(32).toString("base64url") }));
@@ -120,5 +126,23 @@ export async function inviteMembers(clubId: string) {
     const value = JSON.stringify([...invited]);
     await db.platformSetting.upsert({ where: { key }, create: { key, value }, update: { value } });
   }
-  return { sent, pending: pending.length, total: users.length };
+  return { sent, pending: waiting.length, total: users.length, later: waiting.length - pending.length };
+}
+
+const QUEUE = "mail:invite-queue";
+async function setInviteQueued(clubId: string, queued: boolean) {
+  const row = await db.platformSetting.findUnique({ where: { key: QUEUE } });
+  const set = new Set<string>(row ? JSON.parse(row.value) : []);
+  if (queued === set.has(clubId)) return;
+  if (queued) set.add(clubId); else set.delete(clubId);
+  await db.platformSetting.upsert({ where: { key: QUEUE }, create: { key: QUEUE, value: JSON.stringify([...set]) }, update: { value: JSON.stringify([...set]) } });
+}
+
+/** Cron: sends invitations that were held back by the daily mail quota. */
+export async function runQueuedInvites() {
+  const row = await db.platformSetting.findUnique({ where: { key: QUEUE } });
+  const clubs: string[] = row ? JSON.parse(row.value) : [];
+  let sent = 0;
+  for (const id of clubs) sent += (await inviteMembers(id).catch(() => ({ sent: 0 }))).sent;
+  return { clubs: clubs.length, sent };
 }

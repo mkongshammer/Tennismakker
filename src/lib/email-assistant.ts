@@ -196,6 +196,7 @@ async function sendSupportReply(to: string, subject: string, text: string, messa
     signal: AbortSignal.timeout(20_000),
   });
   if (!res.ok) console.error("[support-mail] reply rejected", res.status, (await res.text()).slice(0, 200));
+  else void (await import("./email")).countSent(1);
   return res.ok;
 }
 

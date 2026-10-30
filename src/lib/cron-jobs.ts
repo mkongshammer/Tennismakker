@@ -56,6 +56,9 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const { runDailySalesDigest } = await import("./sales-digest");
   const salesDigest = await runDailySalesDigest().catch((err) => { console.error("Sales digest failed:", err); return { sent: false }; });
   if (salesDigest.sent) console.log("[sales-digest]", JSON.stringify(salesDigest));
+  // Member invitations held back by the daily mail quota.
+  const { runQueuedInvites } = await import("./member-import-server");
+  await runQueuedInvites().catch((err) => console.error("Queued invites failed:", err));
   // Replies to the Instantly sales e-mails, answered by the AI (US only).
   if (deploymentRegion() === "US") {
     const { runInstantlyReplies } = await import("./email-assistant");

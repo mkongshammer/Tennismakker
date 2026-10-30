@@ -103,6 +103,9 @@ export async function runDailySalesDigest(now = new Date(), force = false) {
     `Support: ${m.support.answered} besvaret af AI, ${m.support.escalated} sendt videre til dig, ${m.support.ignored} sorteret fra`,
     `Salgssvar: ${m.sales.answered} besvaret af AI, ${m.sales.escalated} sendt videre til dig, ${m.interested} interesserede`,
   ] : [];
+  const { mailUsage } = await import("./mail-quota");
+  const mu = await mailUsage(now).catch(() => null);
+  if (mu && mu.monthlyLimit) mailLines.push(`Resend: ${mu.month} af ${mu.monthlyLimit} mails brugt denne måned${mu.dailyLimit ? `, ${mu.today} af ${mu.dailyLimit} i dag` : ""}`);
   const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...mailLines, ...(mailLines.length ? [""] : []), "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
   const subject = `RacketBuddy salg: ${club.contactedToday} klubber + ${coach.contactedToday} trænere kontaktet, ${club.newToday + coach.newToday} nye på listen`;
   let ok = false;

@@ -16,7 +16,20 @@ type Mail = {
   body: string; // ren tekst, én besked pr. linje
   /** Svar går hertil i stedet for til afsenderen, fx klubbens kasserer. */
   replyTo?: string;
+  /** Internal: the quota warning itself is not counted (no warning loop). */
+  uncounted?: boolean;
 };
+
+/** Counts accepted mail against the Resend plan and warns the owner at 80%. */
+export async function countSent(n: number) {
+  const { countMail } = await import("./mail-quota");
+  await countMail(n, async (subject, body) => {
+    const { db } = await import("./db");
+    const to = (process.env.SALES_DIGEST_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (!to.length) to.push(...(await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email));
+    for (const t of to) await sendMail({ to: t, subject, body, uncounted: true });
+  });
+}
 
 /**
  * Sender en e-mail. Fejler aldrig hårdt: en booking må ikke gå tabt,
@@ -57,6 +70,7 @@ export async function sendMail(mail: Mail): Promise<boolean> {
       console.error("E-mail afvist af udbyder:", res.status, await res.text());
       return false;
     }
+    if (!mail.uncounted) void countSent(1);
     return true;
   } catch (err) {
     console.error("E-mail kunne ikke sendes:", err);
@@ -81,7 +95,7 @@ export async function sendMailBatch(mails: Mail[]): Promise<number> {
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify(chunk.map((m) => ({ from, to: [m.to], subject: m.subject, text: m.body, ...(m.replyTo ? { reply_to: m.replyTo } : {}) }))),
       });
-      if (res.ok) sent += chunk.length; else console.error("Batch afvist:", res.status, (await res.text()).slice(0, 300));
+      if (res.ok) { sent += chunk.length; void countSent(chunk.length); } else console.error("Batch afvist:", res.status, (await res.text()).slice(0, 300));
     } catch (err) { console.error("Batch kunne ikke sendes:", err); }
     if (i + 100 < mails.length) await new Promise((r) => setTimeout(r, 600));
   }
