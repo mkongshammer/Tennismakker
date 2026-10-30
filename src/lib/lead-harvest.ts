@@ -7,6 +7,7 @@
 // Pace (80/20): clubs 1,000 backfill then ~200 a week; coaches 250 then ~50 a week.
 import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
+import { takeAiBudget } from "./ai-budget";
 import { alreadyContacted, discoverCoaches, discoverProspects, hash, normalizeHost, validEmail, verifyEmailPublished, type Prospect } from "./sales-autopilot";
 
 export type LeadKind = "club" | "coach";
@@ -60,6 +61,7 @@ async function harvestKind(kind: LeadKind, apiKey: string, model: string, now: D
   let cursor = Number(cursorRow?.value ?? 0) || 0;
   let added = 0, checked = 0, rejected = 0;
   for (let i = 0; i < calls; i++) {
+    if (!(await takeAiBudget("leadSearch").catch(() => false))) break; // daily cost cap
     const state = STATES.at(cursor % STATES.length)!;
     cursor++;
     const known = (await allLeads(kind)).map((r) => r.lead).filter((l) => l.state === state).map((l) => normalizeHost(l.website)).filter(Boolean);
