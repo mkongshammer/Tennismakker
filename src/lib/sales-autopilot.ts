@@ -23,7 +23,7 @@ const PREVIOUS_GMAIL_CLUB_CONTACTS = new Set([
   "684491981f713d3a05c41a931596bd6d3e633284929e06507a6bdd222e1567b0",
 ]);
 
-type Prospect = {
+export type Prospect = {
   clubName: string;
   sport: string;
   city: string;
@@ -32,6 +32,7 @@ type Prospect = {
   contactEmail: string;
   sourceUrl: string;
   hook: string;
+  contactFirstName?: string;
 };
 
 export type SalesAutopilotReport = {
@@ -75,11 +76,11 @@ async function openAI(apiKey: string, body: Record<string, unknown>): Promise<Op
   return payload;
 }
 
-function hash(value: string) {
+export function hash(value: string) {
   return crypto.createHash("sha256").update(value.trim().toLowerCase()).digest("hex");
 }
 
-function normalizeHost(raw: string) {
+export function normalizeHost(raw: string) {
   try { return new URL(raw).hostname.toLowerCase().replace(/^www\./, ""); }
   catch { return ""; }
 }
@@ -110,11 +111,11 @@ function officialSource(prospect: Prospect) {
   return Boolean(site && source && (site === source || source.endsWith(`.${site}`) || site.endsWith(`.${source}`)));
 }
 
-function validEmail(email: string) {
+export function validEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
-async function verifyEmailPublished(prospect: Prospect) {
+export async function verifyEmailPublished(prospect: Prospect) {
   if (!safePublicUrl(prospect.sourceUrl) || !safePublicUrl(prospect.website) || !officialSource(prospect)) return false;
   try {
     const response = await fetch(prospect.sourceUrl, {
@@ -153,7 +154,7 @@ function easternSchedule(now: Date) {
   };
 }
 
-async function discoverProspects(apiKey: string, model: string, wanted: number): Promise<Prospect[]> {
+export async function discoverProspects(apiKey: string, model: string, wanted: number, focus?: { state?: string; exclude?: string[] }): Promise<Prospect[]> {
   const schema = {
     type: "object",
     properties: {
@@ -170,8 +171,9 @@ async function discoverProspects(apiKey: string, model: string, wanted: number):
             contactEmail: { type: "string" },
             sourceUrl: { type: "string" },
             hook: { type: "string" },
+            contactFirstName: { type: "string" },
           },
-          required: ["clubName", "sport", "city", "state", "website", "contactEmail", "sourceUrl", "hook"],
+          required: ["clubName", "sport", "city", "state", "website", "contactEmail", "sourceUrl", "hook", "contactFirstName"],
           additionalProperties: false,
         },
       },
@@ -187,14 +189,14 @@ async function discoverProspects(apiKey: string, model: string, wanted: number):
     tool_choice: "required",
     text: { format: { type: "json_schema", name: "racketbuddy_club_prospects", strict: true, schema } },
     max_output_tokens: 3200,
-    input: `Use live web search to find ${wanted} US racket-sports clubs that are plausible customers for RacketBuddy, a court-booking and club-management platform. Target independent/community tennis, padel, pickleball, badminton or multi-racquet clubs. Prefer clubs with multiple courts, memberships, lessons, guest bookings or an existing booking workflow. Prioritize clubs whose current booking/admin setup appears fragmented, dated or unnecessarily manual, but do not invent weaknesses that are not visible on their official site. Avoid schools, government departments, giant national chains, software vendors and clubs already clearly using RacketBuddy.\n\nFor every prospect, use ONLY a public business contact email visibly published on that club's own official website. Never infer an email pattern, never use a private/personal email found on a people-search site, and never use a directory as the source. website must be the official club website. sourceUrl must be the exact page on that same official website where the email is published. hook must be one short factual sentence based on the official site that makes the outreach relevant. If you cannot verify these fields, omit that club. Return structured JSON only.`,
+    input: `Use live web search to find ${wanted} US racket-sports clubs that are plausible customers for RacketBuddy, a court-booking and club-management platform. Target independent/community tennis, padel, pickleball, badminton or multi-racquet clubs. Prefer clubs with multiple courts, memberships, lessons, guest bookings or an existing booking workflow. Prioritize clubs whose current booking/admin setup appears fragmented, dated or unnecessarily manual, but do not invent weaknesses that are not visible on their official site. Avoid schools, government departments, giant national chains, software vendors and clubs already clearly using RacketBuddy.\n\nFor every prospect, use ONLY a public business contact email visibly published on that club's own official website. Never infer an email pattern, never use a private/personal email found on a people-search site, and never use a directory as the source. website must be the official club website. sourceUrl must be the exact page on that same official website where the email is published. hook must be one short factual sentence based on the official site that makes the outreach relevant. If you cannot verify these fields, omit that club. contactFirstName = the first name of the person that email belongs to ONLY when the same page names them (e.g. 'Club manager: Sarah Lee, sarah@…'); otherwise an empty string.${focus?.state ? ` Only clubs located in ${focus.state}.` : ""}${focus?.exclude?.length ? ` Skip these websites, already known: ${focus.exclude.slice(0, 60).join(", ")}.` : ""} Return structured JSON only.`,
   });
 
   const parsed = JSON.parse(responseText(response) || "{}") as { prospects?: Prospect[] };
   return Array.isArray(parsed.prospects) ? parsed.prospects : [];
 }
 
-async function alreadyContacted(prospect: Prospect) {
+export async function alreadyContacted(prospect: Prospect) {
   if (PREVIOUS_GMAIL_CLUB_CONTACTS.has(hash(prospect.contactEmail))) return true;
   const emailKey = `sales:sent:email:${hash(prospect.contactEmail)}`;
   const websiteKey = `sales:sent:website:${hash(normalizeHost(prospect.website))}`;
