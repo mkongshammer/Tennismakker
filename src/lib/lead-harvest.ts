@@ -25,7 +25,7 @@ const prefix = (k: LeadKind) => (k === "club" ? "sales:lead:" : "sales:coachlead
 const leadKey = (k: LeadKind, email: string) => `${prefix(k)}${hash(email)}`;
 const siteKey = (k: LeadKind, host: string) => `${prefix(k)}site:${hash(host)}`;
 const cursorKey = (k: LeadKind) => `sales:lead-harvest:cursor${k === "club" ? "" : ":coach"}`;
-const campaignId = (k: LeadKind) => (k === "club" ? process.env.INSTANTLY_CAMPAIGN_ID : process.env.INSTANTLY_COACH_CAMPAIGN_ID);
+const campaignId = async (k: LeadKind) => (k === "club" ? process.env.INSTANTLY_CAMPAIGN_ID : (await import("./instantly-coach-campaign")).coachCampaignId());
 
 export type Lead = { clubName: string; sport: string; city: string; state: string; website: string; email: string; firstName: string; sourceUrl: string; createdAt: string; pushedAt?: string; exportedAt?: string };
 
@@ -99,7 +99,7 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
  * Instantly skips anyone already in the workspace, so nobody is mailed twice.
  */
 export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200) {
-  const key = process.env.INSTANTLY_API_KEY, campaign = campaignId(kind);
+  const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId(kind);
   if (!key || !campaign) return { pushed: 0, skipped: "instantly-not-configured" };
   const waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt).slice(0, limit);
   let pushed = 0;

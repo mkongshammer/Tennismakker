@@ -10,10 +10,10 @@ const SNAP_KEY = "sales:digest:snapshot:v2";
 type Nums = { leads: number; pushed: number; contacted: number; sent: number; replies: number; bounced: number; opportunities: number };
 type Snapshot = { at: string; club: Nums; coach: Nums };
 
-const campaignOf = (k: LeadKind) => (k === "club" ? process.env.INSTANTLY_CAMPAIGN_ID : process.env.INSTANTLY_COACH_CAMPAIGN_ID);
+const campaignOf = async (k: LeadKind) => (k === "club" ? process.env.INSTANTLY_CAMPAIGN_ID : (await import("./instantly-coach-campaign")).coachCampaignId());
 
 async function analytics(kind: LeadKind) {
-  const key = process.env.INSTANTLY_API_KEY, id = campaignOf(kind);
+  const key = process.env.INSTANTLY_API_KEY, id = await campaignOf(kind);
   if (!key || !id) return null;
   const res = await fetch(`https://api.instantly.ai/api/v2/campaigns/analytics?id=${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) });
   if (!res.ok) throw Error(`Instantly ${res.status}`);
@@ -25,7 +25,7 @@ async function analytics(kind: LeadKind) {
 
 /** Where the contacted leads are: Instantly's contacted leads, located by our own lead records (or the lead's custom variables). */
 async function contactedPlaces(kind: LeadKind) {
-  const key = process.env.INSTANTLY_API_KEY, id = campaignOf(kind);
+  const key = process.env.INSTANTLY_API_KEY, id = await campaignOf(kind);
   if (!key || !id) return null;
   const ours = new Map((await allLeads(kind)).map((r) => [r.lead.email, r.lead]));
   const states = new Map<string, number>(), cities = new Map<string, number>();
@@ -67,7 +67,7 @@ async function section(kind: LeadKind, now: Date, prev: Nums | undefined) {
   const nums: Nums = { leads: counts.total, pushed: counts.pushed, contacted: ok?.contacted ?? prev?.contacted ?? 0, sent: ok?.sent ?? prev?.sent ?? 0, replies: ok?.replies ?? prev?.replies ?? 0, bounced: ok?.bounced ?? prev?.bounced ?? 0, opportunities: ok?.opportunities ?? prev?.opportunities ?? 0 };
   const d = (k: keyof Nums) => Math.max(0, nums[k] - (prev?.[k] ?? 0));
   const places = await contactedPlaces(kind).catch(() => null);
-  const status = ok?.status === 1 ? "kører" : ok?.status === 0 ? "kladde, ikke startet" : ok?.status === 2 ? "på pause" : ok ? "ukendt status" : campaignOf(kind) ? "tal kunne ikke hentes" : "ingen kampagne sat op endnu";
+  const status = ok?.status === 1 ? "kører" : ok?.status === 0 ? "kladde, ikke startet" : ok?.status === 2 ? "på pause" : ok ? "ukendt status" : (await campaignOf(kind)) ? "tal kunne ikke hentes" : "ingen kampagne sat op endnu";
   const lines = [
     `${label} (kampagnen: ${status})`,
     `Kontaktet siden i går: ${d("contacted")}  (i alt ${nums.contacted})`,
