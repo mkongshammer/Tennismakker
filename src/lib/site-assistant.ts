@@ -45,6 +45,9 @@ PLAYERS
 - Cancel at least 24 hours before the start time for a full refund to the card; later than that the club keeps the booking (clubs can set their own rules).
 - Whether a membership is needed to book depends on the club.
 
+ACCOUNTS
+- Forgot your password: racketbuddy.app/login/forgot sends a reset link to your e-mail. The same login works on the website and in the app.
+
 CONTACT
 - E-mail ${SUPPORT_EMAIL}. There is no phone support.
 `.trim();

@@ -8,6 +8,7 @@ export const SUPERADMIN_PAGES = [
   { id: 'efterspoergsel', label: 'Efterspørgsel (USA)', description: 'Hvor spillere beder om baner og trænere, vi ikke har endnu — pr. stat, by/ZIP og sportsgren.', group: 'Daglig drift' },
   { id: 'traenere', label: 'Trænerbilleder', description: 'Gennemgå trænernes profilbilleder.', group: 'Daglig drift' },
   { id: 'oekonomi', label: 'Økonomi', description: 'Følg indtægter og økonomi.', group: 'Daglig drift' },
+  { id: 'mails', label: 'AI-svar på mails', description: 'Support-mails og svar på salgsmails, som AI\'en har besvaret eller sendt videre.', group: 'Daglig drift' },
   { id: 'agenter', label: 'AI Agents', description: 'Overvåg og kør RacketBuddys specialiserede AI-agenter.', group: 'Daglig drift' },
   { id: 'hjemmesider', label: 'Hjemmesidebestillinger', description: 'Følg bestillinger fra kontakt til færdig hjemmeside.', group: 'Opsætning' },
   { id: 'domaener', label: 'Domæner', description: 'Tilknyt og administrer klubbernes egne domæner.', group: 'Opsætning' },

@@ -10,6 +10,7 @@ import React from "react";
 // os tilliden hos alle andre — og hos den gæst der står foran en låst låge.
 import { redirect } from "next/navigation";
 import { Onboarding } from "./Onboarding";
+import { Mails } from "./Mails";
 import Link from "next/link";
 import { SuperadminAccess } from "./SuperadminAccess";
 import { Overblik } from "./Overblik";
@@ -88,6 +89,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
         <Overblik />
       </>}
       {section === 'onboarding' && <Onboarding />}
+      {section === 'mails' && <Mails />}
       {section === 'traenere' && <CoachPhotos />}
       {section === 'aktivitet' && <Aktivitet />}
       {section === 'efterspoergsel' && <Demand />}

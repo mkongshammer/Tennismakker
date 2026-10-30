@@ -96,7 +96,14 @@ export async function runDailySalesDigest(now = new Date(), force = false) {
   const prev: Snapshot | null = prevRow ? JSON.parse(prevRow.value) : null;
   const club = await section("club", now, prev?.club);
   const coach = await section("coach", now, prev?.coach);
-  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", "Detaljer: https://racketbuddy.app/superadmin/salg"].join("\n");
+  const { mailStats } = await import("./email-assistant");
+  const m = await mailStats(new Date(now.getTime() - 86_400_000)).catch(() => null);
+  const mailLines = m ? [
+    "AI-SVAR PÅ MAILS (sidste døgn)",
+    `Support: ${m.support.answered} besvaret af AI, ${m.support.escalated} sendt videre til dig, ${m.support.ignored} sorteret fra`,
+    `Salgssvar: ${m.sales.answered} besvaret af AI, ${m.sales.escalated} sendt videre til dig, ${m.interested} interesserede`,
+  ] : [];
+  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...mailLines, ...(mailLines.length ? [""] : []), "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
   const subject = `RacketBuddy salg: ${club.contactedToday} klubber + ${coach.contactedToday} trænere kontaktet, ${club.newToday + coach.newToday} nye på listen`;
   let ok = false;
   for (const to of recipients) ok = (await sendMail({ to, subject, body })) || ok;

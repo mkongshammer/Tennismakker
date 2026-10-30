@@ -56,6 +56,12 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   const { runDailySalesDigest } = await import("./sales-digest");
   const salesDigest = await runDailySalesDigest().catch((err) => { console.error("Sales digest failed:", err); return { sent: false }; });
   if (salesDigest.sent) console.log("[sales-digest]", JSON.stringify(salesDigest));
+  // Replies to the Instantly sales e-mails, answered by the AI (US only).
+  if (deploymentRegion() === "US") {
+    const { runInstantlyReplies } = await import("./email-assistant");
+    const r = await runInstantlyReplies().catch((err) => { console.error("Instantly replies failed:", err); return null; });
+    if (r && "replied" in r && (r.replied || r.escalated)) console.log("[instantly-replies]", JSON.stringify(r));
+  }
   const reviewPrompts = await runReviewPrompts().catch((err) => { console.error("Review prompts failed:", err); return { sent: 0 }; });
   // Autopilot: højst én gang i timen. Kun hvor den er slået til for regionen.
   const agentRun = agents
