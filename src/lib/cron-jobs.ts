@@ -61,6 +61,8 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   await runQueuedInvites().catch((err) => console.error("Queued invites failed:", err));
   // Replies to the Instantly sales e-mails, answered by the AI (US only).
   if (deploymentRegion() === "US") {
+    const { runFoundingWatch } = await import("./founding-offer");
+    await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
     const { runInstantlyReplies } = await import("./email-assistant");
     const r = await runInstantlyReplies().catch((err) => { console.error("Instantly replies failed:", err); return null; });
     if (r && "replied" in r && (r.replied || r.escalated)) console.log("[instantly-replies]", JSON.stringify(r));

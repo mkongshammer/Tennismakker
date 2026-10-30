@@ -149,10 +149,13 @@ export async function switchBillingInterval(clubId: string, interval: "MONTH" | 
   const club = await db.club.findUniqueOrThrow({ where: { id: clubId } });
   if (!club.subscriptionId || !["active", "trialing", "past_due"].includes(club.subscriptionStatus ?? "")) throw Error("Der er intet aktivt abonnement at ændre.");
   if (club.subscriptionInterval === interval) return;
-  const { clubSignupPrices } = await import("./club-onboarding");
+  const { clubSignupPrices, isFoundingClub } = await import("./club-onboarding");
+  const { FOUNDING_MONTHLY_USD, FOUNDING_ANNUAL_USD } = await import("./platform-pricing");
   const prices = await clubSignupPrices(club.country);
   if (prices.currency !== club.billingCurrency) throw Error("Prisbogen matcher ikke klubbens valuta. Kontakt RacketBuddy.");
-  const amount = interval === "YEAR" ? prices.annual : prices.standard;
+  // Founding clubs keep $50/$500 for life; everyone else switches at today's regular price.
+  const founding = isFoundingClub(club);
+  const amount = founding ? (interval === "YEAR" ? FOUNDING_ANNUAL_USD : FOUNDING_MONTHLY_USD) : interval === "YEAR" ? prices.annual : prices.standard;
   const client = await stripe();
   const sub = await client.subscriptions.retrieve(club.subscriptionId);
   const item = sub.items.data[0];

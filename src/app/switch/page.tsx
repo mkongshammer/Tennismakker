@@ -4,17 +4,20 @@ import type { Metadata } from "next";
 import { EXPORT_TIPS } from "../../lib/member-import";
 import { ImportCheck } from "./ImportCheck";
 import { PrintButton } from "./PrintButton";
+import { priceCopy } from "../../lib/price-copy";
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "Switch your club to RacketBuddy",
   description: "Move your members from CourtReserve, ClubReady, PlayByPoint, Skedda or a spreadsheet in minutes. Check your member file for free before you pay.",
 };
 
-const STEPS = [
+const steps = (price: string) => [
   { t: "Export your member list", b: "Download it from your current system as Excel or CSV. Tips for each system are below." },
   { t: "Run the free import check", b: "Upload the file here and see exactly who moves across. No account, no payment." },
   { t: "Set up your club", b: "Name, address, courts and price. Four short screens, about two minutes." },
-  { t: "Pay and import with one click", b: "$50/month or $500/year. Your checked list imports straight away." },
+  { t: "Pay and import with one click", b: `${price}. Your checked list imports straight away.` },
   { t: "Connect Stripe and invite members", b: "Payments go to your bank. One button e-mails every member a link to set their password and get the app." },
 ];
 
@@ -26,11 +29,11 @@ const MOVES = [
   ["Payments", "Through your own Stripe account. Card details can't be moved between systems, so members add a card at their first booking or renewal."],
 ];
 
-const FAQ = [
+const faq = (offer: string) => [
   ["How long does switching take?", "The setup itself takes a couple of minutes once your file is ready. Most clubs run both systems for a week, then switch members over with the invite e-mail."],
   ["Do I need a call or onboarding session?", "No. Everything is self-serve. If you get stuck, e-mail support@racketbuddy.app or ask the assistant on the site."],
   ["Will my members get e-mails I didn't approve?", "No. Importing sends nothing. Members only hear from RacketBuddy when you press “Invite members”."],
-  ["What does it cost?", "$50 a month or $500 a year for everything, no setup fee, no contract, no commission on court bookings. Standard Stripe card fees apply."],
+  ["What does it cost?", `${offer} No setup fee, no contract, no commission on court bookings. Standard Stripe card fees apply.`],
   ["Can I cancel?", "Yes, any month. There's no contract."],
 ];
 
@@ -49,7 +52,9 @@ const INCLUDED: Array<[string, string]> = [
   ["Payments", "Players pay by card; the money goes straight to your own Stripe account. You keep 100% of court fees."],
 ];
 
-export default function SwitchPage() {
+export default async function SwitchPage() {
+  const price = await priceCopy();
+  const STEPS = steps(price.short), FAQ = faq(price.offer);
   return (
     <div className="mx-auto max-w-4xl space-y-12 print:space-y-6">
       <header className="space-y-4">
@@ -85,7 +90,7 @@ export default function SwitchPage() {
         <p className="mt-2 text-xs text-slate">Menu names differ between versions of each system. If you can't find the export, your current provider's help center will have it under "export members".</p>
       </section>
 
-      <section className="print:hidden"><ImportCheck /></section>
+      <section className="print:hidden"><ImportCheck priceLabel={price.monthlyLabel} /></section>
 
       <section aria-labelledby="moves">
         <h2 id="moves" className="display text-display-md">What moves across</h2>
@@ -95,7 +100,8 @@ export default function SwitchPage() {
       </section>
 
       <section aria-labelledby="included">
-        <h2 id="included" className="display text-display-md">Everything included for $50 a month</h2>
+        <h2 id="included" className="display text-display-md">Everything included for {`$${price.monthly}`} a month</h2>
+        {price.badge && <p className="mt-2 inline-block rounded-full bg-[#D8FF3E] px-3 py-1 text-xs font-bold text-[#0F2138]">{price.badge}</p>}
         <p className="mt-2 text-sm text-slate">One booking and administration system for the whole club. No add-ons, no per-member fees, no commission on court bookings.</p>
         <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {INCLUDED.map(([t, b]) => <div key={t} className="card-flat"><dt className="font-bold">{t}</dt><dd className="mt-1 text-sm text-slate">{b}</dd></div>)}
@@ -111,7 +117,7 @@ export default function SwitchPage() {
 
       <section className="rounded-3xl border border-white/10 bg-white/5 px-6 py-10 text-center print:hidden">
         <h2 className="display text-display-md">Ready when you are</h2>
-        <p className="mx-auto mt-2 max-w-xl text-slate">$50 a month or $500 a year. Everything included, no setup fee, cancel any month.</p>
+        <p className="mx-auto mt-2 max-w-xl text-slate">{price.offer} No setup fee, cancel any month.</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/list-your-club" className="btn-court">Set up my club</Link><a href="#check" className="btn-ghost">Check my file first</a></div>
       </section>
       <p className="hidden text-xs print:block">racketbuddy.app/switch · support@racketbuddy.app</p>

@@ -105,7 +105,7 @@ export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBo
             <p className="mt-1 text-sm text-slate">Every club gets everything. No setup fee, no contract — you pay from the day you start and can cancel any month.</p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            {([["MONTH", prices.standard, "/ month", "Billed monthly from today · cancel any month"], ["YEAR", prices.annual, "/ year", `Billed once a year · save ${money(saving)} (two months free)`]] as const).map(([id, amount, unit, note]) => (
+            {([["MONTH", prices.standard, "/ month", "Billed monthly from today · cancel any month"], ["YEAR", prices.annual, "/ year", `Billed once a year · save ${money(saving)}`]] as const).map(([id, amount, unit, note]) => (
               <button key={id} type="button" onClick={() => setBilling(id)} aria-pressed={billing === id} className={`flex items-start justify-between gap-3 rounded-2xl border-2 p-5 text-left transition ${billing === id ? "border-court bg-court-tint/40" : "border-slate/15 bg-chalk hover:border-slate/30"}`}>
                 <span>
                   <span className="eyebrow block text-court-dark">{id === "YEAR" ? "Annual" : "Monthly"}</span>

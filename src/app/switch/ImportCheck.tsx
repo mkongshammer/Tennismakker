@@ -13,7 +13,7 @@ type Result = {
 
 const SYSTEMS = ["CourtReserve", "ClubReady / Club Automation", "PlayByPoint", "Skedda", "Mindbody", "Excel or Google Sheets", "Another system"];
 
-export function ImportCheck() {
+export function ImportCheck({ priceLabel }: { priceLabel: string }) {
   const [source, setSource] = useState(SYSTEMS[0]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -60,7 +60,7 @@ export function ImportCheck() {
               <p className="mt-1 text-xs text-slate">First {result.sample.length} of {result.members.toLocaleString("en-US")}.</p></div>
           )}
           <div className="flex flex-wrap items-center gap-3 pt-1">
-            <Link href="/list-your-club" className="btn-court">Set up my club · $50/month</Link>
+            <Link href="/list-your-club" className="btn-court">Set up my club · {priceLabel}</Link>
             <span className="text-sm text-slate">Your list is saved on this device for 14 days. After payment it imports with one click.</span>
           </div>
         </div>

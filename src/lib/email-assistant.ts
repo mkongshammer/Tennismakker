@@ -15,7 +15,7 @@ import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
 import { getSettings } from "./settings";
 import { sendMail } from "./email";
-import { FACTS, SUPPORT_EMAIL } from "./site-assistant";
+import { factsNow, SUPPORT_EMAIL } from "./site-assistant";
 import { takeAiBudget } from "./ai-budget";
 
 export type Channel = "support" | "sales";
@@ -92,7 +92,7 @@ action:
 - "escalate" when it needs a person: a refund, a disputed charge or billing problem, cancelling or deleting an account or data, a bug or something broken, a legal, privacy, tax or contract question, a partnership, press or investor request, an upset customer, or anything the facts don't answer. For escalate, reply = a short, warm acknowledgement that the message has been passed to the team who will reply by e-mail (no time promise), and nothing else.
 - "ignore" for spam, cold sales pitches to RacketBuddy, newsletters, and messages that need no answer (e.g. just "thanks").`;
 
-const SALES_RULES = `You answer replies to RacketBuddy's cold e-mails to US racquet clubs and coaches. The original e-mails were from Magnus (founder) and offered RacketBuddy, a complete booking and administration system for $50/month, with a free member-file check at racketbuddy.app/switch. Reply as Magnus and sign off "Magnus". Be helpful and low-pressure; the goal is that they try the free check or sign up themselves. No call or demo is needed, everything is self-serve.
+const SALES_RULES = `You answer replies to RacketBuddy's cold e-mails to US racquet clubs and coaches. The original e-mails were from Magnus (founder) and offered RacketBuddy, a complete booking and administration system (price: see FACTS), with a free member-file check at racketbuddy.app/switch. Reply as Magnus and sign off "Magnus". Be helpful and low-pressure; the goal is that they try the free check or sign up themselves. No call or demo is needed, everything is self-serve.
 action:
 - "reply" to questions and interest you can answer from the facts.
 - "escalate" when they ask for a phone call or meeting after you've already said none is needed, ask for a custom price, contract, integration or feature not in the facts, are upset, or anything you can't answer. reply = a short note that you'll get back to them personally.
@@ -115,7 +115,7 @@ export async function decide(channel: Channel, mail: { from: string; subject: st
   const config = await getAgentConfig();
   if (!config.apiKey) return { action: "escalate", interest: "other", category: "no-ai", summary: "AI'en har ingen OpenAI-nøgle, så en person skal svare.", reply: "" };
   if (!(await takeAiBudget("email").catch(() => false))) return { action: "escalate", interest: "other", category: "daily-cap", summary: "Dagens loft for AI-svar på mails er nået (beskyttelse mod at brænde kreditter af).", reply: "" };
-  const instructions = `${channel === "support" ? SUPPORT_RULES : SALES_RULES}\n\n${COMMON}\n\ncategory: 1–3 words. summary: one sentence in Danish for the owner describing what the sender wants.\n\nFACTS\n${FACTS}\n\nCONTEXT\n${mail.context || "None."}`;
+  const instructions = `${channel === "support" ? SUPPORT_RULES : SALES_RULES}\n\n${COMMON}\n\ncategory: 1–3 words. summary: one sentence in Danish for the owner describing what the sender wants.\n\nFACTS\n${await factsNow()}\n\nCONTEXT\n${mail.context || "None."}`;
   const res = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${config.apiKey}` },

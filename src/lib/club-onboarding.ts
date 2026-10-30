@@ -2,7 +2,7 @@ import {inspectWebhook} from './webhook-setup';
 import {db} from './db';
 import {stripe} from './stripe';
 import {getSettings} from './settings';
-import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry} from './platform-pricing';
+import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry,FOUNDING_CLUB_SPOTS,FOUNDING_MONTHLY_USD,FOUNDING_ANNUAL_USD,type PriceBook} from './platform-pricing';
 import {PRICE_BOOK_SETTING_KEY} from './platform-pricing';
 import {marketFor,validCurrency} from './international';
 import {addFailureDay,consecutiveFailureDays,localFailureDay,parseFailureDays,shouldPauseAfterFailures} from './subscription-grace';
@@ -18,7 +18,30 @@ export async function clubSignupPriceBook(){
  if(shared?.clubSignupPriceBook)return parsePriceBook(JSON.stringify(shared.clubSignupPriceBook));
  return DEFAULT_PRICE_BOOK;
 }
-export async function clubSignupPrices(country='DK'){return pricesForCountry(await clubSignupPriceBook(),country);}
+/**
+ * How many of the founding-club spots are taken: US self-serve clubs on the
+ * founding price that have paid, or that signed up in the last 48 hours and
+ * are still on their way through checkout (so the 25 can't be oversold).
+ */
+export async function foundingStatus(now=new Date()){
+ const taken=await db.club.count({where:{signupManaged:true,billingCurrency:'USD',status:{not:'REJECTED'},subscriptionKr:{in:[FOUNDING_MONTHLY_USD,FOUNDING_ANNUAL_USD]},OR:[{signupPaidAt:{not:null}},{createdAt:{gte:new Date(now.getTime()-48*3600_000)}}]}}).catch(()=>0);
+ const left=Math.max(0,FOUNDING_CLUB_SPOTS-taken);
+ return {total:FOUNDING_CLUB_SPOTS,taken,left,open:left>0,monthly:FOUNDING_MONTHLY_USD,annual:FOUNDING_ANNUAL_USD};
+}
+/** The price book new clubs see right now: founding prices for USD while spots are left. */
+export async function effectiveClubPriceBook():Promise<PriceBook>{
+ const book=await clubSignupPriceBook();
+ const f=await foundingStatus();
+ return f.open?{...book,USD:{...book.USD,standard:f.monthly,annual:f.annual}}:book;
+}
+export async function clubSignupPrices(country='DK'){return pricesForCountry(await effectiveClubPriceBook(),country);}
+/** Public pricing for pages and the assistant: what a new US club pays now, and after the founding spots. */
+export async function usPricing(){
+ const [book,f]=await Promise.all([clubSignupPriceBook(),foundingStatus()]);
+ return {founding:f,monthly:f.open?f.monthly:book.USD.standard,annual:f.open?f.annual:book.USD.annual,regularMonthly:book.USD.standard,regularAnnual:book.USD.annual};
+}
+/** A founding club keeps the founding price for life, also when it switches between monthly and annual. */
+export function isFoundingClub(c:{billingCurrency:string;subscriptionKr:number;signupManaged:boolean}){return c.signupManaged&&c.billingCurrency==='USD'&&[FOUNDING_MONTHLY_USD,FOUNDING_ANNUAL_USD].includes(c.subscriptionKr);}
 
 /** Record at most one failed collection per local calendar day. Three consecutive days pause the public club profile. */
 export async function recordClubSubscriptionFailure(customerId:string,at=new Date()){

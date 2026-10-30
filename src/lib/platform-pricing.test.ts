@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {MARKETS,SALES_CURRENCIES,validCurrency} from './international';
 import {DEFAULT_PRICE_BOOK,parsePriceBook,pricesForCountry} from './platform-pricing';
 test('every supported country sells only EUR or USD; Denmark uses EUR',()=>{
- for(const m of MARKETS){const p=pricesForCountry(DEFAULT_PRICE_BOOK,m.code);assert.ok(SALES_CURRENCIES.includes(p.currency));assert.equal(m.currency,p.currency);assert.equal(p.standard,['US','CA'].includes(m.code)?50:27);}
+ for(const m of MARKETS){const p=pricesForCountry(DEFAULT_PRICE_BOOK,m.code);assert.ok(SALES_CURRENCIES.includes(p.currency));assert.equal(m.currency,p.currency);assert.equal(p.standard,['US','CA'].includes(m.code)?99:27);}
  assert.equal(pricesForCountry(DEFAULT_PRICE_BOOK,'DK').currency,'EUR');assert.equal(validCurrency('DKK'),true);
 });
 test('price books reject missing, fractional, negative or corrupt tariffs',()=>{
