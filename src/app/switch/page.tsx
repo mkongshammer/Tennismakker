@@ -34,6 +34,21 @@ const FAQ = [
   ["Can I cancel?", "Yes, any month. There's no contract."],
 ];
 
+const INCLUDED: Array<[string, string]> = [
+  ["Court booking", "Online and in the app, with your own prices, opening hours, member and guest rules, and a public club page."],
+  ["Members and dues", "Monthly, annual and family memberships, billed automatically. Member e-mails and bills with reminders."],
+  ["Events and tournaments", "Clinics, leagues, ladders and tournaments with sign-ups, automatic draws, brackets, schedules and results."],
+  ["Coaches and lessons", "Coaches publish their times, players book and pay for lessons online."],
+  ["Player app", "Members book, get confirmations and reminders, find hitting partners and message each other. iPhone and Android."],
+  ["Waitlists, waivers and check-in", "Waitlists for full courts, digital waivers, check-in and automatic release of no-shows."],
+  ["Front desk", "Register for the pro shop and guests, card reader (Stripe Terminal), gift cards and member credit."],
+  ["Staff", "Shift schedule, time clock with PIN, timesheets, overtime and payroll export."],
+  ["Accounting and reports", "Each day's revenue posted to QuickBooks Online. Reports on bookings, revenue and members."],
+  ["Door access", "Fobs and cards for members and staff, and Kisi integration so players open the door from their booking."],
+  ["Club website", "A simple website for the club, on your own domain if you like."],
+  ["Payments", "Players pay by card; the money goes straight to your own Stripe account. You keep 100% of court fees."],
+];
+
 export default function SwitchPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-12 print:space-y-6">
@@ -76,6 +91,14 @@ export default function SwitchPage() {
         <h2 id="moves" className="display text-display-md">What moves across</h2>
         <dl className="mt-4 grid gap-3 sm:grid-cols-2">
           {MOVES.map(([t, b]) => <div key={t} className="card-flat"><dt className="font-bold">{t}</dt><dd className="mt-1 text-sm text-slate">{b}</dd></div>)}
+        </dl>
+      </section>
+
+      <section aria-labelledby="included">
+        <h2 id="included" className="display text-display-md">Everything included for $50 a month</h2>
+        <p className="mt-2 text-sm text-slate">One booking and administration system for the whole club. No add-ons, no per-member fees, no commission on court bookings.</p>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {INCLUDED.map(([t, b]) => <div key={t} className="card-flat"><dt className="font-bold">{t}</dt><dd className="mt-1 text-sm text-slate">{b}</dd></div>)}
         </dl>
       </section>
 
