@@ -1,15 +1,16 @@
-// Keeps count of the mail RacketBuddy sends through Resend, so a free plan's
-// limits (100 a day, 3,000 a month) never silently drop booking mail:
+// Keeps count of the mail RacketBuddy sends and receives through Resend, so
+// the plan's quota (Pro: 50,000 a month, no daily limit) never silently
+// drops booking mail:
 //  - the owner gets one warning at 80% of the day's or the month's quota;
 //  - bulk mail (member invitations) only uses what's left after a reserve
 //    for booking mail, and the rest goes out automatically on later days.
-// MAIL_DAILY_LIMIT / MAIL_MONTHLY_LIMIT override the defaults; set both to 0
-// after upgrading to a plan without these limits.
+// MAIL_DAILY_LIMIT / MAIL_MONTHLY_LIMIT override the defaults (0 = no limit);
+// raise MAIL_MONTHLY_LIMIT when moving to a bigger plan.
 import { db } from "./db";
 
 const num = (v: string | undefined, d: number) => (v === undefined || v === "" ? d : Math.max(0, Number(v) || 0));
-export const dailyLimit = () => num(process.env.MAIL_DAILY_LIMIT, 100);
-export const monthlyLimit = () => num(process.env.MAIL_MONTHLY_LIMIT, 3000);
+export const dailyLimit = () => num(process.env.MAIL_DAILY_LIMIT, 0);
+export const monthlyLimit = () => num(process.env.MAIL_MONTHLY_LIMIT, 50_000);
 /** Kept free each day for booking confirmations, receipts and password resets. */
 export const DAILY_RESERVE = 30;
 
@@ -54,13 +55,13 @@ export async function countMail(n: number, warn: (subject: string, body: string)
       await warn(
         `RacketBuddy: ${used} af ${limit} mails brugt ${when}`,
         [
-          `RacketBuddy har sendt ${used} af de ${limit} mails, Resends gratis plan tillader ${when}.`,
-          "Når grænsen nås, bliver bookingbekræftelser, kvitteringer og nulstilling af adgangskoder ikke sendt.",
+          `RacketBuddy har brugt ${used.toLocaleString("da-DK")} af de ${limit.toLocaleString("da-DK")} mails, jeres Resend-plan dækker ${when} (sendte og modtagne mails tæller begge).`,
+          "Når grænsen nås, kan bookingbekræftelser, kvitteringer og nulstilling af adgangskoder stoppe.",
           "",
-          "Opgrader til Resend Pro ($20/md, 50.000 mails, ingen dagsgrænse): https://resend.com/settings/billing",
-          "Sig derefter til, så fjerner vi grænserne i RacketBuddy (MAIL_DAILY_LIMIT=0 og MAIL_MONTHLY_LIMIT=0 på Render).",
-          "",
-          "Medlemsinvitationer venter automatisk til næste dag, så de ikke bruger grænsen op.",
+          "Gør én af to ting på https://resend.com/settings/billing:",
+          "- Opgrader til næste trin: Pro 100.000 mails for $35/md, eller",
+          "- Slå \"Pay-as-you-go\" til under Usage ($0,90 pr. 1.000 ekstra mails).",
+          `Sig derefter til, så hæver vi grænsen i RacketBuddy (MAIL_MONTHLY_LIMIT på Render).`,
         ].join("\n"),
       );
     }
