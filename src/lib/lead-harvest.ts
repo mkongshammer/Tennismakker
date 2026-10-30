@@ -4,7 +4,7 @@
 // everything already contacted, and kept here until it is pushed to its
 // Instantly campaign (or downloaded as CSV). Nothing is e-mailed from here.
 //
-// Pace: clubs 1,000 backfill then ~200 a week; coaches 500 then ~100 a week.
+// Pace (80/20): clubs 1,000 backfill then ~200 a week; coaches 250 then ~50 a week.
 import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
 import { alreadyContacted, discoverCoaches, discoverProspects, hash, normalizeHost, validEmail, verifyEmailPublished, type Prospect } from "./sales-autopilot";
@@ -13,8 +13,9 @@ export type LeadKind = "club" | "coach";
 export const BACKFILL_TARGET = 1000;
 export const WEEKLY_TARGET = 200;
 const TARGETS: Record<LeadKind, { backfill: number; weekly: number; callsBackfill: number }> = {
-  club: { backfill: BACKFILL_TARGET, weekly: WEEKLY_TARGET, callsBackfill: 3 },
-  coach: { backfill: 500, weekly: 100, callsBackfill: 1 },
+  // 80/20 clubs to coaches, in both the backfill and the weekly pace.
+  club: { backfill: BACKFILL_TARGET, weekly: WEEKLY_TARGET, callsBackfill: 4 },
+  coach: { backfill: 250, weekly: 50, callsBackfill: 1 },
 };
 const STATES = [
   "Massachusetts", "Connecticut", "Rhode Island", "New York", "New Jersey", "New Hampshire", "Vermont", "Maine", "Pennsylvania",
