@@ -115,23 +115,41 @@ export function validEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
+/** Page text with the usual e-mail obfuscations undone: HTML entities, %40 and Cloudflare's e-mail protection. */
+export function revealEmails(html: string) {
+  let t = html.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCharCode(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d))).replace(/%40/gi, "@").replace(/&commat;/gi, "@").replace(/&period;/gi, ".");
+  const decodeCf = (hex: string) => { const key = parseInt(hex.slice(0, 2), 16); let out = ""; for (let i = 2; i + 1 < hex.length; i += 2) out += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16) ^ key); return out; };
+  for (const m of t.matchAll(/data-cfemail="([0-9a-f]+)"/gi)) t += ` ${decodeCf(m[1])}`;
+  for (const m of t.matchAll(/email-protection#([0-9a-f]+)/gi)) t += ` ${decodeCf(m[1])}`;
+  return t.toLowerCase();
+}
+
+export type VerifyResult = { ok: boolean; reason: string };
+/** The e-mail must be on the club's own website: the page the research named, else the home or contact page. */
+export async function verifyEmailPublishedWhy(prospect: Prospect): Promise<VerifyResult> {
+  if (!safePublicUrl(prospect.sourceUrl) || !safePublicUrl(prospect.website)) return { ok: false, reason: "bad-url" };
+  if (!officialSource(prospect)) return { ok: false, reason: "not-own-site" };
+  const siteHost = normalizeHost(prospect.website);
+  const base = new URL(prospect.website.startsWith("http") ? prospect.website : `https://${prospect.website}`);
+  const pages = [prospect.sourceUrl, base.origin + "/", base.origin + "/contact", base.origin + "/contact-us"].filter((u, i, a) => a.indexOf(u) === i);
+  let last = "not-on-page";
+  for (const url of pages) {
+    try {
+      const response = await fetch(url, { redirect: "follow", headers: { "user-agent": "Mozilla/5.0 (compatible; RacketBuddy-SalesResearch/1.0; +https://racketbuddy.app)", accept: "text/html" }, signal: AbortSignal.timeout(10_000) });
+      if (!response.ok) { last = `http-${response.status}`; continue; }
+      if (!safePublicUrl(response.url)) { last = "bad-url"; continue; }
+      const finalHost = normalizeHost(response.url);
+      if (!(finalHost === siteHost || finalHost.endsWith(`.${siteHost}`) || siteHost.endsWith(`.${finalHost}`))) { last = "redirected-away"; continue; }
+      if (Number(response.headers.get("content-length") || "0") > 2_000_000) { last = "too-big"; continue; }
+      if (revealEmails((await response.text()).slice(0, 750_000)).includes(prospect.contactEmail.toLowerCase())) return { ok: true, reason: "ok" };
+      last = "not-on-page";
+    } catch { last = "fetch-failed"; }
+  }
+  return { ok: false, reason: last };
+}
+
 export async function verifyEmailPublished(prospect: Prospect) {
-  if (!safePublicUrl(prospect.sourceUrl) || !safePublicUrl(prospect.website) || !officialSource(prospect)) return false;
-  try {
-    const response = await fetch(prospect.sourceUrl, {
-      redirect: "follow",
-      headers: { "user-agent": "RacketBuddy-SalesResearch/1.0 (+https://racketbuddy.app)" },
-      signal: AbortSignal.timeout(12_000),
-    });
-    if (!response.ok || !safePublicUrl(response.url)) return false;
-    const finalHost = normalizeHost(response.url);
-    const siteHost = normalizeHost(prospect.website);
-    if (!(finalHost === siteHost || finalHost.endsWith(`.${siteHost}`) || siteHost.endsWith(`.${finalHost}`))) return false;
-    const length = Number(response.headers.get("content-length") || "0");
-    if (length > 2_000_000) return false;
-    const html = (await response.text()).slice(0, 750_000).toLowerCase();
-    return html.includes(prospect.contactEmail.toLowerCase());
-  } catch { return false; }
+  return (await verifyEmailPublishedWhy(prospect)).ok;
 }
 
 function easternSchedule(now: Date) {

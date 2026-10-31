@@ -8,7 +8,7 @@
 import { db } from "./db";
 import { getAgentConfig } from "./agent-config";
 import { takeAiBudget } from "./ai-budget";
-import { alreadyContacted, discoverCoaches, discoverProspects, hash, normalizeHost, validEmail, verifyEmailPublished, type Prospect } from "./sales-autopilot";
+import { alreadyContacted, discoverCoaches, discoverProspects, hash, normalizeHost, validEmail, verifyEmailPublishedWhy, type Prospect } from "./sales-autopilot";
 
 export type LeadKind = "club" | "coach";
 export const BACKFILL_TARGET = 1000;
@@ -59,9 +59,12 @@ async function harvestKind(kind: LeadKind, apiKey: string, model: string, now: D
   const calls = maxCalls ?? (backfill ? t.callsBackfill : 1);
   const cursorRow = await db.platformSetting.findUnique({ where: { key: cursorKey(kind) } });
   let cursor = Number(cursorRow?.value ?? 0) || 0;
-  let added = 0, checked = 0, rejected = 0;
+  let added = 0, checked = 0, rejected = 0, searches = 0;
+  const why: Record<string, number> = {};
+  const reject = (r: string) => { rejected++; why[r] = (why[r] ?? 0) + 1; };
   for (let i = 0; i < calls; i++) {
     if (!(await takeAiBudget("leadSearch").catch(() => false))) break; // daily cost cap
+    searches++;
     const state = STATES.at(cursor % STATES.length)!;
     cursor++;
     const known = (await allLeads(kind)).map((r) => r.lead).filter((l) => l.state === state).map((l) => normalizeHost(l.website)).filter(Boolean);
@@ -72,19 +75,42 @@ async function harvestKind(kind: LeadKind, apiKey: string, model: string, now: D
       checked++;
       const p: Prospect = { ...raw, contactEmail: String(raw.contactEmail || "").trim().toLowerCase(), website: String(raw.website || "").trim(), clubName: String(raw.clubName || "").trim() };
       const host = normalizeHost(p.website);
-      if (!p.clubName || !host || !validEmail(p.contactEmail)) { rejected++; continue; }
+      if (!p.clubName || !host || !validEmail(p.contactEmail)) { reject("incomplete"); continue; }
       const dup = await db.platformSetting.findFirst({ where: { key: { in: [leadKey("club", p.contactEmail), leadKey("coach", p.contactEmail), siteKey(kind, host)] } } });
-      if (dup || await alreadyContacted(p) || !(await verifyEmailPublished(p))) { rejected++; continue; }
+      if (dup) { reject("duplicate"); continue; }
+      if (await alreadyContacted(p)) { reject("contacted-before"); continue; }
+      const v = await verifyEmailPublishedWhy(p);
+      if (!v.ok) { reject(`email-${v.reason}`); continue; }
       const lead: Lead = { clubName: p.clubName.slice(0, 120), sport: String(p.sport || "").slice(0, 40), city: String(p.city || "").slice(0, 80), state: String(p.state || state).slice(0, 40), website: p.website, email: p.contactEmail, firstName: String(p.contactFirstName || "").trim().split(/\s+/)[0]?.slice(0, 40) ?? "", sourceUrl: p.sourceUrl, createdAt: now.toISOString() };
       await db.$transaction([
         db.platformSetting.create({ data: { key: leadKey(kind, lead.email), value: JSON.stringify(lead) } }),
         db.platformSetting.create({ data: { key: siteKey(kind, host), value: lead.email } }),
-      ]).then(() => { added++; }).catch(() => { rejected++; });
+      ]).then(() => { added++; }).catch(() => { reject("save-failed"); });
     }
   }
   await db.platformSetting.upsert({ where: { key: cursorKey(kind) }, create: { key: cursorKey(kind), value: String(cursor) }, update: { value: String(cursor) } });
+  await recordStats(kind, now, { calls: searches, checked, added, why });
   const pushed = await pushLeadsToInstantly(kind).catch((e) => ({ pushed: 0, error: e instanceof Error ? e.message : String(e) }));
   return { kind, ran: true, backfill, added, checked, rejected, ...pushed };
+}
+
+/** Per-day yield, so cost per lead can be seen: searches, candidates, added, and why candidates were dropped. */
+type Stats = { calls: number; checked: number; added: number; why: Record<string, number> };
+async function recordStats(kind: LeadKind, now: Date, s: Stats) {
+  if (!s.calls) return;
+  const key = `sales:lead-harvest:stats:${kind}:${now.toISOString().slice(0, 10)}`;
+  const row = await db.platformSetting.findUnique({ where: { key } });
+  const prev: Stats = row ? JSON.parse(row.value) : { calls: 0, checked: 0, added: 0, why: {} };
+  const why = { ...prev.why };
+  for (const [k, v] of Object.entries(s.why)) why[k] = (why[k] ?? 0) + v;
+  const next = { calls: prev.calls + s.calls, checked: prev.checked + s.checked, added: prev.added + s.added, why };
+  await db.platformSetting.upsert({ where: { key }, create: { key, value: JSON.stringify(next) }, update: { value: JSON.stringify(next) } });
+}
+export async function harvestStats(days = 3, now = new Date()) {
+  const keys = [];
+  for (let i = 0; i < days; i++) for (const k of ["club", "coach"]) keys.push(`sales:lead-harvest:stats:${k}:${new Date(now.getTime() - i * 86_400_000).toISOString().slice(0, 10)}`);
+  const rows = await db.platformSetting.findMany({ where: { key: { in: keys } } });
+  return rows.map((r) => ({ key: r.key.replace("sales:lead-harvest:stats:", ""), ...(JSON.parse(r.value) as Stats) })).sort((a, b) => b.key.localeCompare(a.key));
 }
 
 /** One harvest round for clubs and coaches. */
