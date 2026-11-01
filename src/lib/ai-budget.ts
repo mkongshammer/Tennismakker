@@ -9,7 +9,7 @@ export const AI_DAILY_LIMITS = {
   chat: 400,          // website chat messages
   email: 150,         // support mails + replies to sales mails, answered by AI
   escalationMail: 40, // hand-over mails to the owner (stops an inbox flood)
-  leadSearch: 20,     // web-search calls for club/coach leads; lowered until yield per call is known
+  leadSearch: 8,      // AI web-search calls (coaches only now; clubs come from free map data)
 } as const;
 export type AiFeature = keyof typeof AI_DAILY_LIMITS;
 

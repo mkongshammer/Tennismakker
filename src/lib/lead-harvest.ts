@@ -95,9 +95,9 @@ async function harvestKind(kind: LeadKind, apiKey: string, model: string, now: D
 }
 
 /** Per-day yield, so cost per lead can be seen: searches, candidates, added, and why candidates were dropped. */
-type Stats = { calls: number; checked: number; added: number; why: Record<string, number> };
+type Stats = { calls: number; checked: number; added: number; why: Record<string, number>; sites?: number };
 async function recordStats(kind: LeadKind, now: Date, s: Stats) {
-  if (!s.calls) return;
+  if (!s.calls && !s.checked) return;
   const key = `sales:lead-harvest:stats:${kind}:${now.toISOString().slice(0, 10)}`;
   const row = await db.platformSetting.findUnique({ where: { key } });
   const prev: Stats = row ? JSON.parse(row.value) : { calls: 0, checked: 0, added: 0, why: {} };
@@ -113,12 +113,54 @@ export async function harvestStats(days = 3, now = new Date()) {
   return rows.map((r) => ({ key: r.key.replace("sales:lead-harvest:stats:", ""), ...(JSON.parse(r.value) as Stats) })).sort((a, b) => b.key.localeCompare(a.key));
 }
 
+/**
+ * Clubs from open map data (no AI): next venues of the current state, e-mail
+ * read from each club's own website. Moves to the next state when one is done.
+ */
+async function harvestClubsFromDirectory(now: Date, sites = 25) {
+  const { STATE_CODES, nextVenues, findClubEmail } = await import("./lead-directory");
+  const all = Object.keys(STATE_CODES);
+  const order = [...STATES, ...all.filter((s) => !STATES.includes(s))];
+  const curKey = "sales:lead-harvest:dircursor";
+  const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
+  const state = order[cur % order.length];
+  let batch; let done = false;
+  try { ({ batch, done } = await nextVenues(state, sites)); }
+  catch (e) { console.error("[lead-directory]", state, e instanceof Error ? e.message : e); return { kind: "club" as const, ran: false, reason: "map-data-unavailable", state }; }
+  let added = 0, checked = 0;
+  const why: Record<string, number> = {};
+  const reject = (r: string) => { why[r] = (why[r] ?? 0) + 1; };
+  const work = batch.map((v) => async () => {
+    checked++;
+    const host = normalizeHost(v.website);
+    if (await db.platformSetting.findFirst({ where: { key: { in: [siteKey("club", host), siteKey("coach", host)] } } })) return reject("duplicate");
+    const found = await findClubEmail(v.website);
+    if (!found.email) return reject(`email-${found.reason}`);
+    const p: Prospect = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, contactEmail: found.email, sourceUrl: found.sourceUrl, hook: "", contactFirstName: "" } as Prospect;
+    if (await db.platformSetting.findFirst({ where: { key: { in: [leadKey("club", found.email), leadKey("coach", found.email)] } } })) return reject("duplicate");
+    if (await alreadyContacted(p)) return reject("contacted-before");
+    const lead: Lead = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, email: found.email, firstName: "", sourceUrl: found.sourceUrl, createdAt: now.toISOString() };
+    await db.$transaction([
+      db.platformSetting.create({ data: { key: leadKey("club", lead.email), value: JSON.stringify(lead) } }),
+      db.platformSetting.create({ data: { key: siteKey("club", host), value: lead.email } }),
+    ]).then(() => { added++; }).catch(() => reject("save-failed"));
+  });
+  for (let i = 0; i < work.length; i += 5) await Promise.all(work.slice(i, i + 5).map((f) => f().catch(() => reject("error"))));
+  if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
+  await recordStats("club", now, { calls: 0, checked, added, why, sites: checked } as Stats);
+  const pushed = await pushLeadsToInstantly("club").catch((e) => ({ pushed: 0, error: e instanceof Error ? e.message : String(e) }));
+  return { kind: "club" as const, ran: true, source: "map", state, added, checked, ...pushed };
+}
+
 /** One harvest round for clubs and coaches. */
 export async function harvestLeads(now = new Date(), maxCalls?: number) {
   const config = await getAgentConfig();
-  if (!config.apiKey) return { ran: false, reason: "no-api-key" };
-  const club = await harvestKind("club", config.apiKey, config.smartModel, now, maxCalls);
-  const coach = await harvestKind("coach", config.apiKey, config.smartModel, now, maxCalls ? 1 : undefined);
+  // Clubs: open map data first (free). AI web search only as a top-up once the map data is used up.
+  const t = TARGETS.club, counts = await leadCounts(now, "club");
+  const club = counts.total < t.backfill || counts.lastWeek < t.weekly
+    ? await harvestClubsFromDirectory(now)
+    : { kind: "club" as const, ran: false, reason: "weekly-target-met" };
+  const coach = config.apiKey ? await harvestKind("coach", config.apiKey, config.smartModel, now, maxCalls ? 1 : undefined) : { kind: "coach" as const, ran: false, reason: "no-api-key" };
   return { ran: true, club, coach };
 }
 
