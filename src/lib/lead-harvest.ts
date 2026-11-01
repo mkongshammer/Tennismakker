@@ -126,7 +126,7 @@ async function harvestClubsFromDirectory(now: Date, sites = 25) {
   const state = order[cur % order.length];
   let batch; let done = false;
   try { ({ batch, done } = await nextVenues(state, sites)); }
-  catch (e) { console.error("[lead-directory]", state, e instanceof Error ? e.message : e); return { kind: "club" as const, ran: false, reason: "map-data-unavailable", state }; }
+  catch (e) { const error = e instanceof Error ? e.message : String(e); console.error("[lead-directory]", state, error); await recordStats("club", now, { calls: 0, checked: 1, added: 0, why: { "map-data-unavailable": 1 } }); return { kind: "club" as const, ran: false, reason: "map-data-unavailable", state, error }; }
   let added = 0, checked = 0;
   const why: Record<string, number> = {};
   const reject = (r: string) => { why[r] = (why[r] ?? 0) + 1; };

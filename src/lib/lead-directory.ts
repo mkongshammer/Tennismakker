@@ -17,7 +17,8 @@ export const STATE_CODES: Record<string, string> = {
 
 export type DirectoryVenue = { name: string; website: string; city: string; state: string; sport: string };
 
-const OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
+// Public Overpass servers; the main one is often "at capacity", so try several, fastest-tested first.
+const OVERPASS = ["https://maps.mail.ru/osm/tools/overpass/api/interpreter", "https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter"];
 const SKIP_NAME = /\b(school|elementary|middle school|high school|university|college|academy of|ymca|park district|recreation department|city of|town of|county|apartments?|condo|hoa|hotel|resort|inn)\b/i;
 const SKIP_HOST = /(\.gov|\.edu|\.k12\.|\.mil)$|(^|\.)(facebook|instagram|google|yelp|tripadvisor|linktr|twitter|x|tiktok|youtube|wix|squarespace)\.com$/i;
 
@@ -47,11 +48,12 @@ export async function fetchStateVenues(state: string): Promise<DirectoryVenue[]>
   let lastError = "";
   for (const url of OVERPASS) {
     try {
-      const res = await fetch(url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "RacketBuddy-ClubDirectory/1.0 (+https://racketbuddy.app)" }, body: `data=${encodeURIComponent(query)}`, signal: AbortSignal.timeout(100_000) });
-      if (!res.ok) { lastError = `overpass ${res.status}`; continue; }
-      const data = await res.json() as { elements?: Array<{ tags?: Record<string, string> }> };
+      const res = await fetch(url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "RacketBuddy-ClubDirectory/1.0 (+https://racketbuddy.app)" }, body: `data=${encodeURIComponent(query)}`, signal: AbortSignal.timeout(60_000) });
+      if (!res.ok) { lastError = `${new URL(url).host} ${res.status}`; continue; }
+      const data = await res.json().catch(() => null) as { elements?: Array<{ tags?: Record<string, string> }> } | null;
+      if (!data?.elements) { lastError = `${new URL(url).host} bad response`; continue; }
       return venuesFromOverpass(data.elements ?? [], state);
-    } catch (e) { lastError = e instanceof Error ? e.message : String(e); }
+    } catch (e) { lastError = `${new URL(url).host} ${e instanceof Error ? e.message : String(e)}`; }
   }
   throw new Error(`Map data unavailable (${lastError}).`);
 }
