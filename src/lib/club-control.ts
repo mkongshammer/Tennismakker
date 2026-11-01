@@ -1,25 +1,10 @@
 import { db } from "./db";
-import { open as unseal } from "./crypto-box";
 import {
   accessWindow,
   canOpenDoor,
   desiredChannelState,
 } from "./club-control-core";
-import {
-  getShellyDeviceStates,
-  setShellySwitchGroup,
-  shellySwitchOutput,
-  type ShellyCredentials,
-  type ShellyDeviceState,
-  type ShellyGroupResult,
-  type ShellySwitchRef,
-} from "./shelly-cloud";
-
-type StoredControl = {
-  id: string;
-  serverUrl: string;
-  authKeyCipher: string;
-};
+import { commandGroup, inspectDevices, providerOf, refKey, type DeviceState, type GroupResult, type StoredControl, type SwitchRef } from "./control-providers";
 
 type ChannelWithDevice = {
   manualOnUntil?: Date | null;
@@ -46,52 +31,20 @@ export class ClubControlError extends Error {
   }
 }
 
-function credentials(control: StoredControl): ShellyCredentials {
-  const authKey = unseal(control.authKeyCipher);
-  if (!authKey) throw new Error("Shelly-nøglen kunne ikke læses. Gem forbindelsen igen.");
-  return { serverUrl: control.serverUrl, authKey };
+/** Status for the given devices, whatever the club's controller (Shelly, Tuya or webhook). */
+export async function inspectShellyDevices(control: StoredControl, deviceIds: string[]): Promise<DeviceState[]> {
+  return inspectDevices(control, deviceIds);
 }
-
-// Shelly Cloud dokumenterer højst ét kald pr. sekund. Køen er pr. klubkonto,
-// så to samtidige apptryk eller et cron-tjek ikke rammer grænsen i samme
-// Node-proces. En fler-instans-installation bør flytte samme lås til Redis.
-const accountTails = new Map<string, Promise<unknown>>();
-const accountLastCall = new Map<string, number>();
-
-async function limitedShellyCall<T>(controlId: string, call: () => Promise<T>): Promise<T> {
-  const previous = accountTails.get(controlId) ?? Promise.resolve();
-  const current = previous
-    .catch(() => undefined)
-    .then(async () => {
-      const elapsed = Date.now() - (accountLastCall.get(controlId) ?? 0);
-      if (elapsed < 1_050) {
-        await new Promise((resolve) => setTimeout(resolve, 1_050 - elapsed));
-      }
-      accountLastCall.set(controlId, Date.now());
-      return call();
-    });
-  accountTails.set(controlId, current);
-  return current;
-}
-
-export async function inspectShellyDevices(
-  control: StoredControl,
-  deviceIds: string[]
-): Promise<ShellyDeviceState[]> {
-  return limitedShellyCall(control.id, () =>
-    getShellyDeviceStates(credentials(control), deviceIds)
-  );
-}
+export const inspectControlDevices = inspectShellyDevices;
 
 async function commandSwitches(
   control: StoredControl,
-  refs: ShellySwitchRef[],
+  refs: SwitchRef[],
   on: boolean,
-  toggleAfterSeconds?: number
-) {
-  return limitedShellyCall(control.id, () =>
-    setShellySwitchGroup(credentials(control), refs, on, toggleAfterSeconds)
-  );
+  toggleAfterSeconds?: number,
+  event?: "door" | "test"
+): Promise<GroupResult> {
+  return commandGroup(control, refs, on, toggleAfterSeconds, event);
 }
 
 /**
@@ -135,6 +88,7 @@ export async function reconcileClubControl(
   const control = await db.clubControl.findUnique({
     where: { clubId },
     include: {
+      club: { select: { name: true } },
       devices: {
         include: { channels: true },
         orderBy: { createdAt: "asc" },
@@ -153,14 +107,15 @@ export async function reconcileClubControl(
     return { clubId, checked: 0, changed: 0, failed: 1, skipped: "ingen enheder" };
   }
 
-  let states: ShellyDeviceState[];
+  let states: DeviceState[];
+  const webhook = providerOf(control) === "WEBHOOK";
   try {
     states = await inspectShellyDevices(
       control,
       control.devices.map((device: any) => device.externalId)
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Shelly-status kunne ikke hentes.";
+    const message = error instanceof Error ? error.message : "Controller status couldn't be read.";
     await db.clubControl.update({
       where: { id: control.id },
       data: { lastCheckedAt: now, lastError: message },
@@ -233,7 +188,8 @@ export async function reconcileClubControl(
   for (const channel of lightChannels) {
     const state = stateById.get(channel.device.externalId.toLowerCase());
     const desired = channel.manualOnUntil && channel.manualOnUntil > now ? true : desiredChannelState(channel, activeCourtIds);
-    const actual = shellySwitchOutput(state, channel.channel);
+    // A webhook can't report state; we trust the last command that succeeded.
+    const actual = webhook ? (channel.lastState ?? (desired === null ? null : !desired)) : state?.output(channel.channel) ?? null;
     let error: string | null = null;
 
     if (!state || state.online !== 1) error = "Controlleren er offline.";
@@ -270,13 +226,13 @@ export async function reconcileClubControl(
         channels.map((channel) => ({
           deviceId: channel.device.externalId,
           channel: channel.channel,
+          label: channel.label,
         })),
         desired
       );
 
       for (const channel of channels) {
-        const key = `${channel.device.externalId}_${channel.channel}`.toLowerCase();
-        const commandError = result.failed.get(key) ?? null;
+        const commandError = result.failed.get(refKey({ deviceId: channel.device.externalId, channel: channel.channel })) ?? null;
         if (commandError) failed++;
         else changed++;
 
@@ -298,7 +254,7 @@ export async function reconcileClubControl(
         });
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Shelly-kommandoen fejlede.";
+      const message = error instanceof Error ? error.message : "The controller command failed.";
       failed += channels.length;
       for (const channel of channels) {
         await db.clubControlChannel.update({
@@ -378,6 +334,7 @@ export async function unlockDoorForBooking(
             include: {
               control: {
                 include: {
+                  club: { select: { name: true } },
                   devices: {
                     include: { channels: { where: { kind: "DOOR" } } },
                   },
@@ -431,23 +388,23 @@ export async function unlockDoorForBooking(
     throw new ClubControlError("Døren er allerede aktiveret.", 429);
   }
 
-  let result: ShellyGroupResult;
+  let result: GroupResult;
   try {
     result = await commandSwitches(
       control,
       doorChannels.map((channel) => ({
         deviceId: channel.device.externalId,
         channel: channel.channel,
+        label: channel.label,
       })),
       true,
-      control.doorPulseSeconds
+      control.doorPulseSeconds,
+      "door"
     );
 
     const failures = doorChannels
       .map((channel) =>
-        result.failed.get(
-          `${channel.device.externalId}_${channel.channel}`.toLowerCase()
-        )
+        result.failed.get(refKey({ deviceId: channel.device.externalId, channel: channel.channel }))
       )
       .filter((value): value is string => Boolean(value));
     if (failures.length === doorChannels.length) {
@@ -480,9 +437,7 @@ export async function unlockDoorForBooking(
   }
 
   const events = doorChannels.map((channel) => {
-    const failure = result.failed.get(
-      `${channel.device.externalId}_${channel.channel}`.toLowerCase()
-    );
+    const failure = result.failed.get(refKey({ deviceId: channel.device.externalId, channel: channel.channel }));
     return {
       clubId: booking.court!.clubId,
       bookingId,
@@ -498,9 +453,7 @@ export async function unlockDoorForBooking(
     .$transaction([
       db.clubControlEvent.createMany({ data: events }),
       ...doorChannels.map((channel) => {
-        const failure = result.failed.get(
-          `${channel.device.externalId}_${channel.channel}`.toLowerCase()
-        );
+        const failure = result.failed.get(refKey({ deviceId: channel.device.externalId, channel: channel.channel }));
         return db.clubControlChannel.update({
           where: { id: channel.id },
           data: {
@@ -528,7 +481,7 @@ export async function unlockDoorForBooking(
 export async function testClubControlChannel(clubId: string, channelId: string) {
   const channel = await db.clubControlChannel.findFirst({
     where: { id: channelId, device: { control: { clubId } } },
-    include: { device: { include: { control: true } } },
+    include: { device: { include: { control: { include: { club: { select: { name: true } } } } } } },
   });
   if (!channel) throw new Error("Relækanalen findes ikke.");
 
@@ -548,13 +501,12 @@ export async function testClubControlChannel(clubId: string, channelId: string) 
   try {
     const result = await commandSwitches(
       control,
-      [{ deviceId: channel.device.externalId, channel: channel.channel }],
+      [{ deviceId: channel.device.externalId, channel: channel.channel, label: channel.label }],
       true,
-      3
+      3,
+      "test"
     );
-    const failure = result.failed.get(
-      `${channel.device.externalId}_${channel.channel}`.toLowerCase()
-    );
+    const failure = result.failed.get(refKey({ deviceId: channel.device.externalId, channel: channel.channel }));
     if (failure) throw new Error(failure);
 
     await db.$transaction([

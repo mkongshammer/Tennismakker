@@ -35,7 +35,7 @@ test('custom actions deny other roles and standard clubs before writes',async()=
 });
 test('manual light action never commands another club or a door',async()=>{
  let invoked=false;
- const mocks:any={'next/cache':{revalidatePath(){}},'next/navigation':{},'./crypto-box':{},'./club-control-setup':{},'./shelly-cloud':{},'./club-management-actions':{requireCustomClub:async()=>({})},'./session':{getCurrentUser:async()=>({id:'u',role:'CLUB_ADMIN',clubId:'c'})},'./db':{db:{clubControlChannel:{findFirst:async({where}:any)=>{assert.equal(where.device.control.clubId,'c');assert.deepEqual(where.kind.in,['COURT_LIGHT','COMMON_LIGHT']);return null;}}}},'./club-control':{reconcileClubControl:async()=>{invoked=true;}}};
+ const mocks:any={'next/cache':{revalidatePath(){}},'next/navigation':{},'./crypto-box':{},'./club-control-setup':{},'./shelly-cloud':{},'./control-webhook':{},'./tuya-cloud':{},'./club-management-actions':{requireCustomClub:async()=>({})},'./session':{getCurrentUser:async()=>({id:'u',role:'CLUB_ADMIN',clubId:'c'})},'./db':{db:{clubControlChannel:{findFirst:async({where}:any)=>{assert.equal(where.device.control.clubId,'c');assert.deepEqual(where.kind.in,['COURT_LIGHT','COMMON_LIGHT']);return null;}}}},'./club-control':{reconcileClubControl:async()=>{invoked=true;}}};
  const api=loadIsolatedModule('src/lib/club-control-actions.ts',mocks);const f=new FormData();f.set('minutes','30');f.set('channelId','other');
  assert.ok((await api.setManualLight(null,f)).error);assert.equal(invoked,false);
 });

@@ -47,7 +47,7 @@ const INCLUDED: Array<[string, string]> = [
   ["Front desk", "Register for the pro shop and guests, card reader (Stripe Terminal), gift cards and member credit."],
   ["Staff", "Shift schedule, time clock with PIN, timesheets, overtime and payroll export."],
   ["Accounting and reports", "Each day's revenue posted to QuickBooks Online. Reports on bookings, revenue and members."],
-  ["Door access", "Fobs and cards for members and staff, and Kisi integration so players open the door from their booking."],
+  ["Lights and door access", "Court lights switch on and off with bookings (Shelly, Tuya / Smart Life, or any system via webhook). Fobs and cards, and Kisi so players open the door from their booking."],
   ["Club website", "A simple website for the club, on your own domain if you like."],
   ["Payments", "Players pay by card; the money goes straight to your own Stripe account. You keep 100% of court fees."],
 ];

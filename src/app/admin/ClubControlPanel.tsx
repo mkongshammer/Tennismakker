@@ -6,7 +6,7 @@ import { useFormState } from "react-dom";
 import { SubmitButton } from "../../components/SubmitButton";
 import { setupProgress } from "../../lib/club-control-setup";
 import { connectControlSetup, saveSetupChannel, confirmSetupChannel, activateControlSetup,
-pauseControlSetup, testControlChannel, removeControlDevice, runControlNow } from "../../lib/club-control-actions";
+pauseControlSetup, testControlChannel, removeControlDevice, runControlNow, revealWebhookSecret } from "../../lib/club-control-actions";
 
 type Court = {id: string;name: string;};
 type Channel = {
@@ -19,7 +19,7 @@ type Device = {
   channelCount: number;online: boolean | null;lastSeenAt: string | null;channels: Channel[];
 };
 export type ControlView = {
-  enabled: boolean;serverUrl: string;hasAuthKey: boolean;
+  enabled: boolean;provider?: string;serverUrl: string;hasAuthKey: boolean;
   accessBeforeMinutes: number;accessAfterMinutes: number;doorPulseSeconds: number;
   lightsBeforeMinutes: number;lightsAfterMinutes: number;
   lastCheckedAt: string | null;lastOkAt: string | null;lastError: string | null;devices: Device[];
@@ -80,11 +80,61 @@ function RelayStep({ device, number, saved, courts }: {device: Device;number: nu
   </div>;
 }
 
+function TuyaFields({ hasKey, ids }: { hasKey: boolean; ids: string }) {
+  return <>
+    <div><h3 className="text-xl font-bold">{"1. Connect Tuya / Smart Life"}</h3>
+      <p className="mt-2 text-sm text-slate">{"For relays and smart switches that work in the Smart Life or Tuya Smart app (many brands use Tuya inside)."}</p></div>
+    <ol className="list-decimal space-y-1 rounded-xl bg-mist p-4 pl-8 text-sm">
+      <li>{"Create a free account on iot.tuya.com and a Cloud project (development method: Smart Home, data center: Western America for the US)."}</li>
+      <li>{"In the project: Devices → Link App Account → scan the QR code with the Smart Life app. Your devices appear in the list."}</li>
+      <li>{"Copy the Access ID and Access Secret from the project's Overview, and each Device ID from the device list."}</li>
+    </ol>
+    <a href="https://iot.tuya.com" target="_blank" rel="noreferrer" className="inline-block font-semibold underline">{"Open Tuya IoT Platform ↗"}</a>
+    <div><label className="label" htmlFor="tuya-region">{"Data center"}</label>
+      <Select id="tuya-region" name="tuyaRegion" className="input" defaultValue="us">
+        <option value="us">{"Western America (US)"}</option><option value="us-east">{"Eastern America (US)"}</option>
+        <option value="eu">{"Central Europe"}</option><option value="eu-west">{"Western Europe"}</option><option value="in">{"India"}</option>
+      </Select></div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div><label className="label" htmlFor="tuya-id">{"Access ID"}</label><input id="tuya-id" name="tuyaAccessId" className="input" autoComplete="off" required={!hasKey} placeholder={hasKey ? "Saved — leave empty" : ""} /></div>
+      <div><label className="label" htmlFor="tuya-secret">{"Access Secret"}</label><input id="tuya-secret" name="tuyaSecret" type="password" className="input" autoComplete="off" required={!hasKey} placeholder={hasKey ? "Saved — leave empty" : ""} /></div>
+    </div>
+    <p className="text-xs text-slate">{"Stored encrypted on the server, never in the player app."}</p>
+    <div><label className="label" htmlFor="tuya-ids">{"Device IDs (one per line)"}</label>
+      <textarea id="tuya-ids" name="deviceIds" className="input" rows={3} required defaultValue={ids} autoCapitalize="none" autoCorrect="off" /></div>
+  </>;
+}
+
+function WebhookFields({ url, outputs, connected }: { url: string; outputs: number; connected: boolean }) {
+  const [secret, setSecret] = useState<string | null>(null);
+  return <>
+    <div><h3 className="text-xl font-bold">{"1. Connect a webhook"}</h3>
+      <p className="mt-2 text-sm text-slate">{"RacketBuddy sends a signed HTTPS request to your address when a light should turn on or off, or a door should open. Use it with Home Assistant, Node-RED, a lighting controller with a web API, a Lutron bridge, or Zapier."}</p></div>
+    <div><label className="label" htmlFor="wh-url">{"Webhook address (https://)"}</label>
+      <input id="wh-url" name="webhookUrl" className="input" defaultValue={url} placeholder="https://example.com/racketbuddy" required autoCapitalize="none" autoCorrect="off" /></div>
+    <div><label className="label" htmlFor="wh-outputs">{"How many lights and doors (outputs)?"}</label>
+      <input id="wh-outputs" name="outputs" type="number" min={1} max={32} defaultValue={outputs} className="input" required /></div>
+    <details className="rounded-xl bg-mist p-4 text-sm"><summary className="cursor-pointer font-semibold">{"What RacketBuddy sends"}</summary>
+      <pre className="mt-2 overflow-x-auto whitespace-pre-wrap text-xs">{`POST <your address>
+Content-Type: application/json
+X-RacketBuddy-Timestamp: 1767225600
+X-RacketBuddy-Signature: sha256=<HMAC-SHA256 of "timestamp.body" with your signing secret>
+
+{"event":"light.on","output":3,"label":"Court 3 lights","club":"…","sentAt":"…"}
+events: light.on · light.off · door.open (with "seconds") · test (with "seconds")
+Answer with any 2xx status. Anything else counts as failed and is retried.`}</pre>
+      {connected && <div className="mt-3">{secret ? <p className="break-all font-mono text-xs">{secret}</p> :
+        <button type="button" className="font-semibold underline" onClick={async () => { const r = await revealWebhookSecret(); setSecret(r.secret ?? r.error ?? ""); }}>{"Show signing secret"}</button>}</div>}
+    </details>
+  </>;
+}
+
 export function ClubControlPanel({ control, courts }: {control: ControlView;courts: Court[];}) {const { tr, money, currency, timeZone,locale } = useWebsiteInternational();
   const devices = control?.devices ?? [];
   const progress = setupProgress(devices);
   const connected = Boolean(control?.hasAuthKey && devices.length);
   const [step, setStep] = useState(connected ? progress.ready ? 3 : 2 : 1);
+  const [provider, setProvider] = useState(control?.provider ?? "SHELLY");
   const [selected, setSelected] = useState<string | null>(null);
   const [connection, connectAction] = useFormState(connectControlSetup, null);
   const [activation, activateAction] = useFormState(activateControlSetup, null);
@@ -121,6 +171,14 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
           {index + 1}. {tr(label)}</button>)}
       </nav><Result state={pause} />
       {step === 1 && <form action={connectAction} className="space-y-5 rounded-2xl border border-slate/15 p-5">
+        <fieldset><legend className="label">Which system controls your lights and doors?</legend>
+          <div className="grid gap-2 sm:grid-cols-3">{([["SHELLY","Shelly"],["TUYA","Tuya / Smart Life"],["WEBHOOK","Webhook / other system"]] as const).map(([id,label]) =>
+            <label key={id} className={`flex cursor-pointer items-center gap-2 rounded-xl border p-3 text-sm font-semibold ${provider===id?"border-court bg-court/10":"border-slate/15"}`}>
+              <input type="radio" name="provider" value={id} checked={provider===id} onChange={() => setProvider(id)} />{label}</label>)}</div>
+        </fieldset>
+        {provider === "TUYA" && <TuyaFields hasKey={Boolean(control?.hasAuthKey && control?.provider === "TUYA")} ids={control?.provider === "TUYA" ? devices.map((d) => d.externalId).join("\n") : ""} />}
+        {provider === "WEBHOOK" && <WebhookFields url={control?.provider === "WEBHOOK" ? control.serverUrl : ""} outputs={control?.provider === "WEBHOOK" ? devices[0]?.channelCount ?? 4 : 4} connected={control?.provider === "WEBHOOK" && connected} />}
+        {provider === "SHELLY" && <>
         <div><h3 className="text-xl font-bold">{tr("1. Forbind til Shelly")}</h3>
           <p className="mt-2 text-sm text-slate">{tr("Controllerne skal v\xE6re monteret og vise Online i Shelly Smart Control. Her kopierer du kun oplysninger \u2014 intet lys t\xE6ndes.")}</p>
           <a href="https://control.shelly.cloud" target="_blank" rel="noreferrer" className="mt-3 inline-block font-semibold underline">{tr("\xC5bn Shelly i en ny fane \u2197")}</a></div>
@@ -135,7 +193,8 @@ export function ClubControlPanel({ control, courts }: {control: ControlView;cour
         <div><label className="label" htmlFor="setup-ids">{tr("Hvilke controllere skal klubben bruge?")}</label>
           <p id="ids-help" className="mb-2 text-sm text-slate">{tr("\xC5bn hver controller i Shelly \u2192 Settings \u2192 Device Information \u2192 Device Id. Inds\xE6t \xE9t ID pr. linje. Vi henter selv rel\xE6erne.")}</p>
           <textarea id="setup-ids" name="deviceIds" aria-describedby="ids-help" className="input" rows={3} required autoCapitalize="none" autoCorrect="off"
-          defaultValue={devices.map((d) => d.externalId).join("\n")} placeholder={tr("ID for første controller\nID for anden controller")} /></div>
+          defaultValue={control?.provider === "SHELLY" || !control?.provider ? devices.map((d) => d.externalId).join("\n") : ""} placeholder={tr("ID for første controller\nID for anden controller")} /></div>
+        </>}
         <Result state={connection} /><SubmitButton pendingText={tr("Kontakter Shelly og finder rel\xE6er\u2026")}>{tr("Forbind og hent rel\xE6er")}</SubmitButton>
         {connected && <button type="button" className="ml-3 text-sm underline" onClick={() => setStep(2)}>{tr("Forts\xE6t med gemt forbindelse")}</button>}
       </form>}

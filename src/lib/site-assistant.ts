@@ -35,6 +35,7 @@ WHAT'S INCLUDED FOR CLUBS
 - Staff time clock with PIN, timesheets, overtime and payroll export.
 - QuickBooks Online: each day's revenue posted automatically.
 - Access control: door fobs/cards for members and staff, and Kisi door integration so players can open the door from their booking.
+- Automatic court lights and doors from bookings: Shelly relays, Tuya / Smart Life relays and switches, or any other system through a signed webhook (e.g. Home Assistant, Node-RED, a Lutron bridge, lighting controllers with a web API). Musco Control-Link is not supported yet.
 - Reports on bookings and revenue; a simple club website (on the club's own domain if they like).
 - Waitlists for full courts, digital waivers, check-in and automatic release of no-shows; ladders and leagues; member credit (wallet) and gift cards.
 - Players can find hitting partners, message each other and book in the app.

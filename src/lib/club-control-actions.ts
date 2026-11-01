@@ -16,8 +16,9 @@ import {
 import {
   normaliseShellyDeviceId,
   normaliseShellyServerUrl,
-  shellyChannelCount,
 } from "./shelly-cloud";
+import { newWebhookSecret, normaliseWebhookUrl } from "./control-webhook";
+import { normaliseTuyaDeviceId, tuyaEndpoint } from "./tuya-cloud";
 
 type FormResult = { ok?: string; error?: string } | null;
 
@@ -167,7 +168,7 @@ export async function addControlDevice(
   }
 
   const requestedChannels = integerField(formData, "channelCount", 3, 1, 8);
-  const channelCount = shellyChannelCount(state) ?? requestedChannels;
+  const channelCount = state.channelCount ?? requestedChannels;
   try {
     await db.clubControlDevice.create({
       data: {
@@ -207,7 +208,7 @@ export async function refreshControlDevice(formData: FormData) {
         online: state?.online === 1,
         lastSeenAt: state?.online === 1 ? new Date() : device.lastSeenAt,
         model: state?.code ?? device.model,
-        channelCount: shellyChannelCount(state) ?? device.channelCount,
+        channelCount: state?.channelCount ?? device.channelCount,
       },
     });
     await db.clubControl.update({
@@ -349,40 +350,80 @@ export async function connectControlSetup(_prev: FormResult, formData: FormData)
   const { clubId } = await requireClubAdmin();
   const existing = await db.clubControl.findUnique({ where: { clubId } });
   if (existing?.enabled) return { error: "Sæt styringen på pause, før forbindelsen ændres." };
+  const provider = String(formData.get("provider") ?? existing?.provider ?? "SHELLY");
+  const switching = existing && existing.provider !== provider;
   try {
-    const serverUrl = normaliseShellyServerUrl(String(formData.get("serverUrl") ?? ""));
-    const ids = parseSetupDeviceIds(String(formData.get("deviceIds") ?? ""));
-    const key = String(formData.get("authKey") ?? "").trim();
-    if (key && (key.length < 16 || key.length > 1000)) return { error: "Kopiér hele Authorization Cloud Key fra Shelly." };
-    const authKeyCipher = key ? seal(key) : existing?.authKeyCipher;
-    if (!authKeyCipher) return { error: "Indsæt nøglen fra Shelly." };
-    const states = await inspectShellyDevices({ id: existing?.id ?? clubId, serverUrl, authKeyCipher }, ids);
-    const devices = ids.map(id => {
-      const state = states.find(s => s.id.toLowerCase() === id);
-      if (!state || state.online !== 1) throw new Error(`Enhed ${id} er ikke online. Åbn Shelly og kontrollér Cloud-forbindelsen og ID’et.`);
-      const count = shellyChannelCount(state);
-      if (!count || count > 8) throw new Error(`Enhed ${id} har ingen understøttede relæer. Brug en online Shelly med switch-kanaler.`);
-      return { id, state, count };
-    });
+    let serverUrl: string, authKeyCipher: string | undefined, key = "";
+    let devices: { id: string; count: number; model: string | null }[];
+    if (provider === "WEBHOOK") {
+      serverUrl = await normaliseWebhookUrl(String(formData.get("webhookUrl") ?? ""));
+      const outputs = integerField(formData, "outputs", 4, 1, 32);
+      authKeyCipher = !switching && existing?.authKeyCipher ? existing.authKeyCipher : seal(newWebhookSecret());
+      devices = [{ id: "webhook", count: outputs, model: "Webhook" }];
+    } else if (provider === "TUYA") {
+      serverUrl = tuyaEndpoint(String(formData.get("tuyaRegion") ?? ""));
+      const accessId = String(formData.get("tuyaAccessId") ?? "").trim(), accessSecret = String(formData.get("tuyaSecret") ?? "").trim();
+      if (accessId || accessSecret) {
+        if (!/^[A-Za-z0-9]{10,64}$/.test(accessId) || !/^[A-Za-z0-9]{16,128}$/.test(accessSecret)) return { error: "Copy the Access ID and Access Secret from your Tuya cloud project (Overview tab)." };
+        authKeyCipher = seal(JSON.stringify({ accessId, secret: accessSecret })); key = "new";
+      } else authKeyCipher = !switching ? existing?.authKeyCipher : undefined;
+      if (!authKeyCipher) return { error: "Enter the Access ID and Access Secret from Tuya." };
+      const ids = [...new Set(String(formData.get("deviceIds") ?? "").trim().split(/[\s,;]+/).filter(Boolean).map(normaliseTuyaDeviceId))];
+      if (!ids.length || ids.length > 20) return { error: "Enter 1–20 Tuya Device IDs, one per line." };
+      const states = await inspectShellyDevices({ id: existing?.id ?? clubId, provider, serverUrl, authKeyCipher }, ids);
+      devices = ids.map((id) => {
+        const st = states.find((x) => x.id === id);
+        if (!st) throw new Error(`Device ${id} isn't linked to your Tuya project. In iot.tuya.com → Devices, link your Smart Life app account.`);
+        if (st.online !== 1) throw new Error(`Device ${id} is offline. Check it in the Smart Life app.`);
+        if (!st.channelCount) throw new Error(`Device ${id} has no on/off switch RacketBuddy can control.`);
+        return { id, count: Math.min(8, st.channelCount), model: st.code ?? null };
+      });
+    } else {
+      serverUrl = normaliseShellyServerUrl(String(formData.get("serverUrl") ?? ""));
+      const ids = parseSetupDeviceIds(String(formData.get("deviceIds") ?? ""));
+      key = String(formData.get("authKey") ?? "").trim();
+      if (key && (key.length < 16 || key.length > 1000)) return { error: "Kopiér hele Authorization Cloud Key fra Shelly." };
+      authKeyCipher = key ? seal(key) : !switching ? existing?.authKeyCipher : undefined;
+      if (!authKeyCipher) return { error: "Indsæt nøglen fra Shelly." };
+      const states = await inspectShellyDevices({ id: existing?.id ?? clubId, provider, serverUrl, authKeyCipher }, ids);
+      devices = ids.map(id => {
+        const state = states.find(s => s.id.toLowerCase() === id);
+        if (!state || state.online !== 1) throw new Error(`Enhed ${id} er ikke online. Åbn Shelly og kontrollér Cloud-forbindelsen og ID’et.`);
+        const count = state.channelCount;
+        if (!count || count > 8) throw new Error(`Enhed ${id} har ingen understøttede relæer. Brug en online Shelly med switch-kanaler.`);
+        return { id, count, model: state.code ?? null };
+      });
+    }
+    const cipher = authKeyCipher!;
     await db.$transaction(async tx => {
       const control = await tx.clubControl.upsert({ where: { clubId },
-        create: { clubId, serverUrl, authKeyCipher, enabled: false },
-        update: { serverUrl, authKeyCipher, enabled: false, lastError: null } });
-      if (key || existing?.serverUrl !== serverUrl) {
+        create: { clubId, provider, serverUrl, authKeyCipher: cipher, enabled: false },
+        update: { provider, serverUrl, authKeyCipher: cipher, enabled: false, lastError: null } });
+      if (switching) await tx.clubControlDevice.deleteMany({ where: { controlId: control.id } });
+      else if (key || existing?.serverUrl !== serverUrl) {
         await tx.clubControlChannel.updateMany({ where: { device: { controlId: control.id } }, data: { setupTestedAt: null, setupConfirmedAt: null } });
       }
       for (const [index, device] of devices.entries()) {
         const saved = await tx.clubControlDevice.upsert({
           where: { controlId_externalId: { controlId: control.id, externalId: device.id } },
-          create: { controlId: control.id, externalId: device.id, name: `Controller ${index + 1}`, channelCount: device.count, model: device.state.code, online: true, lastSeenAt: new Date() },
-          update: { channelCount: device.count, model: device.state.code, online: true, lastSeenAt: new Date() },
+          create: { controlId: control.id, externalId: device.id, name: provider === "WEBHOOK" ? "Webhook" : `Controller ${index + 1}`, channelCount: device.count, model: device.model, online: true, lastSeenAt: new Date() },
+          update: { channelCount: device.count, model: device.model, online: true, lastSeenAt: new Date() },
         });
         await tx.clubControlChannel.deleteMany({ where: { deviceId: saved.id, channel: { gte: device.count } } });
       }
     });
     revalidatePath("/admin", "layout");
-    return { ok: `${devices.length} controller(e) forbundet. Vælg nu hvad hvert relæ styrer.` };
+    return { ok: provider === "WEBHOOK" ? `Webhook saved with ${devices[0].count} outputs. Now choose what each output controls and send a test.` : `${devices.length} controller(e) forbundet. Vælg nu hvad hvert relæ styrer.` };
   } catch (error) { return { error: error instanceof Error ? error.message : "Forbindelsen kunne ikke gemmes. Prøv igen." }; }
+}
+
+/** Shows the webhook signing secret to the club admin (to verify X-RacketBuddy-Signature on their side). */
+export async function revealWebhookSecret(): Promise<{ secret?: string; error?: string }> {
+  const { clubId } = await requireClubAdmin();
+  const control = await db.clubControl.findUnique({ where: { clubId } });
+  if (!control || control.provider !== "WEBHOOK") return { error: "No webhook connected." };
+  const { open } = await import("./crypto-box");
+  return { secret: open(control.authKeyCipher) ?? undefined };
 }
 
 export async function saveSetupChannel(_prev: FormResult, formData: FormData): Promise<FormResult> {
@@ -441,7 +482,7 @@ export async function activateControlSetup(_prev: FormResult, formData: FormData
     for (let i = 0; i < control.devices.length; i += 10) {
       const batch = control.devices.slice(i, i + 10);
       const states = await inspectShellyDevices(control, batch.map(d => d.externalId));
-      if (batch.some(d => !states.some(s => s.id.toLowerCase() === d.externalId && s.online === 1 && shellyChannelCount(s) === d.channelCount)))
+      if (batch.some(d => !states.some(s => s.id.toLowerCase() === d.externalId.toLowerCase() && s.online === 1 && (s.channelCount === null || s.channelCount === d.channelCount || (control.provider === "TUYA" && s.channelCount >= d.channelCount)))))
         return { error: "En controller er offline eller ændret. Kontrollér forbindelsen i Shelly og prøv igen." };
     }
     const activated = await db.clubControl.updateMany({ where: { id: control.id, updatedAt: control.updatedAt }, data: {

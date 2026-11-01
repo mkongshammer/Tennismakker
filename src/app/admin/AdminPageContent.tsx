@@ -612,6 +612,7 @@ export default async function AdminPageContent({
                   courts={club.courts.map((court: any) => ({ id: court.id, name: court.name }))}
                   control={clubControl ? {
                     enabled: clubControl.enabled,
+                    provider: clubControl.provider,
                     serverUrl: clubControl.serverUrl,
                     hasAuthKey: Boolean(clubControl.authKeyCipher),
                     accessBeforeMinutes: clubControl.accessBeforeMinutes,
