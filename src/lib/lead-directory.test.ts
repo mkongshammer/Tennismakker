@@ -36,3 +36,9 @@ test("Google Places results keep clubs with a website, skip schools, hotels and 
   assert.equal(v.length, 1);
   assert.deepEqual(v[0], { name: "Boston Athletic Club", website: "https://bostonathleticclub.com/", city: "Boston", state: "Massachusetts", sport: "pickleball" });
 });
+
+test("contactLinks follows same-site contact and about links only", async () => {
+  const { contactLinks } = await import("./lead-directory");
+  const html = '<a href="/about-us">About</a><a href="https://club.com/get-in-touch">Contact us</a><a href="https://facebook.com/contact">FB</a><a href="mailto:x@club.com">Email</a><a href="/courts">Courts</a>';
+  assert.deepEqual(contactLinks(html, "https://club.com/"), ["https://club.com/about-us", "https://club.com/get-in-touch"]);
+});

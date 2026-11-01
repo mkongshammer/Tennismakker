@@ -154,22 +154,49 @@ function publicHttpUrl(raw: string) {
   } catch { return false; }
 }
 
-/** Reads the club's home page, then a contact page, for a published address. */
+/** Pure: up to 3 same-site links from a page that look like contact/about/staff pages. */
+export function contactLinks(html: string, pageUrl: string): string[] {
+  const out: string[] = [];
+  const base = new URL(pageUrl);
+  for (const m of html.matchAll(/<a\b[^>]*href=["']([^"'#]+)["'][^>]*>([\s\S]{0,200}?)<\/a>/gi)) {
+    const href = m[1], text = m[2].replace(/<[^>]+>/g, " ");
+    if (!/contact|about|staff|team|connect|reach|location|info/i.test(href + " " + text) || /^(mailto|tel|javascript):/i.test(href)) continue;
+    try {
+      const u = new URL(href, base);
+      if (normalizeHost(u.toString()) !== normalizeHost(base.toString())) continue;
+      u.hash = "";
+      if (!out.includes(u.toString()) && u.toString() !== base.toString()) out.push(u.toString());
+    } catch { /* ignore */ }
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
+/** Reads the club's home page, the contact/about pages it links to, then the usual contact paths. */
 export async function findClubEmail(website: string): Promise<{ email: string | null; sourceUrl: string; reason: string }> {
   const base = new URL(website);
   const siteHost = normalizeHost(website);
-  const pages = [base.origin + "/", base.origin + "/contact", base.origin + "/contact-us", base.origin + "/about"];
+  const queue = [base.origin + "/"];
+  const fallbacks = [base.origin + "/contact", base.origin + "/contact-us"];
+  const tried = new Set<string>();
   let reason = "no-email";
-  for (const url of pages) {
-    if (!publicHttpUrl(url)) return { email: null, sourceUrl: url, reason: "bad-url" };
+  let fetched = 0;
+  while ((queue.length || fallbacks.length) && fetched < 5) {
+    const url = (queue.shift() ?? fallbacks.shift())!;
+    if (tried.has(url)) continue;
+    tried.add(url);
+    if (!publicHttpUrl(url)) { reason = "bad-url"; continue; }
+    fetched++;
     try {
       const res = await fetch(url, { redirect: "follow", headers: { "user-agent": "Mozilla/5.0 (compatible; RacketBuddy-ClubDirectory/1.0; +https://racketbuddy.app)", accept: "text/html" }, signal: AbortSignal.timeout(10_000) });
-      if (!res.ok) { reason = `http-${res.status}`; continue; }
+      if (!res.ok) { if (reason === "no-email") reason = `http-${res.status}`; continue; }
       if (!publicHttpUrl(res.url)) { reason = "bad-url"; continue; }
       const html = (await res.text()).slice(0, 750_000);
       const email = pickEmail(revealEmails(html), normalizeHost(res.url) || siteHost);
       if (email) return { email, sourceUrl: res.url, reason: "ok" };
-    } catch { reason = "fetch-failed"; }
+      if (tried.size === 1) for (const link of contactLinks(html, res.url)) if (!tried.has(link)) queue.push(link);
+      reason = "no-email";
+    } catch { if (reason === "no-email") reason = "fetch-failed"; }
   }
   return { email: null, sourceUrl: website, reason };
 }
