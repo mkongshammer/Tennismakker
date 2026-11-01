@@ -23,3 +23,16 @@ test("pickEmail prefers the club's own domain and a role address", () => {
   assert.equal(pickEmail("write to smithtennis@gmail.com", "smithtennis.com"), "smithtennis@gmail.com");
   assert.equal(pickEmail("someone@otherbusiness.com", "club.com"), null);
 });
+
+test("Google Places results keep clubs with a website, skip schools, hotels and parks", async () => {
+  const { venuesFromPlaces } = await import("./lead-directory");
+  const v = venuesFromPlaces([
+    { displayName: { text: "Boston Athletic Club" }, websiteUri: "https://bostonathleticclub.com/", types: ["sports_club"], addressComponents: [{ longText: "Boston", types: ["locality"] }] },
+    { displayName: { text: "Harvard Tennis" }, websiteUri: "https://gocrimson.com", types: ["university"] },
+    { displayName: { text: "Marriott Courts" }, websiteUri: "https://marriott.com", types: ["hotel"] },
+    { displayName: { text: "Town Park Courts" }, websiteUri: "https://town.org", primaryType: "park" },
+    { displayName: { text: "No Site Club" } },
+  ], "Massachusetts", "pickleball club");
+  assert.equal(v.length, 1);
+  assert.deepEqual(v[0], { name: "Boston Athletic Club", website: "https://bostonathleticclub.com/", city: "Boston", state: "Massachusetts", sport: "pickleball" });
+});

@@ -41,7 +41,78 @@ export function venuesFromOverpass(elements: Array<{ tags?: Record<string, strin
   return out;
 }
 
+// ---------------------------------------------------------------- Google Places
+// Google Maps has far more clubs with a website than the open map data. Places
+// API (New) Text Search, at most 20 results a page. Requests are capped per day
+// (ai-budget "placesSearch") so it stays inside Google's free monthly usage.
+const PLACES_QUERIES = ["tennis club", "pickleball club", "padel club", "racquet club"];
+const SKIP_TYPES = new Set(["school", "primary_school", "secondary_school", "university", "local_government_office", "city_hall", "lodging", "hotel", "resort_hotel", "apartment_complex"]);
+
+type Place = { displayName?: { text?: string }; websiteUri?: string; types?: string[]; primaryType?: string; addressComponents?: Array<{ longText?: string; shortText?: string; types?: string[] }> };
+
+/** Pure: Places results to venues (own website, not schools/hotels/government). */
+export function venuesFromPlaces(places: Place[], state: string, query: string): DirectoryVenue[] {
+  const out: DirectoryVenue[] = [];
+  for (const p of places) {
+    const name = (p.displayName?.text ?? "").trim();
+    const website = (p.websiteUri ?? "").trim();
+    if (!name || !website || SKIP_NAME.test(name)) continue;
+    if ((p.types ?? []).some((t) => SKIP_TYPES.has(t)) || (p.primaryType === "park")) continue;
+    const host = normalizeHost(website);
+    if (!host || SKIP_HOST.test(host)) continue;
+    const city = p.addressComponents?.find((c) => c.types?.includes("locality"))?.longText ?? "";
+    const sport = /pickleball/i.test(query) ? "pickleball" : /padel/i.test(query) ? "padel" : "tennis";
+    out.push({ name: name.slice(0, 120), website, city: city.slice(0, 80), state, sport });
+  }
+  return out;
+}
+
+async function placesSearch(key: string, textQuery: string, pageToken?: string) {
+  const { takeAiBudget } = await import("./ai-budget");
+  if (!(await takeAiBudget("placesSearch").catch(() => false))) return null; // daily cap reached
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: { "content-type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": "places.displayName,places.websiteUri,places.types,places.primaryType,places.addressComponents,nextPageToken" },
+    body: JSON.stringify({ textQuery, pageSize: 20, regionCode: "US", ...(pageToken ? { pageToken } : {}) }),
+    signal: AbortSignal.timeout(20_000),
+  });
+  const data = await res.json().catch(() => ({})) as { places?: Place[]; nextPageToken?: string; error?: { message?: string } };
+  if (!res.ok) throw new Error(`Google Places ${res.status}: ${data.error?.message?.slice(0, 160) ?? ""}`);
+  return data;
+}
+
+async function googleStateVenues(state: string): Promise<{ venues: DirectoryVenue[]; complete: boolean }> {
+  const key = process.env.GOOGLE_PLACES_API_KEY;
+  if (!key) return { venues: [], complete: true };
+  const venues: DirectoryVenue[] = [];
+  for (const q of PLACES_QUERIES) {
+    let token: string | undefined;
+    for (let page = 0; page < 2; page++) {
+      const data = await placesSearch(key, `${q} in ${state}`, token);
+      if (!data) return { venues, complete: false };
+      venues.push(...venuesFromPlaces(data.places ?? [], state, q));
+      token = data.nextPageToken;
+      if (!token) break;
+    }
+  }
+  return { venues, complete: true };
+}
+
+function dedupe(list: DirectoryVenue[]) {
+  const seen = new Set<string>();
+  return list.filter((v) => { const h = normalizeHost(v.website); if (!h || seen.has(h)) return false; seen.add(h); return true; });
+}
+
+/** All venues for a state: Google Places (when a key is set) plus the open map data. */
 export async function fetchStateVenues(state: string): Promise<DirectoryVenue[]> {
+  const [google, osm] = await Promise.all([
+    googleStateVenues(state).catch((e) => { console.error("[places]", state, e instanceof Error ? e.message : e); return { venues: [] as DirectoryVenue[], complete: true }; }),
+    fetchOsmStateVenues(state).catch((e) => { if (!process.env.GOOGLE_PLACES_API_KEY) throw e; console.error("[overpass]", state, e instanceof Error ? e.message : e); return [] as DirectoryVenue[]; }),
+  ]);
+  return dedupe([...google.venues, ...osm]);
+}
+
+export async function fetchOsmStateVenues(state: string): Promise<DirectoryVenue[]> {
   const code = STATE_CODES[state];
   if (!code) return [];
   const query = `[out:json][timeout:90];area["ISO3166-2"="US-${code}"]->.a;(nwr["sport"~"tennis|padel|pickleball|squash|badminton|racquet"]["website"](area.a);nwr["sport"~"tennis|padel|pickleball|squash|badminton|racquet"]["contact:website"](area.a););out tags 2000;`;
@@ -105,7 +176,8 @@ export async function findClubEmail(website: string): Promise<{ email: string | 
 
 /** Per-state work queue kept in the database, so each hourly run continues where the last stopped. */
 export async function nextVenues(state: string, take: number) {
-  const key = `sales:dir:${state}`;
+  // A new key when Google is switched on, so states read from map data only are fetched again with Google.
+  const key = `sales:dir${process.env.GOOGLE_PLACES_API_KEY ? "g" : ""}:${state}`;
   const row = await db.platformSetting.findUnique({ where: { key } });
   let q: { at: string; venues: DirectoryVenue[]; pos: number } | null = row ? JSON.parse(row.value) : null;
   if (!q || Date.now() - Date.parse(q.at) > 30 * 86_400_000) {
