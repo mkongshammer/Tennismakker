@@ -13,8 +13,10 @@ export function NotificationSettings() {useInternational();
   return <Card><Text style={{ fontSize: 20, fontWeight: '700', color: colors.text }}>{tr("Notifikationer")}</Text>
     <Text style={{ color: colors.slate, marginVertical: 12 }}>{tr("V\xE6lg beskeder, der hj\xE6lper dig med dine aftaler. Ingen reklamer.")}</Text>
     {prefs && Object.entries(labels).map(([key, label]) => <View key={key} style={{ flexDirection: 'row', alignItems: 'center', minHeight: 52, gap: 12 }}><Text style={{ flex: 1, color: colors.text }}>{tr(label)}</Text><Switch accessibilityLabel={tr(label)} disabled={busy} value={prefs[key]} onValueChange={(value) => run(async () => {const next = { ...prefs, [key]: value };await api.savePushPreferences(next);setPrefs(next);})} /></View>)}
+    <View style={{ gap: 12, marginTop: 16 }}>
     <Button title={tr("Aktiv\xE9r p\xE5 denne telefon")} disabled={busy} onPress={() => run(async () => {await enablePush(true);setMessage('Telefonen er tilmeldt pushnotifikationer.');})} />
-    <Button title={tr("Sl\xE5 fra p\xE5 denne telefon")} disabled={busy} onPress={() => run(async () => {await disablePush();setMessage('Push er slået fra på denne telefon.');})} />
+    <Button variant="quiet" title={tr("Sl\xE5 fra p\xE5 denne telefon")} disabled={busy} onPress={() => run(async () => {await disablePush();setMessage('Push er slået fra på denne telefon.');})} />
+    </View>
     <Text onPress={() => Linking.openSettings().catch(() => {})} accessibilityRole="link" style={{ color: colors.courtText, marginVertical: 12 }}>{tr("\xC5bn telefonens indstillinger")}</Text>
     {!!message && <Text accessibilityLiveRegion="polite">{tr(message)}</Text>}
   </Card>;
