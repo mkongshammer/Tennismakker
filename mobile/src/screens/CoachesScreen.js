@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
-import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { api } from "../lib/api";
 import { AppHeading, Avatar, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, SPORT_LABELS } from "../lib/theme";
@@ -20,7 +19,7 @@ export default function CoachesScreen({ navigation }) {
         contentContainerStyle={pageContent}
         data={loading ? [] : state.coaches.filter(coach => coach.country === 'US')}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
-        ListHeaderComponent={<><PreferencesPicker /><AppHeading eyebrow={tr("L\xD8FT DIT SPIL")} title={tr("Et skridt videre.")} subtitle={tr("Find en tr\xE6ner, der passer til din sport og dit niveau.")} /><SportPicker value={sport} onChange={setSport} />{error && <ErrorMessage message={error} onRetry={refresh} />}</>}
+        ListHeaderComponent={<><AppHeading eyebrow={tr("L\xD8FT DIT SPIL")} title={tr("Et skridt videre.")} subtitle={tr("Find en tr\xE6ner, der passer til din sport og dit niveau.")} /><SportPicker value={sport} onChange={setSport} />{error && <ErrorMessage message={error} onRetry={refresh} />}</>}
         keyExtractor={(c) => c.id}
         ListEmptyComponent={loading ? <Loading label={tr("Finder tr\xE6nere\u2026")} /> : error && !data ? null : <Empty title={tr("Dit n\xE6ste tr\xE6nerteam er p\xE5 vej")} icon="↗">{tr("Ingen tr\xE6nere i") + " "}{SPORT_LABELS[sport]?.toLowerCase()}{" " + tr("endnu. V\xE6lg en anden sportsgren for at se de tilmeldte tr\xE6nere.")}</Empty>}
         renderItem={({ item }) =>

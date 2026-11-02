@@ -3,16 +3,15 @@ import {Modal,Pressable,ScrollView,StyleSheet,Text,View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Button} from './ui';
 import {colors} from './theme';
-import {useInternational,MARKETS,LANGUAGES,LANGUAGE_NAMES,countryLabel,setInternational,marketFor} from './international';
+import {useInternational,APP_LANGUAGES,APP_LANGUAGE_NAMES,appLocale,setInternational} from './international';
 import {translatePhrase} from '../../../shared/phrase-translation.mjs';
 export function PreferencesPicker({country:controlledCountry,locale:controlledLocale,onChange}){
- const prefs=useInternational(),country=controlledCountry??prefs.country,locale=controlledLocale??prefs.locale,[field,setField]=useState(null),[languageChosen,setLanguageChosen]=useState(prefs.languageChosen);
+ const prefs=useInternational(),country=controlledCountry??prefs.country,locale=appLocale(controlledLocale??prefs.locale),[field,setField]=useState(null),[languageChosen,setLanguageChosen]=useState(prefs.languageChosen);
  const t=value=>translatePhrase(value,locale);
- const choose=value=>{if(field==='locale')setLanguageChosen(true);const next={country,locale,[field]:value,countryChosen:true,...(field==='locale'?{languageChosen:true}:!languageChosen?{locale:marketFor(value).defaultLocale}:{})};if(onChange)onChange(next);else setInternational(next);setField(null);};
- const options=LANGUAGES.map(id=>({id,label:LANGUAGE_NAMES[id]}));
+ const choose=value=>{setLanguageChosen(true);const next={country,locale:value,countryChosen:true,languageChosen:true};if(onChange)onChange(next);else setInternational(next);setField(null);};
+ const options=APP_LANGUAGES.map(id=>({id,label:APP_LANGUAGE_NAMES[id]}));
  return <View style={styles.wrap}>
- <View style={styles.choice}><Text style={styles.label}>United States</Text></View>
- <Pressable accessibilityRole="button" accessibilityLabel={t('Vælg sprog')} onPress={()=>setField('locale')} style={styles.choice}><Text style={styles.label}>{LANGUAGE_NAMES[locale]} ▾</Text></Pressable>
+ <Pressable accessibilityRole="button" accessibilityLabel={t('Vælg sprog')} onPress={()=>setField('locale')} style={styles.choice}><Text style={styles.label}>{APP_LANGUAGE_NAMES[locale]} ▾</Text></Pressable>
  <Modal visible={!!field} animationType="slide" presentationStyle="pageSheet" onRequestClose={()=>setField(null)}><SafeAreaView style={{flex:1,backgroundColor: colors.surface}}><ScrollView contentContainerStyle={{padding:24,gap:8}}><Text style={styles.title}>{t(field==='country'?'Vælg land':'Vælg sprog')}</Text>{options.map(option=><Pressable key={option.id} accessibilityRole="button" accessibilityState={{selected:option.id===(field==='country'?country:locale)}} onPress={()=>choose(option.id)} style={[styles.option,option.id===(field==='country'?country:locale)&&{backgroundColor:colors.courtTint}]}><Text style={styles.label}>{option.label}</Text>{option.id===(field==='country'?country:locale)&&<Text>✓</Text>}</Pressable>)}<Button title={t('Luk')} variant="quiet" onPress={()=>setField(null)}/></ScrollView></SafeAreaView></Modal>
  </View>;
 }

@@ -101,13 +101,15 @@ async function loginAcrossRegions(email,password){
   const preferred=String(getInternational().country??'DK').toUpperCase();
   const first=preferred==='US'?'US':'DK';
   const second=first==='US'?'DK':'US';
-  try { return await request("/auth/login",{method:"POST",body:{email,password},auth:false,country:first}); }
+  // Remember which data region answered: a two-step login finishes there.
+  const tag=country=>result=>result?.codeRequired?{...result,regionCountry:country}:result;
+  try { return tag(first)(await request("/auth/login",{method:"POST",body:{email,password},auth:false,country:first})); }
   catch(error){
     // A person can travel or use a fresh phone whose market has not been set
     // yet. Retry the other data region only for authentication/region errors;
     // all successful authenticated traffic then follows the user's stored country.
     if(error?.status!==401&&error?.status!==409)throw error;
-    return request("/auth/login",{method:"POST",body:{email,password},auth:false,country:second});
+    return tag(second)(await request("/auth/login",{method:"POST",body:{email,password},auth:false,country:second}));
   }
 }
 
@@ -142,6 +144,7 @@ export const api = {
   location:()=>request('/location',{auth:false}),
   saveLocation:body=>request('/location',{method:'POST',body,country:body?.country}),
   login: loginAcrossRegions,
+  verifyLoginCode:(challengeId,code,country)=>request("/auth/login/code",{method:"POST",body:{challengeId,code},auth:false,country}),
   signup: payload=>request("/auth/signup",{method:"POST",body:payload,auth:false,country:payload?.country}),
   socialLogin:socialAcrossRegions,
   requestPasswordReset:passwordResetAcrossRegions,

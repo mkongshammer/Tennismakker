@@ -48,7 +48,15 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password, clubOnly = false) => {
     const result = await api.login(email, password);
+    // Two-step login is on: the screen asks for the e-mailed code, then calls verifyLoginCode.
+    if (result?.codeRequired) return { codeRequired: true, challengeId: result.challengeId, regionCountry: result.regionCountry, clubOnly };
     if (clubOnly && result.user.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
+    return acceptSession(result);
+  };
+
+  const verifyLoginCode = async (challenge, code) => {
+    const result = await api.verifyLoginCode(challenge.challengeId, code, challenge.regionCountry);
+    if (challenge.clubOnly && result.user.role !== "CLUB_ADMIN") throw Error("Brug en klubadministrators konto her. Spillere og trænere bruger almindeligt login.");
     return acceptSession(result);
   };
 
@@ -74,7 +82,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, signup, socialLogin, requestPasswordReset, logout, deleteAccount,savePreferences,saveLocation }}>
+    <AuthContext.Provider value={{ user, loading, sessionError, restore, login, verifyLoginCode, signup, socialLogin, requestPasswordReset, logout, deleteAccount,savePreferences,saveLocation }}>
       {children}
     </AuthContext.Provider>
   );

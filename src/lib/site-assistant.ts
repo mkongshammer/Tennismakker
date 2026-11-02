@@ -40,7 +40,7 @@ WHAT'S INCLUDED FOR CLUBS
 - Waitlists for full courts, digital waivers, check-in and automatic release of no-shows; ladders and leagues; member credit (wallet) and gift cards.
 - Players can find hitting partners, message each other and book in the app.
 - Staff roles: each club admin is an Owner (everything, incl. subscription, payments and who the admins are), Manager (runs the club: prices, courts, rules, members, events, reports, lights, integrations — not the subscription, payments or admin list) or Front desk (bookings, open times, members, teams, events, shop, recurring bookings). Owners set roles under Settings → Administrators and contacts in the admin. A club always keeps at least one owner. New admins start as Manager.
-- Two-step login: anyone can turn on "E-mail me a login code when I sign in" at racketbuddy.app/profile/settings (a 6-digit code by e-mail at each website sign-in). A club owner can require it for every admin at the club from the same page.
+- Two-step login: anyone can turn on "E-mail me a login code when I sign in" at racketbuddy.app/profile/settings (a 6-digit code by e-mail each time you sign in with your password, on the website and in the app). A club owner can require it for every admin at the club from the same page.
 
 APPS
 - Android: on Google Play ("RacketBuddy: Clubs & Courts"). iPhone: in review with Apple and coming soon. The same account works on the website and in the app.

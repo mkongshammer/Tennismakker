@@ -73,7 +73,7 @@ export function TwoStepSettings({ own, club, isAdmin, isOwner }: { own: boolean;
     <section className="card space-y-4" id="security">
       <div>
         <h2 className="text-lg font-bold">Two-step login</h2>
-        <p className="text-sm text-slate">When this is on, we e-mail you a 6-digit code every time you sign in on the website, so a stolen password alone isn't enough.</p>
+        <p className="text-sm text-slate">When this is on, we e-mail you a 6-digit code every time you sign in with your password (website and app), so a stolen password alone isn't enough.</p>
       </div>
       {club && <p className="text-sm font-semibold text-ink">Your club requires two-step login for all admins.</p>}
       <form action={action} className="space-y-3">

@@ -12,7 +12,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useInternational, tr } from "../lib/international";
-import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { useAuth } from "../lib/auth";
 import { Button } from "../lib/ui";
 import { colors } from "../lib/theme";
@@ -29,7 +28,7 @@ const PRIVACY_URL = "https://racketbuddy.app/privacy";
 const TERMS_URL = "https://racketbuddy.app/terms";
 
 export default function LoginScreen() {
-  const { login, signup, socialLogin, requestPasswordReset } = useAuth();
+  const { login, verifyLoginCode, signup, socialLogin, requestPasswordReset } = useAuth();
   const { country, locale } = useInternational();
   const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
@@ -45,6 +44,8 @@ export default function LoginScreen() {
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [socialPending, setSocialPending] = useState(null);
+  const [challenge, setChallenge] = useState(null);
+  const [code, setCode] = useState("");
   const lock = useRef(false);
   const passwordRef = useRef(null);
   const insets = useSafeAreaInsets();
@@ -68,6 +69,8 @@ export default function LoginScreen() {
     setError(null);
     setNotice(null);
     if (next !== "signup") setSocialPending(null);
+    setChallenge(null);
+    setCode("");
   };
 
   const validateLocation = () => {
@@ -92,6 +95,21 @@ export default function LoginScreen() {
     if (lock.current) return;
     setError(null);
     setNotice(null);
+
+    if (challenge) {
+      if (!/^\d{6}$/.test(code.trim())) return setError("Skriv den 6-cifrede kode fra mailen.");
+      lock.current = true;
+      setBusy(true);
+      try {
+        await verifyLoginCode(challenge, code.trim());
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        lock.current = false;
+        setBusy(false);
+      }
+      return;
+    }
 
     if (forgotMode) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return setError("Skriv en gyldig e-mail.");
@@ -138,7 +156,10 @@ export default function LoginScreen() {
     lock.current = true;
     setBusy(true);
     try {
-      if (!signupMode) await login(email.trim().toLowerCase(), password, mode === "club");
+      if (!signupMode) {
+        const result = await login(email.trim().toLowerCase(), password, mode === "club");
+        if (result?.codeRequired) { setChallenge(result); setCode(""); setNotice("Vi har sendt en 6-cifret kode til din e-mail."); }
+      }
       else await signup({ email: email.trim().toLowerCase(), password, ...profilePayload() });
     } catch (e) {
       setError(e.message);
@@ -171,7 +192,9 @@ export default function LoginScreen() {
     }
   };
 
-  const formTitle = forgotMode
+  const formTitle = challenge
+    ? tr("Indtast koden")
+    : forgotMode
     ? tr("Glemt adgangskode")
     : mode === "club"
       ? tr("Klublogin")
@@ -179,7 +202,9 @@ export default function LoginScreen() {
         ? socialPending ? tr("Færdiggør din profil") : tr("Velkommen på holdet")
         : tr("Velkommen tilbage");
 
-  const formHint = forgotMode
+  const formHint = challenge
+    ? tr("Totrinslogin er slået til. Koden gælder i 10 minutter.")
+    : forgotMode
     ? tr("Skriv din e-mail, så sender vi et sikkert link til at vælge en ny adgangskode.")
     : mode === "club"
       ? tr("Brug klubbens administratorkonto.")
@@ -201,10 +226,13 @@ export default function LoginScreen() {
         </View>
 
         <View style={[styles.form, desktop && styles.desktopForm]}>
-          {!forgotMode && <PreferencesPicker onChange={async (value) => {resetLocation();await import("../lib/international").then((m) => m.setInternational(value));}} />}
           <Text accessibilityRole="header" style={styles.formTitle}>{formTitle}</Text>
           <Text style={styles.formHint}>{formHint}</Text>
 
+          {challenge ? <>
+            <Text style={styles.label}>{tr("Kode")}</Text>
+            <TextInput style={[styles.input, { fontSize: 24, letterSpacing: 8, textAlign: "center" }]} value={code} onChangeText={(text) => setCode(text.replace(/[^0-9]/g, ""))} keyboardType="number-pad" maxLength={6} autoComplete="one-time-code" textContentType="oneTimeCode" accessibilityLabel={tr("Kode")} editable={!busy} autoFocus returnKeyType="go" onSubmitEditing={submit} />
+          </> : <>
           {!forgotMode && mode !== "club" && !socialPending && (
             <>
               <SocialAuthButtons disabled={busy} onCredential={handleSocialCredential} onError={(e) => setError(e.message ?? tr("Login kunne ikke gennemføres."))} />
@@ -251,12 +279,15 @@ export default function LoginScreen() {
             </Text>
           </>}
 
+          </>}
           {notice && <Text accessibilityRole="status" accessibilityLiveRegion="polite" style={styles.notice}>{tr(notice)}</Text>}
           {error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.error}>{tr(error)}</Text>}
 
-          <View style={{ marginTop: 16 }}><Button title={forgotMode ? tr("Send nulstillingslink") : mode === "club" ? tr("Log ind på klubben") : signupMode ? socialPending ? tr("Opret profil") : tr("Opret profil med e-mail") : tr("Log ind med e-mail")} onPress={submit} loading={busy} /></View>
+          <View style={{ marginTop: 16 }}><Button title={challenge ? tr("Bekræft kode") : forgotMode ? tr("Send nulstillingslink") : mode === "club" ? tr("Log ind på klubben") : signupMode ? socialPending ? tr("Opret profil") : tr("Opret profil med e-mail") : tr("Log ind med e-mail")} onPress={submit} loading={busy} /></View>
 
-          {forgotMode ? (
+          {challenge ? (
+            <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => switchMode(mode)}><Text style={styles.switch}>{tr("Tilbage til login")}</Text></Pressable>
+          ) : forgotMode ? (
             <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => switchMode("login")}><Text style={styles.switch}>{tr("Tilbage til login")}</Text></Pressable>
           ) : socialPending ? (
             <Pressable accessibilityRole="button" disabled={busy} style={{ minHeight: 48 }} onPress={() => { setSocialPending(null); setEmail(""); switchMode("login"); }}><Text style={styles.switch}>{tr("Annullér og gå tilbage")}</Text></Pressable>

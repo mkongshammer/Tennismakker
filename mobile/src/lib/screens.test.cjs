@@ -285,11 +285,15 @@ test('country and language persist without converting venue prices, and sport la
   let tree;
   await act(async()=>{tree=create(React.createElement(SportPicker,{value:'BORDTENNIS',onChange:()=>{}}));});
   assert.equal(tree.root.findByType('Text').props.children,'Table tennis');
-  await act(async()=>international.setInternational({locale:'da'}));
-  assert.equal(tree.root.findByType('Text').props.children,'Bordtennis');
+  // Only American English and Spanish are offered; anything else falls back to English.
+  await act(async()=>international.setInternational({locale:'es',languageChosen:true}));
+  assert.equal(tree.root.findByType('Text').props.children,international.tr('Bordtennis'));
+  assert.equal(international.getInternational().locale,'es');
+  await act(async()=>international.setInternational({locale:'da',languageChosen:true}));
+  assert.equal(international.getInternational().locale,'en-US');
   await act(()=>tree.unmount());
   await international.restoreInternational();
-  assert.equal(international.getInternational().country,'US');assert.equal(international.getInternational().locale,'da');
+  assert.equal(international.getInternational().country,'US');assert.equal(international.getInternational().locale,'en-US');
 });
 
 test('mobile booking dates group by venue day and clock rather than device zone', () => {

@@ -1,0 +1,45 @@
+name: Mobile over-the-air update
+
+# Ships the app's JavaScript (screens, texts, logic) to installed apps on the
+# production channel through EAS Update. No store review is needed for
+# JS-only changes; anything native still needs a new store build.
+# Runs when this file changes (bump the message below) or by hand.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/mobile-ota-update.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Tests
+        run: npm test
+      - name: Verify Expo authentication
+        run: |
+          test -n "$EXPO_TOKEN"
+          npx --yes eas-cli@latest whoami
+      - name: Link EAS project (same project as the store builds)
+        run: npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
+      - name: Publish update to the production channel
+        run: npx --yes eas-cli@latest update --channel production --environment production --message "Login code for two-step login; English and Spanish only, language choice moved to profile" --non-interactive

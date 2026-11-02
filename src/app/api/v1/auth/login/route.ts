@@ -3,6 +3,7 @@ import { db } from "../../../../../lib/db";
 import { createMobileSession } from "../../../../../lib/mobile-session";
 import { apiError, json, preflight, publicUser, regionalApiError } from "../../../../../lib/api/helpers";
 import { regionAllowsCountry } from "../../../../../lib/region";
+import { needsLoginCode, startEmailChallenge } from "../../../../../lib/twofactor";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -20,6 +21,12 @@ export async function POST(req: Request) {
     return apiError("Forkert e-mail eller adgangskode.", 401);
   }
   if (!regionAllowsCountry(user.country)) return regionalApiError(user.country);
+
+  // Two-step login: e-mail a 6-digit code; the app finishes at /auth/login/code.
+  if (await needsLoginCode(user)) {
+    const challengeId = await startEmailChallenge(user);
+    return json({ codeRequired: true, challengeId, email: user.email });
+  }
 
   return json({ ...(await createMobileSession(user.id)), user: publicUser(user) });
 }

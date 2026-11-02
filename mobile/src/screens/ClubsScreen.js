@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
-import { PreferencesPicker } from "../lib/PreferencesPicker";
 import { api } from "../lib/api";
 import { AppHeading, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, SPORT_LABELS, sportColor } from "../lib/theme";
@@ -48,7 +47,7 @@ export default function ClubsScreen({ navigation }) {
         contentContainerStyle={pageContent}
         data={state.loading ? [] : clubs}
         ListHeaderComponent={<>
-            <PreferencesPicker /><AppHeading eyebrow={tr("DIT N\xC6STE SPIL")} title={tr("Mere tid p\xE5 banen.")} subtitle={tr("Find en klub, v\xE6lg en tid, og kom ud at spille.")} />
+            <AppHeading eyebrow={tr("DIT N\xC6STE SPIL")} title={tr("Mere tid p\xE5 banen.")} subtitle={tr("Find en klub, v\xE6lg en tid, og kom ud at spille.")} />
             <View style={styles.hero}>
               <View style={styles.heroCopy}><Text style={styles.heroEyebrow}>{tr("BANEN ER DIN")}</Text><Text style={styles.heroTitle}>{tr("Klar til n\xE6ste\\nserve?")}</Text><Text style={styles.heroHint}>{tr("Dit n\xE6ste spil starter med en ledig bane.")}</Text></View>
               <View style={styles.heroArt}><CourtScene height={180} /></View>
