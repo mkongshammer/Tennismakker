@@ -171,7 +171,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           {user && <TabBar locale={prefs.locale} unread={unread} />}
           {needsSportsOnboarding && <Suspense><BuddySportsOnboarding locale={prefs.locale} /></Suspense>}
-        {!onOwnDomain && !user && <SiteAssistant />}
+        {!onOwnDomain && <SiteAssistant user={user ? { name: user.name, role: user.role } : null} />}
         </InternationalProvider>
       </body>
     </html>

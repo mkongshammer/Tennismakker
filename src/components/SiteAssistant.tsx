@@ -7,12 +7,20 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 const GREETING: Msg = { role: "assistant", content: "Hi! I can answer questions about RacketBuddy: pricing, features, getting your club set up, or booking as a player. What would you like to know?" };
 const SUGGESTIONS = ["What does it cost?", "How do I set up my club?", "Can members pay online?"];
-const HIDDEN = ["/admin", "/superadmin", "/checkout", "/pay", "/app-session"];
+const ROLE_SUGGESTIONS: Record<string, string[]> = {
+  CLUB_ADMIN: ["How do I import my members?", "How do I connect Stripe?", "How do I set up court lights?"],
+  COACH: ["How do I set my availability?", "How do I get paid for lessons?", "How do players book me?"],
+  PLAYER: ["How do I book a court?", "How do I cancel a booking?", "How do I find a hitting partner?"],
+};
+const HIDDEN = ["/superadmin", "/checkout", "/pay", "/app-session"];
 
-export function SiteAssistant() {
+export function SiteAssistant({ user = null }: { user?: { name: string; role: string } | null }) {
   const path = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([GREETING]);
+  const first = user?.name?.split(" ")[0];
+  const greeting: Msg = user ? { role: "assistant", content: `Hi${first ? ` ${first}` : ""}! Ask me anything about using RacketBuddy${user.role === "CLUB_ADMIN" ? " to run your club" : ""}. I'll point you to the right place.` } : GREETING;
+  const suggestions = user ? ROLE_SUGGESTIONS[user.role] ?? ROLE_SUGGESTIONS.PLAYER : SUGGESTIONS;
+  const [messages, setMessages] = useState<Msg[]>([greeting]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const id = useRef<string>("");
@@ -56,7 +64,7 @@ export function SiteAssistant() {
             ))}
             {messages.length === 1 && (
               <div className="flex flex-wrap gap-2 pt-1">
-                {SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)} className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/90 hover:border-white/50">{s}</button>)}
+                {suggestions.map((s) => <button key={s} type="button" onClick={() => send(s)} className="rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold text-white/90 hover:border-white/50">{s}</button>)}
               </div>
             )}
             {busy && <p className="text-xs text-white/60">Typing…</p>}
@@ -70,7 +78,7 @@ export function SiteAssistant() {
       )}
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex items-center gap-2 rounded-full bg-[#D8FF3E] px-4 py-3 text-sm font-bold text-[#0F2138] shadow-xl transition hover:brightness-95">
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" /></svg>
-        {open ? "Close" : "Questions?"}
+        {open ? "Close" : user ? "Help" : "Questions?"}
       </button>
     </div>
   );

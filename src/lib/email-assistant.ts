@@ -70,7 +70,7 @@ export function ignoreReason(from: string, subject: string, headers: Record<stri
 }
 
 /** What we know about the sender's own account, for support answers. Kept to status, never personal data. */
-async function accountContext(email: string) {
+export async function accountContext(email: string) {
   const user = await db.user.findUnique({ where: { email }, select: { role: true, createdAt: true, club: { select: { name: true, status: true, subscriptionStatus: true, stripeChargesEnabled: true, slug: true } } } }).catch(() => null);
   if (!user) return "The sender's address has no RacketBuddy account.";
   const lines = [`The sender has a RacketBuddy account (role ${user.role}, created ${user.createdAt.toISOString().slice(0, 10)}).`];

@@ -96,7 +96,22 @@ export function cleanMessages(input: unknown): ChatMessage[] {
     .slice(-12);
 }
 
-export async function answer(messages: ChatMessage[]): Promise<string> {
+/** Where things are for signed-in users: the club admin menu (in English) and the player/coach pages. */
+async function guideFor(role: string) {
+  const { ADMIN_PAGES, adminHref } = await import("./admin-navigation");
+  const { phrase } = await import("./phrases");
+  const admin = ADMIN_PAGES.map((p) => `- ${phrase(p.label, "en")} (racketbuddy.app${adminHref(p.id)}): ${phrase(p.description, "en")}`).join("\n");
+  const common = `- Book a court: racketbuddy.app/courts or the RacketBuddy app. Your bookings: racketbuddy.app/bookings (cancel there; at least 24 hours before for a full refund unless the club has other rules).
+- Find a hitting partner: racketbuddy.app/players. Messages: racketbuddy.app/messages. Coaches: racketbuddy.app/coaches.
+- Profile and password: racketbuddy.app/profile; notifications and other settings: racketbuddy.app/profile/settings. Receipts: racketbuddy.app/profile/receipts. Forgot password: racketbuddy.app/login/forgot.`;
+  if (role === "CLUB_ADMIN") return `CLUB ADMIN MENU (racketbuddy.app/admin)\n${admin}\n- Import members from another system: Members page, or the free check at racketbuddy.app/switch.\n- Payments: connect Stripe under Payments & subscription; payouts go to the club's own bank account.\n\nPLAYER PAGES\n${common}`;
+  if (role === "COACH") return `COACH\n- Your coach profile, lesson price and weekly availability: racketbuddy.app/profile/coaching. Players book and pay online; RacketBuddy keeps 10% of each lesson booked through the platform and pays out the rest.\n${common}`;
+  return `PLAYER\n${common}`;
+}
+
+export type AssistantUser = { role: string; name: string; context: string } | null;
+
+export async function answer(messages: ChatMessage[], user: AssistantUser = null): Promise<string> {
   const config = await getAgentConfig();
   if (!config.apiKey) return `I can't answer right now. Please e-mail ${SUPPORT_EMAIL} and we'll get back to you.`;
   const response = await fetch("https://api.openai.com/v1/responses", {
@@ -104,7 +119,7 @@ export async function answer(messages: ChatMessage[]): Promise<string> {
     headers: { "content-type": "application/json", authorization: `Bearer ${config.apiKey}` },
     body: JSON.stringify({
       model: config.fastModel,
-      instructions: INSTRUCTIONS_HEAD + (await factsNow()),
+      instructions: INSTRUCTIONS_HEAD + (await factsNow()) + (user ? `\n\nSIGNED-IN USER\nThe visitor is signed in (role ${user.role}, first name ${user.name.split(" ")[0] || "unknown"}). Help them use RacketBuddy step by step, using the guide and their account context below. You can't change anything on their account or see their bookings or payments; for that, point to the right page or to ${SUPPORT_EMAIL}.\n\nACCOUNT\n${user.context}\n\nGUIDE\n${await guideFor(user.role)}` : ""),
       input: messages.map((m) => ({ role: m.role, content: m.content })),
       reasoning: { effort: "low" },
       max_output_tokens: 500,

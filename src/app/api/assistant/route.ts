@@ -15,7 +15,11 @@ export async function POST(req: Request) {
   if (!messages.length || messages[messages.length - 1].role !== "user") return NextResponse.json({ error: "No question." }, { status: 400 });
   if (!(await takeAiBudget("chat").catch(() => false))) return NextResponse.json({ reply: `I can't answer more questions right now. Please e-mail ${SUPPORT_EMAIL} and we'll get back to you.` });
   try {
-    const reply = await answer(messages);
+    const { getCurrentUser } = await import("../../../lib/session");
+    const me = await getCurrentUser().catch(() => null);
+    const { accountContext } = await import("../../../lib/email-assistant");
+    const user = me ? { role: me.role, name: me.name ?? "", context: await accountContext(me.email).catch(() => "") } : null;
+    const reply = await answer(messages, user);
     await logChat(String(body.conversationId ?? ""), messages, reply);
     return NextResponse.json({ reply });
   } catch (error) {
