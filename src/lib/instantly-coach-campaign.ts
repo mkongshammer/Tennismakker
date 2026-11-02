@@ -24,7 +24,7 @@ RacketBuddy
 ${FOOT}` },
   { delay: 3, subject: "", body: `Hi {{firstName}},
 
-One more thing: if you teach at a club, the club can run its whole booking and administration on RacketBuddy too (court booking, members and dues, events, front desk, staff and payroll) for a flat $50 a month. Then your lessons sit right next to the club's court bookings.
+One more thing: if you teach at a club, the club can run its whole booking and administration on RacketBuddy too (court booking, members and dues, events, front desk, staff and payroll) for $50 a month (locked in for life for our first 25 clubs, $99 after that). Then your lessons sit right next to the club's court bookings.
 
 The club can check its member list for free at racketbuddy.app/switch.
 
