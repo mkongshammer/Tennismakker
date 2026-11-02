@@ -79,10 +79,8 @@ export async function runScheduledAgentSweep(now = new Date()) {
     ? salesAttempt.value
     : { ran: false as const, reason: "error" as const, error: salesAttempt.error, attempts: salesAttempt.attempts };
 
-  // Club leads for the cold-e-mail campaign (Instantly). Research only, no e-mail.
-  const { harvestLeads } = await import("./lead-harvest");
-  const leads = await harvestLeads(now).catch((error) => ({ ran: false, error: error instanceof Error ? error.message : String(error) }));
-  console.log("[lead-harvest]", JSON.stringify(leads));
+  // Club/coach leads now run on their own from the US sync job (cron-jobs.ts), not tied to the agent autopilot.
+  const leads = { ran: false, reason: "moved-to-sync-job" };
 
   const maintenanceAttempt = await retryPhase("Hourly deterministic autopilot maintenance", () => runDeterministicAgentMaintenance());
   const maintenance = maintenanceAttempt.ok

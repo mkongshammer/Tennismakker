@@ -61,6 +61,15 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
   await runQueuedInvites().catch((err) => console.error("Queued invites failed:", err));
   // Replies to the Instantly sales e-mails, answered by the AI (US only).
   if (deploymentRegion() === "US") {
+    // Club and coach leads for Instantly: every sync run (about every 15 minutes), independent of the agent autopilot.
+    const { harvestLeads } = await import("./lead-harvest");
+    const lockKey = "sales:lead-harvest:last-run";
+    const last = await db.platformSetting.findUnique({ where: { key: lockKey } });
+    if (!last || Date.now() - Date.parse(last.value) > 12 * 60_000) {
+      await db.platformSetting.upsert({ where: { key: lockKey }, create: { key: lockKey, value: new Date().toISOString() }, update: { value: new Date().toISOString() } });
+      // In the background: a round can take a few minutes (map data, club websites) and must not hold up the cron request.
+      void harvestLeads().then((leads) => console.log("[lead-harvest]", JSON.stringify(leads))).catch((err) => console.error("[lead-harvest]", err instanceof Error ? err.message : err));
+    }
     const { runFoundingWatch } = await import("./founding-offer");
     await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
     const { runInstantlyReplies } = await import("./email-assistant");

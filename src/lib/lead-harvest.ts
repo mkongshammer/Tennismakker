@@ -117,7 +117,7 @@ export async function harvestStats(days = 3, now = new Date()) {
  * Clubs from open map data (no AI): next venues of the current state, e-mail
  * read from each club's own website. Moves to the next state when one is done.
  */
-async function harvestClubsFromDirectory(now: Date, sites = 25) {
+async function harvestClubsFromDirectory(now: Date, sites = 40) {
   const { STATE_CODES, nextVenues, findClubEmail } = await import("./lead-directory");
   const all = Object.keys(STATE_CODES);
   const order = [...STATES, ...all.filter((s) => !STATES.includes(s))];
