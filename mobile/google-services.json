@@ -1,0 +1,19 @@
+{
+  "project_info": {
+    "project_number": "280044251395",
+    "project_id": "racketbuddy-764d9",
+    "storage_bucket": "racketbuddy-764d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280044251395:android:4d999676ed267c6d4ca136",
+        "android_client_info": { "package_name": "dk.racketbuddy.app" }
+      },
+      "oauth_client": [],
+      "api_key": [{ "current_key": "AIzaSyB2iXf9fTOMEYTMVZvQj6SvDNG8T62Pd88" }],
+      "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+    }
+  ],
+  "configuration_version": "1"
+}

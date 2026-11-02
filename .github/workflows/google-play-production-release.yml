@@ -4,7 +4,7 @@ name: Google Play Production Release (draft)
 # keystore is the upload key Google Play knows, and puts it on the production
 # track as a DRAFT. Nothing is sent to Google for review: that is pressed by
 # hand in Play Console.
-# Build 2 Nov 2026: adds Firebase (google-services.json) so Android push works.
+# Build 2 Nov 2026: adds Firebase (google-services.json, now committed) so Android push works.
 
 on:
   workflow_dispatch:

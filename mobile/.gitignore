@@ -5,7 +5,7 @@ web-build/
 *.log
 .DS_Store
 
-google-services.json
+# google-services.json holds only public Firebase client identifiers; it is committed so EAS can build Android push.
 GoogleService-Info.plist
 *.p8
 *.p12
