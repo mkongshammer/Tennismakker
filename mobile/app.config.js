@@ -7,7 +7,8 @@ module.exports = ({ config }) => {
     runtimeVersion: { policy: 'appVersion' },
     ...(projectId ? { updates: { url: `https://u.expo.dev/${projectId}`, checkAutomatically: 'ON_LOAD', fallbackToCacheTimeout: 0 } } : {}),
     plugins: [...(config.plugins || []), 'expo-notifications'],
-    android: { ...config.android, ...(process.env.GOOGLE_SERVICES_JSON ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON } : {}) },
+    // Firebase (FCM) config for Android push; the file holds only public client identifiers.
+    android: { ...config.android, googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json' },
     extra: {
       ...config.extra,
       ...(process.env.RACKETBUDDY_EU_API_URL ? { apiUrl: process.env.RACKETBUDDY_EU_API_URL } : {}),
