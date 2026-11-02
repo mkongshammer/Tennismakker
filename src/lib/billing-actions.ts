@@ -10,7 +10,7 @@ const fail = (e: unknown) => ({ error: e instanceof Error ? e.message : 'Noget g
 
 export async function saveBillingSettings(_prev: State, form: FormData): Promise<State> {
   try {
-    const { club } = await requireCustomClub('medlemmer');
+    const { club } = await requireCustomClub('priser'); // billing settings: manager or owner
     const dueDays = Number(form.get('dueDays'));
     if (!Number.isInteger(dueDays) || dueDays < 1 || dueDays > 90) throw Error('Vælg mellem 1 og 90 dage til forfald.');
     const replyTo = String(form.get('replyTo') ?? '').trim().toLowerCase();

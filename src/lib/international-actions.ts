@@ -8,6 +8,7 @@ export async function saveClubInternational(_prev: unknown, form: FormData): Pro
   try {
     const user = await getCurrentUser();
     if (user?.role !== 'CLUB_ADMIN' || !user.clubId) throw Error('Ingen adgang.');
+    { const { getStaffLevel, atLeast, StaffAccessError } = await import('./staff-roles'); if (!atLeast(await getStaffLevel(user.id), 'MANAGER')) throw new StaffAccessError('manager settings'); }
     const country = String(form.get('country') ?? ''), currency = String(form.get('currency') ?? ''), timeZone = String(form.get('timeZone') ?? '');
     const market = marketFor(country), priceHour = Number(form.get('priceHour'));
     if (!market || !validCurrency(currency) || !validTimeZone(timeZone) || (country === 'US' && !isUsTimeZone(timeZone) && timeZone !== (await db.club.findUnique({ where: { id: user.clubId! }, select: { timeZone: true } }))?.timeZone) || !Number.isSafeInteger(priceHour) || priceHour < 0 || priceHour > 10000) throw Error('Vælg gyldigt land, valuta, tidszone og pris.');

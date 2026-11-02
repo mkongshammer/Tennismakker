@@ -331,7 +331,7 @@ export async function deleteMyAccount(_prev: unknown, formData: FormData) {
  * Uden denne handling ville de skulle skrive til os.
  */
 export async function makeClubAdmin(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("OWNER");
   const memberId = String(formData.get("memberId") ?? "");
 
   // Kun et medlem af netop denne klub. Id'et kommer fra en formular.
@@ -341,6 +341,9 @@ export async function makeClubAdmin(formData: FormData) {
   if (!member) return;
 
   await db.user.update({ where: { id: member.id }, data: { role: "CLUB_ADMIN" } });
+  // New admins start as managers; an owner can change it on the same page.
+  const { setStaffLevel } = await import("./staff-roles");
+  await setStaffLevel(member.id, "MANAGER");
   revalidatePath("/admin", "layout");
 }
 
@@ -352,7 +355,7 @@ export async function makeClubAdmin(formData: FormData) {
  * bare ad en anden vej.
  */
 export async function removeClubAdmin(formData: FormData) {
-  const { clubId, user } = await requireClubAdmin();
+  const { clubId, user } = await requireClubAdmin("OWNER");
   const memberId = String(formData.get("memberId") ?? "");
 
   const admins = await db.user.count({ where: { clubId, role: "CLUB_ADMIN" } });
@@ -772,7 +775,7 @@ export async function updateCoachProfile(_prev: unknown, formData: FormData) {
  * en catch-alt ville sluge den — samme faldgrube som i bookingflowet.
  */
 export async function startClubSubscription() {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("OWNER");
   const url = await startSubscriptionCheckout(clubId).catch((err) => {
     console.error("Abonnementet kunne ikke startes:", err);
     return null;
@@ -783,7 +786,7 @@ export async function startClubSubscription() {
 
 /** Åbner Stripes kundeportal: skift kort, se fakturaer, opsig. */
 export async function switchToAnnual(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("OWNER");
   const { switchBillingInterval } = await import("./subscription");
   const target = formData.get("interval") === "MONTH" ? "MONTH" : "YEAR";
   try { await switchBillingInterval(clubId, target); }
@@ -793,7 +796,7 @@ export async function switchToAnnual(formData: FormData) {
 }
 
 export async function openClubBillingPortal() {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("OWNER");
   const url = await billingPortalUrl(clubId).catch((err) => {
     console.error("Kundeportalen kunne ikke åbnes:", err);
     return null;
@@ -802,17 +805,21 @@ export async function openClubBillingPortal() {
   redirect(url);
 }
 
-async function requireClubAdmin() {
+async function requireClubAdmin(needed: "OWNER" | "MANAGER" | "FRONT_DESK" = "FRONT_DESK") {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "CLUB_ADMIN" || !user.clubId) {
     throw new Error("Kun klub-administratorer har adgang til dette.");
   }
+  if (needed !== "FRONT_DESK") {
+    const { getStaffLevel, atLeast, StaffAccessError } = await import("./staff-roles");
+    if (!atLeast(await getStaffLevel(user.id), needed)) throw new StaffAccessError(needed === "OWNER" ? "owner settings" : "manager settings");
+  }
   return { user, clubId: user.clubId as string };
 }
 
 export async function updateIntegration(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
 
   const integrationType = String(formData.get("integrationType") ?? "NATIVE");
   if (!["NATIVE", "MANUAL", "ICAL", "API"].includes(integrationType)) {
@@ -842,7 +849,7 @@ export async function updateIntegration(_prev: unknown, formData: FormData) {
 }
 
 export async function syncNow() {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   await syncClubCalendar(clubId);
   revalidatePath("/admin", "layout");
 }
@@ -1305,7 +1312,7 @@ export async function declineCoachBooking(formData: FormData) {
 // ---------------- Adgang til klubbens eget system ----------------
 
 export async function saveSystemLogin(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
 
   const baseUrl = String(formData.get("baseUrl") ?? "").trim();
   const username = String(formData.get("username") ?? "").trim();
@@ -1337,7 +1344,7 @@ export async function saveSystemLogin(_prev: unknown, formData: FormData) {
  * beskeden siger det.
  */
 export async function removeSystemLogin() {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   await removeLogin(clubId);
   await db.systemBlock.deleteMany({ where: { clubId, status: "PENDING" } });
   revalidatePath("/admin", "layout");
@@ -1403,7 +1410,7 @@ export async function removePriceRule(formData: FormData) {
 // ---------------- Baner ----------------
 
 export async function saveClubSports(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const selected = [...new Set(formData.getAll("sports").map(String))];
   if (!selected.length || selected.some(s => !(SPORTS as readonly string[]).includes(s))) return { error: "Vælg mindst én gyldig sportsgren." };
   const courts = await db.court.findMany({ where: { clubId }, select: { sport: true } });
@@ -1422,7 +1429,7 @@ async function courtInput(clubId: string, formData: FormData) {
 }
 
 export async function addCourt(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { error: "Angiv et navn." };
   const { sport, surface, error } = await courtInput(clubId, formData);
@@ -1435,7 +1442,7 @@ export async function addCourt(_prev: unknown, formData: FormData) {
 }
 
 export async function renameCourt(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const id = String(formData.get("courtId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return { error: "Angiv et navn." };
@@ -1462,7 +1469,7 @@ export async function renameCourt(_prev: unknown, formData: FormData) {
  * bane, og så kan ingen svare på, hvad pengene var for.
  */
 export async function removeCourt(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const id = String(formData.get("courtId") ?? "");
 
   const bookings = await db.booking.count({ where: { courtId: id, court: { clubId } } });
@@ -2059,7 +2066,7 @@ export async function testClubFeed(_prev: unknown, formData: FormData) {
 
 /** Opretter en frigivelsesregel: baner, ugedage, tidsrum og pris. */
 export async function createRule(_prev: unknown, formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
 
   const days = formData.getAll("days").map(String).filter(Boolean);
   const courtIds = formData.getAll("courts").map(String).filter(Boolean);
@@ -2102,7 +2109,7 @@ export async function createRule(_prev: unknown, formData: FormData) {
 }
 
 export async function toggleRule(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const id = String(formData.get("id"));
   const rule = await db.guestRule.findFirst({ where: { id, clubId } });
   if (!rule) return;
@@ -2111,7 +2118,7 @@ export async function toggleRule(formData: FormData) {
 }
 
 export async function deleteRule(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const id = String(formData.get("id"));
   await db.guestRule.deleteMany({ where: { id, clubId } });
   revalidatePath("/admin", "layout");
@@ -2119,7 +2126,7 @@ export async function deleteRule(formData: FormData) {
 
 /** Frigiv automatisk alt der stadig er ledigt tæt på spilletidspunktet. */
 export async function setLastMinute(formData: FormData) {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const hours = Math.max(0, Math.min(72, Number(formData.get("hours") ?? 0)));
   await db.club.update({ where: { id: clubId }, data: { lastMinuteHours: hours } });
   revalidatePath("/admin", "layout");
@@ -2227,7 +2234,7 @@ export async function deletePost(formData: FormData) {
 
 /** Genererer en tilmeldingskode, klubben kan dele med sine medlemmer. */
 export async function generateJoinCode() {
-  const { clubId } = await requireClubAdmin();
+  const { clubId } = await requireClubAdmin("MANAGER");
   const club = await db.club.findUnique({ where: { id: clubId } });
   if (!club) return;
 

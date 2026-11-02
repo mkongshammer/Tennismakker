@@ -3,15 +3,16 @@ import type {Locale} from "../../lib/sports";
 import { clubHasSection } from '../../lib/club-features';
 import Link from 'next/link';
 import { ADMIN_PAGES, adminHref, type AdminSection } from '../../lib/admin-navigation';
+import { canAccessSection, type StaffLevel } from '../../lib/staff-access';
 import { ClubSupportTicket } from './ClubSupportTicket';
 
-export function AdminNavigation({ section, facility, mode, features,locale="da" }: { section: AdminSection; facility: string; mode?: string; features?:string|null;locale?:Locale }) {
+export function AdminNavigation({ section, facility, mode, features,locale="da", staffLevel="OWNER" }: { section: AdminSection; facility: string; mode?: string; features?:string|null;locale?:Locale; staffLevel?: StaffLevel }) {
   const tr=(s:string)=>phrase(s,locale);
   const current = ADMIN_PAGES.find(p => p.id === section)!;
   const menu = <nav aria-label={tr("Klubadministration")} className="space-y-5">
     {['Daglig drift', 'Opsætning'].map(group => <div key={group}>
       <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-slate">{tr(group)}</p>
-      <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-1">{ADMIN_PAGES.filter(p => p.group === group && clubHasSection(mode, p.id, features)).map(p => <li key={p.id}>
+      <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-1">{ADMIN_PAGES.filter(p => p.group === group && clubHasSection(mode, p.id, features) && canAccessSection(staffLevel, p.id)).map(p => <li key={p.id}>
         <Link href={adminHref(p.id)} aria-current={section === p.id ? 'page' : undefined} className={`flex min-h-11 items-center rounded-xl px-3 py-2 text-sm font-semibold transition-colors ${section === p.id ? 'bg-ink text-white' : 'text-ink hover:bg-mist'}`}>
           {p.id === 'baner' ? `${tr(facility)} ${tr("og sportsgrene")}` : tr(p.label)}
         </Link>

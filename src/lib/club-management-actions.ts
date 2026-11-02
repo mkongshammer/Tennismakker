@@ -11,6 +11,10 @@ export async function requireCustomClub(feature?:CustomFeature) {
   const club=await db.club.findUnique({where:{id:user.clubId}});
   if(club?.solutionMode!=='CUSTOM')throw Error('Denne funktion kræver en custom-klubløsning.');
   if(feature&&!clubHasFeature(club.solutionMode,club.customFeatures,feature))throw Error('Denne funktion er ikke valgt i klubbens abonnement.');
+  // Staff level (owner / manager / front desk) decides which parts of the admin this person may change.
+  const {getStaffLevel,canAccessSection,StaffAccessError}=await import('./staff-roles');
+  const level=await getStaffLevel(user.id);
+  if(!canAccessSection(level,feature??'priser'))throw new StaffAccessError(feature??'this setting');
   return {user,club};
 }
 export async function setClubSolution(form:FormData) {

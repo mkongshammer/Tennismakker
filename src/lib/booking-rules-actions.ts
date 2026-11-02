@@ -9,6 +9,7 @@ export async function saveBookingRules(_prev: State, form: FormData): Promise<St
   try {
     const user = await getCurrentUser();
     if (user?.role !== 'CLUB_ADMIN' || !user.clubId) throw Error('Kun klubbens administrator har adgang.');
+    { const { getStaffLevel, atLeast, StaffAccessError } = await import('./staff-roles'); if (!atLeast(await getStaffLevel(user.id), 'MANAGER')) throw new StaffAccessError('manager settings'); }
     const club = await db.club.findUniqueOrThrow({ where: { id: user.clubId }, select: { waiverText: true, waiverVersion: true } });
     const guestFeeKr = Number(form.get('guestFeeKr'));
     const guestMax = Number(form.get('guestMax'));

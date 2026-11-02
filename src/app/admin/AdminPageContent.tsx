@@ -96,6 +96,10 @@ export default async function AdminPageContent({
 
   }
 
+  const { getStaffLevel, canAccessSection } = await import("../../lib/staff-roles");
+  const staffLevel = await getStaffLevel(user.id);
+  const shown: string = canAccessSection(staffLevel, section) ? section : "denied";
+
   if (query.stripe === "return" || query.stripe === "refresh") {
     const admin = await getCurrentUser();
     if (admin?.clubId) await refreshAccountStatus("CLUB", admin.clubId).catch(() => null);
@@ -222,12 +226,13 @@ export default async function AdminPageContent({
         </p>
         }
 <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-<AdminNavigation features={club.customFeatures} mode={club.solutionMode} section={section} facility={tr(facilityLabel(selectedSports))} locale={prefs.locale} />
+<AdminNavigation staffLevel={staffLevel} features={club.customFeatures} mode={club.solutionMode} section={section} facility={tr(facilityLabel(selectedSports))} locale={prefs.locale} />
 <div className="min-w-0 space-y-6">
 <header><h2 className="display text-2xl">{section === 'baner' ? tr(facilityLabel(selectedSports)) + ' ' + tr('og sportsgrene') : phrase(currentPage.label, prefs.locale)}</h2><p className="mt-1 text-sm text-slate">{phrase(currentPage.description, prefs.locale)}</p></header>
-{section === 'oversigt' && <MoveChecklist club={{ id: club.id, slug: club.slug, name: club.name, stripeChargesEnabled: club.stripeChargesEnabled, status: club.status }} />}
-{section === 'oversigt' && <ClubHome data={await loadClubDashboard(club.id)} locale={prefs.locale} />}
-{section === 'bookinger' && <>
+{shown === 'denied' && <div className="card"><p className="font-bold">Not included in your admin role</p><p className="mt-1 text-sm text-slate">Your role is {staffLevel === 'FRONT_DESK' ? 'Front desk' : 'Manager'}. Ask the club's owner if you need access to this page.</p></div>}
+{shown === 'oversigt' && <MoveChecklist club={{ id: club.id, slug: club.slug, name: club.name, stripeChargesEnabled: club.stripeChargesEnabled, status: club.status }} />}
+{shown === 'oversigt' && <ClubHome data={await loadClubDashboard(club.id)} locale={prefs.locale} />}
+{shown === 'bookinger' && <>
 <CourtSchedule clubId={club.id} courts={club.courts.map((c: any) => ({ id: c.id, name: c.name, sport: c.sport, indoor: c.indoor }))} openHour={club.openHour} closeHour={club.closeHour} timeZone={club.timeZone} currency={club.currency} locale={prefs.locale} dayOffset={Math.min(6, Math.max(0, Number(query.dag ?? 0) || 0))} baseHref="/admin/bookinger" />
 {toEnter.length > 0 &&
               <section className="rounded-lg border-2 border-court bg-court/5 p-5">
@@ -293,7 +298,7 @@ export default async function AdminPageContent({
 
       </section>}
 </>}
-{section === 'tider' && <>
+{shown === 'tider' && <>
 <BookingRulesForm club={{ guestFeeKr: club.guestFeeKr, guestMax: club.guestMax, waiverText: club.waiverText, checkInEnabled: club.checkInEnabled, noShowReleaseMinutes: club.noShowReleaseMinutes }} />
 {club.integrationType === "MANUAL" &&
               <section>
@@ -419,12 +424,12 @@ export default async function AdminPageContent({
         </section>
               }
 </>}
-{section === 'medlemmer' && await (async () => { const billing = await clubBillingOverview(club.id); return <BillingPanel
+{shown === 'medlemmer' && await (async () => { const billing = await clubBillingOverview(club.id); return <BillingPanel
   types={billing.types}
   members={billing.members}
   chargesEnabled={club.stripeChargesEnabled}
   settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />; })()}
-{section === 'medlemmer' && <>
+{shown === 'medlemmer' && <>
 <section className="card">
         <h2 className="display mb-1 text-2xl">{tr("Kontingent")}</h2>
         <p className="mb-4 text-sm text-slate">{tr("Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene g\xE5r direkte til klubbens konto. Er kontingentet betalt og s\xE6sonen i gang, booker medlemmet til medlemspris.")}
@@ -454,11 +459,11 @@ export default async function AdminPageContent({
 <BillingPanel part="settings" types={[]} members={0} chargesEnabled={club.stripeChargesEnabled}
   settings={{ dueDays: club.billingDueDays, reminders: club.billingReminders, replyTo: club.billingReplyTo ?? '', note: club.billingNote ?? '', contactEmail: club.contactEmail ?? '' }} />
 </>}
-{section === 'kommunikation' && await (async () => {
+{shown === 'kommunikation' && await (async () => {
   const [all, paid, history] = await Promise.all([broadcastRecipients(club.id, 'ALL'), broadcastRecipients(club.id, 'PAID'), db.clubBroadcast.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 30 })]);
   return <CommunicationPanel counts={{ all: all.length, paid: paid.length }} history={history} />;
 })()}
-{section === 'rapporter' && await (async () => {
+{shown === 'rapporter' && await (async () => {
   const todayKey = dayKey(new Date(), club.timeZone);
   const defaultFrom = `${todayKey.slice(0, 4)}-01-01`;
   const from = /^\d{4}-\d{2}-\d{2}$/.test(String(query.from ?? '')) ? String(query.from) : defaultFrom;
@@ -469,7 +474,7 @@ export default async function AdminPageContent({
   const accounting = { configured: quickBooksConfigured(), notice: qbNotice[String(query.quickbooks ?? '')] ?? null, status: await accountingStatus(club.id) };
   return <ReportsPanel accounting={accounting} months={summarize(lines, club.timeZone)} categories={CATEGORIES} from={from} to={to} recent={lines.slice(-25).reverse().map((l) => ({ ...l, date: l.date.toISOString() }))} />;
 })()}
-{section === 'events' && await (async () => {
+{shown === 'events' && await (async () => {
   const [events, ladders] = await Promise.all([
     db.clubEvent.findMany({ where: { clubId: club.id }, orderBy: { startsAt: 'desc' }, take: 40, include: { signups: { where: { status: 'PAID' }, include: { user: { select: { name: true, email: true } } } } } }),
     db.ladder.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, include: { _count: { select: { entries: true } } } }),
@@ -483,7 +488,7 @@ export default async function AdminPageContent({
   return <EventsPanel slug={club.slug} sports={sports as string[]} sportLabels={Object.fromEntries((sports as string[]).map((s) => [s, sportLabel(s as any, prefs.locale)]))} ladders={ladderViews}
     events={events.map((e) => ({ id: e.id, name: e.name, kind: e.kind, sport: e.sport, startsAt: e.startsAt, endsAt: e.endsAt, priceKr: e.priceKr, capacity: e.capacity, active: e.active, format: e.format, drawnAt: e.drawnAt, draw: draws.has(e.id) ? { ...draws.get(e.id)!, matches: draws.get(e.id)!.matches.map((m) => ({ ...m, when: whenOf(m.scheduledAt) })) } : null, signups: e.signups.map((s) => ({ id: s.id, name: s.user.name, email: s.user.email, status: s.status, paidAt: s.paidAt })) }))} />;
 })()}
-{section === 'butik' && await (async () => {
+{shown === 'butik' && await (async () => {
   const [items, sales, gifts] = await Promise.all([
     db.shopItem.findMany({ where: { clubId: club.id }, orderBy: [{ active: 'desc' }, { sortOrder: 'asc' }] }),
     db.shopSale.findMany({ where: { clubId: club.id }, orderBy: { createdAt: 'desc' }, take: 30 }),
@@ -496,7 +501,7 @@ export default async function AdminPageContent({
   const stripeReady = (await settingsForShop()).paymentProvider !== 'stripe' || Boolean(club.stripeAccountId && club.stripeChargesEnabled);
   return <ShopPanel slug={club.slug} items={items} gifts={gifts} readers={readers} stripeReady={stripeReady} sales={sales.map((s) => ({ id: s.id, items: s.items, totalKr: s.totalKr, method: s.method, status: s.status, createdAt: s.createdAt, buyer: s.userId ? buyers.get(s.userId) ?? null : null }))} />;
 })()}
-{section === 'vagtplan' && await (async () => {
+{shown === 'vagtplan' && await (async () => {
   const todayKey = dayKey(new Date(), club.timeZone);
   const offset = Math.max(-52, Math.min(52, Number(query.uge ?? 0) || 0));
   const monday = (() => { const d = new Date(`${todayKey}T00:00:00Z`); const dow = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - dow + offset * 7); return d.toISOString().slice(0, 10); })();
@@ -522,7 +527,7 @@ export default async function AdminPageContent({
   return <StaffPanel weekStart={start} prevHref={`/admin/vagtplan?uge=${offset - 1}`} nextHref={`/admin/vagtplan?uge=${offset + 1}`} people={people} payroll={payroll}
     days={keys.map((k) => ({ key: k, date: wallTime(k, 12, 0, club.timeZone)!, shifts: shifts.filter((s) => dayKey(s.startsAt, club.timeZone) === k) }))} />;
 })()}
-{section === 'hold' && <>
+{shown === 'hold' && <>
 <section className="card">
         <h2 className="display mb-1 text-2xl">{tr("S\xE6sonhold")}</h2>
         <p className="mb-4 text-sm text-slate">{tr("Tr\xE6ningshold over en s\xE6son. Medlemmerne tilmelder sig fra jeres side og betaler online. Pengene g\xE5r til klubbens konto.")}
@@ -546,7 +551,7 @@ export default async function AdminPageContent({
 
       </section>
 </>}
-{section === 'nyheder' && <>
+{shown === 'nyheder' && <>
 <section>
         <h2 className="display mb-1 text-2xl">{tr("Nyheder")}</h2>
         <p className="mb-4 text-sm text-slate">{tr("Vises \xF8verst p\xE5 jeres side. Til lukkedage, turneringer og andet, folk skal vide.")}
@@ -578,7 +583,7 @@ export default async function AdminPageContent({
                 }
       </section>
 </>}
-{section === 'baner' && <>
+{shown === 'baner' && <>
 <section id="sportsgrene">
         <h2 className="display mb-1 text-2xl">{tr(facilityLabel(selectedSports))}</h2>
         <p className="mb-4 text-sm text-slate">{tr("V\xE6lg sportsgrene, og opret klubbens")}
@@ -599,7 +604,7 @@ export default async function AdminPageContent({
 
       </section>
 </>}
-{section === 'lys-adgang' && <>
+{shown === 'lys-adgang' && <>
 <ManualLights channels={await db.clubControlChannel.findMany({ where: { device: { control: { clubId: club.id, enabled: true } }, kind: { in: ['COURT_LIGHT', 'COMMON_LIGHT'] }, setupConfirmedAt: { not: null } }, select: { id: true, label: true } })} />
 <section>
         <h2 className="display mb-1 text-2xl">{tr("Automatisk lys og adgang")}</h2>
@@ -658,7 +663,7 @@ export default async function AdminPageContent({
     events={events.map((e) => ({ id: e.id, at: e.at, uidTail: e.uidTail, door: e.door, allowed: e.allowed, reason: e.reason, source: e.source, who: e.credential?.staff?.name ?? e.credential?.user?.name ?? null }))} />;
 })()}
 </>}
-{section === 'priser' && <>
+{shown === 'priser' && <>
 <WalletForm enabled={club.walletEnabled} tiers={JSON.parse(club.walletTiers || '[]')} />
 <WalletBalances clubId={club.id} locale={prefs.locale} />
 <section className="card">
@@ -681,7 +686,7 @@ export default async function AdminPageContent({
         <PunchCardForm cards={punchCards as any} />
       </section>
 </>}
-{section === 'betaling' && <>
+{shown === 'betaling' && <>
 {stripeOn &&
               <section className="card">
           <p className="display text-xl">{tr("Udbetalinger")}</p>
@@ -777,8 +782,8 @@ export default async function AdminPageContent({
                 </p>
       </section>
 </>}
-{section === 'betaling' && <ClubInvoices clubId={club.id} locale={prefs.locale} timeZone={club.timeZone}/>}
-{section === 'integrationer' && <>
+{shown === 'betaling' && <ClubInvoices clubId={club.id} locale={prefs.locale} timeZone={club.timeZone}/>}
+{shown === 'integrationer' && <>
 {clubHasFeature(club.solutionMode, club.customFeatures, 'import') && <><ResasportsForm courts={club.courts.map((c) => ({ id: c.id, name: c.name }))} /><ImportForm /></>}
 <section>
         <h2 className="display mb-1 text-2xl">{tr("S\xE5dan finder vi jeres ledige tider")}</h2>
@@ -827,7 +832,7 @@ export default async function AdminPageContent({
         </section>
               }
 </>}
-{section === 'hjemmeside' && <>
+{shown === 'hjemmeside' && <>
 <section>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="display text-2xl">{tr("Jeres side")}</h2>
@@ -900,7 +905,7 @@ export default async function AdminPageContent({
                 </p>
       </section>
 </>}
-{section === 'indstillinger' && <>
+{shown === 'indstillinger' && <>
 <section className="card">
         <h2 className="display mb-1 text-2xl">{tr("Hvem kan administrere klubben")}</h2>
         <p className="mb-4 text-sm text-slate">{tr("\xC9n person med n\xF8glen er \xE9n person for lidt. Stopper vedkommende i bestyrelsen, mister klubben adgangen til sine egne bookinger og indt\xE6gter.")}
@@ -910,6 +915,8 @@ export default async function AdminPageContent({
                 </p>
         <InternationalForm club={club} locale={prefs.locale} /><AdminsForm
                   meId={user.id}
+                  levels={await (await import("../../lib/staff-roles")).staffLevels(club.members.filter((m: any) => m.role === "CLUB_ADMIN").map((m: any) => m.id))}
+                  canEditLevels={staffLevel === "OWNER"}
                   members={club.members.map((m: any) => ({
                     id: m.id,
                     name: m.name,
@@ -927,7 +934,7 @@ export default async function AdminPageContent({
         <PeopleForm people={club.people as any} />
       </section>}
 </>}
-{section === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>{tr("Ledige tider styres gennem klubbens bookingsystem.")}</p><Link href="/admin/integrationer" className="font-semibold text-court underline">{tr("\xC5bn bookingsystemets indstillinger")}</Link></div>}
+{shown === 'tider' && club.integrationType !== 'MANUAL' && <div className="card"><p>{tr("Ledige tider styres gennem klubbens bookingsystem.")}</p><Link href="/admin/integrationer" className="font-semibold text-court underline">{tr("\xC5bn bookingsystemets indstillinger")}</Link></div>}
 </div></div></div></InternationalProvider>);
 
 }

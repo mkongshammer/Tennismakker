@@ -11,11 +11,13 @@
 // personen stopper i bestyrelsen.
 import { useWebsiteInternational } from "../../components/InternationalProvider";import { useState } from "react";
 import { makeClubAdmin, removeClubAdmin } from "../../lib/actions";
+import { changeStaffLevel } from "../../lib/staff-role-actions";
+import { STAFF_LEVELS, type StaffLevel } from "../../lib/staff-access";
 import { SubmitButton } from "../../components/SubmitButton";
 
 type Member = {id: string;name: string;email: string;isAdmin: boolean;};
 
-export function AdminsForm({ members, meId }: {members: Member[];meId: string;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
+export function AdminsForm({ members, meId, levels = {}, canEditLevels = false }: {members: Member[];meId: string;levels?: Record<string, StaffLevel>;canEditLevels?: boolean;}) {const { tr, money, currency, timeZone } = useWebsiteInternational();
   const [query, setQuery] = useState("");
 
   const admins = members.filter((m) => m.isAdmin);
@@ -43,6 +45,16 @@ export function AdminsForm({ members, meId }: {members: Member[];meId: string;})
               }
               </p>
               <p className="text-sm text-slate">{a.email}</p>
+              {canEditLevels ?
+              <form action={changeStaffLevel} className="mt-2 flex flex-wrap items-center gap-2">
+                  <input type="hidden" name="memberId" value={a.id} />
+                  <select name="level" defaultValue={levels[a.id] ?? "OWNER"} className="input w-auto py-1 text-sm" aria-label="Admin role">
+                    {STAFF_LEVELS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+                  </select>
+                  <SubmitButton className="btn-ghost px-3 py-1 text-sm" pendingText="…">Save role</SubmitButton>
+                  <span className="text-xs text-slate">{STAFF_LEVELS.find((l) => l.id === (levels[a.id] ?? "OWNER"))?.description}</span>
+                </form> :
+              <p className="mt-1 text-xs text-slate">Role: {STAFF_LEVELS.find((l) => l.id === (levels[a.id] ?? "OWNER"))?.label}</p>}
             </div>
             {admins.length > 1 &&
           <form action={removeClubAdmin}>
