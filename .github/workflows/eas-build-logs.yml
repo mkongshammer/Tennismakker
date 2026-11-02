@@ -1,0 +1,35 @@
+name: EAS build logs
+
+# Prints the error part of an EAS build's logs (read-only). Set BUILD_ID below and push.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/eas-build-logs.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  logs:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      BUILD_ID: 89b017cc-e1cd-42a4-8314-2aecc45aafb3
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Fetch logs
+        run: |
+          npx --yes eas-cli@latest build:view "$BUILD_ID" --json > view.json || true
+          node -e "const b=JSON.parse(require('fs').readFileSync('view.json','utf8')); console.log('STATUS', b.status, JSON.stringify(b.error||{})); (b.logFiles||[]).forEach(u=>console.log('LOG', u))" || cat view.json
+          for u in $(node -e "const b=JSON.parse(require('fs').readFileSync('view.json','utf8')); console.log((b.logFiles||[]).join(' '))"); do curl -sL "$u" >> all.log; done
+          node -e "const lines=require('fs').readFileSync('all.log','utf8').split('\n').map(l=>{try{return JSON.parse(l).msg}catch{return l}}).filter(Boolean); const idx=lines.findIndex(l=>/FAILED|error:|Error:|What went wrong/.test(l)); console.log(lines.slice(Math.max(0,idx-20), idx+60).join('\n')); console.log('---TAIL---'); console.log(lines.slice(-40).join('\n'))"
