@@ -14684,5 +14684,13 @@
     "no": "Kontoen finnes ikke lenger.",
     "fr": "Ce compte n'existe plus.",
     "es": "Esta cuenta ya no existe."
+  },
+  "Notifikationer på Android kommer i den næste opdatering af appen.": {
+    "en": "Notifications on Android are coming in the next app update.",
+    "de": "Benachrichtigungen auf Android kommen mit dem nächsten App-Update.",
+    "sv": "Aviseringar på Android kommer i nästa uppdatering av appen.",
+    "no": "Varsler på Android kommer i neste oppdatering av appen.",
+    "fr": "Les notifications sur Android arrivent avec la prochaine mise à jour de l'app.",
+    "es": "Las notificaciones en Android llegarán con la próxima actualización de la app."
   }
 }

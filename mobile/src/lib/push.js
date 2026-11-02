@@ -19,7 +19,13 @@ async function register(ask=false) {
   let permission=await N.getPermissionsAsync();
   if(!permission.granted && ask) permission=await N.requestPermissionsAsync();
   if(!permission.granted) { await unregister(); if(ask) throw Error('Tillad notifikationer i telefonens indstillinger.'); return false; }
-  const {data}=await N.getExpoPushTokenAsync({projectId});
+  let data;
+  try { ({data}=await N.getExpoPushTokenAsync({projectId})); }
+  catch(error) {
+    // Android builds without Firebase (FCM) configured cannot get a push token. Show a plain message, not the SDK's.
+    if(/firebase|fcm/i.test(String(error?.message))) { if(ask) throw Error('Notifikationer på Android kommer i den næste opdatering af appen.'); return false; }
+    throw error;
+  }
   const old=await AsyncStorage.getItem(KEY);
   if(old && old!==data) await unregister();
   // Persist first so even an ambiguous network failure can be unregistered on logout.
