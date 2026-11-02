@@ -27,6 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+      - name: Install and link project
+        run: |
+          npm ci
+          node -e "const fs=require('fs');const a=JSON.parse(fs.readFileSync('app.json','utf8'));delete a.expo.owner;a.expo.extra.eas={projectId:'620ef3a3-d92c-4241-86bb-511817c9d3cb'};fs.writeFileSync('app.json',JSON.stringify(a,null,2))"
+          npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: Fetch logs
         run: |
           npx --yes eas-cli@latest build:view "$BUILD_ID" --json > view.json || true
