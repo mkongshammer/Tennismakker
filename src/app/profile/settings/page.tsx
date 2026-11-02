@@ -6,6 +6,10 @@ import { LEVELS_EN } from "../../../lib/levels";
 import { SPORTS, sportLabel } from "../../../lib/sports";
 import { Icon } from "../../../components/ui";
 import { SettingsForm } from "./SettingsForm";
+import { NotificationSettings, CalendarSync, TwoStepSettings } from "./MoreSettings";
+import { notificationSettings, calendarLink } from "../../../lib/notification-actions";
+import { twoStepStatus } from "../../../lib/security-actions";
+import { getStaffLevel } from "../../../lib/staff-roles";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Profile settings", robots: { index: false } };
@@ -16,6 +20,14 @@ export default async function ProfileSettingsPage() {
 
   const levels = Object.entries(LEVELS_EN).map(([value, l]) => ({ value: Number(value), label: `NTRP ${l.ntrp} · ${l.label}` }));
   const sports = SPORTS.map((s) => ({ value: s, label: sportLabel(s, "en-US") }));
+
+  const isAdmin = user.role === "CLUB_ADMIN";
+  const [prefs, link, twoStep, level] = await Promise.all([
+    notificationSettings(),
+    calendarLink(),
+    twoStepStatus(),
+    isAdmin ? getStaffLevel(user.id) : Promise.resolve(null),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -32,6 +44,9 @@ export default async function ProfileSettingsPage() {
         levels={levels}
         sports={sports}
       />
+      {prefs && <NotificationSettings prefs={prefs} />}
+      {link && <CalendarSync link={link} />}
+      <TwoStepSettings own={twoStep.own} club={twoStep.club} isAdmin={isAdmin} isOwner={level === "OWNER"} />
     </div>
   );
 }

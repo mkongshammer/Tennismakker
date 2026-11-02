@@ -138,7 +138,7 @@ function stateKey(userId: string) {
   return `engagement-state:${userId}`;
 }
 
-function optoutKey(userId: string) {
+export function optoutKey(userId: string) {
   return `engagement-optout:${userId}`;
 }
 

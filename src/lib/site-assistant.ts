@@ -39,6 +39,8 @@ WHAT'S INCLUDED FOR CLUBS
 - Reports on bookings and revenue; a simple club website (on the club's own domain if they like).
 - Waitlists for full courts, digital waivers, check-in and automatic release of no-shows; ladders and leagues; member credit (wallet) and gift cards.
 - Players can find hitting partners, message each other and book in the app.
+- Staff roles: each club admin is an Owner (everything, incl. subscription, payments and who the admins are), Manager (runs the club: prices, courts, rules, members, events, reports, lights, integrations — not the subscription, payments or admin list) or Front desk (bookings, open times, members, teams, events, shop, recurring bookings). Owners set roles under Settings → Administrators and contacts in the admin. A club always keeps at least one owner. New admins start as Manager.
+- Two-step login: anyone can turn on "E-mail me a login code when I sign in" at racketbuddy.app/profile/settings (a 6-digit code by e-mail at each website sign-in). A club owner can require it for every admin at the club from the same page.
 
 APPS
 - Android: on Google Play ("RacketBuddy: Clubs & Courts"). iPhone: in review with Apple and coming soon. The same account works on the website and in the app.
@@ -49,6 +51,8 @@ PLAYERS
 
 ACCOUNTS
 - Forgot your password: racketbuddy.app/login/forgot sends a reset link to your e-mail. The same login works on the website and in the app.
+- Notification settings at racketbuddy.app/profile/settings: turn app notifications for bookings, reminders, messages and coaching on or off, and opt out of tips/inspiration e-mails. Booking receipts and account e-mails are always sent.
+- Calendar sync: racketbuddy.app/profile/settings has a private link that adds all your bookings and lessons to Google Calendar, Apple Calendar or Outlook and keeps them updated. Keep it private; "Make a new link" stops the old one. Single bookings also have an "Add to calendar" button.
 
 CONTACT
 - E-mail ${SUPPORT_EMAIL}. There is no phone support.
@@ -103,8 +107,8 @@ async function guideFor(role: string) {
   const admin = ADMIN_PAGES.map((p) => `- ${phrase(p.label, "en")} (racketbuddy.app${adminHref(p.id)}): ${phrase(p.description, "en")}`).join("\n");
   const common = `- Book a court: racketbuddy.app/courts or the RacketBuddy app. Your bookings: racketbuddy.app/bookings (cancel there; at least 24 hours before for a full refund unless the club has other rules).
 - Find a hitting partner: racketbuddy.app/players. Messages: racketbuddy.app/messages. Coaches: racketbuddy.app/coaches.
-- Profile and password: racketbuddy.app/profile; notifications and other settings: racketbuddy.app/profile/settings. Receipts: racketbuddy.app/profile/receipts. Forgot password: racketbuddy.app/login/forgot.`;
-  if (role === "CLUB_ADMIN") return `CLUB ADMIN MENU (racketbuddy.app/admin)\n${admin}\n- Import members from another system: Members page, or the free check at racketbuddy.app/switch.\n- Payments: connect Stripe under Payments & subscription; payouts go to the club's own bank account.\n\nPLAYER PAGES\n${common}`;
+- Profile and password: racketbuddy.app/profile. Settings (racketbuddy.app/profile/settings): profile details, notifications (bookings, reminders, messages, coaching, tips e-mails), calendar sync link for Google/Apple/Outlook, and two-step login. Receipts: racketbuddy.app/profile/receipts. Forgot password: racketbuddy.app/login/forgot.`;
+  if (role === "CLUB_ADMIN") return `CLUB ADMIN MENU (racketbuddy.app/admin)\n${admin}\n- Import members from another system: Members page, or the free check at racketbuddy.app/switch.\n- Payments: connect Stripe under Payments & subscription; payouts go to the club's own bank account.\n- Staff roles (Owner / Manager / Front desk): owners change them on the Administrators and contacts settings page; pages outside a person's role are hidden for them. Owners can require two-step login for all admins at racketbuddy.app/profile/settings.\n\nPLAYER PAGES\n${common}`;
   if (role === "COACH") return `COACH\n- Your coach profile, lesson price and weekly availability: racketbuddy.app/profile/coaching. Players book and pay online; RacketBuddy keeps 10% of each lesson booked through the platform and pays out the rest.\n${common}`;
   return `PLAYER\n${common}`;
 }

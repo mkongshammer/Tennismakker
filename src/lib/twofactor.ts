@@ -32,9 +32,19 @@ function newCode(): string {
   return String(crypto.randomInt(0, 10 ** CODE_LENGTH)).padStart(CODE_LENGTH, "0");
 }
 
-/** Skal denne bruger igennem to trin? */
+/** Skal denne bruger igennem to trin? Superadmins altid; andre når de selv har slået det til, eller klubben kræver det for administratorer. */
 export function needsEmailCode(user: { role: string }): boolean {
   return user.role === "SUPERADMIN";
+}
+
+export const twoStepKey = (userId: string) => `user:two-step:${userId}`;
+export const clubTwoStepKey = (clubId: string) => `club:require-two-step:${clubId}`;
+
+export async function needsLoginCode(user: { id: string; role: string; clubId?: string | null }): Promise<boolean> {
+  if (needsEmailCode(user)) return true;
+  const keys = [twoStepKey(user.id), ...(user.role === "CLUB_ADMIN" && user.clubId ? [clubTwoStepKey(user.clubId)] : [])];
+  const rows = await db.platformSetting.findMany({ where: { key: { in: keys } } }).catch(() => []);
+  return rows.some((r) => r.value === "1");
 }
 
 /**

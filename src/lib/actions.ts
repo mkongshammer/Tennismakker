@@ -23,7 +23,7 @@ import { redirect } from "next/navigation";
 import { db } from "./db";
 import { getSettings } from "./settings";
 import { COUNTRIES, LOCALES, LOCALE_LIVE, SPORTS, type Locale } from "./sports";
-import { needsEmailCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
+import { needsLoginCode, startEmailChallenge, verifyEmailChallenge } from "./twofactor";
 import { completePasswordReset, requestPasswordReset } from "./password-reset";
 import { eraseAccount } from "./erasure";
 import { checkDeletion } from "./deletion-guards";
@@ -207,7 +207,7 @@ export async function login(_prev: unknown, formData: FormData) {
 
   clearAttempts(email);
 
-  if (needsEmailCode(user)) {
+  if (await needsLoginCode(user)) {
     const challengeId = await startEmailChallenge(user);
     // Id'et er ikke hemmeligt — koden er. Cookien er kortlivet, så en
     // halvfærdig login ikke ligger og venter i en browser i ugevis.
