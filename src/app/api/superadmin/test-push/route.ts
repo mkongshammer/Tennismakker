@@ -15,15 +15,27 @@ async function status(userId: string) {
   return { devices: devices.map((d) => ({ platform: d.platform, since: d.createdAt })), deliveries };
 }
 
-export async function GET() {
+// ?email= targets another account (e.g. the owner's own phone account); default is yourself.
+async function target(req: Request) {
   const user = await getCurrentUser();
-  if (user?.role !== "SUPERADMIN") return new Response("Not found", { status: 404 });
-  return Response.json(await status(user.id));
+  if (user?.role !== "SUPERADMIN") return null;
+  const email = new URL(req.url).searchParams.get("email")?.trim().toLowerCase();
+  if (!email) return { id: user.id };
+  return (await db.user.findUnique({ where: { email }, select: { id: true } })) ?? { id: "", missing: true };
 }
 
-export async function POST() {
-  const user = await getCurrentUser();
-  if (user?.role !== "SUPERADMIN") return new Response("Not found", { status: 404 });
+export async function GET(req: Request) {
+  const t = await target(req);
+  if (!t) return new Response("Not found", { status: 404 });
+  if ("missing" in t) return Response.json({ error: "No account with that e-mail in this region." }, { status: 404 });
+  return Response.json(await status(t.id));
+}
+
+export async function POST(req: Request) {
+  const t = await target(req);
+  if (!t) return new Response("Not found", { status: 404 });
+  if ("missing" in t) return Response.json({ error: "No account with that e-mail in this region." }, { status: 404 });
+  const user = { id: t.id };
   await enqueue(user.id, `test:${Date.now()}`, "messages", "RacketBuddy", "Test: notifications work on this phone.", { kind: "test" }, new Date(Date.now() + 15 * 60_000));
   const run = await runPushNotifications();
   return Response.json({ ...run, ...(await status(user.id)) });
