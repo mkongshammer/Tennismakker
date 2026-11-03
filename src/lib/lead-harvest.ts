@@ -181,7 +181,7 @@ export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200)
       body: JSON.stringify({
         campaign, email: lead.email, first_name: lead.firstName || "there", company_name: lead.clubName, website: lead.website,
         skip_if_in_workspace: true, skip_if_in_campaign: true,
-        custom_variables: { city: lead.city, state: lead.state, sport: lead.sport },
+        custom_variables: { city: lead.city || "your area", state: lead.state, sport: lead.sport },
       }),
       signal: AbortSignal.timeout(15_000),
     });
