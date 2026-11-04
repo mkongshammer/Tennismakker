@@ -54,7 +54,7 @@ export async function setCampaignPriceCopy(mode: "founding" | "regular") {
   return { changed, ...(errors.length ? { error: errors.join("; ") } : {}) };
 }
 
-async function tellOwner(subject: string, body: string) {
+export async function tellOwner(subject: string, body: string) {
   const to = (process.env.SALES_DIGEST_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   if (!to.length) to.push(...(await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email));
   for (const t of to) await sendMail({ to: t, subject, body });

@@ -72,6 +72,10 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     }
     const { runFoundingWatch } = await import("./founding-offer");
     await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
+    // Launch morning: start the Instantly campaigns by themselves (10 Nov 2026, 7:00 New York).
+    const { runCampaignAutostart } = await import("./campaign-autostart");
+    const launch = await runCampaignAutostart().catch((err) => { console.error("Campaign autostart failed:", err); return null; });
+    if (launch && ("started" in launch || "problems" in launch)) console.log("[campaign-autostart]", JSON.stringify(launch));
     const { runInstantlyReplies } = await import("./email-assistant");
     const r = await runInstantlyReplies().catch((err) => { console.error("Instantly replies failed:", err); return null; });
     if (r && "replied" in r && (r.replied || r.escalated)) console.log("[instantly-replies]", JSON.stringify(r));
