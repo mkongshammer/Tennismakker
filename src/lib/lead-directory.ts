@@ -105,10 +105,16 @@ function dedupe(list: DirectoryVenue[]) {
 
 /** All venues for a state: Google Places (when a key is set) plus the open map data. */
 export async function fetchStateVenues(state: string): Promise<DirectoryVenue[]> {
+  let googleFailed = false, osmFailed = false;
   const [google, osm] = await Promise.all([
-    googleStateVenues(state).catch((e) => { console.error("[places]", state, e instanceof Error ? e.message : e); return { venues: [] as DirectoryVenue[], complete: true }; }),
-    fetchOsmStateVenues(state).catch((e) => { if (!process.env.GOOGLE_PLACES_API_KEY) throw e; console.error("[overpass]", state, e instanceof Error ? e.message : e); return [] as DirectoryVenue[]; }),
+    googleStateVenues(state).catch((e) => { googleFailed = true; console.error("[places]", state, e instanceof Error ? e.message : e); return { venues: [] as DirectoryVenue[], complete: false }; }),
+    fetchOsmStateVenues(state).catch((e) => { if (!process.env.GOOGLE_PLACES_API_KEY) throw e; osmFailed = true; console.error("[overpass]", state, e instanceof Error ? e.message : e); return [] as DirectoryVenue[]; }),
   ]);
+  // Never cache a half-read state: a state read while the daily Google cap
+  // was reached (or both sources failed) would otherwise be marked done with
+  // few or no clubs for 30 days. Throw instead, so it is retried later.
+  if (process.env.GOOGLE_PLACES_API_KEY && !google.complete) throw new Error(googleFailed ? "Google Places unavailable" : "places-daily-cap");
+  if (osmFailed && !google.venues.length) throw new Error("Map data unavailable");
   return dedupe([...google.venues, ...osm]);
 }
 

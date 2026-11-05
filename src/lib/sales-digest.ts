@@ -20,7 +20,13 @@ async function analytics(kind: LeadKind) {
   const data = await res.json();
   const row = (Array.isArray(data) ? data[0] : data) ?? {};
   const n = (k: string) => Number(row[k] ?? 0) || 0;
-  return { status: row.campaign_status as number | undefined, contacted: n("contacted_count"), sent: n("emails_sent_count"), replies: n("reply_count_unique") || n("reply_count"), bounced: n("bounced_count"), opportunities: n("total_opportunities") };
+  let status = row.campaign_status as number | undefined;
+  if (status === undefined) {
+    // The analytics endpoint doesn't always include the status; read it from the campaign.
+    const c = await fetch(`https://api.instantly.ai/api/v2/campaigns/${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) }).then((r) => (r.ok ? r.json() : null)).catch(() => null) as { status?: number } | null;
+    status = c?.status;
+  }
+  return { status, contacted: n("contacted_count"), sent: n("emails_sent_count"), replies: n("reply_count_unique") || n("reply_count"), bounced: n("bounced_count"), opportunities: n("total_opportunities") };
 }
 
 /** Where the contacted leads are: Instantly's contacted leads, located by our own lead records (or the lead's custom variables). */

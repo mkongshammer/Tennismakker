@@ -122,40 +122,69 @@ async function harvestClubsFromDirectory(now: Date, sites = 40) {
   const all = Object.keys(STATE_CODES);
   const order = [...STATES, ...all.filter((s) => !STATES.includes(s))];
   const curKey = "sales:lead-harvest:dircursor";
-  const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
-  const state = order[cur % order.length];
-  let batch; let done = false;
-  try { ({ batch, done } = await nextVenues(state, sites)); }
-  catch (e) { const error = e instanceof Error ? e.message : String(e); console.error("[lead-directory]", state, error); await recordStats("club", now, { calls: 0, checked: 1, added: 0, why: { "map-data-unavailable": 1 } }); return { kind: "club" as const, ran: false, reason: "map-data-unavailable", state, error }; }
   let added = 0, checked = 0;
   const why: Record<string, number> = {};
   const reject = (r: string) => { why[r] = (why[r] ?? 0) + 1; };
-  const work = batch.map((v) => async () => {
-    checked++;
-    const host = normalizeHost(v.website);
-    if (await db.platformSetting.findFirst({ where: { key: { in: [siteKey("club", host), siteKey("coach", host)] } } })) return reject("duplicate");
-    const found = await findClubEmail(v.website);
-    if (!found.email) return reject(`email-${found.reason}`);
-    const p: Prospect = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, contactEmail: found.email, sourceUrl: found.sourceUrl, hook: "", contactFirstName: "" } as Prospect;
-    if (await db.platformSetting.findFirst({ where: { key: { in: [leadKey("club", found.email), leadKey("coach", found.email)] } } })) return reject("duplicate");
-    if (await alreadyContacted(p)) return reject("contacted-before");
-    const lead: Lead = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, email: found.email, firstName: "", sourceUrl: found.sourceUrl, createdAt: now.toISOString() };
-    await db.$transaction([
-      db.platformSetting.create({ data: { key: leadKey("club", lead.email), value: JSON.stringify(lead) } }),
-      db.platformSetting.create({ data: { key: siteKey("club", host), value: lead.email } }),
-    ]).then(() => { added++; }).catch(() => reject("save-failed"));
-  });
-  for (let i = 0; i < work.length; i += 5) await Promise.all(work.slice(i, i + 5).map((f) => f().catch(() => reject("error"))));
-  if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
-  await recordStats("club", now, { calls: 0, checked, added, why, sites: checked } as Stats);
+  const statesSeen: string[] = [];
+  // Keep moving through states until this round has checked `sites` club websites
+  // (finished states give an empty batch), at most 6 states per round.
+  for (let hop = 0; hop < 6 && checked < sites; hop++) {
+    const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
+    const state = order[cur % order.length];
+    statesSeen.push(state);
+    let batch; let done = false;
+    try { ({ batch, done } = await nextVenues(state, sites - checked)); }
+    catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      console.error("[lead-directory]", state, error);
+      reject(error === "places-daily-cap" ? "places-daily-cap" : "map-data-unavailable");
+      break; // retry this state on a later round, don't skip it
+    }
+    const work = batch.map((v) => async () => {
+      checked++;
+      const host = normalizeHost(v.website);
+      if (await db.platformSetting.findFirst({ where: { key: { in: [siteKey("club", host), siteKey("coach", host)] } } })) return reject("duplicate");
+      const found = await findClubEmail(v.website);
+      if (!found.email) return reject(`email-${found.reason}`);
+      const p: Prospect = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, contactEmail: found.email, sourceUrl: found.sourceUrl, hook: "", contactFirstName: "" } as Prospect;
+      if (await db.platformSetting.findFirst({ where: { key: { in: [leadKey("club", found.email), leadKey("coach", found.email)] } } })) return reject("duplicate");
+      if (await alreadyContacted(p)) return reject("contacted-before");
+      const lead: Lead = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, email: found.email, firstName: "", sourceUrl: found.sourceUrl, createdAt: now.toISOString() };
+      await db.$transaction([
+        db.platformSetting.create({ data: { key: leadKey("club", lead.email), value: JSON.stringify(lead) } }),
+        db.platformSetting.create({ data: { key: siteKey("club", host), value: lead.email } }),
+      ]).then(() => { added++; }).catch(() => reject("save-failed"));
+    });
+    for (let i = 0; i < work.length; i += 5) await Promise.all(work.slice(i, i + 5).map((f) => f().catch(() => reject("error"))));
+    if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
+    else break;
+  }
+  await recordStats("club", now, { calls: 0, checked: Math.max(checked, Object.keys(why).length ? 1 : 0), added, why, sites: checked } as Stats);
   const pushed = await pushLeadsToInstantly("club").catch((e) => ({ pushed: 0, error: e instanceof Error ? e.message : String(e) }));
-  return { kind: "club" as const, ran: true, source: "map", state, added, checked, ...pushed };
+  return { kind: "club" as const, ran: true, source: "map", states: statesSeen, added, checked, why, ...pushed };
+}
+
+/**
+ * One-off repair (5 Nov 2026): states read while the Google cap was reached
+ * were cached as finished with no clubs. Drop those empty caches and start the
+ * state rotation over, so every state is read properly.
+ */
+async function repairEmptyStateCaches() {
+  const flag = "sales:lead-harvest:repair-2026-11-05";
+  if (await db.platformSetting.findUnique({ where: { key: flag } })) return;
+  const rows = await db.platformSetting.findMany({ where: { key: { startsWith: "sales:dir" } } });
+  const empty = rows.filter((r) => r.key !== "sales:lead-harvest:dircursor" && (() => { try { return (JSON.parse(r.value).venues ?? []).length < 5; } catch { return false; } })());
+  await db.platformSetting.deleteMany({ where: { key: { in: empty.map((r) => r.key) } } });
+  await db.platformSetting.upsert({ where: { key: "sales:lead-harvest:dircursor" }, create: { key: "sales:lead-harvest:dircursor", value: "0" }, update: { value: "0" } });
+  await db.platformSetting.create({ data: { key: flag, value: JSON.stringify({ at: new Date().toISOString(), cleared: empty.map((r) => r.key) }) } });
+  console.log("[lead-harvest] cleared", empty.length, "empty state caches");
 }
 
 /** One harvest round for clubs and coaches. */
 export async function harvestLeads(now = new Date(), maxCalls?: number) {
   const config = await getAgentConfig();
   // Clubs: open map data first (free). AI web search only as a top-up once the map data is used up.
+  await repairEmptyStateCaches().catch((e) => console.error("[lead-harvest] repair", e));
   const t = TARGETS.club, counts = await leadCounts(now, "club");
   const club = counts.total < t.backfill || counts.lastWeek < t.weekly
     ? await harvestClubsFromDirectory(now)
