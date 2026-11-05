@@ -45,3 +45,45 @@ export async function runStripeOneOff() {
   await tellOwner("RacketBuddy: tjek af klubbetaling", lines.join("\n\n"));
   return lines;
 }
+
+/**
+ * One-off #2 (5 Nov 2026): give the US service its own Stripe endpoint again,
+ * send a live test event (a checkout created and expired at once, nothing
+ * paid), and on the next cron run confirm Stripe delivered it — then e-mail
+ * the owner the result.
+ */
+export async function runStripeOneOff2() {
+  if (deploymentRegion() !== "US" || !regionalShardingActive()) return null;
+  const KEY2 = "stripe:oneoff2:2026-11-05";
+  const row = await db.platformSetting.findUnique({ where: { key: KEY2 } });
+  const client = await stripe();
+  const settings = await getSettings();
+  if (!row) {
+    await db.platformSetting.create({ data: { key: KEY2, value: JSON.stringify({ step: "started", at: new Date().toISOString() }) } });
+    const { ensureWebhookEndpoint } = await import("./webhook-setup");
+    const created = await ensureWebhookEndpoint().catch((e) => `Fejl: ${e instanceof Error ? e.message : e}`);
+    const s = await client.checkout.sessions.create({
+      mode: "subscription", payment_method_types: ["card"], locale: "en",
+      line_items: [{ quantity: 1, price_data: { currency: "usd", unit_amount: 5000, recurring: { interval: "month" }, product_data: { name: "RacketBuddy for clubs – delivery test (expired immediately)" } } }],
+      metadata: { dryRun: "1", region: "US" }, success_url: `${settings.appUrl}/club-start`, cancel_url: `${settings.appUrl}/club-start`,
+    });
+    await client.checkout.sessions.expire(s.id);
+    await db.platformSetting.update({ where: { key: KEY2 }, data: { value: JSON.stringify({ step: "sent", at: new Date().toISOString(), created, session: s.id }) } });
+    return { step: "sent" };
+  }
+  const state = JSON.parse(row.value) as { step: string; at: string; created?: string; session?: string };
+  if (state.step !== "sent" || Date.now() - Date.parse(state.at) < 3 * 60_000) return null;
+  const events = (await client.events.list({ limit: 20, type: "checkout.session.expired" })).data;
+  const ev = events.find((e) => (e.data.object as { id?: string }).id === state.session);
+  const processed = ev ? await db.platformSetting.findUnique({ where: { key: `regionalStripeEvent:${ev.id}` } }) : null;
+  const ok = Boolean(processed);
+  const lines = [
+    `US-endpoint: ${state.created ?? "?"}`,
+    ev ? `Testbesked fra Stripe: ${ev.id}. Modtaget og behandlet af den amerikanske server: ${ok ? "JA" : "NEJ"}. Ventende leveringer hos Stripe: ${ev.pending_webhooks}.` : "Testbeskeden blev ikke fundet hos Stripe.",
+    ok ? "Klubbetalinger bliver nu registreret direkte på den amerikanske server." : "Klubbetalinger når endnu ikke frem. Claude undersøger det.",
+  ];
+  await db.platformSetting.update({ where: { key: KEY2 }, data: { value: JSON.stringify({ ...state, step: "done", ok, lines }) } });
+  const { tellOwner } = await import("./founding-offer");
+  await tellOwner(`RacketBuddy: betalingsbeskeder fra Stripe ${ok ? "virker" : "virker IKKE endnu"}`, lines.join("\n\n"));
+  return { ok };
+}
