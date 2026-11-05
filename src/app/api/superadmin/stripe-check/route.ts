@@ -20,14 +20,17 @@ async function guard() {
 
 async function endpoints() {
   const client = await stripe();
-  return (await client.webhookEndpoints.list({ limit: 100 })).data.map((e) => ({ id: e.id, url: e.url, status: e.status, events: e.enabled_events.length, created: new Date(e.created * 1000).toISOString(), description: e.description }));
+  return (await client.webhookEndpoints.list({ limit: 100 })).data.map((e) => ({ id: e.id, url: e.url, status: e.status, events: e.enabled_events.length, enabledEvents: e.enabled_events, created: new Date(e.created * 1000).toISOString(), description: e.description }));
 }
 
 export async function GET() {
   if (!(await guard())) return new Response("Not found", { status: 404 });
   const settings = await getSettings();
   const evidence = await db.platformSetting.findMany({ where: { key: { in: ["stripeLastRelayedWebhookV1", "stripeLastVerifiedWebhookV1", "stripe:oneoff:2026-11-05"] } } });
-  return Response.json({ evidence: Object.fromEntries(evidence.map((e) => [e.key, e.value])), region: deploymentRegion(), relay: regionalShardingActive(), appUrl: settings.appUrl, live: settings.stripeSecretKey.startsWith("sk_live_"), usOriginSet: Boolean(process.env.US_INTERNAL_ORIGIN ?? process.env.US_APP_URL), endpoints: await endpoints() });
+  // Recent live events Stripe created for US club signups, and whether Stripe delivered them.
+  const client = await stripe();
+  const recent = (await client.events.list({ limit: 15 })).data.map((e) => ({ id: e.id, type: e.type, created: new Date(e.created * 1000).toISOString(), pendingWebhooks: e.pending_webhooks, region: (e.data.object as { metadata?: Record<string, string> }).metadata?.region ?? null }));
+  return Response.json({ recent, evidence: Object.fromEntries(evidence.map((e) => [e.key, e.value])), region: deploymentRegion(), relay: regionalShardingActive(), appUrl: settings.appUrl, live: settings.stripeSecretKey.startsWith("sk_live_"), usOriginSet: Boolean(process.env.US_INTERNAL_ORIGIN ?? process.env.US_APP_URL), endpoints: await endpoints() });
 }
 
 export async function POST(req: Request) {
