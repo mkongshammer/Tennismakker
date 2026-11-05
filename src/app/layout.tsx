@@ -17,7 +17,7 @@ import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
 import { consumeSignupSportsIntent, hasChosenBuddySports } from "../lib/buddy-sports";
 import { getSiteLanguage } from "../lib/site-language";
-import { setSiteLanguage } from "../lib/language-actions";
+import { LanguageForm } from "../components/LanguageForm";
 import { SpanishTranslator } from "../components/SpanishTranslator";
 
 const SITE_NAME = "RacketBuddy";
@@ -170,10 +170,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <a href="mailto:support@racketbuddy.app" className="transition hover:text-white">support@racketbuddy.app</a>
                     <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="transition hover:text-white">IP Geolocation by DB-IP</a>
-                    <form action={setSiteLanguage} className="flex items-center gap-1" data-no-translate>
+                    <LanguageForm className="flex items-center gap-1">
                       <button name="lang" value="en" aria-pressed={lang === "en"} className={`rounded-full px-2.5 py-1 transition ${lang === "en" ? "bg-white/15 text-white" : "hover:text-white"}`}>English</button>
                       <button name="lang" value="es" aria-pressed={lang === "es"} className={`rounded-full px-2.5 py-1 transition ${lang === "es" ? "bg-white/15 text-white" : "hover:text-white"}`}>Español</button>
-                    </form>
+                    </LanguageForm>
                   </div>
                 </div>
               </div>

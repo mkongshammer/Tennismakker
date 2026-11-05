@@ -14,7 +14,7 @@ import { translator } from "../lib/i18n";
 import { isPublicPage } from "../lib/public-pages";
 import type { Locale } from "../lib/sports";
 import { Icon } from "./ui";
-import { setSiteLanguage } from "../lib/language-actions";
+import { LanguageForm } from "./LanguageForm";
 
 type Props = {
   user: { name: string; role: string } | null;
@@ -112,11 +112,11 @@ export function SiteHeader({ user, locale, lang = "en" }: Props) {
         </div>
 
         <div className="ml-auto flex items-center gap-2 text-sm">
-          <form action={setSiteLanguage} data-no-translate>
+          <LanguageForm>
             <button name="lang" value={lang === "es" ? "en" : "es"} className="flex h-10 min-w-10 items-center justify-center rounded-full border border-slate/20 px-2 text-xs font-bold text-ink hover:bg-mist" aria-label={lang === "es" ? "Switch to English" : "Ver en español"} title={lang === "es" ? "English" : "Español"}>
               {lang === "es" ? "EN" : "ES"}
             </button>
-          </form>
+          </LanguageForm>
           {user ? (
             <>
               <Link
