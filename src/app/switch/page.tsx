@@ -118,7 +118,7 @@ export default async function SwitchPage() {
       <section className="rounded-3xl border border-white/10 bg-white/5 px-6 py-10 text-center print:hidden">
         <h2 className="display text-display-md">Ready when you are</h2>
         <p className="mx-auto mt-2 max-w-xl text-slate">{price.offer} No setup fee, cancel any month.</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/list-your-club" className="btn-court">Set up my club</Link><a href="#check" className="btn-ghost">Check my file first</a></div>
+        <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/list-your-club" className="btn-court">Set up my club</Link><a href="#check" className="btn-ghost">Check my file first</a><Link href="/demo" className="btn-ghost">See a demo</Link></div>
       </section>
       <p className="hidden text-xs print:block">racketbuddy.app/switch · support@racketbuddy.app</p>
     </div>

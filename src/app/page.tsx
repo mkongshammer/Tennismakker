@@ -218,6 +218,7 @@ export default async function Home() {
               <Icon name="arrow" />
             </Link>
             <Link href="#pricing" className="btn border border-white/25 text-chalk hover:bg-white/10">See pricing</Link>
+            <Link href="/demo" className="btn border border-white/25 text-chalk hover:bg-white/10">See a demo</Link>
           </div>
         </div>
         <div className="mt-10 grid gap-6 border-t border-white/15 pt-8 sm:grid-cols-2 lg:grid-cols-3">

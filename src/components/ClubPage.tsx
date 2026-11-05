@@ -175,7 +175,7 @@ export async function ClubPage({
               <img
             src={imageUrl(club.heroId)}
             alt=""
-            className="h-[300px] w-full object-cover sm:h-[420px]" />
+            className="absolute inset-0 h-full w-full object-cover" />
 
               <div
             className="absolute inset-0"
@@ -186,7 +186,7 @@ export async function ClubPage({
             </> :
 
         <div
-          className="h-[260px] w-full sm:h-[340px]"
+          className="absolute inset-0 h-full w-full"
           style={{ backgroundColor: club.color }}>
 
               <svg
@@ -208,7 +208,9 @@ export async function ClubPage({
             </div>
         }
 
-          <div className="absolute inset-x-0 bottom-0 p-6 text-chalk sm:p-10">
+          {/* In the flow (not absolute), so a long name and tagline grow the
+              hero on phones instead of running off the top. */}
+          <div className={`relative flex flex-col justify-end p-6 text-chalk sm:p-10 ${club.heroId ? "min-h-[300px] sm:min-h-[420px]" : "min-h-[260px] sm:min-h-[340px]"}`}>
             {club.logoId &&
           <img
             src={imageUrl(club.logoId)}

@@ -105,7 +105,7 @@ async function guideFor(role: string) {
   const { ADMIN_PAGES, adminHref } = await import("./admin-navigation");
   const { phrase } = await import("./phrases");
   const admin = ADMIN_PAGES.map((p) => `- ${phrase(p.label, "en")} (racketbuddy.app${adminHref(p.id)}): ${phrase(p.description, "en")}`).join("\n");
-  const common = `- Book a court: racketbuddy.app/courts or the RacketBuddy app. Your bookings: racketbuddy.app/bookings (cancel there; at least 24 hours before for a full refund unless the club has other rules).
+  const common = `- Book a court: racketbuddy.app/courts or the RacketBuddy app. Your bookings: racketbuddy.app/profile (cancel there; at least 24 hours before for a full refund unless the club has other rules).
 - Find a hitting partner: racketbuddy.app/players. Messages: racketbuddy.app/messages. Coaches: racketbuddy.app/coaches.
 - Profile and password: racketbuddy.app/profile. Settings (racketbuddy.app/profile/settings): profile details, notifications (bookings, reminders, messages, coaching, tips e-mails), calendar sync link for Google/Apple/Outlook, and two-step login. Receipts: racketbuddy.app/profile/receipts. Forgot password: racketbuddy.app/login/forgot.`;
   if (role === "CLUB_ADMIN") return `CLUB ADMIN MENU (racketbuddy.app/admin)\n${admin}\n- Import members from another system: Members page, or the free check at racketbuddy.app/switch.\n- Payments: connect Stripe under Payments & subscription; payouts go to the club's own bank account.\n- Staff roles (Owner / Manager / Front desk): owners change them on the Administrators and contacts settings page; pages outside a person's role are hidden for them. Owners can require two-step login for all admins at racketbuddy.app/profile/settings.\n\nPLAYER PAGES\n${common}`;

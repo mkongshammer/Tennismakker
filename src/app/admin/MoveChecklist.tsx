@@ -22,7 +22,7 @@ export async function MoveChecklist({ club }: { club: { id: string; slug: string
   const s = await onboardingState(club);
   const draft = await loadDraft((await cookies()).get(DRAFT_COOKIE)?.value);
   const steps = [
-    { done: s.members > 0, title: "Bring your members", body: s.members ? `${s.members.toLocaleString("en-US")} members in the club.` : "Upload the member list from your old system, as it is." },
+    { done: s.members > 0, title: "Bring your members", body: s.members ? `${s.members.toLocaleString("en-US")} ${s.members === 1 ? "member" : "members"} in the club.` : "Upload the member list from your old system, as it is." },
     { done: s.stripe, title: "Connect Stripe", body: s.stripe ? "Payments go straight to your bank." : "So members and guests can pay you online. Takes about 5 minutes with Stripe." },
     { done: s.plans > 0, title: "Add your membership plans", body: s.plans ? `${s.plans} plan${s.plans === 1 ? "" : "s"} set up.` : "Monthly, annual or family plans that members pay online." },
     { done: s.members > 0 && s.pendingInvites === 0 && s.invited > 0, title: "Invite your members", body: s.invited ? `${s.invited.toLocaleString("en-US")} invited.` : "One e-mail with a link to set their password and get the app." },
