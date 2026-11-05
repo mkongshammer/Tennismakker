@@ -70,6 +70,8 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
       // In the background: a round can take a few minutes (map data, club websites) and must not hold up the cron request.
       void harvestLeads().then((leads) => console.log("[lead-harvest]", JSON.stringify(leads))).catch((err) => console.error("[lead-harvest]", err instanceof Error ? err.message : err));
     }
+    const { runStripeOneOff } = await import("./stripe-oneoff");
+    await runStripeOneOff().catch((err) => console.error("Stripe one-off failed:", err));
     const { runFoundingWatch } = await import("./founding-offer");
     await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
     // Launch morning: start the Instantly campaigns by themselves (10 Nov 2026, 7:00 New York).
