@@ -117,7 +117,7 @@ export async function harvestStats(days = 3, now = new Date()) {
  * Clubs from open map data (no AI): next venues of the current state, e-mail
  * read from each club's own website. Moves to the next state when one is done.
  */
-async function harvestClubsFromDirectory(now: Date, sites = 40) {
+async function harvestClubsFromDirectory(now: Date, sites = 120) {
   const { STATE_CODES, nextVenues, findClubEmail } = await import("./lead-directory");
   const all = Object.keys(STATE_CODES);
   const order = [...STATES, ...all.filter((s) => !STATES.includes(s))];
@@ -128,7 +128,7 @@ async function harvestClubsFromDirectory(now: Date, sites = 40) {
   const statesSeen: string[] = [];
   // Keep moving through states until this round has checked `sites` club websites
   // (finished states give an empty batch), at most 6 states per round.
-  for (let hop = 0; hop < 6 && checked < sites; hop++) {
+  for (let hop = 0; hop < 10 && checked < sites; hop++) {
     const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
     const state = order[cur % order.length];
     statesSeen.push(state);
@@ -155,7 +155,7 @@ async function harvestClubsFromDirectory(now: Date, sites = 40) {
         db.platformSetting.create({ data: { key: siteKey("club", host), value: lead.email } }),
       ]).then(() => { added++; }).catch(() => reject("save-failed"));
     });
-    for (let i = 0; i < work.length; i += 5) await Promise.all(work.slice(i, i + 5).map((f) => f().catch(() => reject("error"))));
+    for (let i = 0; i < work.length; i += 10) await Promise.all(work.slice(i, i + 10).map((f) => f().catch(() => reject("error"))));
     if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
     else break;
   }

@@ -65,7 +65,7 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     const { harvestLeads } = await import("./lead-harvest");
     const lockKey = "sales:lead-harvest:last-run";
     const last = await db.platformSetting.findUnique({ where: { key: lockKey } });
-    if (!last || Date.now() - Date.parse(last.value) > 12 * 60_000) {
+    if (!last || Date.now() - Date.parse(last.value) > 14 * 60_000) {
       await db.platformSetting.upsert({ where: { key: lockKey }, create: { key: lockKey, value: new Date().toISOString() }, update: { value: new Date().toISOString() } });
       // In the background: a round can take a few minutes (map data, club websites) and must not hold up the cron request.
       void harvestLeads().then((leads) => console.log("[lead-harvest]", JSON.stringify(leads))).catch((err) => console.error("[lead-harvest]", err instanceof Error ? err.message : err));
