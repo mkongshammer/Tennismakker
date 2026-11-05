@@ -6,11 +6,12 @@ import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { fetchJson, resolveCheckoutUrl } from "./request-core.mjs";
 
-const EU_BASE_URL = Constants.expoConfig?.extra?.apiUrl ?? "https://eu.racketbuddy.app";
 const US_BASE_URL = Constants.expoConfig?.extra?.apiUrlUs ?? "https://racketbuddy.app";
 
-export function apiBaseUrl(country = getInternational().country) {
-  return String(country).toUpperCase() === "US" ? US_BASE_URL : EU_BASE_URL;
+// RacketBuddy runs in the US only: every request goes to the US service, also
+// from a phone abroad (the old European service is being switched off).
+export function apiBaseUrl() {
+  return US_BASE_URL;
 }
 
 const TOKEN_KEY = "tm_token";
