@@ -97,11 +97,11 @@ async function placesSearch(key: string, textQuery: string, pageToken?: string) 
   return data;
 }
 
-async function googleStateVenues(state: string): Promise<{ venues: DirectoryVenue[]; complete: boolean }> {
+async function googleStateVenues(state: string, queries: string[] = PLACES_QUERIES): Promise<{ venues: DirectoryVenue[]; complete: boolean }> {
   const key = process.env.GOOGLE_PLACES_API_KEY;
   if (!key) return { venues: [], complete: true };
   const venues: DirectoryVenue[] = [];
-  for (const q of PLACES_QUERIES) {
+  for (const q of queries) {
     let token: string | undefined;
     for (let page = 0; page < 2; page++) {
       const data = await placesSearch(key, `${q} in ${state}`, token);
@@ -231,6 +231,28 @@ export async function nextVenues(state: string, take: number) {
   let q: { at: string; venues: DirectoryVenue[]; pos: number } | null = row ? JSON.parse(row.value) : null;
   if (!q || Date.now() - Date.parse(q.at) > 30 * 86_400_000) {
     q = { at: new Date().toISOString(), venues: await fetchStateVenues(state), pos: 0 };
+  }
+  const batch = q.venues.slice(q.pos, q.pos + take);
+  q.pos += batch.length;
+  await db.platformSetting.upsert({ where: { key }, create: { key, value: JSON.stringify(q) }, update: { value: JSON.stringify(q) } });
+  return { batch, done: q.pos >= q.venues.length, total: q.venues.length };
+}
+
+
+// ---------------------------------------------------------------- Coaches
+// Independent coaches and lesson businesses from Google, per state. Each has
+// its own website where the contact e-mail is read, like for clubs.
+const COACH_QUERIES = ["tennis coach", "tennis lessons", "pickleball coach", "pickleball lessons", "padel coach"];
+
+export async function nextCoachVenues(state: string, take: number) {
+  if (!process.env.GOOGLE_PLACES_API_KEY) return { batch: [] as DirectoryVenue[], done: true, total: 0 };
+  const key = `sales:dircoach:${state}`;
+  const row = await db.platformSetting.findUnique({ where: { key } });
+  let q: { at: string; venues: DirectoryVenue[]; pos: number } | null = row ? JSON.parse(row.value) : null;
+  if (!q || Date.now() - Date.parse(q.at) > 30 * 86_400_000) {
+    const g = await googleStateVenues(state, COACH_QUERIES);
+    if (!g.complete) throw new Error("places-daily-cap");
+    q = { at: new Date().toISOString(), venues: dedupe(g.venues), pos: 0 };
   }
   const batch = q.venues.slice(q.pos, q.pos + take);
   q.pos += batch.length;

@@ -164,6 +164,42 @@ async function harvestClubsFromDirectory(now: Date, sites = 120) {
   return { kind: "club" as const, ran: true, source: "map", states: statesSeen, added, checked, why, ...pushed };
 }
 
+/** Coaches from Google per state (tennis/pickleball/padel coaches and lesson businesses). */
+async function harvestCoachesFromDirectory(now: Date, sites = 40) {
+  const { STATE_CODES, nextCoachVenues, findClubEmail } = await import("./lead-directory");
+  const order = [...STATES, ...Object.keys(STATE_CODES).filter((s) => !STATES.includes(s))];
+  const curKey = "sales:coach-harvest:dircursor";
+  let added = 0, checked = 0;
+  const why: Record<string, number> = {};
+  const reject = (r: string) => { why[r] = (why[r] ?? 0) + 1; };
+  for (let hop = 0; hop < 5 && checked < sites; hop++) {
+    const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
+    const state = order[cur % order.length];
+    let batch; let done = false;
+    try { ({ batch, done } = await nextCoachVenues(state, sites - checked)); }
+    catch (e) { reject(e instanceof Error && e.message === "places-daily-cap" ? "places-daily-cap" : "places-unavailable"); break; }
+    const work = batch.map((v) => async () => {
+      checked++;
+      const host = normalizeHost(v.website);
+      if (await db.platformSetting.findFirst({ where: { key: { in: [siteKey("club", host), siteKey("coach", host)] } } })) return reject("duplicate");
+      const found = await findClubEmail(v.website);
+      if (!found.email) return reject(`email-${found.reason}`);
+      if (await db.platformSetting.findFirst({ where: { key: { in: [leadKey("club", found.email), leadKey("coach", found.email)] } } })) return reject("duplicate");
+      const lead: Lead = { clubName: v.name, sport: v.sport, city: v.city, state: v.state, website: v.website, email: found.email, firstName: "", sourceUrl: found.sourceUrl, createdAt: now.toISOString() };
+      await db.$transaction([
+        db.platformSetting.create({ data: { key: leadKey("coach", lead.email), value: JSON.stringify(lead) } }),
+        db.platformSetting.create({ data: { key: siteKey("coach", host), value: lead.email } }),
+      ]).then(() => { added++; }).catch(() => reject("save-failed"));
+    });
+    for (let i = 0; i < work.length; i += 10) await Promise.all(work.slice(i, i + 10).map((f) => f().catch(() => reject("error"))));
+    if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
+    else break;
+  }
+  await recordStats("coach", now, { calls: 0, checked: Math.max(checked, Object.keys(why).length ? 1 : 0), added, why, sites: checked } as Stats);
+  const pushed = await pushLeadsToInstantly("coach").catch((e) => ({ pushed: 0, error: e instanceof Error ? e.message : String(e) }));
+  return { kind: "coach" as const, ran: true, source: "google", added, checked, why, ...pushed };
+}
+
 /**
  * One-off repair (5 Nov 2026): states read while the Google cap was reached
  * were cached as finished with no clubs. Drop those empty caches and start the
@@ -218,12 +254,12 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
   // Clubs: open map data first (free). AI web search only as a top-up once the map data is used up.
   await repairEmptyStateCaches().catch((e) => console.error("[lead-harvest] repair", e));
   await removeNonRacquetLeads().catch((e) => console.error("[lead-harvest] non-racquet cleanup", e));
-  const t = TARGETS.club, counts = await leadCounts(now, "club");
-  const club = counts.total < t.backfill || counts.lastWeek < t.weekly
-    ? await harvestClubsFromDirectory(now)
-    : { kind: "club" as const, ran: false, reason: "weekly-target-met" };
+  // No target: keep finding clubs and coaches until every state has been
+  // covered (and keep refreshing states every 30 days for new venues).
+  const club = await harvestClubsFromDirectory(now);
+  const coachDirectory = await harvestCoachesFromDirectory(now).catch((e) => ({ kind: "coach" as const, ran: false, error: e instanceof Error ? e.message : String(e) }));
   const coach = config.apiKey ? await harvestKind("coach", config.apiKey, config.smartModel, now, maxCalls ? 1 : undefined) : { kind: "coach" as const, ran: false, reason: "no-api-key" };
-  return { ran: true, club, coach };
+  return { ran: true, club, coach, coachDirectory };
 }
 
 /**

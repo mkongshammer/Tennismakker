@@ -10,7 +10,7 @@ export const AI_DAILY_LIMITS = {
   email: 150,         // support mails + replies to sales mails, answered by AI
   escalationMail: 40, // hand-over mails to the owner (stops an inbox flood)
   leadSearch: 8,      // AI web-search calls (coaches only now; clubs come from free map data)
-  placesSearch: 250,  // Google Places text searches (~25-30 states a day while the list is built; above Google's free monthly tier it's paid from the trial credit)
+  placesSearch: 350,  // Google Places text searches (~25-30 states a day while the list is built; above Google's free monthly tier it's paid from the trial credit)
 } as const;
 export type AiFeature = keyof typeof AI_DAILY_LIMITS;
 
