@@ -3,7 +3,8 @@
 // it on for the US is an owner decision (set US_AGENT_AUTOPILOT=1).
 import { internalRequestAuthorized } from "../../../../../lib/internal-auth";
 import { deploymentRegion, regionalShardingActive } from "../../../../../lib/region";
-import { CRON_JOBS, runClubControlJob, runSyncJob, type CronJob } from "../../../../../lib/cron-jobs";
+import { CRON_JOBS, type CronJob } from "../../../../../lib/cron-jobs";
+import { runJobOnce } from "../../../../../lib/self-cron";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -13,6 +14,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ job: st
   if (deploymentRegion() !== "US" || !regionalShardingActive()) return new Response("US shard is not active", { status: 503 });
   const { job } = await params;
   if (!(CRON_JOBS as readonly string[]).includes(job)) return new Response("Unknown job", { status: 404 });
-  const result = (job as CronJob) === "sync" ? await runSyncJob({ agents: process.env.US_AGENT_AUTOPILOT === "1" }) : await runClubControlJob();
+  // The US service also schedules these itself; the lock keeps it to one run per interval.
+  const result = await runJobOnce(job as CronJob);
   return Response.json(result);
 }

@@ -9,4 +9,14 @@ setTimeout(async () => {
   }
 }, 15_000);
 
+// The US service schedules its own background jobs (see lib/self-cron.ts).
+setTimeout(async () => {
+  try {
+    const { startSelfCron } = await import("./lib/self-cron");
+    startSelfCron();
+  } catch (err) {
+    console.error("Self cron failed to start:", err instanceof Error ? err.message : err);
+  }
+}, 30_000);
+
 export {};

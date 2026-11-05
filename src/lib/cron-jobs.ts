@@ -74,6 +74,9 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     await runStripeOneOff().catch((err) => console.error("Stripe one-off failed:", err));
     const { runStripeOneOff2 } = await import("./stripe-oneoff");
     await runStripeOneOff2().catch((err) => console.error("Stripe one-off 2 failed:", err));
+    const { copySharedConfigToUS } = await import("./us-standalone");
+    const standalone = await copySharedConfigToUS().catch((err) => { console.error("US standalone copy failed:", err); return null; });
+    if (standalone?.copied.length) console.log("[us-standalone]", JSON.stringify(standalone));
     const { runFoundingWatch } = await import("./founding-offer");
     await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
     // Launch morning: start the Instantly campaigns by themselves (10 Nov 2026, 7:00 New York).
