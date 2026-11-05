@@ -36,6 +36,9 @@ jobs:
       - name: Production build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+          # Build-only placeholders; the real values live in Render.
+          AUTH_SECRET: ci-build-only-secret-0123456789abcdef
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:1/ci
         run: npm run build
 
   mobile:
