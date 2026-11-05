@@ -9,6 +9,7 @@ import { stripe } from "../../../../lib/stripe";
 import { getSettings } from "../../../../lib/settings";
 import { deploymentRegion, regionalShardingActive } from "../../../../lib/region";
 import { WEBHOOK_PATH } from "../../../../lib/webhook-setup";
+import { db } from "../../../../lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,8 @@ async function endpoints() {
 export async function GET() {
   if (!(await guard())) return new Response("Not found", { status: 404 });
   const settings = await getSettings();
-  return Response.json({ region: deploymentRegion(), relay: regionalShardingActive(), appUrl: settings.appUrl, live: settings.stripeSecretKey.startsWith("sk_live_"), usOriginSet: Boolean(process.env.US_INTERNAL_ORIGIN ?? process.env.US_APP_URL), endpoints: await endpoints() });
+  const evidence = await db.platformSetting.findMany({ where: { key: { in: ["stripeLastRelayedWebhookV1", "stripeLastVerifiedWebhookV1", "stripe:oneoff:2026-11-05"] } } });
+  return Response.json({ evidence: Object.fromEntries(evidence.map((e) => [e.key, e.value])), region: deploymentRegion(), relay: regionalShardingActive(), appUrl: settings.appUrl, live: settings.stripeSecretKey.startsWith("sk_live_"), usOriginSet: Boolean(process.env.US_INTERNAL_ORIGIN ?? process.env.US_APP_URL), endpoints: await endpoints() });
 }
 
 export async function POST(req: Request) {

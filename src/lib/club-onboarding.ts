@@ -76,7 +76,8 @@ export async function startOnboardingCheckout(clubId:string,preferredLocale?:str
   const language=preferredLocale??marketFor(c.country)?.defaultLocale??'en',locale=language==='en-US'?'en':language==='no'?'nb':language as 'da'|'en'|'de'|'sv'|'fr'|'es';
   let attempt=c.signupCheckoutAttempt;
   if(c.signupCheckoutId){const old=await client.checkout.sessions.retrieve(c.signupCheckoutId);if(old.status==='open'&&old.url)return old.url;if(old.status==='complete'&&!['canceled','incomplete_expired'].includes(c.subscriptionStatus??''))return `${settings.appUrl}/club-start?betaling=kontroller`;attempt++;}
-  const taxEnabled=['EUR','USD'].includes(c.billingCurrency);
+  // US clubs: no sales tax is collected (owner's decision, 5 Nov 2026). EUR keeps automatic tax.
+  const taxEnabled=c.billingCurrency==='EUR';
   if(taxEnabled&&(await client.tax.settings.retrieve()).status!=='active')throw Error('Tax setup is not ready. Please contact RacketBuddy.');
   let customer=c.stripeCustomerId;
   if(!customer){const created=await client.customers.create({name:c.name,email:c.contactEmail??undefined,metadata:{clubId,region}},{idempotencyKey:`club-signup-customer:${clubId}`});customer=created.id;}

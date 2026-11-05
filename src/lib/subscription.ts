@@ -49,7 +49,7 @@ export async function startSubscriptionCheckout(clubId: string): Promise<string>
   const customerId = await ensureCustomer(clubId);
   const region = dataRegionForCountry(club.country);
 
-  const taxEnabled=["EUR","USD"].includes(club.billingCurrency);
+  const taxEnabled=club.billingCurrency==="EUR"; // No sales tax on US clubs (owner, 5 Nov 2026).
   const client=await stripe();
   if(taxEnabled&&(await client.tax.settings.retrieve()).status!=="active")throw Error("Tax setup is not ready. Please contact RacketBuddy.");
   const session = await client.checkout.sessions.create({adaptive_pricing:{enabled:false},
