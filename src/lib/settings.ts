@@ -157,7 +157,10 @@ async function load() {
   // platformnøgler kan ikke kopieres råt fra EU. I stedet hentes kun de
   // operationelle værdier via den signerede interne kanal. Lokale DB/env
   // værdier vinder altid over den regionale fallback.
-  const shared = await regionalSharedConfig();
+  // Only ask the EU service when something is still missing locally (after the
+  // US-only move everything is stored in the US database, so this is skipped).
+  const missing = (["paymentProvider", "stripeSecretKey", "commissionPct", "emailApiKey", "emailFrom", "ordersEmail"] as const).some((k) => source[k] === "standard");
+  const shared = missing ? await regionalSharedConfig() : null;
   if (shared) {
     const remote = shared.sharedSettings;
     if (source.paymentProvider === "standard") { settings.paymentProvider = remote.paymentProvider; source.paymentProvider = "regional"; }

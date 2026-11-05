@@ -33,11 +33,12 @@ function dailyLimit(value: unknown) {
 }
 
 export async function getAgentConfig(): Promise<AgentConfig & { apiKey: string; apiKeySet: boolean }> {
-  const [configRow, keyRow, shared] = await Promise.all([
+  const [configRow, keyRow] = await Promise.all([
     db.platformSetting.findUnique({ where: { key: CONFIG_KEY } }).catch(() => null),
     db.platformSetting.findUnique({ where: { key: API_KEY } }).catch(() => null),
-    regionalSharedConfig(),
   ]);
+  // The EU service is only asked when the US database lacks the config or key.
+  const shared = configRow && (keyRow || process.env.OPENAI_API_KEY) ? null : await regionalSharedConfig();
 
   let stored: Partial<AgentConfig> = {};
   try {

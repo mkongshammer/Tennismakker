@@ -2,7 +2,6 @@ import { getPreferences } from "../../lib/preferences";
 import { translator } from "../../lib/i18n";
 import { LoginForm } from "./LoginForm";
 import { safeReturnPath } from "../../lib/return-path";
-import { deploymentRegion, regionalShardingActive, regionalOrigin } from "../../lib/region";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +13,8 @@ export default async function LoginPage({
   const query = await searchParams;
   const t = translator((await getPreferences()).locale);
   const next = safeReturnPath(query.next);
-  // On the US deployment, European accounts from before the US-only change still live on the EU origin.
-  const legacyOrigin = regionalShardingActive() && deploymentRegion() === "US" ? regionalOrigin("DK") : null;
+  // RacketBuddy is US-only; the old European service is switched off, so there is no legacy sign-in link.
+  const legacyOrigin = null;
 
   return (
     <div className="mx-auto max-w-sm">
