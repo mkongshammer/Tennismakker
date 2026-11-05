@@ -48,6 +48,17 @@ export async function POST(req: Request) {
     for (const e of all.filter((x) => x.url.replace(/\/$/, "") === mine)) { await client.webhookEndpoints.del(e.id); removed.push(e.id); }
     return Response.json({ removed, endpoints: await endpoints() });
   }
+  // US only: remove the EU service's webhook once the EU service is switched off.
+  // Requires this service's own endpoint to be enabled, so events keep arriving.
+  if (action === "remove-eu-endpoint") {
+    if (deploymentRegion() !== "US") return Response.json({ error: "Only for the US service." }, { status: 400 });
+    const mine = `${settings.appUrl}${WEBHOOK_PATH}`.replace(/\/$/, "");
+    const all = await endpoints();
+    if (!all.some((e) => e.url.replace(/\/$/, "") === mine && e.status === "enabled")) return Response.json({ error: "The US endpoint is not enabled; nothing removed.", endpoints: all }, { status: 409 });
+    const removed = [];
+    for (const e of all.filter((x) => /^https:\/\/eu\.racketbuddy\.app\//.test(x.url))) { await client.webhookEndpoints.del(e.id); removed.push(e.url); }
+    return Response.json({ removed, endpoints: await endpoints() });
+  }
   if (action === "dry-run-checkout") {
     const { clubSignupPrices } = await import("../../../../lib/club-onboarding");
     const p = await clubSignupPrices("US");
