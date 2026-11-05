@@ -13,6 +13,7 @@
 
 import { stripe, stripeEnabled } from "./stripe";
 import { getSettings, saveSettings } from "./settings";
+import { deploymentRegion, regionalShardingActive } from "./region";
 
 /** De events, appen skal have for at fungere. Se src/app/api/webhooks/stripe. */
 export const REQUIRED_EVENTS = [
@@ -63,6 +64,21 @@ export async function inspectWebhook(): Promise<WebhookState> {
   const settings = await getSettings();
   const mode = keyMode(settings.stripeSecretKey);
   const wanted = `${settings.appUrl}${WEBHOOK_PATH}`;
+
+  // US with regional sharding: Stripe has ONE endpoint, on the EU service,
+  // which verifies each event and relays US events here. A direct endpoint
+  // to this service is not wanted (it would receive EU events too).
+  if (deploymentRegion() === "US" && regionalShardingActive()) {
+    try {
+      const list = (await (await stripe()).webhookEndpoints.list({ limit: 100 })).data;
+      const relay = list.find((e) => !sameUrl(e.url, wanted) && e.status === "enabled");
+      return relay
+        ? { status: "ok", fixable: false, detail: `Stripe sender til EU-tjenesten (${relay.url}), som videresender amerikanske betalinger hertil. Det er den tilsigtede opsætning.${list.some((e) => sameUrl(e.url, wanted)) ? " Der findes også et direkte endpoint til US-tjenesten; det bør fjernes." : ""}` }
+        : { status: "fejl", fixable: false, detail: "Der findes ingen aktiv webhook til EU-tjenesten, som skal videresende amerikanske betalinger." };
+    } catch (err) {
+      return { status: "advarsel", fixable: false, detail: `Kunne ikke slå webhooks op: ${err instanceof Error ? err.message : "ukendt fejl"}.` };
+    }
+  }
 
   let endpoints;
   try {
