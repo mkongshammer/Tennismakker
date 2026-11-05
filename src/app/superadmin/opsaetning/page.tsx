@@ -5,7 +5,7 @@
 // panel og en genstart, kan ændres her — se src/lib/settings.ts for hvorfor
 // og hvordan.
 
-import {clubSignupPriceBook} from "../../../lib/club-onboarding";
+import {clubSignupPriceBook, foundingStatus} from "../../../lib/club-onboarding";
 import {ClubPricesForm} from "./ClubPricesForm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -40,7 +40,7 @@ export default async function OpsaetningPage() {
   return (
     <div className="space-y-8">
       <a href="/superadmin/salg" className="btn-ghost">Kontrollér international salgsstatus</a>
-      <ClubPricesForm prices={await clubSignupPriceBook()}/>
+      <ClubPricesForm prices={await clubSignupPriceBook()} founding={await foundingStatus()}/>
       <div>
         <h1 className="display text-3xl">Opsætning</h1>
         <p className="text-slate">

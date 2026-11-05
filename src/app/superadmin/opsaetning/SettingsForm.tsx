@@ -170,9 +170,9 @@ export function SettingsForm({ values, secrets, source, anyFromDatabase }: Props
           <ul className="mt-2 space-y-1 text-sm">
             {examples.map((e) => (
               <li key={e.price} className="flex flex-wrap items-baseline gap-x-2">
-                <span className="font-bold">{e.price} EUR</span>
+                <span className="font-bold">${e.price}</span>
                 <span className="text-slate">
-                  klub {e.club} EUR · os {e.fee} EUR
+                  klub ${e.club} · os ${e.fee}
                 </span>
                 <span className="text-xs text-slate">Før betalingsudbyderens faktiske gebyrer</span>
               </li>

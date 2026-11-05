@@ -56,11 +56,13 @@ export async function checkClubSignup(){const u=await getCurrentUser();if(u?.rol
 export async function saveClubSignupPrices(_prev:unknown,form:FormData){
  try{
   if((await getCurrentUser())?.role!=='SUPERADMIN')throw Error('Ingen adgang.');
-  const prices=Object.fromEntries(['EUR','USD'].map(currency=>[currency,{standard:Number(form.get(`${currency}_standard`)),annual:Number(form.get(`${currency}_annual`))||undefined,custom:String(form.get(`${currency}_custom`)??'').trim()?Number(form.get(`${currency}_custom`)):null}]));
+  // US only: the form edits USD; any stored EUR prices are kept as they are.
+  const {clubSignupPriceBook}=await import('./club-onboarding');const current=await clubSignupPriceBook();
+  const prices={EUR:current.EUR,USD:{standard:Number(form.get('USD_standard')),annual:Number(form.get('USD_annual'))||undefined,custom:null}};
   const {parsePriceBook}=await import('./platform-pricing');parsePriceBook(JSON.stringify(prices));
   await ensureWebhookEndpoint();if((await inspectWebhook()).status!=='ok')throw Error('Kontrollér Stripe-nøgler og webhook i Opsætning, før tilmeldingen åbnes.');
   await db.platformSetting.upsert({where:{key:PRICE_BOOK_SETTING_KEY},create:{key:PRICE_BOOK_SETTING_KEY,value:JSON.stringify(prices)},update:{value:JSON.stringify(prices)}});
-  revalidatePath('/','layout');return{ok:'EUR- og USD-priserne er gemt. Eksisterende aftaler ændres ikke.'};
+  revalidatePath('/','layout');return{ok:'USD-prisen er gemt. Eksisterende aftaler ændres ikke.'};
  }catch(e){return{error:(e as Error).message};
  }
 }
