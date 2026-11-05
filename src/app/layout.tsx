@@ -16,6 +16,9 @@ import { recordView } from "../lib/analytics";
 import { unreadCount } from "../lib/messages";
 import { getSettings } from "../lib/settings";
 import { consumeSignupSportsIntent, hasChosenBuddySports } from "../lib/buddy-sports";
+import { getSiteLanguage } from "../lib/site-language";
+import { setSiteLanguage } from "../lib/language-actions";
+import { SpanishTranslator } from "../components/SpanishTranslator";
 
 const SITE_NAME = "RacketBuddy";
 const DEFAULT_TITLE = "RacketBuddy — Reserve courts, book coaches, run your club";
@@ -72,7 +75,7 @@ const FOOTER_LINKS = {
 } as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [user, prefs] = await Promise.all([getCurrentUser(), getPreferences()]);
+  const [user, prefs, lang] = await Promise.all([getCurrentUser(), getPreferences(), getSiteLanguage()]);
   const unread = user ? await unreadCount(user.id) : 0;
   const requestHeaders = await headers();
 
@@ -94,8 +97,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const onOwnDomain = !isOwnHost(requestHeaders.get("host") ?? "");
 
   return (
-    <html lang="en-US">
+    <html lang={lang === "es" ? "es-US" : "en-US"} className={lang === "es" ? "rb-es-pending" : undefined}>
       <head>
+        {lang === "es" && <style dangerouslySetInnerHTML={{ __html: "html.rb-es-pending body{opacity:0}" }} />}
+        {lang === "es" && <script dangerouslySetInnerHTML={{ __html: "setTimeout(function(){document.documentElement.classList.remove('rb-es-pending')},1500)" }} />}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
@@ -104,8 +109,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="flex min-h-screen flex-col">
+        {lang === "es" && <SpanishTranslator />}
         <InternationalProvider locale={prefs.locale} country={prefs.country}>
-          {onOwnDomain ? null : <SiteHeader user={user ? { name: user.name, role: user.role } : null} locale={prefs.locale} />}
+          {onOwnDomain ? null : <SiteHeader user={user ? { name: user.name, role: user.role } : null} locale={prefs.locale} lang={lang} />}
 
           <main className={`mx-auto w-full max-w-page flex-1 px-4 py-6 md:pb-16 md:pt-10 ${user ? "has-tabbar" : ""}`}>{children}</main>
 
@@ -163,6 +169,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <a href="mailto:support@racketbuddy.app" className="transition hover:text-white">support@racketbuddy.app</a>
                     <a href="https://db-ip.com" target="_blank" rel="noreferrer" className="transition hover:text-white">IP Geolocation by DB-IP</a>
+                    <form action={setSiteLanguage} className="flex items-center gap-1" data-no-translate>
+                      <button name="lang" value="en" aria-pressed={lang === "en"} className={`rounded-full px-2.5 py-1 transition ${lang === "en" ? "bg-white/15 text-white" : "hover:text-white"}`}>English</button>
+                      <button name="lang" value="es" aria-pressed={lang === "es"} className={`rounded-full px-2.5 py-1 transition ${lang === "es" ? "bg-white/15 text-white" : "hover:text-white"}`}>Español</button>
+                    </form>
                   </div>
                 </div>
               </div>
