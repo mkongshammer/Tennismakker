@@ -48,7 +48,17 @@ export async function POST(req:Request){
     const target=await stripeEventRegion(object);
     const deployed=deploymentRegion();
     if(regionalShardingActive()&&deployed==='EU'&&target==='US'){
-      await relayToUS({eventId,type,object,live});
+      // The US service also has its own Stripe endpoint now, so a failed relay
+      // must not make Stripe retry (and eventually disable) the EU endpoint.
+      await relayToUS({eventId,type,object,live}).catch((err)=>console.error('US Stripe relay failed (US endpoint receives it directly):',err));
+    }else if(regionalShardingActive()&&deployed==='US'){
+      // Direct endpoint on the US service: handle US events once (the relay
+      // and this endpoint share the same de-duplication key); ignore the rest.
+      if(target!=='US')return Response.json({received:true,ignored:'not a US event'});
+      const key=eventId?`regionalStripeEvent:${eventId}`:null;
+      if(key&&await db.platformSetting.findUnique({where:{key}}))return Response.json({received:true,duplicate:true});
+      await handleStripeEvent(type,object);
+      if(key){const value=JSON.stringify({type,live,processedAt:new Date().toISOString(),via:'direct'});await db.platformSetting.upsert({where:{key},create:{key,value},update:{value}});}
     }else if(regionalShardingActive()&&target&&deployed!=='GLOBAL'&&target!==deployed){
       throw Error(`Stripe event belongs to ${target}, not ${deployed}.`);
     }else{
