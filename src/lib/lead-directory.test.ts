@@ -42,3 +42,17 @@ test("contactLinks follows same-site contact and about links only", async () => 
   const html = '<a href="/about-us">About</a><a href="https://club.com/get-in-touch">Contact us</a><a href="https://facebook.com/contact">FB</a><a href="mailto:x@club.com">Email</a><a href="/courts">Courts</a>';
   assert.deepEqual(contactLinks(html, "https://club.com/"), ["https://club.com/about-us", "https://club.com/get-in-touch"]);
 });
+
+test("only venues whose main sport is a racquet sport are kept", async () => {
+  const { venuesFromOverpass, isRacquetSport } = await import("./lead-directory");
+  assert.equal(isRacquetSport("tennis"), true);
+  assert.equal(isRacquetSport("pickleball;basketball"), true);
+  assert.equal(isRacquetSport("basketball;tennis"), false);
+  assert.equal(isRacquetSport("swimming"), false);
+  const v = venuesFromOverpass([
+    { tags: { name: "Lakeside Tennis Club", website: "lakesidetennis.com", sport: "tennis" } },
+    { tags: { name: "Downtown Rec Center", website: "downtownrec.org", sport: "basketball;tennis" } },
+    { tags: { name: "City Fitness Gym", website: "cityfit.com", sport: "tennis" } },
+  ], "Wisconsin");
+  assert.deepEqual(v.map((x) => x.name), ["Lakeside Tennis Club"]);
+});

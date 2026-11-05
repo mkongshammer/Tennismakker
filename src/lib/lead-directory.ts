@@ -23,6 +23,13 @@ const SKIP_NAME = /\b(school|elementary|middle school|high school|university|col
 const SKIP_HOST = /(\.gov|\.edu|\.k12\.|\.mil)$|(^|\.)(facebook|instagram|google|yelp|tripadvisor|linktr|twitter|x|tiktok|youtube|wix|squarespace)\.com$/i;
 
 /** Pure: turns Overpass elements into usable venues (named, own website, not schools/government). */
+/** The sports RacketBuddy serves. A venue only counts if one of these is its main sport. */
+export const RACQUET_SPORTS = new Set(["tennis", "pickleball", "padel", "squash", "badminton", "table_tennis", "racquetball", "racquet", "platform_tennis", "paddle_tennis"]);
+export function isRacquetSport(sport: string | undefined | null) {
+  const first = String(sport ?? "").toLowerCase().split(/[;,]| and /)[0].trim().replace(/\s+/g, "_");
+  return RACQUET_SPORTS.has(first);
+}
+
 export function venuesFromOverpass(elements: Array<{ tags?: Record<string, string> }>, state: string): DirectoryVenue[] {
   const seen = new Set<string>();
   const out: DirectoryVenue[] = [];
@@ -35,8 +42,12 @@ export function venuesFromOverpass(elements: Array<{ tags?: Record<string, strin
     const host = normalizeHost(website);
     if (!host || SKIP_HOST.test(host) || seen.has(host)) continue;
     if (t.leisure === "park" || t.access === "private" && !t.club) continue;
+    // Multi-sport centres (basketball, swimming, fitness…) that happen to have a court are not our customers.
+    const sport = (t.sport ?? "tennis").split(";")[0].trim();
+    if (!isRacquetSport(sport)) continue;
+    if (/fitness|gym|ymca|recreation center|community center|aquatic|golf/i.test(name) && !/tennis|pickleball|padel|racquet|squash/i.test(name)) continue;
     seen.add(host);
-    out.push({ name: name.slice(0, 120), website, city: (t["addr:city"] ?? "").slice(0, 80), state, sport: (t.sport ?? "tennis").split(";")[0].slice(0, 40) });
+    out.push({ name: name.slice(0, 120), website, city: (t["addr:city"] ?? "").slice(0, 80), state, sport: sport.slice(0, 40) });
   }
   return out;
 }
@@ -48,6 +59,9 @@ export function venuesFromOverpass(elements: Array<{ tags?: Record<string, strin
 const PLACES_QUERIES = ["tennis club", "pickleball club", "padel club", "racquet club"];
 const SKIP_TYPES = new Set(["school", "primary_school", "secondary_school", "university", "local_government_office", "city_hall", "lodging", "hotel", "resort_hotel", "apartment_complex"]);
 
+const NON_RACQUET_TYPES = new Set(["gym", "fitness_center", "golf_course", "swimming_pool", "ski_resort", "bowling_alley", "stadium", "arena", "athletic_field", "playground", "community_center", "yoga_studio", "spa", "country_club"]);
+const RACQUET_NAME = /tennis|pickleball|padel|racquet|racket|squash|badminton/i;
+
 type Place = { displayName?: { text?: string }; websiteUri?: string; types?: string[]; primaryType?: string; addressComponents?: Array<{ longText?: string; shortText?: string; types?: string[] }> };
 
 /** Pure: Places results to venues (own website, not schools/hotels/government). */
@@ -58,6 +72,8 @@ export function venuesFromPlaces(places: Place[], state: string, query: string):
     const website = (p.websiteUri ?? "").trim();
     if (!name || !website || SKIP_NAME.test(name)) continue;
     if ((p.types ?? []).some((t) => SKIP_TYPES.has(t)) || (p.primaryType === "park")) continue;
+    // Only racquet venues: drop gyms, golf courses, pools etc. unless the name says tennis/pickleball/padel/racquet.
+    if (NON_RACQUET_TYPES.has(p.primaryType ?? "") && !RACQUET_NAME.test(name)) continue;
     const host = normalizeHost(website);
     if (!host || SKIP_HOST.test(host)) continue;
     const city = p.addressComponents?.find((c) => c.types?.includes("locality"))?.longText ?? "";

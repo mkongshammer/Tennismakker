@@ -180,11 +180,44 @@ async function repairEmptyStateCaches() {
   console.log("[lead-harvest] cleared", empty.length, "empty state caches");
 }
 
+/**
+ * One-off clean-up (5 Nov 2026): remove club leads whose main sport isn't a
+ * racquet sport (multi-sport centres from the map data) from the list and from
+ * the Instantly campaign. The site marker stays, so they're never re-added.
+ */
+async function removeNonRacquetLeads() {
+  const flag = "sales:lead-harvest:non-racquet-cleanup-2026-11-05";
+  if (await db.platformSetting.findUnique({ where: { key: flag } })) return null;
+  const { isRacquetSport } = await import("./lead-directory");
+  const racquetName = /tennis|pickleball|padel|racquet|squash|badminton/i;
+  const bad = (await allLeads("club")).filter(({ lead }) => !isRacquetSport(lead.sport) && !racquetName.test(lead.clubName));
+  const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId("club");
+  const removed: string[] = [], failed: string[] = [];
+  for (const { key: rowKey, lead } of bad) {
+    try {
+      if (lead.pushedAt && key && campaign) {
+        const res = await fetch("https://api.instantly.ai/api/v2/leads/list", { method: "POST", headers: { authorization: `Bearer ${key}`, "content-type": "application/json" }, body: JSON.stringify({ campaign, search: lead.email, limit: 5 }), signal: AbortSignal.timeout(15_000) });
+        const items = res.ok ? ((await res.json()) as { items?: Array<{ id: string; email: string }> }).items ?? [] : [];
+        for (const it of items.filter((i) => i.email?.toLowerCase() === lead.email.toLowerCase())) {
+          const del = await fetch(`https://api.instantly.ai/api/v2/leads/${it.id}`, { method: "DELETE", headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) });
+          if (!del.ok) throw Error(`Instantly delete ${del.status}`);
+        }
+      }
+      await db.platformSetting.delete({ where: { key: rowKey } });
+      removed.push(`${lead.clubName} (${lead.sport}, ${lead.state})`);
+    } catch (e) { failed.push(`${lead.clubName}: ${e instanceof Error ? e.message : e}`); }
+  }
+  if (!failed.length) await db.platformSetting.create({ data: { key: flag, value: JSON.stringify({ at: new Date().toISOString(), removed }) } });
+  console.log("[lead-harvest] removed non-racquet leads", removed.length, failed.length ? `failed ${failed.length}` : "");
+  return { removed: removed.length, failed };
+}
+
 /** One harvest round for clubs and coaches. */
 export async function harvestLeads(now = new Date(), maxCalls?: number) {
   const config = await getAgentConfig();
   // Clubs: open map data first (free). AI web search only as a top-up once the map data is used up.
   await repairEmptyStateCaches().catch((e) => console.error("[lead-harvest] repair", e));
+  await removeNonRacquetLeads().catch((e) => console.error("[lead-harvest] non-racquet cleanup", e));
   const t = TARGETS.club, counts = await leadCounts(now, "club");
   const club = counts.total < t.backfill || counts.lastWeek < t.weekly
     ? await harvestClubsFromDirectory(now)
