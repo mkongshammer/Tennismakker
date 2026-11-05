@@ -14,7 +14,7 @@ export function ClubPricesForm({prices,founding}:{prices:PriceBook;founding?:{mo
    <label className="label block">Abonnement / måned (USD)<input className="input" name="USD_standard" type="number" min="1" max="100000" defaultValue={prices.USD.standard} required/></label>
    <label className="label block">Abonnement / år (USD)<input className="input" name="USD_annual" type="number" min="1" max="1000000" defaultValue={prices.USD.annual} required/></label>
   </div>
-  <SubmitButton className="btn-court" pendingText="Gemmer…">Gem pris og klargør Stripe</SubmitButton>
+  <SubmitButton className="btn-court" pendingText="Gemmer…">Gem pris</SubmitButton>
   {state?.error&&<p role="alert">{state.error}</p>}{state?.ok&&<p>{state.ok}</p>}
  </form>;
 }
