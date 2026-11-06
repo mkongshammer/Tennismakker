@@ -46,12 +46,17 @@ export function StoreBadges({ className = "" }: { className?: string }) {
         </span>
       )}
       {APP_STORE_URL && (
-        <Badge
+        // Apple's official badge artwork (US/UK, black lockup), unmodified.
+        <a
           href={APP_STORE_URL}
-          top="Download on the"
-          name="App Store"
-          icon={<svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><line x1="10.5" y1="18.5" x2="13.5" y2="18.5" /></svg>}
-        />
+          target="_blank"
+          rel="noopener noreferrer"
+          className="keep-light inline-flex h-12 items-center"
+          aria-label="Download on the App Store"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/badges/download-on-the-app-store.svg" alt="Download on the App Store" width={144} height={48} className="h-12 w-auto" />
+        </a>
       )}
     </div>
   );
