@@ -1,10 +1,11 @@
-// Starts the two Instantly sales campaigns (clubs + coaches) on the agreed
-// launch morning — Tuesday 10 Nov 2026, 7:00 New York time — after a short
-// preflight, so nobody has to be at a computer. Runs from the US cron; does
+// Starts the two Instantly sales campaigns (clubs + coaches) after a short
+// preflight, so nobody has to be at a computer. Moved forward on 6 Nov 2026
+// at the owner's request (the iPhone app went live): the campaigns start at
+// once and send from Monday 9 Nov, 8:00 US East Coast time. Runs from the US cron; does
 // nothing before the launch time or once it has succeeded.
 import { db } from "./db";
 
-export const CAMPAIGN_LAUNCH_AT = new Date("2026-11-10T12:00:00Z"); // 07:00 America/New_York
+export const CAMPAIGN_LAUNCH_AT = new Date("2026-11-06T20:45:00Z");
 const DONE = "sales:campaign-autostart:done";
 const NOTIFIED = "sales:campaign-autostart:notified-error";
 
@@ -34,6 +35,12 @@ export async function runCampaignAutostart(now = new Date()) {
     const accounts = await Promise.all(emails.map((e) => api(`/accounts/${encodeURIComponent(e)}`).then((r) => r.ok ? r.json() : null).catch(() => null)));
     const healthy = accounts.filter((a: any) => a && a.status === 1).length;
     if (healthy < Math.ceil(emails.length / 2)) { problems.push(`${name}: kun ${healthy} af ${emails.length} afsenderadresser er aktive`); continue; }
+    // The schedule may still carry the old start date; send from today.
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Detroit" }).format(now);
+    if (c.campaign_schedule?.start_date && String(c.campaign_schedule.start_date) > today) {
+      const up = await api(`/campaigns/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ campaign_schedule: { ...c.campaign_schedule, start_date: today } }) });
+      if (!up.ok) { problems.push(`${name}: startdato kunne ikke flyttes (${up.status})`); continue; }
+    }
     const act = await api(`/campaigns/${encodeURIComponent(id)}/activate`, { method: "POST", body: "{}" });
     if (!act.ok) { problems.push(`${name}: start fejlede (${act.status} ${(await act.text()).slice(0, 120)})`); continue; }
     started.push(name);
