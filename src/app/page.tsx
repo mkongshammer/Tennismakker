@@ -131,11 +131,11 @@ export default async function Home() {
           <p className="lead mt-6 max-w-xl">
             RacketBuddy is the easiest way to play racquet sports and the smartest way to run a club. Reserve tennis, pickleball and padel courts, book a coach, find a hitting partner.
           </p>
-          <div className="mt-8">
+          <StoreBadges className="mt-6" />
+          <div className="mt-6">
             <DiscoverySearch filters={filters} compact placeholder="Where do you want to play? City, state or ZIP" />
           </div>
           <p className="mt-4 text-sm text-slate">No account needed to look. Pay only when you reserve · Free cancellation up to 24 hours before</p>
-          <StoreBadges className="mt-6" />
         </div>
         <HeroVisual />
       </section>
