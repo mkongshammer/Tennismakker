@@ -40,6 +40,14 @@ export async function lastJobRuns() {
 export async function runJobOnce(job: CronJob) {
   if (!(await claimJobRun(job))) return { skipped: true as const, reason: "already ran this interval" };
   const { runClubControlJob, runSyncJob } = await import("./cron-jobs");
+  if (job === "club-control") {
+    // Sales campaigns: started/adjusted within a minute instead of waiting for the 15-minute sync.
+    const { runCampaignAutostart, runCampaignWindowWiden } = await import("./campaign-autostart");
+    const launch = await runCampaignAutostart().catch((e) => ({ error: String(e) }));
+    if ("started" in launch || "problems" in launch || "error" in launch) console.log("[campaign-autostart]", JSON.stringify(launch));
+    const win = await runCampaignWindowWiden().catch((e) => ({ error: String(e) }));
+    if (!("done" in win)) console.log("[campaign-window]", JSON.stringify(win));
+  }
   return job === "sync" ? runSyncJob({ agents: process.env.US_AGENT_AUTOPILOT === "1" }) : runClubControlJob();
 }
 

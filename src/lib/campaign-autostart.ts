@@ -49,7 +49,7 @@ export async function runCampaignAutostart(now = new Date()) {
   const leads = await db.platformSetting.count({ where: { key: { startsWith: "sales:lead:" } } }).catch(() => 0);
   if (!problems.length) {
     await db.platformSetting.upsert({ where: { key: DONE }, create: { key: DONE, value: now.toISOString() }, update: { value: now.toISOString() } });
-    await tellOwner("RacketBuddy: salgskampagnerne er startet", `Kampagnerne kører nu: ${started.join(", ")}.\n\nDe sender mandag–fredag kl. 8–12 amerikansk østkysttid (op til 100 mails om dagen til klubber og 20 til trænere). Svar besvares automatisk af AI'en, og interesserede klubber sendes videre til dig.${leads ? `\n\nKontakter i systemet: ${leads}.` : ""}`);
+    await tellOwner("RacketBuddy: salgskampagnerne er startet", `Kampagnerne kører nu: ${started.join(", ")}.\n\nDe sender mandag–fredag kl. 8–18 amerikansk østkysttid (op til 100 mails om dagen til klubber og 20 til trænere). Svar besvares automatisk af AI'en, og interesserede klubber sendes videre til dig.${leads ? `\n\nKontakter i systemet: ${leads}.` : ""}`);
     return { started };
   }
   // Retry every run; tell the owner once per distinct problem set.
@@ -60,4 +60,27 @@ export async function runCampaignAutostart(now = new Date()) {
     await tellOwner("RacketBuddy: salgskampagnerne kunne ikke startes", `Planlagt start ${CAMPAIGN_LAUNCH_AT.toISOString()} gik ikke igennem:\n- ${problems.join("\n- ")}${started.length ? `\n\nStartet: ${started.join(", ")}` : ""}\n\nSystemet prøver igen hvert kvarter.`);
   }
   return { started, problems };
+}
+
+// 6 Nov 2026, owner's request: send from now on, not only 8–12 East Coast
+// time. Widens both campaigns' sending window to 8:00–18:00 (US business
+// hours) once. Runs every minute until it has succeeded.
+const WINDOW_DONE = "sales:campaign-window-0800-1800:done";
+export async function runCampaignWindowWiden() {
+  if (await db.platformSetting.findUnique({ where: { key: WINDOW_DONE } })) return { done: true };
+  if (!process.env.INSTANTLY_API_KEY || !process.env.INSTANTLY_CAMPAIGN_ID) return { error: "no-instantly-config" };
+  const { coachCampaignId } = await import("./instantly-coach-campaign");
+  const ids = [process.env.INSTANTLY_CAMPAIGN_ID, await coachCampaignId()].filter((x): x is string => Boolean(x));
+  const out: string[] = [];
+  for (const id of ids) {
+    const res = await api(`/campaigns/${encodeURIComponent(id)}`);
+    if (!res.ok) return { error: `read ${id} ${res.status}` };
+    const c = await res.json() as Record<string, any>;
+    const schedule = { ...c.campaign_schedule, schedules: (c.campaign_schedule?.schedules ?? []).map((s: any) => ({ ...s, timing: { from: "08:00", to: "18:00" } })) };
+    const up = await api(`/campaigns/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ campaign_schedule: schedule }) });
+    if (!up.ok) return { error: `patch ${id} ${up.status} ${(await up.text()).slice(0, 120)}` };
+    out.push(String(c.name ?? id));
+  }
+  await db.platformSetting.create({ data: { key: WINDOW_DONE, value: new Date().toISOString() } });
+  return { widened: out };
 }
