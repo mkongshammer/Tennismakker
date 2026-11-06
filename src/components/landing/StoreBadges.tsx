@@ -2,7 +2,7 @@
 // non-clickable "Coming soon on the App Store" badge stands next to Google Play;
 // set APP_STORE_URL to swap it for the real link.
 export const GOOGLE_PLAY_URL = "https://play.google.com/store/apps/details?id=dk.racketbuddy.app";
-export const APP_STORE_URL: string | null = null;
+export const APP_STORE_URL: string | null = "https://apps.apple.com/app/id6820186123";
 
 function Badge({ href, top, name, icon }: { href: string; top: string; name: string; icon: React.ReactNode }) {
   return (

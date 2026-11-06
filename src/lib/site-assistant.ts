@@ -43,7 +43,7 @@ WHAT'S INCLUDED FOR CLUBS
 - Two-step login: anyone can turn on "E-mail me a login code when I sign in" at racketbuddy.app/profile/settings (a 6-digit code by e-mail each time you sign in with your password, on the website and in the app). A club owner can require it for every admin at the club from the same page.
 
 APPS
-- Android: on Google Play ("RacketBuddy: Clubs & Courts"). iPhone: in review with Apple and coming soon. The same account works on the website and in the app.
+- Android: on Google Play ("RacketBuddy: Clubs & Courts"). iPhone: on the App Store ("RacketBuddy: Clubs & Courts", https://apps.apple.com/app/id6820186123). The same account works on the website and in the app.
 
 PLAYERS
 - Cancel at least 24 hours before the start time for a full refund to the card; later than that the club keeps the booking (clubs can set their own rules).
