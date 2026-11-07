@@ -84,3 +84,18 @@ export async function runCampaignWindowWiden() {
   await db.platformSetting.create({ data: { key: WINDOW_DONE, value: new Date().toISOString() } });
   return { widened: out };
 }
+
+// 7 Nov 2026: the owner asked for the current numbers while away from a
+// computer. E-mails the campaign figures once.
+const NUMBERS_SENT = "sales:campaign-numbers-mail:2026-11-07";
+export async function mailCampaignNumbersOnce() {
+  if (await db.platformSetting.findUnique({ where: { key: NUMBERS_SENT } })) return { done: true };
+  const { campaignNumbers } = await import("./sales-overview");
+  const rows = await campaignNumbers();
+  if (!rows) return { error: "no-numbers" };
+  const lines = rows.map((r) => `${r.name}: ${r.contacted} kontaktet af ${r.leads}, ${r.sent} mails sendt, ${r.replies} svar, ${r.bounced} bounce, ${r.unsubscribed} afmeldt`);
+  await db.platformSetting.create({ data: { key: NUMBERS_SENT, value: new Date().toISOString() } });
+  const { tellOwner } = await import("./founding-offer");
+  await tellOwner("RacketBuddy: kampagnetal lige nu", `${lines.join("\n")}\n\nKampagnerne sender mandag–fredag kl. 8–18 amerikansk østkysttid (14–24 dansk tid). Næste runde: mandag.`);
+  return { sent: lines };
+}
