@@ -81,7 +81,7 @@ export function Empty({ children, title = "Her er lidt stille endnu", icon = "â—
 
 export function Avatar({ name = "", size = 48, tone = "light" }) {useInternational();
   const initials = name.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();
-  return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? colors.raised : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.courtText, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
+  return <View accessible={false} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: tone === "dark" ? "#2B5C9A" : colors.courtTint, alignItems: "center", justifyContent: "center" }}><Text style={{ color: tone === "dark" ? colors.chalk : colors.courtText, fontSize: size / 3, fontWeight: "800" }}>{initials || "RB"}</Text></View>;
 }
 
 export function AppHeading({ eyebrow, title, subtitle, trailing }) {useInternational();

@@ -16,6 +16,7 @@ import { Loading, ErrorMessage } from "./src/lib/ui";
 import { colors } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
+import { LiveUpdates } from "./src/lib/LiveUpdates";
 import { IconCourt, IconCoach, IconPlayers, IconMessages } from "./src/lib/icons";
 
 import LoginScreen from "./src/screens/LoginScreen";
@@ -176,7 +177,7 @@ function Root() {useInternational();
           headerTintColor: colors.text,
           headerShadowVisible: false,
           headerTitleStyle: { fontWeight: "700" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} style={{ minHeight: 48, minWidth: 48, paddingHorizontal: 12, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.courtText, fontWeight: "700" }}>{tr("Luk")}</Text></Pressable>
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} hitSlop={12} style={{ paddingHorizontal: 6, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.courtText, fontWeight: "700", fontSize: 17 }}>{tr("Luk")}</Text></Pressable>
         }} />
 
     </RootStack.Navigator>);
@@ -188,6 +189,7 @@ export default function App() {useInternational();
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
     <View style={{ flex: 1, width: "100%", backgroundColor: colors.mist }}>
     <SafeAreaProvider>
+      <LiveUpdates />
       <AuthProvider>
         <AppLockProvider>
           <NavigationContainer documentTitle={{ formatter: (options) => options?.title ? `${options.title} · RacketBuddy` : "RacketBuddy" }} onReady={flushPushNavigation} ref={navigationRef} theme={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: colors.mist, primary: colors.court, card: colors.surface, text: colors.text, border: colors.border } }}>

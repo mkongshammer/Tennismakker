@@ -67,7 +67,7 @@ export default function NewMatchScreen({ navigation }) {useInternational();
             style={[styles.chip, matchType === key && styles.chipActive]}>
 
             <Text style={[styles.chipText, matchType === key && styles.chipTextActive]}>
-              {label}
+              {tr(label)}
             </Text>
           </Pressable>
           )}

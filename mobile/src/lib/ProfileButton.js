@@ -24,7 +24,7 @@ export function ProfileButton() {useInternational();
       accessibilityLabel={tr("Min profil")}
       accessibilityRole="button"
       hitSlop={8}
-      style={({ pressed }) => ({ marginRight: 4, minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center", opacity: pressed ? 0.6 : 1 })}>
+      style={({ pressed }) => ({ justifyContent: "center", alignItems: "center", opacity: pressed ? 0.6 : 1 })}>
 
       <View style={styles.circle}>
         <Text style={styles.initials}>{initials}</Text>
@@ -35,9 +35,9 @@ export function ProfileButton() {useInternational();
 
 const styles = StyleSheet.create({
   circle: {
-    height: 36,
-    width: 36,
-    borderRadius: 18,
+    height: 32,
+    width: 32,
+    borderRadius: 16,
     backgroundColor: colors.courtTint,
     alignItems: "center",
     justifyContent: "center"

@@ -49,7 +49,7 @@ export async function contactPlayer(formData: FormData) {
   const thread = await db.matchRequest.create({
     data: {
       status: "MATCHED",
-      message: `Samtale med ${other.name}`,
+      message: `Conversation with ${other.name}`,
       area: other.area ?? user.area ?? "Danmark",
       level: other.level,
       sport,

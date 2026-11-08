@@ -56,7 +56,7 @@ export default function ThreadsScreen({ navigation }) {useInternational();
               <Text style={styles.time}>{when(item.lastAt)}</Text>
             </View>
             <Text style={styles.preview} numberOfLines={1}>
-              {item.lastBody ?? `Om: ${item.subject}`}
+              {item.lastBody ?? tr("No messages yet. Say hi!")}
             </Text>
             </View>
           </Card>

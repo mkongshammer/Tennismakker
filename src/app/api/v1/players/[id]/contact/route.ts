@@ -49,7 +49,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const thread = await db.matchRequest.create({
     data: {
       status: "MATCHED",
-      message: `Samtale med ${other.name}`,
+      message: `Conversation with ${other.name}`,
       area: other.area ?? auth.user.area ?? "Danmark",
       level: other.level,
       sport,

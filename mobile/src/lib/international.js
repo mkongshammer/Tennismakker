@@ -15,7 +15,17 @@ let preferences={country:'US',locale:initialLocale,countryChosen:true,languageCh
 setDateLocale(initialLocale);
 const listeners=new Set();
 export function getInternational(){return preferences;}
-export function tr(text,params){return translatePhrase(text,preferences.locale,params);}
+// App-only wording for the US app (English and Spanish), checked before the shared dictionary.
+const APP_PHRASES={
+ 'Sikkerhed':{en:'Security',es:'Seguridad'},
+ 'Træningsmakker':{en:'Hitting partner',es:'Compañero de práctica'},
+ 'Glemt adgangskode':{en:'Forgot password?',es:'¿Olvidaste tu contraseña?'},
+ 'Send nulstillingslink':{en:'Send reset link',es:'Enviar enlace para restablecer'},
+ 'Language':{en:'Language',es:'Idioma'},
+ 'No messages yet. Say hi!':{en:'No messages yet. Say hi!',es:'Aún no hay mensajes. ¡Saluda!'},
+ 'City, state or ZIP':{en:'City, state or ZIP',es:'Ciudad, estado o código postal'},
+};
+export function tr(text,params){const own=APP_PHRASES[text];if(own){const value=preferences.locale==='es'?own.es:own.en;return params?value.replace(/\{(\w+)\}/g,(m,k)=>params[k]??m):value;}return translatePhrase(text,preferences.locale,params);}
 export function money(amount,currency='DKK'){return formatMoney(amount,currency,preferences.locale);}
 export function date(instant,timeZone='Europe/Copenhagen',options){return formatDate(instant,preferences.locale,timeZone,options);}
 function apply(value){
