@@ -1,7 +1,8 @@
 name: App Store submit for review
 
-# Attaches the given build to iOS version 1.0.0 and submits that version to
-# App Review through the App Store Connect API. Manual trigger only.
+# Attaches the given build to an iOS version (created if it doesn't exist yet,
+# with release notes) and submits that version to App Review through the App
+# Store Connect API. Manual trigger only.
 
 on:
   workflow_dispatch:
@@ -13,6 +14,14 @@ on:
         description: "Pull the version out of review first and resubmit with this build (true/false)"
         required: false
         default: "false"
+      version:
+        description: "App version (e.g. 1.0.1)"
+        required: false
+        default: "1.0.0"
+      notes:
+        description: "What's new (for a new version)"
+        required: false
+        default: "A cleaner start screen and design improvements."
 
 permissions:
   contents: read
@@ -27,6 +36,8 @@ jobs:
       ASC_APP_ID: "6820186123"
       BUILD_NUMBER: ${{ inputs.build }}
       REPLACE: ${{ inputs.replace }}
+      APP_VERSION: ${{ inputs.version }}
+      WHATS_NEW: ${{ inputs.notes }}
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -50,17 +61,23 @@ jobs:
           };
           const note = (s) => console.log(`::notice::${String(s).replace(/\n/g, ' ')}`);
           (async () => {
-            const versions = await call('GET', `/v1/apps/${app}/appStoreVersions?filter[platform]=IOS&limit=5`);
-            const v = versions.data.find((x) => x.attributes.versionString === '1.0.0');
-            if (!v) throw Error('No iOS 1.0.0 version');
+            const want = process.env.APP_VERSION || '1.0.0';
+            const versions = await call('GET', `/v1/apps/${app}/appStoreVersions?filter[platform]=IOS&limit=10`);
+            let v = versions.data.find((x) => x.attributes.versionString === want);
+            if (!v) {
+              v = (await call('POST', '/v1/appStoreVersions', { data: { type: 'appStoreVersions', attributes: { platform: 'IOS', versionString: want, releaseType: 'AFTER_APPROVAL' }, relationships: { app: { data: { type: 'apps', id: app } } } } })).data;
+              note(`CREATED version ${want}`);
+            }
+            const locs = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations`).catch(() => ({ data: [] }));
+            for (const l of locs.data) if (want !== '1.0.0' && !l.attributes.whatsNew) await call('PATCH', `/v1/appStoreVersionLocalizations/${l.id}`, { data: { type: 'appStoreVersionLocalizations', id: l.id, attributes: { whatsNew: process.env.WHATS_NEW || 'Design improvements.' } } }).then(() => note(`WHATS NEW set (${l.attributes.locale})`)).catch((e) => note(`whatsNew ${l.attributes.locale}: ${e.message.slice(0, 160)}`));
             note(`VERSION ${v.id} state ${v.attributes.appStoreState}`);
-            const builds = await call('GET', `/v1/builds?filter[app]=${app}&filter[version]=${process.env.BUILD_NUMBER}&filter[preReleaseVersion.version]=1.0.0&limit=1`);
+            const builds = await call('GET', `/v1/builds?filter[app]=${app}&filter[version]=${process.env.BUILD_NUMBER}&filter[preReleaseVersion.version]=${want}&limit=1`);
             const b = builds.data[0];
             if (!b) throw Error(`Build ${process.env.BUILD_NUMBER} not found`);
             note(`BUILD ${b.id} ${b.attributes.version} ${b.attributes.processingState} encryption=${b.attributes.usesNonExemptEncryption}`);
             if (b.attributes.usesNonExemptEncryption == null) await call('PATCH', `/v1/builds/${b.id}`, { data: { type: 'builds', id: b.id, attributes: { usesNonExemptEncryption: false } } });
             await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } })
-              .then(() => note(`ATTACHED build ${b.attributes.version} to 1.0.0`))
+              .then(() => note(`ATTACHED build ${b.attributes.version} to ${want}`))
               .catch((e) => note(`attach deferred: ${e.message.slice(0, 200)}`));
             const detail = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreReviewDetail`).catch(() => null);
             if (detail?.data) {

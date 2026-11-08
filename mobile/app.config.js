@@ -4,7 +4,8 @@ module.exports = ({ config }) => {
     ...config,
     // Over-the-air updates: JS and assets ship through EAS Update on the
     // build's channel; anything native still needs a store build.
-    runtimeVersion: { policy: 'appVersion' },
+    // Pinned so over-the-air updates reach every store build with the same native code (1.0.0 and 1.0.1 differ only in the start screen).
+    runtimeVersion: '1.0.0',
     ...(projectId ? { updates: { url: `https://u.expo.dev/${projectId}`, checkAutomatically: 'ON_LOAD', fallbackToCacheTimeout: 0 } } : {}),
     plugins: [...(config.plugins || []), 'expo-notifications'],
     // Firebase (FCM) config for Android push; the file holds only public client identifiers.
