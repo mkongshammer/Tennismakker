@@ -99,3 +99,21 @@ export async function mailCampaignNumbersOnce() {
   await tellOwner("RacketBuddy: kampagnetal lige nu", `${lines.join("\n")}\n\nKampagnerne sender mandag–fredag kl. 8–18 amerikansk østkysttid (14–24 dansk tid). Næste runde: mandag.`);
   return { sent: lines };
 }
+
+// 8 Nov 2026 evening: the owner asked (from his phone) how many clubs were
+// added today. E-mails today's lead numbers once.
+const LEADS_MAIL = "sales:lead-numbers-mail:2026-11-08";
+export async function mailLeadNumbersOnce(now = new Date()) {
+  if (await db.platformSetting.findUnique({ where: { key: LEADS_MAIL } })) return { done: true };
+  await db.platformSetting.create({ data: { key: LEADS_MAIL, value: now.toISOString() } });
+  const { leadCounts, harvestStats } = await import("./lead-harvest");
+  const midnight = Date.parse(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Copenhagen" }).format(now) + "T00:00:00+01:00");
+  const [clubs, coaches, stats] = await Promise.all([leadCounts(now, "club"), leadCounts(now, "coach"), harvestStats(1, now)]);
+  const today = (k: string) => stats.find((s) => s.key.startsWith(k));
+  const line = (k: string) => { const s = today(k) as Record<string, unknown> | undefined; return s ? `${s.checked ?? 0} steder tjekket, ${s.added ?? 0} tilføjet` : "ingen kørsel registreret i dag"; };
+  const cities = clubs.byCity.slice(0, 8).map(([c, n]) => `${c} (${n})`).join(", ");
+  const { tellOwner } = await import("./founding-offer");
+  await tellOwner("RacketBuddy: nye klubber på listen i dag",
+    `Klubber tilføjet i dag: ${clubs.since(midnight)} (i alt ${clubs.total}).\nTrænere tilføjet i dag: ${coaches.since(midnight)} (i alt ${coaches.total}).\n\nSøgningen i dag (UTC-døgn):\n- Klubber: ${line("club")}\n- Trænere: ${line("coach")}\n\nFlest klubber pr. by: ${cities}`);
+  return { clubsToday: clubs.since(midnight) };
+}
