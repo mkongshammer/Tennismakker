@@ -51,4 +51,4 @@ jobs:
           NODE
           npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: Publish update to the production channel
-        run: npx --yes eas-cli@latest update --channel production --environment production --message "Top bar - plain initials without a ring" --non-interactive
+        run: npx --yes eas-cli@latest update --channel production --environment production --message "Bottom bar - active tab shown by colour only, no pill" --non-interactive

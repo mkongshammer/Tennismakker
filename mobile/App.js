@@ -110,10 +110,10 @@ function MainTabs() {useInternational();
         tabBarActiveTintColor: colors.courtText,
         tabBarInactiveTintColor: colors.slate,
         tabBarStyle: { borderTopColor: colors.border, backgroundColor: colors.surface, paddingTop: 6 },
-        tabBarItemStyle: { borderRadius: 16, marginHorizontal: 4, marginBottom: 4 },
-        tabBarActiveBackgroundColor: colors.courtTint,
+        // The active tab is shown by its colour alone, no pill behind it.
+        tabBarItemStyle: { marginHorizontal: 4, marginBottom: 4 },
         tabBarHideOnKeyboard: true,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" }
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" }
       }}>
 
       <Tabs.Screen
