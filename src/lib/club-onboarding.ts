@@ -101,7 +101,7 @@ export async function refreshClubSignup(clubId:string){
  if(subCustomer!==c.stripeCustomerId||sub.metadata.clubId!==c.id||sub.items.data.length!==1||item.quantity!==1||item.price.currency!==currency||item.price.unit_amount!==c.subscriptionKr*100||item.price.recurring?.interval!==(c.subscriptionInterval==='YEAR'?'year':'month')||item.price.recurring.interval_count!==1)throw Error('Abonnementets pris eller tilknytning stemmer ikke.');
  const setupPaid=Boolean(c.signupSetupPaidAt)||c.signupSetupKr===0||(session.status==='complete'&&session.payment_status==='paid'&&session.currency===currency&&session.amount_subtotal===(c.signupSetupKr+c.subscriptionKr)*100);
  const paid=setupPaid&&sub.status==='active'&&invoice?.status==='paid'&&invoice.currency===currency&&invoice.amount_paid>=c.subscriptionKr*100;
- return db.$transaction(async tx=>{
+ const result=await db.$transaction(async tx=>{
   await tx.$queryRaw`SELECT id FROM "Club" WHERE id=${clubId} FOR UPDATE`;
   const current=await tx.club.findUniqueOrThrow({where:{id:clubId}});
   if(current.signupCheckoutId!==c.signupCheckoutId)return {...current,currentPaymentVerified:false};
@@ -112,6 +112,15 @@ export async function refreshClubSignup(clubId:string){
   const updated=await tx.club.update({where:{id:clubId},data:{subscriptionId:sub.id,subscriptionStatus:sub.status,signupSetupPaidAt:paid&&c.signupSetupKr>0?current.signupSetupPaidAt??new Date():current.signupSetupPaidAt,subscriptionRenewsAt:item.current_period_end?new Date(item.current_period_end*1000):null,signupPaidAt:paid?current.signupPaidAt??new Date():current.signupPaidAt,status:nextStatus,approvedAt:paid&&current.status!=='REJECTED'?current.approvedAt??new Date():current.approvedAt}});
   return {...updated,currentPaymentVerified:paid,paymentFailureStreak:paid?0:streak};
  });
+ // Fraud check: tell the owner once when a new club has paid and gone live (background, never blocks).
+ if(result.currentPaymentVerified)void notifyPaidOnce(clubId).catch(()=>{});
+ return result;
+}
+
+async function notifyPaidOnce(clubId:string){
+ try{await db.platformSetting.create({data:{key:`club:paid-alert:${clubId}`,value:new Date().toISOString()}});}catch{return;}
+ const {alertOwnerAboutSignup}=await import('./club-signup-guard');
+ await alertOwnerAboutSignup(clubId,'paid');
 }
 
 export async function approvePaidSignup(id:string){

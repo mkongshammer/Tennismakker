@@ -15,7 +15,7 @@ import { Icon, Notice } from "../../components/ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ betaling?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ betaling?: string; email?: string }> }) {
   const u = await getCurrentUser();
   if (u?.role !== "CLUB_ADMIN" || !u.clubId) redirect("/login");
   const { locale } = await getPreferences();
@@ -52,6 +52,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ b
         <p className="mt-2 text-slate">{approved ? "You’re live. Open the admin to release times and connect payouts." : paid ? "Payment received — we’re reviewing your club now." : "Your club login is ready. Pay the subscription to start the review."}</p>
       </header>
 
+      {query.email === "confirmed" && <Notice tone="success">Thanks, your email is confirmed.</Notice>}
+      {query.email === "invalid" && <Notice tone="warning">That confirmation link didn’t work. You can keep setting up your club; contact support@racketbuddy.app if you need a new link.</Notice>}
       {error && <Notice tone="warning">{error}</Notice>}
       {needsPaymentUpdate && <Notice tone="warning" title="Update your payment card">The club is shown again as soon as the payment is confirmed. Use the billing portal from Payments in the admin.</Notice>}
 

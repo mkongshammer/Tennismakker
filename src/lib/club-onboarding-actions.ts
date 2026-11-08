@@ -4,6 +4,8 @@ import {ensureWebhookEndpoint,inspectWebhook} from './webhook-setup';
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import {redirect} from 'next/navigation';
+import {headers} from 'next/headers';
+import {clientIp,signupAllowed,recordSignup,sendVerificationEmail,alertOwnerAboutSignup} from './club-signup-guard';
 import {revalidatePath} from 'next/cache';
 import {db} from './db';
 import {createSession,getCurrentUser} from './session';
@@ -16,7 +18,8 @@ import {geocode} from './geocode';
 import {COURT_OPTIONS} from './club-sports';
 import {SPORTS,sportLabel,type Sport} from './sports';
 export async function registerClub(_prev:unknown,form:FormData){
- let userId:string;
+ let userId:string,clubId:string,clubName:string,contactEmail:string;
+ const ip=clientIp(await headers());
  try{
   const email=String(form.get('email')??'').trim().toLowerCase(),password=String(form.get('password')??''),name=String(form.get('name')??'').trim(),city=String(form.get('city')??'').trim(),contact=String(form.get('contact')??'').trim(),mode=String(form.get('mode'));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||Buffer.byteLength(password)>72||password.length<10||name.length<2||name.length>150||!city||city.length>100||!contact||contact.length>150)throw Error('Udfyld navn, by, kontaktperson og gyldig e-mail. Brug en adgangskode på 10–72 tegn.');
@@ -38,15 +41,21 @@ export async function registerClub(_prev:unknown,form:FormData){
   const counts=sports.map(s=>({sport:s as Sport,count:Number(form.get('count_'+s))}));
   if(counts.some(x=>!Number.isInteger(x.count)||x.count<1||x.count>30))throw Error('Vælg mellem 1 og 30 baner/borde pr. sportsgren.');
   const priceHour=Number(form.get('priceHour'));if(!Number.isSafeInteger(priceHour)||priceHour<0||priceHour>10000)throw Error('Vælg en gyldig banepris.');
+  // Fraud guard: a generous cap on clubs created per network per hour (a real club creates one).
+  if(!(await signupAllowed(ip)))throw Error('Too many club sign-ups from this network in the last hour. Please try again later or email support@racketbuddy.app.');
   const passwordHash=await bcrypt.hash(password,12);
   const coords=address?await geocode(address,city,country):null;
-  userId=await db.$transaction(async tx=>{
+  ({userId,clubId}=await db.$transaction(async tx=>{
    if(await tx.user.findUnique({where:{email}}))throw Error('E-mailen er allerede registreret. Log ind eller brug en anden e-mail.');
    const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:'CUSTOM',customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:0,billingModel:'SUBSCRIPTION',subscriptionKr:price,subscriptionInterval:billing,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
    for(const {sport,count} of counts){const opt=COURT_OPTIONS[sport];await tx.court.createMany({data:Array.from({length:count},(_,i)=>({clubId:club.id,name:`${sportLabel(sport,locale as any)} ${locale==="da"?opt.noun:sport==="BORDTENNIS"?"table":"court"} ${i+1}`,sport,surface:opt.surfaces[0],indoor:opt.indoor}))});}
-   return (await tx.user.create({data:{email,name:contact,passwordHash,country,locale,countryChosen:true,role:'CLUB_ADMIN',clubId:club.id,termsAcceptedAt:new Date()}})).id;
-  });
+   return {userId:(await tx.user.create({data:{email,name:contact,passwordHash,country,locale,countryChosen:true,role:'CLUB_ADMIN',clubId:club.id,termsAcceptedAt:new Date()}})).id,clubId:club.id};
+  }));
+  clubName=name;contactEmail=email;
  }catch(e){return{error:e instanceof Error?e.message:'Klubben kunne ikke oprettes.'};}
+ await recordSignup(ip).catch(()=>{});
+ // Confirmation e-mail and the owner's alert run in the background; the club never waits for them.
+ void (async()=>{const {getSettings}=await import('./settings');const {appUrl}=await getSettings();await Promise.allSettled([sendVerificationEmail({id:clubId,name:clubName},contactEmail,appUrl||'https://racketbuddy.app'),alertOwnerAboutSignup(clubId,'registered')]);})().catch(()=>{});
  await createSession(userId);redirect('/club-start');
 }
 export async function payClubSignup(_prev:unknown,_form:FormData){
