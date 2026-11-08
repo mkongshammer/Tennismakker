@@ -51,4 +51,4 @@ jobs:
           NODE
           npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: Publish update to the production channel
-        run: npx --yes eas-cli@latest update --channel production --environment production --message "Face ID app lock can be turned on (fixed storage key)" --non-interactive
+        run: npx --yes eas-cli@latest update --channel production --environment production --message "Start-up wordmark shows for 2.5 seconds and fades into the app" --non-interactive

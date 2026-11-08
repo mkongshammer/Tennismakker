@@ -9,7 +9,7 @@
     "newArchEnabled": false,
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash-wordmark.png",
+      "image": "./assets/splash-blank.png",
       "resizeMode": "contain",
       "backgroundColor": "#081527"
     },

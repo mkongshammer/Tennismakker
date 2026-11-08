@@ -34,3 +34,29 @@ const styles = StyleSheet.create({
   track: { width: 128, height: 3, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", marginTop: 22 },
   bar: { width: 64, height: 3, borderRadius: 2, backgroundColor: colors.courtText },
 });
+
+// Cold start: the wordmark stays for at least ~2.5 seconds so it can be seen,
+// and longer if the app is still loading, then fades out over the app.
+const MIN_MS = 2500;
+const startedAt = Date.now();
+
+export function BootOverlay({ ready }) {
+  const [minDone, setMinDone] = React.useState(Date.now() - startedAt >= MIN_MS);
+  const [gone, setGone] = React.useState(false);
+  const fade = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (minDone) return;
+    const id = setTimeout(() => setMinDone(true), Math.max(0, MIN_MS - (Date.now() - startedAt)));
+    return () => clearTimeout(id);
+  }, [minDone]);
+  useEffect(() => {
+    if (!(ready && minDone)) return;
+    Animated.timing(fade, { toValue: 0, duration: 350, easing: Easing.out(Easing.quad), useNativeDriver: true }).start(() => setGone(true));
+  }, [ready, minDone, fade]);
+  if (gone) return null;
+  return (
+    <Animated.View pointerEvents={ready && minDone ? "none" : "auto"} style={[StyleSheet.absoluteFill, { opacity: fade, zIndex: 1000 }]}>
+      <BootScreen />
+    </Animated.View>
+  );
+}
