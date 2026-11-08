@@ -59,8 +59,8 @@ export const SURFACES = {
   INDE: "Indendørs",
 };
 
-// RacketBuddy US serves tennis, pickleball and padel clubs.
-export const SPORTS = ["TENNIS", "PICKLEBALL", "PADEL"];
+// Racquet sports on RacketBuddy (tennis, pickleball and padel first).
+export const SPORTS = ["TENNIS", "PICKLEBALL", "PADEL", "BADMINTON", "SQUASH", "BORDTENNIS"];
 
 export const SPORT_LABELS = {
   TENNIS: "Tennis",
