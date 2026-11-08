@@ -77,6 +77,9 @@ export async function runSyncJob({ agents = true }: { agents?: boolean } = {}) {
     const { copySharedConfigToUS } = await import("./us-standalone");
     const standalone = await copySharedConfigToUS().catch((err) => { console.error("US standalone copy failed:", err); return null; });
     if (standalone?.copied.length) console.log("[us-standalone]", JSON.stringify(standalone));
+    // Clubs that stopped at the payment step get a personal follow-up (2 hours, then 3 days later).
+    const { runSignupFollowups } = await import("./signup-followup");
+    await runSignupFollowups().then((r) => { if (r.sent) console.log("[signup-followup]", JSON.stringify(r)); }).catch((err) => console.error("Signup follow-up failed:", err));
     const { runFoundingWatch } = await import("./founding-offer");
     await runFoundingWatch().catch((err) => console.error("Founding watch failed:", err));
     // Launch morning: start the Instantly campaigns by themselves (10 Nov 2026, 7:00 New York).
