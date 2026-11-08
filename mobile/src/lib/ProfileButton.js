@@ -23,12 +23,10 @@ export function ProfileButton() {useInternational();
       onPress={openProfile}
       accessibilityLabel={tr("Min profil")}
       accessibilityRole="button"
-      hitSlop={8}
+      hitSlop={12}
       style={({ pressed }) => ({ justifyContent: "center", alignItems: "center", opacity: pressed ? 0.6 : 1 })}>
 
-      <View style={styles.circle}>
-        <Text style={styles.initials}>{initials}</Text>
-      </View>
+      <Text style={styles.initials}>{initials}</Text>
     </Pressable>);
 
 }
@@ -45,6 +43,9 @@ const styles = StyleSheet.create({
   initials: {
     color: colors.courtText,
     fontWeight: "800",
-    fontSize: 12
+    fontSize: 16,
+    letterSpacing: 0.5,
+    paddingVertical: 10,
+    paddingLeft: 12
   }
 });

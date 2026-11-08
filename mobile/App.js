@@ -17,6 +17,7 @@ import { colors } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
 import { LiveUpdates } from "./src/lib/LiveUpdates";
+import { AppHeader } from "./src/lib/AppHeader";
 import { IconCourt, IconCoach, IconPlayers, IconMessages } from "./src/lib/icons";
 
 import LoginScreen from "./src/screens/LoginScreen";
@@ -41,11 +42,7 @@ const ChatStack = createNativeStackNavigator();
 // Fælles udseende for hver fanes eget navigationshoved. Profil-knappen
 // sidder i hjørnet på alle skærme, ligesom på websitet.
 const screenOptions = {
-  headerStyle: { backgroundColor: colors.surface },
-  headerTintColor: colors.text,
-  headerTitleStyle: { fontWeight: "700", fontSize: 17 },
-  headerShadowVisible: false,
-  headerRight: () => <ProfileButton />
+  header: (props) => <AppHeader {...props} />
 };
 
 function ClubsStack() {useInternational();
