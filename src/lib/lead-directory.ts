@@ -259,3 +259,39 @@ export async function nextCoachVenues(state: string, take: number) {
   await db.platformSetting.upsert({ where: { key }, create: { key, value: JSON.stringify(q) }, update: { value: JSON.stringify(q) } });
   return { batch, done: q.pos >= q.venues.length, total: q.venues.length };
 }
+
+// ---------------------------------------------------------------- City sweep
+// A state-wide Places search returns at most ~40 places per query, so big
+// states are under-covered. Once a state's first pass is done, clubs are also
+// searched city by city (one page per query), each city refreshed every 60 days.
+const CITY_QUERIES = ["tennis club", "pickleball club", "padel club", "racquet club", "tennis center"];
+
+export async function nextCityVenues(take: number) {
+  const { US_CITIES } = await import("./us-cities");
+  const key = process.env.GOOGLE_PLACES_API_KEY;
+  if (!key) return { batch: [] as DirectoryVenue[], done: true, city: null as string | null };
+  const curKey = "sales:dircity:cursor";
+  const cur = Number((await db.platformSetting.findUnique({ where: { key: curKey } }))?.value ?? 0) || 0;
+  const [city, state] = US_CITIES[cur % US_CITIES.length];
+  const cacheKey = `sales:dircity:${city}|${state}`;
+  const row = await db.platformSetting.findUnique({ where: { key: cacheKey } });
+  let q: { at: string; venues: DirectoryVenue[]; pos: number } | null = row ? JSON.parse(row.value) : null;
+  if (!q || Date.now() - Date.parse(q.at) > 60 * 86_400_000) {
+    const venues: DirectoryVenue[] = [];
+    for (const query of CITY_QUERIES) {
+      const data = await placesSearch(key, `${query} in ${city}, ${state}`);
+      if (!data) throw new Error("places-daily-cap"); // retry this city later, don't cache a half-read city
+      for (const v of venuesFromPlaces(data.places ?? [], state, query)) {
+        const placeState = (data.places ?? []).find((p) => (p.displayName?.text ?? "").trim().slice(0, 120) === v.name)?.addressComponents?.find((c) => c.types?.includes("administrative_area_level_1"))?.longText;
+        venues.push({ ...v, state: placeState && STATE_CODES[placeState] ? placeState : state });
+      }
+    }
+    q = { at: new Date().toISOString(), venues: dedupe(venues), pos: 0 };
+  }
+  const batch = q.venues.slice(q.pos, q.pos + take);
+  q.pos += batch.length;
+  await db.platformSetting.upsert({ where: { key: cacheKey }, create: { key: cacheKey, value: JSON.stringify(q) }, update: { value: JSON.stringify(q) } });
+  const done = q.pos >= q.venues.length;
+  if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
+  return { batch, done, city: `${city}, ${state}` };
+}

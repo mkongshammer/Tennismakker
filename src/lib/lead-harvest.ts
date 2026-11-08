@@ -118,7 +118,7 @@ export async function harvestStats(days = 3, now = new Date()) {
  * read from each club's own website. Moves to the next state when one is done.
  */
 async function harvestClubsFromDirectory(now: Date, sites = 120) {
-  const { STATE_CODES, nextVenues, findClubEmail } = await import("./lead-directory");
+  const { STATE_CODES, nextVenues, nextCityVenues, findClubEmail } = await import("./lead-directory");
   const all = Object.keys(STATE_CODES);
   const order = [...STATES, ...all.filter((s) => !STATES.includes(s))];
   const curKey = "sales:lead-harvest:dircursor";
@@ -140,6 +140,11 @@ async function harvestClubsFromDirectory(now: Date, sites = 120) {
       reject(error === "places-daily-cap" ? "places-daily-cap" : "map-data-unavailable");
       break; // retry this state on a later round, don't skip it
     }
+    await processVenues(batch);
+    if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
+    else break;
+  }
+  async function processVenues(batch: Awaited<ReturnType<typeof nextVenues>>["batch"]) {
     const work = batch.map((v) => async () => {
       checked++;
       const host = normalizeHost(v.website);
@@ -156,8 +161,19 @@ async function harvestClubsFromDirectory(now: Date, sites = 120) {
       ]).then(() => { added++; }).catch(() => reject("save-failed"));
     });
     for (let i = 0; i < work.length; i += 10) await Promise.all(work.slice(i, i + 10).map((f) => f().catch(() => reject("error"))));
-    if (done) await db.platformSetting.upsert({ where: { key: curKey }, create: { key: curKey, value: String(cur + 1) }, update: { value: String(cur + 1) } });
-    else break;
+  }
+  // Every state's first pass done (or this round had room left): search city by city.
+  for (let hop = 0; hop < 15 && checked < sites && !why["places-daily-cap"]; hop++) {
+    let batch; let done = false; let city: string | null = null;
+    try { ({ batch, done, city } = await nextCityVenues(sites - checked)); }
+    catch (e) {
+      const error = e instanceof Error ? e.message : String(e);
+      reject(error === "places-daily-cap" ? "places-daily-cap" : "map-data-unavailable");
+      break;
+    }
+    if (city) statesSeen.push(city);
+    await processVenues(batch);
+    if (!done) break;
   }
   await recordStats("club", now, { calls: 0, checked: Math.max(checked, Object.keys(why).length ? 1 : 0), added, why, sites: checked } as Stats);
   const pushed = await pushLeadsToInstantly("club").catch((e) => ({ pushed: 0, error: e instanceof Error ? e.message : String(e) }));
