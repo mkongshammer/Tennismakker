@@ -8,7 +8,8 @@ import { Button, Loading } from "./ui";
 import { colors } from "./theme";
 
 const AppLockContext = createContext(null);
-const lockKey = (userId) => `rb_biometric_lock:${userId}`;
+// SecureStore keys may only contain letters, digits, ".", "-" and "_".
+const lockKey = (userId) => `rb_biometric_lock.${String(userId).replace(/[^A-Za-z0-9._-]/g, "_")}`;
 
 function labelForTypes(types) {
   if (Platform.OS === "ios" && types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return "Face ID";
