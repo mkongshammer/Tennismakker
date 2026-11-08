@@ -49,6 +49,8 @@ export async function runJobOnce(job: CronJob) {
     if (!("done" in win)) console.log("[campaign-window]", JSON.stringify(win));
     const { removeGoogleReviewThread } = await import("./oneoff-cleanup");
     await removeGoogleReviewThread().then((r) => { if ("removed" in r) console.log("[oneoff] google review thread", JSON.stringify(r)); }).catch((e) => console.error("[oneoff]", e));
+    const { sendHatfieldFollowup } = await import("./oneoff-hatfield");
+    await sendHatfieldFollowup().then((r) => { if (!("done" in r)) console.log("[oneoff] hatfield", JSON.stringify(r)); }).catch((e) => console.error("[oneoff] hatfield", e));
     const { mailCampaignNumbersOnce } = await import("./campaign-autostart");
     await mailCampaignNumbersOnce().catch((e) => console.error("[campaign-numbers]", e));
   }

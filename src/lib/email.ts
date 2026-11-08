@@ -16,6 +16,8 @@ type Mail = {
   body: string; // ren tekst, én besked pr. linje
   /** Svar går hertil i stedet for til afsenderen, fx klubbens kasserer. */
   replyTo?: string;
+  /** Optional sender on a verified domain, e.g. "Magnus Kongshammer <magnus@racketbuddy.app>". */
+  from?: string;
   /** Internal: the quota warning itself is not counted (no warning loop). */
   uncounted?: boolean;
 };
@@ -59,7 +61,7 @@ export async function sendMail(mail: Mail): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from,
+        from: mail.from ?? from,
         to: [mail.to],
         subject: mail.subject,
         text: mail.body,

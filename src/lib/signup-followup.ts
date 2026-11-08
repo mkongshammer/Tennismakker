@@ -35,7 +35,7 @@ export async function runSignupFollowups(now = Date.now()) {
     if (!first && !legacy) {
       if (!(await claim(firstKey))) continue;
       await sendMail({
-        to: c.contactEmail!, replyTo: "support@racketbuddy.app", subject: "Your RacketBuddy club setup",
+        to: c.contactEmail!, from: "Magnus Kongshammer <magnus@racketbuddy.app>", replyTo: "magnus@racketbuddy.app", subject: "Your RacketBuddy club setup",
         body: `Hi,\n\nI'm Magnus, the founder of RacketBuddy. I saw you started setting up ${c.name}. Thanks for giving us a try!\n\nIs there anything I can help with, or anything that held you back? Just reply to this email and I'll get back to you personally.\n\n${offer}\n\nYou can pick up where you left off here: https://racketbuddy.app/club-start\n\nBest,\nMagnus\nRacketBuddy`,
       });
       sent++;
@@ -45,7 +45,7 @@ export async function runSignupFollowups(now = Date.now()) {
     if (!Number.isFinite(firstAt) || now - firstAt < SECOND_AFTER_MS) continue;
     if (!(await claim(`club:payment-followup:2:${c.id}`))) continue;
     await sendMail({
-      to: c.contactEmail!, replyTo: "support@racketbuddy.app", subject: `Still want ${c.name} on RacketBuddy?`,
+      to: c.contactEmail!, from: "Magnus Kongshammer <magnus@racketbuddy.app>", replyTo: "magnus@racketbuddy.app", subject: `Still want ${c.name} on RacketBuddy?`,
       body: `Hi,\n\nJust a quick follow-up: your club setup for ${c.name} is saved, so it only takes a minute to finish: https://racketbuddy.app/club-start\n\nIf something didn't fit (price, features, timing, or switching from your current system), I'd really like to hear it. A one-line reply is plenty.\n\nBest,\nMagnus\nRacketBuddy`,
     });
     sent++;
