@@ -21,7 +21,7 @@ export default function CoachesScreen({ navigation }) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
         ListHeaderComponent={<><AppHeading eyebrow={tr("L\xD8FT DIT SPIL")} title={tr("Et skridt videre.")} subtitle={tr("Find en tr\xE6ner, der passer til din sport og dit niveau.")} /><SportPicker value={sport} onChange={setSport} />{error && <ErrorMessage message={error} onRetry={refresh} />}</>}
         keyExtractor={(c) => c.id}
-        ListEmptyComponent={loading ? <Loading label={tr("Finder tr\xE6nere\u2026")} /> : error && !data ? null : <Empty title={tr("Dit n\xE6ste tr\xE6nerteam er p\xE5 vej")} icon="↗">{tr("Ingen tr\xE6nere i") + " "}{SPORT_LABELS[sport]?.toLowerCase()}{" " + tr("endnu. V\xE6lg en anden sportsgren for at se de tilmeldte tr\xE6nere.")}</Empty>}
+        ListEmptyComponent={loading ? <Loading inline label={tr("Finder tr\xE6nere\u2026")} /> : error && !data ? null : <Empty title={tr("Dit n\xE6ste tr\xE6nerteam er p\xE5 vej")} icon="↗">{tr("Ingen tr\xE6nere i") + " "}{SPORT_LABELS[sport]?.toLowerCase()}{" " + tr("endnu. V\xE6lg en anden sportsgren for at se de tilmeldte tr\xE6nere.")}</Empty>}
         renderItem={({ item }) =>
         <Pressable accessibilityRole="button" accessibilityLabel={`Se ${item.name}`} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })} onPress={() => navigation.navigate("Traener", { id: item.id, name: item.name })}>
               <Card>

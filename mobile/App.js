@@ -18,6 +18,7 @@ import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
 import { LiveUpdates } from "./src/lib/LiveUpdates";
 import { AppHeader } from "./src/lib/AppHeader";
+import { BootScreen } from "./src/lib/Boot";
 import { IconCourt, IconCoach, IconPlayers, IconMessages } from "./src/lib/icons";
 
 import LoginScreen from "./src/screens/LoginScreen";
@@ -156,7 +157,7 @@ function MainTabs() {useInternational();
 function Root() {useInternational();
   const { user, loading, sessionError, restore } = useAuth();
 
-  if (loading) return <Loading label={tr("Starter RacketBuddy\u2026")} />;
+  if (loading) return <BootScreen label={tr("Starter RacketBuddy\u2026")} />;
   if (sessionError) return <View style={{ flex: 1, justifyContent: "center", backgroundColor: colors.mist }}><ErrorMessage message={sessionError} onRetry={restore} /></View>;
   if (!user) return <LoginScreen />;
 

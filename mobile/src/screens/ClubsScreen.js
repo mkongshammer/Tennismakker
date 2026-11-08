@@ -66,7 +66,7 @@ export default function ClubsScreen({ navigation }) {
 
         }
         ListEmptyComponent={
-        state.loading ? <Loading label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /></View>
+        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /></View>
         }
         renderItem={({ item }) =>
         <Pressable

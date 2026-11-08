@@ -1,6 +1,8 @@
 import { tr, useInternational } from "./international";import React from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   Pressable,
   StyleSheet,
   Text,
@@ -50,11 +52,30 @@ export function Badge({ children, tone = "ink" }) {useInternational();
 
 }
 
-export function Loading({ label = "Henter…" }) {useInternational();
+// Loading looks like the content it is waiting for: soft placeholder cards
+// that breathe, instead of a spinner and a sentence.
+export function Loading({ label = "Henter…", inline = false }) {useInternational();
+  const pulse = React.useRef(new Animated.Value(0.55)).current;
+  React.useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 750, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0.55, duration: 750, easing: Easing.inOut(Easing.quad), useNativeDriver: true })
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
   return (
-    <View style={styles.center}>
-      <ActivityIndicator color={colors.courtText} />
-      <Text style={styles.muted}>{tr(label)}</Text>
+    <View style={[styles.skeletonWrap, inline && { padding: 0 }]} accessible accessibilityRole="progressbar" accessibilityLabel={tr(label)}>
+      {[0, 1, 2].map((i) =>
+      <Animated.View key={i} style={[styles.skeletonCard, { opacity: pulse }]}>
+          <View style={styles.skeletonThumb} />
+          <View style={{ flex: 1, gap: 10 }}>
+            <View style={[styles.skeletonLine, { width: "72%", height: 16 }]} />
+            <View style={[styles.skeletonLine, { width: "48%" }]} />
+            <View style={[styles.skeletonLine, { width: "34%" }]} />
+          </View>
+        </Animated.View>
+      )}
     </View>);
 
 }
@@ -126,6 +147,10 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: colors.chalk, fontSize: 12, fontWeight: "700" },
   center: { padding: 32, alignItems: "center", gap: 12 },
+  skeletonWrap: { padding: 20, gap: 14, width: "100%", maxWidth: 600, alignSelf: "center" },
+  skeletonCard: { flexDirection: "row", gap: 16, padding: 20, borderRadius: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: "center" },
+  skeletonThumb: { width: 72, height: 72, borderRadius: 16, backgroundColor: colors.raised },
+  skeletonLine: { height: 11, borderRadius: 6, backgroundColor: colors.raised },
   muted: { color: colors.slate, textAlign: "center", fontSize: 15, lineHeight: 23, maxWidth: 420 },
   error: { color: colors.courtText, fontWeight: "600", textAlign: "center" },
   empty: { padding: 28, marginVertical: 12, alignItems: "center", gap: 12, borderRadius: 24, backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },

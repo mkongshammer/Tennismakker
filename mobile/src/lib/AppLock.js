@@ -1,3 +1,4 @@
+import { BootScreen } from "./Boot";
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { AppState, Platform, Text, View } from "react-native";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -141,7 +142,7 @@ export function AppLockProvider({ children }) {
 export function AppLockGate({ children }) {
   const { user } = useAuth();
   const lock = useAppLock();
-  if (user && !lock.ready) return <Loading label="Sikrer RacketBuddy…" />;
+  if (user && !lock.ready) return <BootScreen label="RacketBuddy" />;
   if (!user || !lock.enabled || !lock.locked) return children;
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28, backgroundColor: colors.mist }}>

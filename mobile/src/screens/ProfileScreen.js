@@ -174,7 +174,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
       <Text style={styles.section}>{tr("Kommende bookinger")}</Text>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {state.loading ?
-      <Loading /> :
+      <Loading inline /> :
       !state.data ? null : state.data.bookings.length === 0 ?
       <Card style={{ padding: 20, gap: 16 }}>
           <Text style={{ color: colors.slate, fontSize: 15, lineHeight: 23 }}>{tr("Ingen bookinger endnu. Find din n\xE6ste banetid \u2014 dine reservationer vises her.")}</Text>
