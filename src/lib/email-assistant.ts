@@ -159,10 +159,13 @@ async function underSenderLimit(addr: string) {
   return true;
 }
 
+// The owner's work inbox always gets a copy (owner's request, 8 Nov 2026).
+export const OWNER_INBOX = "magnus@racketbuddy.app";
+
 async function ownerAddresses() {
   const list = (process.env.SUPPORT_ESCALATION_EMAIL ?? process.env.SALES_DIGEST_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  if (list.length) return list;
-  return (await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email);
+  const base = list.length ? list : (await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email);
+  return [...new Set([...base, OWNER_INBOX].map((a) => a.toLowerCase()))];
 }
 
 /** Hands a case to the owner. Reply-To is the customer, so answering is one click. */

@@ -57,6 +57,7 @@ export async function setCampaignPriceCopy(mode: "founding" | "regular") {
 export async function tellOwner(subject: string, body: string) {
   const to = (process.env.SALES_DIGEST_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   if (!to.length) to.push(...(await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email));
+  if (!to.map((a) => a.toLowerCase()).includes("magnus@racketbuddy.app")) to.push("magnus@racketbuddy.app"); // owner's work inbox always gets a copy
   for (const t of to) await sendMail({ to: t, subject, body });
 }
 
