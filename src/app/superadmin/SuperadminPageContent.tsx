@@ -196,13 +196,13 @@ export default async function SuperadminPageContent({ section }: { section: Supe
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-slate">Pris</dt>
-                    <dd>{formatMoney(club.priceHour,club.currency,"da")}/time</dd>
+                    <dd>{formatMoney(club.priceHour,club.currency,club.currency==="USD"?"en-US":"da")}/time</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-slate">Model</dt>
                     <dd>
                       {club.billingModel === "SUBSCRIPTION"
-                        ? `Abonnement ${formatMoney(club.subscriptionKr,club.billingCurrency,"da")}/md`
+                        ? `Abonnement ${formatMoney(club.subscriptionKr,club.billingCurrency,club.billingCurrency==="USD"?"en-US":"da")}/${club.subscriptionInterval==="YEAR"?"år":"md"}`
                         : `${pct}% provision`}
                     </dd>
                   </div>
@@ -263,7 +263,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
         <p className="mb-4 text-sm text-slate">
           {orders.length === 0
             ? "Ingen åbne bestillinger."
-            : `${orders.length} i gang. 5.000 kr pr. opsætning.`}
+            : `${orders.length} i gang.`}
         </p>
 
         <ul className="space-y-3">

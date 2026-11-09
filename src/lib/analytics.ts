@@ -116,7 +116,6 @@ export async function overview(): Promise<{ periods: Period[]; rows: Row[] }> {
 
 export type MoneyRow = { label: string; note?: string; values: string[] };
 
-const kr = (n: number) => `${n.toLocaleString("da-DK")} kr`;
 
 /**
  * Hvad der faktisk kom ind.
@@ -129,50 +128,70 @@ const kr = (n: number) => `${n.toLocaleString("da-DK")} kr`;
  * ikke som Payment-rækker her. Beløbet er derfor det, der løber lige nu,
  * ikke det der er kommet ind i perioden.
  */
+export type EconomyKpi = { label: string; value: string; note: string };
+
+/** Superadmin money is shown the way a US company reports it: "$1,250". */
+export const usd = (n: number) => formatMoney(Math.round(n * 100) / 100, "USD", "en-US");
+
 export async function economy(): Promise<{
   periods: Period[];
   rows: MoneyRow[];
-  subscriptionMonthly: string;
-  subscriptionClubs: number;
+  kpis: EconomyKpi[];
+  otherCurrencies: string[];
+  subscribers: { name: string; city: string; monthly: string; interval: string; since: string }[];
 }> {
   const ps = periods();
+  const { foundingStatus } = await import("./club-onboarding");
 
-  const sums = await Promise.all(
-    ps.map((p) =>
-      db.payment.groupBy({
-        by:["currency"],
-        _sum: { amountKr: true, platformFee: true },
-        _count: true,
-        where: { status: "PAID", ...(p.since ? { createdAt: { gte: p.since } } : {}) },
-      })
-    )
-  );
+  const [sums, subs, pipeline, founding, others] = await Promise.all([
+    Promise.all(
+      ps.map((p) =>
+        db.payment.aggregate({
+          _sum: { amountKr: true, platformFee: true },
+          _count: true,
+          where: { status: "PAID", currency: "USD", ...(p.since ? { createdAt: { gte: p.since } } : {}) },
+        })
+      )
+    ),
+    db.club.findMany({
+      where: { billingModel: "SUBSCRIPTION", billingCurrency: "USD", subscriptionStatus: { in: ["active", "trialing"] } },
+      select: { name: true, city: true, subscriptionKr: true, subscriptionInterval: true, signupPaidAt: true, createdAt: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    db.club.count({ where: { signupManaged: true, billingCurrency: "USD", signupPaidAt: null, status: { not: "REJECTED" } } }).catch(() => 0),
+    foundingStatus().catch(() => null),
+    db.payment.groupBy({ by: ["currency"], _count: true, where: { status: "PAID", currency: { not: "USD" } } }).catch(() => []),
+  ]);
 
-  const subscribers = await db.club.findMany({
-    where: { billingModel: "SUBSCRIPTION", subscriptionStatus: { in: ["active", "trialing"] } },
-    select: { subscriptionKr: true, billingCurrency:true },
-  });
+  const monthlyOf = (c: { subscriptionKr: number; subscriptionInterval: string }) =>
+    c.subscriptionInterval === "YEAR" ? c.subscriptionKr / 12 : c.subscriptionKr;
+  const mrr = subs.reduce((n, c) => n + monthlyOf(c), 0);
+  const total = sums[sums.length - 1];
+  const gmv = total._sum.amountKr ?? 0;
+  const fee = total._sum.platformFee ?? 0;
 
   return {
     periods: ps,
-    rows: [
-      {
-        label: "Betalinger",
-        note: "gennemført",
-        values: sums.map((s) => String(s.reduce((n,row)=>n+row._count,0))),
-      },
-      {
-        label: "Beløb gennem platformen",
-        note: "klubbens og vores tilsammen",
-        values: sums.map((s) => s.length?s.map(row=>formatMoney(row._sum.amountKr??0,row.currency,"da")).join(" · "):formatMoney(0,"DKK","da")),
-      },
-      {
-        label: "Vores andel",
-        note: "før Stripes gebyr",
-        values: sums.map((s) => s.length?s.map(row=>formatMoney(row._sum.platformFee??0,row.currency,"da")).join(" · "):formatMoney(0,"DKK","da")),
-      },
+    kpis: [
+      { label: "MRR", value: usd(mrr), note: "Løbende månedlig abonnementsomsætning. Årsabonnementer tæller med 1/12." },
+      { label: "ARR", value: usd(mrr * 12), note: "MRR × 12" },
+      { label: "Betalende klubber", value: String(subs.length), note: subs.length ? `Gns. ${usd(mrr / subs.length)}/md pr. klub` : "Ingen endnu" },
+      { label: "Founding-pladser", value: founding ? `${founding.left} af ${founding.total}` : "—", note: founding ? `${founding.taken} taget · ${usd(founding.monthly)}/md låst for altid` : "" },
+      { label: "Afventer betaling", value: String(pipeline), note: "Tilmeldte klubber, der ikke har betalt endnu" },
+      { label: "Bookingomsætning i alt", value: usd(gmv), note: fee ? `Heraf vores provision ${usd(fee)}` : "Betalinger for baner, hold og events gennem platformen" },
     ],
-    subscriptionMonthly: Object.entries(subscribers.reduce((s,c)=>({...s,[c.billingCurrency]:(s[c.billingCurrency]??0)+c.subscriptionKr}),{} as Record<string,number>)).map(([currency,total])=>formatMoney(total,currency,"da")).join(" · ") || formatMoney(0,"EUR","da"),
-    subscriptionClubs: subscribers.length,
+    rows: [
+      { label: "Betalinger", note: "gennemført", values: sums.map((s) => String(s._count)) },
+      { label: "Bookingomsætning", note: "klubbens og vores tilsammen", values: sums.map((s) => usd(s._sum.amountKr ?? 0)) },
+      { label: "Vores provision", note: "før Stripes gebyr", values: sums.map((s) => usd(s._sum.platformFee ?? 0)) },
+    ],
+    otherCurrencies: others.map((o) => `${o._count} i ${o.currency}`),
+    subscribers: subs.map((c) => ({
+      name: c.name,
+      city: c.city,
+      monthly: usd(monthlyOf(c)),
+      interval: c.subscriptionInterval === "YEAR" ? `${usd(c.subscriptionKr)}/år` : `${usd(c.subscriptionKr)}/md`,
+      since: (c.signupPaidAt ?? c.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    })),
   };
 }
