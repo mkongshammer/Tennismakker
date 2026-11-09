@@ -37,6 +37,14 @@ export async function countSent(n: number) {
  * Sender en e-mail. Fejler aldrig hårdt: en booking må ikke gå tabt,
  * fordi mailserveren er nede. Fejl logges i stedet.
  */
+// A "no-reply" sender is a classic Promotions/spam signal and looks odd to US
+// players ("ikke-svar" is Danish). App mail goes out from a named, answerable
+// address, and replies always reach Magnus.
+export const DEFAULT_REPLY_TO = "magnus@racketbuddy.app";
+export function friendlySender(from: string) {
+  return /<\s*(ikke-svar|no-?reply|do-?not-?reply)@/i.test(from) ? from.replace(/^[^<]*<\s*[^@]+@/, "RacketBuddy <hello@") : from;
+}
+
 export async function sendMail(mail: Mail): Promise<boolean> {
   // Afsenderen skal ligge på et domæne, der er verificeret hos
   // e-mailudbyderen — ellers afvises mailen, eller den lander i spam.
@@ -61,11 +69,11 @@ export async function sendMail(mail: Mail): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: mail.from ?? from,
+        from: mail.from ?? friendlySender(from),
         to: [mail.to],
         subject: mail.subject,
         text: mail.body,
-        ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
+        reply_to: mail.replyTo ?? DEFAULT_REPLY_TO,
       }),
     });
     if (!res.ok) {
@@ -95,7 +103,7 @@ export async function sendMailBatch(mails: Mail[]): Promise<number> {
       const res = await fetch("https://api.resend.com/emails/batch", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify(chunk.map((m) => ({ from, to: [m.to], subject: m.subject, text: m.body, ...(m.replyTo ? { reply_to: m.replyTo } : {}) }))),
+        body: JSON.stringify(chunk.map((m) => ({ from: m.from ?? friendlySender(from), to: [m.to], subject: m.subject, text: m.body, reply_to: m.replyTo ?? DEFAULT_REPLY_TO }))),
       });
       if (res.ok) { sent += chunk.length; void countSent(chunk.length); } else console.error("Batch afvist:", res.status, (await res.text()).slice(0, 300));
     } catch (err) { console.error("Batch kunne ikke sendes:", err); }

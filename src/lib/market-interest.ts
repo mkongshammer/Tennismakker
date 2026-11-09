@@ -23,6 +23,11 @@ import {
   type InterestKind,
 } from "./market-interest-core";
 
+// Personal, transactional sender: Gmail files no-reply senders with
+// marketing-style footers under Promotions.
+const PERSONAL_FROM = "Magnus from RacketBuddy <magnus@racketbuddy.app>";
+const REPLY_TO = "magnus@racketbuddy.app";
+
 export type RegisterOutcome =
   | { ok: true; label: string; confirmationSent: boolean; alreadyConfirmed: boolean }
   | { ok: false; error: string; status: 400 | 429 };
@@ -67,19 +72,20 @@ function confirmationMail(id: string, to: string, kind: InterestKind, sport: str
   const what = kind === "COURTS" ? `${sportLabel(sport, "en-US").toLowerCase()} courts` : `${sportLabel(sport, "en-US").toLowerCase()} coaches`;
   return {
     to,
-    subject: `Confirm: tell me when ${what} open near ${label}`,
+    from: PERSONAL_FROM,
+    replyTo: REPLY_TO,
+    subject: `Your RacketBuddy alert for ${label}`,
     body: [
       `Hi,`,
       ``,
-      `You asked RacketBuddy to let you know when ${what} become bookable near ${label}.`,
+      `You asked to hear from us when ${what} near ${label} can be booked on RacketBuddy.`,
       ``,
-      `Confirm your email to switch that on:`,
+      `Tap this link to turn the alert on:`,
       links.confirm,
       ``,
-      `You will get one email when it happens — no newsletter. If you did not ask for this, ignore this message and nothing will be sent.`,
+      `We'll send you a single email when that happens. If this wasn't you, just ignore this message.`,
       ``,
-      `Unsubscribe at any time: ${links.unsubscribe}`,
-      ``,
+      `Magnus`,
       `RacketBuddy`,
     ].join("\n"),
   };
@@ -157,20 +163,20 @@ export async function notifyInterestForSupply(event: SupplyEvent): Promise<numbe
     const claimed = await db.marketInterest.updateMany({ where: { id: row.id, notifiedAt: null }, data: { notifiedAt: new Date(), notifiedAbout: event.id } });
     if (!claimed.count) continue;
     const links = interestLinks(appUrl, row.id);
-    const what = event.kind === "COURTS" ? `${sportLabel(row.sport, "en-US")} courts` : `A ${sportLabel(row.sport, "en-US").toLowerCase()} coach`;
     await sendMail({
       to: row.email,
-      subject: `${what} ${event.kind === "COURTS" ? "are" : "is"} now bookable near ${row.label}`,
+      from: PERSONAL_FROM,
+      replyTo: REPLY_TO,
+      subject: `${event.name} is now on RacketBuddy`,
       body: [
         `Hi,`,
         ``,
-        `You asked us to tell you when ${event.kind === "COURTS" ? "courts" : "a coach"} opened near ${row.label}. ${event.name}${event.city ? ` in ${event.city}` : ""} is now live on RacketBuddy:`,
+        `You asked us to let you know when ${event.kind === "COURTS" ? "courts" : "a coach"} near ${row.label} could be booked. ${event.name}${event.city ? ` in ${event.city}` : ""} is now live:`,
         `${appUrl.replace(/\/+$/, "")}${event.href}`,
         ``,
-        `That was the one email we promised. You will not hear from us about ${row.label} again unless you sign up anew.`,
+        `That's the one email we promised, so this alert is now finished. If you'd like us to delete your address straight away: ${links.unsubscribe}`,
         ``,
-        `Remove your address entirely: ${links.unsubscribe}`,
-        ``,
+        `Magnus`,
         `RacketBuddy`,
       ].join("\n"),
     });
