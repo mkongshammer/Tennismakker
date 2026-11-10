@@ -19,7 +19,7 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lead = await leadForPreview((await params).id);
   return {
-    title: lead ? `${lead.clubName} on RacketBuddy` : "Club preview",
+    title: lead ? lead.clubName : "Club preview",
     robots: { index: false, follow: false },
   };
 }
