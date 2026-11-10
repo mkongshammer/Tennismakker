@@ -80,9 +80,9 @@ export default function ProfileScreen({ navigation }) {useInternational();
     setLockBusy(true);
     try {
       const result = appLock.enabled ? await appLock.disableBiometricLock() : await appLock.enableBiometricLock();
-      if (!result.ok) Alert.alert("Applås", result.message ?? "Indstillingen kunne ikke ændres.");
+      if (!result.ok) Alert.alert(tr("App lock"), result.message ?? tr("The setting couldn’t be changed."));
     } catch (error) {
-      Alert.alert("Applås", error.message ?? "Indstillingen kunne ikke ændres.");
+      Alert.alert(tr("App lock"), error.message ?? tr("The setting couldn’t be changed."));
     } finally {
       setLockBusy(false);
     }
@@ -247,14 +247,14 @@ export default function ProfileScreen({ navigation }) {useInternational();
       {Platform.OS !== "web" && <>
         <Text style={styles.section}>{tr("Sikkerhed")}</Text>
         <Card>
-          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{tr("Applås")}</Text>
+          <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{tr("App lock")}</Text>
           <Text style={{ color: colors.slate, lineHeight: 21, marginTop: 6, marginBottom: 14 }}>
             {appLock.enabled
-              ? `${appLock.biometricLabel} ${tr("er slået til. RacketBuddy låses, når du forlader appen.")}`
-              : tr("Du forbliver logget ind. Slå biometrisk applås til, hvis appen skal kræve godkendelse, hver gang du åbner den.")}
+              ? `${appLock.biometricLabel} ${tr("is on. RacketBuddy locks when you leave the app.")}`
+              : tr("You stay signed in. Turn on the app lock if RacketBuddy should ask for Face ID every time you open it.")}
           </Text>
           <Button
-            title={appLock.enabled ? tr("Slå {method} fra", { method: appLock.biometricLabel }) : tr("Slå {method} til", { method: appLock.biometricLabel })}
+            title={appLock.enabled ? `${tr("Turn off")} ${appLock.biometricLabel}` : `${tr("Turn on")} ${appLock.biometricLabel}`}
             variant={appLock.enabled ? "quiet" : undefined}
             loading={lockBusy}
             onPress={toggleAppLock} />

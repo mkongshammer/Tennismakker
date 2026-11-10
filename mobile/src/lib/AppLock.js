@@ -6,6 +6,7 @@ import * as SecureStore from "expo-secure-store";
 import { useAuth } from "./auth";
 import { Button, Loading } from "./ui";
 import { colors } from "./theme";
+import { tr } from "./international";
 
 const AppLockContext = createContext(null);
 // SecureStore keys may only contain letters, digits, ".", "-" and "_".
@@ -13,9 +14,9 @@ const lockKey = (userId) => `rb_biometric_lock.${String(userId).replace(/[^A-Za-
 
 function labelForTypes(types) {
   if (Platform.OS === "ios" && types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return "Face ID";
-  if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return "ansigtsgenkendelse";
-  if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) return Platform.OS === "ios" ? "Touch ID" : "fingeraftryk";
-  return "biometri";
+  if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) return "face unlock";
+  if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) return Platform.OS === "ios" ? "Touch ID" : "fingerprint";
+  return "biometrics";
 }
 
 export function AppLockProvider({ children }) {
@@ -23,12 +24,17 @@ export function AppLockProvider({ children }) {
   const [enabled, setEnabled] = useState(false);
   const [locked, setLocked] = useState(false);
   const [ready, setReady] = useState(false);
-  const [biometricLabel, setBiometricLabel] = useState(Platform.OS === "ios" ? "Face ID" : "biometri");
+  const [biometricLabel, setBiometricLabel] = useState(Platform.OS === "ios" ? "Face ID" : "biometrics");
   const appState = useRef(AppState.currentState);
   const authenticating = useRef(false);
+  // The Face ID sheet itself sends the app to "inactive" and back to "active".
+  // Only a real trip to the background may lock the app again, otherwise
+  // every unlock would immediately ask again (the loop users saw).
+  const wentToBackground = useRef(false);
+  const graceUntil = useRef(0);
 
   const inspectBiometrics = useCallback(async () => {
-    if (Platform.OS === "web") return { available: false, label: "biometri" };
+    if (Platform.OS === "web") return { available: false, label: "biometrics" };
     const [hardware, enrolled, types] = await Promise.all([
       LocalAuthentication.hasHardwareAsync(),
       LocalAuthentication.isEnrolledAsync(),
@@ -44,9 +50,9 @@ export function AppLockProvider({ children }) {
     authenticating.current = true;
     try {
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Lås RacketBuddy op",
-        cancelLabel: "Annullér",
-        fallbackLabel: "Brug enhedskode",
+        promptMessage: tr("Unlock RacketBuddy"),
+        cancelLabel: tr("Cancel"),
+        fallbackLabel: tr("Use passcode"),
         disableDeviceFallback: false,
       });
       if (result.success) {
@@ -56,6 +62,7 @@ export function AppLockProvider({ children }) {
       return false;
     } finally {
       authenticating.current = false;
+      graceUntil.current = Date.now() + 1500;
     }
   }, [enabled, user?.id]);
 
@@ -100,8 +107,10 @@ export function AppLockProvider({ children }) {
       const previous = appState.current;
       appState.current = next;
       if (!user || !enabled) return;
-      if (previous === "active" && next !== "active") setLocked(true);
-      if (previous !== "active" && next === "active") {
+      if (authenticating.current || Date.now() < graceUntil.current) return; // the Face ID sheet, not the user leaving
+      if (next === "background") { wentToBackground.current = true; setLocked(true); return; }
+      if (previous !== "active" && next === "active" && wentToBackground.current) {
+        wentToBackground.current = false;
         setLocked(true);
         setTimeout(() => { void unlock(); }, 150);
       }
@@ -110,16 +119,23 @@ export function AppLockProvider({ children }) {
   }, [user?.id, enabled, unlock]);
 
   const enableBiometricLock = useCallback(async () => {
-    if (!user || Platform.OS === "web") return { ok: false, message: "Biometrisk applås er kun tilgængelig i mobilappen." };
+    if (!user || Platform.OS === "web") return { ok: false, message: tr("The app lock is only available in the mobile app.") };
     const state = await inspectBiometrics();
-    if (!state.available) return { ok: false, message: `Aktivér ${state.label} eller en anden biometrisk metode på telefonen først.` };
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Aktivér applås",
-      cancelLabel: "Annullér",
-      fallbackLabel: "Brug enhedskode",
-      disableDeviceFallback: false,
-    });
-    if (!result.success) return { ok: false, message: "Applås blev ikke aktiveret." };
+    if (!state.available) return { ok: false, message: `${tr("Turn on")} ${state.label} ${tr("in your phone settings first.")}` };
+    authenticating.current = true;
+    let result;
+    try {
+      result = await LocalAuthentication.authenticateAsync({
+        promptMessage: tr("Turn on app lock"),
+        cancelLabel: tr("Cancel"),
+        fallbackLabel: tr("Use passcode"),
+        disableDeviceFallback: false,
+      });
+    } finally {
+      authenticating.current = false;
+      graceUntil.current = Date.now() + 1500;
+    }
+    if (!result?.success) return { ok: false, message: tr("App lock was not turned on.") };
     await SecureStore.setItemAsync(lockKey(user.id), "1");
     setEnabled(true);
     setLocked(false);
@@ -149,9 +165,9 @@ export function AppLockGate({ children }) {
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 28, backgroundColor: colors.mist }}>
       <View style={{ width: "100%", maxWidth: 420, gap: 18, alignItems: "center" }}>
         <Text style={{ color: colors.courtText, fontSize: 18, fontWeight: "800" }}>RacketBuddy</Text>
-        <Text accessibilityRole="header" style={{ color: colors.text, fontSize: 28, fontWeight: "800", textAlign: "center" }}>Appen er låst</Text>
-        <Text style={{ color: colors.slate, fontSize: 15, lineHeight: 22, textAlign: "center" }}>Bekræft med {lock.biometricLabel} for at fortsætte.</Text>
-        <View style={{ width: "100%" }}><Button title={`Lås op med ${lock.biometricLabel}`} onPress={lock.unlock} /></View>
+        <Text accessibilityRole="header" style={{ color: colors.text, fontSize: 28, fontWeight: "800", textAlign: "center" }}>{tr("RacketBuddy is locked")}</Text>
+        <Text style={{ color: colors.slate, fontSize: 15, lineHeight: 22, textAlign: "center" }}>{tr("Use")} {lock.biometricLabel} {tr("to continue.")}</Text>
+        <View style={{ width: "100%" }}><Button title={`${tr("Unlock with")} ${lock.biometricLabel}`} onPress={lock.unlock} /></View>
       </View>
     </View>
   );
@@ -159,6 +175,6 @@ export function AppLockGate({ children }) {
 
 export function useAppLock() {
   const ctx = useContext(AppLockContext);
-  if (!ctx) throw new Error("useAppLock skal bruges inde i AppLockProvider");
+  if (!ctx) throw new Error("useAppLock must be used inside AppLockProvider");
   return ctx;
 }
