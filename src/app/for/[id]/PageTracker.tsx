@@ -4,6 +4,7 @@
 // every 10 seconds while the tab is visible. No cookies; the visit id lives in
 // sessionStorage so the signup that follows joins the same visit.
 import { useEffect } from "react";
+import { onHuman } from "./human";
 
 export const VISIT_KEY = "rb_preview_visit";
 
@@ -54,7 +55,10 @@ export function PageTracker({ id }: { id: string }) {
       const pct = ((window.scrollY + window.innerHeight) / Math.max(1, doc.scrollHeight)) * 100;
       maxScroll = Math.max(maxScroll, Math.min(100, pct));
     };
-    const beat = () => send({ id, visit, kind: "beat", section: current(), seen, scroll: Math.round(maxScroll), active: Math.round(active) });
+    let isHuman = false;
+    const stopHuman = onHuman(() => { isHuman = true; });
+    // Nothing is sent until a person has scrolled, moved the mouse, tapped or typed (see human.ts).
+    const beat = () => { if (isHuman) send({ id, visit, kind: "beat", section: current(), seen, scroll: Math.round(maxScroll), active: Math.round(active) }); };
 
     const t1 = setInterval(tick, 1000);
     const t2 = setInterval(() => { if (document.visibilityState === "visible") beat(); }, 10_000);
@@ -66,7 +70,7 @@ export function PageTracker({ id }: { id: string }) {
     };
     document.addEventListener("visibilitychange", onHide);
     document.addEventListener("click", onClick);
-    return () => { clearInterval(t1); clearInterval(t2); clearTimeout(first); io.disconnect(); document.removeEventListener("visibilitychange", onHide); document.removeEventListener("click", onClick); };
+    return () => { stopHuman(); clearInterval(t1); clearInterval(t2); clearTimeout(first); io.disconnect(); document.removeEventListener("visibilitychange", onHide); document.removeEventListener("click", onClick); };
   }, [id]);
   return null;
 }
