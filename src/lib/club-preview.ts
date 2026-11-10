@@ -143,3 +143,17 @@ export async function backfillPreviewFollowups() {
   }
   return n;
 }
+
+export type FollowupStatus = { id: string; club: string; city: string; state: string; email: string; due: string; sentAt?: string; skipped?: string };
+export async function previewFollowups(): Promise<FollowupStatus[]> {
+  const rows = await db.platformSetting.findMany({ where: { key: { startsWith: FOLLOWUP_PREFIX } } }).catch(() => []);
+  const out: FollowupStatus[] = [];
+  for (const r of rows) {
+    const id = r.key.slice(FOLLOWUP_PREFIX.length);
+    if (!validPreviewId(id)) continue; // skips the backfill flag
+    const st = JSON.parse(r.value) as { due: string; sentAt?: string; skipped?: string };
+    const lead = await leadForPreview(id);
+    out.push({ id, club: lead?.clubName ?? "?", city: lead?.city ?? "", state: lead?.state ?? "", email: lead?.email ?? "", ...st });
+  }
+  return out.sort((a, b) => (b.sentAt ?? b.due).localeCompare(a.sentAt ?? a.due));
+}

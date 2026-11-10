@@ -2,6 +2,7 @@
 // they read, how far they get (into the signup too) and where they stop.
 import { funnel, LIVE_MS, PREVIEW_SECTIONS, recentVisits, SECTION_LABELS, SIGNUP_STEPS, stoppedAt } from "../../lib/preview-tracking";
 import { AutoRefresh } from "./AutoRefresh";
+import { previewFollowups } from "../../lib/club-preview";
 
 const time = (iso: string) => new Date(iso).toLocaleString("da-DK", { timeZone: "Europe/Copenhagen", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const dur = (s: number) => (s < 60 ? `${s} sek` : `${Math.floor(s / 60)} min ${s % 60 ? `${s % 60} sek` : ""}`.trim());
@@ -11,6 +12,8 @@ export async function PreviewLive() {
   const now = Date.now();
   const live = visits.filter((v) => now - new Date(v.last).getTime() < LIVE_MS);
   const f = funnel(visits);
+  const followups = await previewFollowups().catch(() => []);
+  const skipReason: Record<string, string> = { suppressed: "har bedt om ikke at blive kontaktet", "signed up": "har allerede tilmeldt sig", "no lead": "klubben findes ikke på listen", "send failed": "afsendelsen fejlede" };
 
   return (
     <div className="space-y-6">
@@ -29,6 +32,21 @@ export async function PreviewLive() {
               <li key={v.visit} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-success/30 bg-success-soft px-4 py-3 text-sm text-success-ink">
                 <span className="flex items-center gap-2"><span className="h-2.5 w-2.5 animate-pulse rounded-full bg-success" aria-hidden="true" /><span className="font-bold">{v.club}</span> <span>· {[v.city, v.state].filter(Boolean).join(", ")} · {v.device}</span></span>
                 <span>Læser nu: <span className="font-semibold">{stoppedAt(v)}</span> · {dur(v.active)} på siden · {v.maxScroll}% scrollet</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="card">
+        <h2 className="display text-xl">Personlig opfølgning</h2>
+        <p className="mt-1 text-sm text-slate">Ca. 30 min. efter en klub åbner sin side første gang, får de en kort mail fra magnus@racketbuddy.app med tilbud om at sætte klubben op med deres rigtige baner og priser.</p>
+        {followups.length === 0 ? <p className="mt-2 text-sm text-slate">Ingen endnu.</p> : (
+          <ul className="mt-3 divide-y divide-slate/10 text-sm">
+            {followups.map((x) => (
+              <li key={x.id} className="flex flex-wrap justify-between gap-2 py-2">
+                <span><span className="font-semibold">{x.club}</span> <span className="text-slate">· {[x.city, x.state].filter(Boolean).join(", ")} · {x.email}</span></span>
+                <span className={x.sentAt ? "font-semibold text-success-ink" : "text-slate"}>{x.sentAt ? `Sendt ${time(x.sentAt)}` : x.skipped ? `Ikke sendt: ${skipReason[x.skipped] ?? x.skipped}` : `Sendes ${time(x.due)}`}</span>
               </li>
             ))}
           </ul>
