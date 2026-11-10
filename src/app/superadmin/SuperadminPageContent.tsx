@@ -18,6 +18,7 @@ import { Aktivitet } from "./Aktivitet";
 import { Demand } from "./Demand";
 import { CoachPhotos } from "./CoachPhotos";
 import { Oekonomi } from "./Oekonomi";
+import { PreviewLive } from "./PreviewLive";
 import { getSettings } from "../../lib/settings";
 import { describeSubscription, subscriptionIsActive } from "../../lib/billing";
 import { format } from "date-fns";
@@ -94,6 +95,7 @@ export default async function SuperadminPageContent({ section }: { section: Supe
       {section === 'aktivitet' && <Aktivitet />}
       {section === 'efterspoergsel' && <Demand />}
       {section === 'oekonomi' && <Oekonomi />}
+      {section === 'klubsider' && <PreviewLive />}
       {section === 'adgang' && <SuperadminAccess />}
 
       {section === 'henvendelser' && (

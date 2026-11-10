@@ -49,3 +49,18 @@ test("follow-up mail is personal and has one link", () => {
   assert.equal(m.body.match(/https?:\/\//g)?.length, 1);
   assert.ok(m.body.includes("no thanks"));
 });
+
+import { funnel, stoppedAt, type Visit } from "./preview-tracking";
+test("funnel and stop point", () => {
+  const base: Visit = { id: "0123456789abcdef", visit: "abcdefgh12", club: "C", city: "", state: "", start: "", last: "", active: 30, sections: { hero: 10, calendar: 5 }, current: "calendar", maxScroll: 40, clicks: [], signupStep: -1, device: "Computer" };
+  const v2: Visit = { ...base, visit: "abcdefgh13", sections: { hero: 3, calendar: 4, features: 6, pricing: 8 }, current: "signup:1", clicks: [{ what: "claim (price)", at: "" }], signupStep: 1 };
+  const f = funnel([base, v2]);
+  const pct = Object.fromEntries(f.rows.map((r) => [r.key, r.pct]));
+  assert.equal(pct.hero, 100);
+  assert.equal(pct.features, 50);
+  assert.equal(pct.claim, 50);
+  assert.equal(pct["signup-1"], 50);
+  assert.equal(pct["signup-2"], 0);
+  assert.equal(stoppedAt(base), "Bookingkalender");
+  assert.equal(stoppedAt(v2), "Tilmelding: Facility");
+});

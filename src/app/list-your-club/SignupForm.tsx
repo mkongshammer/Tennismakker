@@ -7,7 +7,7 @@
 // Field names are the contract with registerClub() and are unchanged.
 import { pricesForCountry, type PriceBook } from "../../lib/platform-pricing";
 import { Select } from "../../components/ui/Select";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormState } from "react-dom";
 import { registerClub } from "../../lib/club-onboarding-actions";
 import { CUSTOM_FEATURES } from "../../lib/club-features";
@@ -42,6 +42,13 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
   const [counts, setCounts] = useState<Record<string, number>>({ TENNIS: 2 });
   const [state, action] = useFormState(registerClub, null);
   const [step, setStep] = useState(0);
+  // Arrived from a personal club page? Report how far the signup gets, on the same visit.
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("rb_preview_visit") ?? "null") as { id: string; visit: string } | null;
+      if (saved?.id) navigator.sendBeacon?.("/api/club-preview/track", new Blob([JSON.stringify({ id: saved.id, visit: saved.visit, kind: "signup", step })], { type: "application/json" }));
+    } catch { /* tracking is optional */ }
+  }, [step]);
   const [name, setName] = useState(initialName);
   const [city, setCity] = useState(initialCity);
   const [usState, setUsState] = useState(initialState);

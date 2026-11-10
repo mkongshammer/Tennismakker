@@ -11,6 +11,7 @@ import { sportColor, sportLabel } from "../../../lib/sports";
 import { US_STATES } from "../../../../shared/us-address.mjs";
 import { Icon, type IconName } from "../../../components/ui";
 import { ViewBeacon } from "./ViewBeacon";
+import { PageTracker } from "./PageTracker";
 import { voteCount } from "../../../lib/club-votes";
 
 export const dynamic = "force-dynamic";
@@ -65,17 +66,18 @@ export default async function Page({ params }: Props) {
   return (
     <div className="space-y-12">
       <ViewBeacon id={id} />
+      <PageTracker id={id} />
 
       <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_1fr]">
-        <div>
+        <div data-track="hero">
           <p className="eyebrow text-court-light">Prepared for {first}</p>
           <h1 className="display mt-3 text-display-md sm:text-display-lg">{first}, on RacketBuddy.</h1>
           <p className="lead mt-4 max-w-xl">
             This is what your members and guests would see{place ? ` in ${place}` : ""}: open courts, prices and booking in one tap, paid up front. It’s a private preview. Nothing is public until you claim it.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href={claim} className="btn-court btn-lg">Claim {first} <Icon name="arrow" /></Link>
-            <Link href="/switch" className="btn-ghost btn-lg">Check your member file free</Link>
+            <Link href={claim} data-track-click="claim (top)" className="btn-court btn-lg">Claim {first} <Icon name="arrow" /></Link>
+            <Link href="/switch" data-track-click="member file check" className="btn-ghost btn-lg">Check your member file free</Link>
           </div>
           <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate">
             {["Live the same day", "No setup fee or contract", "No commission on court bookings"].map((t) => (
@@ -84,7 +86,7 @@ export default async function Page({ params }: Props) {
           </ul>
         </div>
 
-        <div className="card p-0 overflow-hidden" aria-label={`Example booking calendar for ${first}`}>
+        <div data-track="calendar" className="card p-0 overflow-hidden" aria-label={`Example booking calendar for ${first}`}>
           <div className="flex items-center justify-between gap-3 border-b border-slate/10 px-5 py-4">
             <div className="min-w-0">
               <p className="truncate font-display text-lg font-extrabold">{first}</p>
@@ -126,20 +128,20 @@ export default async function Page({ params }: Props) {
       </section>
 
       {votes > 0 && (
-        <section className="card flex items-start gap-4 border-court/40">
+        <section data-track="votes" className="card flex items-start gap-4 border-court/40">
           <Icon name="heart" className="mt-0.5 shrink-0 text-court-light" />
           <p><span className="font-bold">{votes} {votes === 1 ? "player has" : "players have"} voted to book {first} on RacketBuddy.</span> <span className="text-slate">Each one confirmed their email. They get a message the day you go live.</span></p>
         </section>
       )}
 
       {demand > 0 && (
-        <section className="card flex items-start gap-4">
+        <section data-track="demand" className="card flex items-start gap-4">
           <Icon name="bell" className="mt-0.5 shrink-0 text-court-light" />
           <p><span className="font-bold">{demand} {demand === 1 ? "player" : "players"} in {code}</span> <span className="text-slate">asked RacketBuddy to tell them when courts open near them. Once {first} is live, they get an email.</span></p>
         </section>
       )}
 
-      <section>
+      <section data-track="features">
         <h2 className="display text-2xl sm:text-3xl">Everything {first} runs on, in one place</h2>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f) => (
@@ -154,7 +156,7 @@ export default async function Page({ params }: Props) {
       </section>
 
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <div className="card">
+        <div data-track="switch" className="card">
           <h2 className="display text-2xl">Switching takes an afternoon</h2>
           <ol className="mt-4 space-y-4">
             {[
@@ -169,17 +171,17 @@ export default async function Page({ params }: Props) {
             ))}
           </ol>
         </div>
-        <div className="card flex flex-col">
+        <div data-track="pricing" className="card flex flex-col">
           <p className="eyebrow text-slate">{price.founding.open ? "Founding-club price" : "One plan, everything included"}</p>
           <p className="mt-2"><span className="display text-4xl">${price.monthly}</span><span className="text-slate"> /month</span></p>
           <p className="mt-1 text-sm text-slate">or ${price.annual}/year{price.founding.open ? `, locked in for as long as you stay. ${price.founding.left} of ${price.founding.total} founding spots left, then $${price.regularMonthly}/month.` : "."}</p>
           <p className="mt-3 text-sm text-slate">No setup fee, no contract, no commission on court bookings. Cancel any month.</p>
-          <Link href={claim} className="btn-court mt-5 justify-center">Claim {first} <Icon name="arrow" /></Link>
+          <Link href={claim} data-track-click="claim (price)" className="btn-court mt-5 justify-center">Claim {first} <Icon name="arrow" /></Link>
         </div>
       </section>
 
-      <p className="text-center text-sm text-slate">
-        Questions first? Just reply to my email, or write to <a className="font-semibold underline" href="mailto:magnus@racketbuddy.app">magnus@racketbuddy.app</a>. — Magnus, RacketBuddy
+      <p data-track="contact" className="text-center text-sm text-slate">
+        Questions first? Just reply to my email, or write to <a className="font-semibold underline" href="mailto:magnus@racketbuddy.app" data-track-click="email Magnus">magnus@racketbuddy.app</a>. — Magnus, RacketBuddy
       </p>
     </div>
   );
