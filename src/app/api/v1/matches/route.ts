@@ -10,6 +10,15 @@ export async function OPTIONS() { return preflight(); }
 
 /** GET /api/v1/matches?region=&niveau= — åbne makker-opslag. */
 export async function GET(req: Request) {
+  try {
+    return await listGET(req);
+  } catch (e) {
+    console.error("[api/v1/matches] GET failed:", e);
+    return json({ error: "Couldn’t load open games right now. Try again in a moment." }, 500);
+  }
+}
+
+async function listGET(req: Request) {
   const url = new URL(req.url);
   const rawRegion = (url.searchParams.get("region") ?? url.searchParams.get("omraade") ?? "").trim();
 
@@ -33,7 +42,7 @@ export async function GET(req: Request) {
   });
 
   const filtered = selectedRegion
-    ? requests.filter((request) => request.area.toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
+    ? requests.filter((request) => (request.area ?? "").toLocaleLowerCase().includes(selectedRegion.toLocaleLowerCase()))
     : requests;
 
   return json({
@@ -44,7 +53,7 @@ export async function GET(req: Request) {
       level: r.level,
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
-      requesterName: r.requester.name,
+      requesterName: r.requester?.name ?? "",
       isMine: me ? r.requesterId === me.id : false,
     })),
   });

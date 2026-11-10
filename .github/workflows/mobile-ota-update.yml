@@ -51,4 +51,4 @@ jobs:
           NODE
           npx --yes eas-cli@latest init --id 620ef3a3-d92c-4241-86bb-511817c9d3cb --non-interactive
       - name: Publish update to the production channel
-        run: npx --yes eas-cli@latest update --channel production --environment production --message "Face ID unlock no longer loops, lock screen in English" --non-interactive
+        run: npx --yes eas-cli@latest update --channel production --environment production --message "No more surprise restarts from updates, steadier Players tab, English error messages" --non-interactive

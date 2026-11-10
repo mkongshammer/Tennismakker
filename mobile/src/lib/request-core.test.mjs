@@ -17,11 +17,11 @@ test("preserves HTTP status and server error for expired sessions", async t => {
 });
 test("gives a useful error for non-JSON server failures", async t => {
   t.mock.method(globalThis, "fetch", async () => new Response("<html>Bad gateway</html>", { status: 502 }));
-  await assert.rejects(fetchJson("https://example.test"), /Serveren svarede ikke korrekt/);
+  await assert.rejects(fetchJson("https://example.test"), /didn’t answer properly/);
 });
 test("explains offline errors", async t => {
   t.mock.method(globalThis, "fetch", async () => { throw new TypeError("Failed to fetch"); });
-  await assert.rejects(fetchJson("https://example.test"), /Tjek dit netværk/);
+  await assert.rejects(fetchJson("https://example.test"), /Check your internet/);
 });
 test("times out without retrying mutations or implying they failed", async t => {
   let attempts = 0;
@@ -29,7 +29,7 @@ test("times out without retrying mutations or implying they failed", async t => 
     attempts++;
     return new Promise((_resolve, reject) => options.signal.addEventListener("abort", () => reject(new Error("Abort"))));
   });
-  await assert.rejects(fetchJson("https://example.test", { method: "POST" }, 5), /Kontrollér om handlingen er gennemført/);
+  await assert.rejects(fetchJson("https://example.test", { method: "POST" }, 5), /Check whether it went through/);
   assert.equal(attempts, 1);
 });
 test("timeout also covers reading the response body", async t => {
@@ -37,7 +37,7 @@ test("timeout also covers reading the response body", async t => {
     ok: true,
     text: () => new Promise((_resolve, reject) => options.signal.addEventListener("abort", () => reject(new Error("Abort")))),
   }));
-  await assert.rejects(fetchJson("https://example.test", {}, 5), /Forbindelsen er langsom/);
+  await assert.rejects(fetchJson("https://example.test", {}, 5), /connection is slow/);
 });
 test("rejects missing or unsafe checkout links", () => {
   for (const value of [undefined, "", "javascript:alert(1)", "http://example.test", "https://user:pass@example.test"]) {

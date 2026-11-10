@@ -7,6 +7,15 @@ export async function OPTIONS() { return preflight(); }
 
 /** GET /api/v1/players — liste over spillere, der er oprettet på RacketBuddy. */
 export async function GET(req: Request) {
+  try {
+    return await listGET(req);
+  } catch (e) {
+    console.error("[api/v1/players] GET failed:", e);
+    return json({ error: "Couldn’t load players right now. Try again in a moment." }, 500);
+  }
+}
+
+async function listGET(req: Request) {
   const auth = await requireUser(req);
   if ("response" in auth) return auth.response;
 
@@ -48,7 +57,7 @@ export async function GET(req: Request) {
       level: u.level,
       area: u.area,
       bio: u.bio,
-      sports: u.sports.split(",").map((s) => s.trim()).filter(Boolean),
+      sports: (u.sports ?? "").split(",").map((s) => s.trim()).filter(Boolean),
       isCoach: u.role === "COACH",
     })),
   });

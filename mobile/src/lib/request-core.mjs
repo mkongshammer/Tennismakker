@@ -6,11 +6,11 @@ export async function fetchJson(url, options = {}, timeoutMs = 20000) {
     const text = await response.text();
     let data;
     try { data = text ? JSON.parse(text) : {}; } catch {
-      throw new Error("Serveren svarede ikke korrekt. Prøv igen om lidt.");
+      throw new Error("The server didn’t answer properly. Try again in a moment.");
     }
     if (!response.ok) {
       const error = new Error(typeof data.error === "string" ? data.error : response.status === 409
-        ? "Tiden er ikke længere ledig. Opdatér og vælg en anden tid." : "Der gik noget galt. Prøv igen.");
+        ? "That time is no longer available. Refresh and pick another." : `Something went wrong (${response.status}). Try again.`);
       error.status = response.status;
       error.data = data;
       throw error;
@@ -18,15 +18,15 @@ export async function fetchJson(url, options = {}, timeoutMs = 20000) {
     return data;
   } catch (error) {
     if (controller.signal.aborted) throw new Error(options.method && options.method !== "GET"
-      ? "Svaret tog for lang tid. Kontrollér om handlingen er gennemført, før du prøver igen."
-      : "Forbindelsen er langsom. Prøv at opdatere igen.");
-    if (error instanceof TypeError) throw new Error("Kan ikke få forbindelse. Tjek dit netværk og prøv igen.");
+      ? "That took too long. Check whether it went through before trying again."
+      : "The connection is slow. Try refreshing.");
+    if (error instanceof TypeError) throw new Error("Can’t connect. Check your internet and try again.");
     throw error;
   } finally { clearTimeout(timer); }
 }
 export function resolveCheckoutUrl(path, base) {
-  if (typeof path !== "string" || !path.trim()) throw new Error("Der er ingen betalingsside til denne booking endnu.");
+  if (typeof path !== "string" || !path.trim()) throw new Error("There’s no payment page for this booking yet.");
   const url = new URL(path, base);
-  if (url.protocol !== "https:" || url.username || url.password) throw new Error("Betalingslinket er ugyldigt.");
+  if (url.protocol !== "https:" || url.username || url.password) throw new Error("The payment link isn’t valid.");
   return url.href;
 }

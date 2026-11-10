@@ -37,11 +37,13 @@ export default function MatchesScreen({ navigation }) {
   const load = useCallback(async (refreshing = false) => {
     setState((s) => ({ ...s, refreshing, error: null }));
     try {
-      const [m, p] = await Promise.all([
+      // Each list loads on its own, so one failing call doesn't blank the whole tab.
+      const [m, p] = await Promise.allSettled([
         api.matches({ area: query }),
         api.players({ area: query, sport: sport ?? undefined }),
       ]);
-      setData({ matches: m.matches ?? [], players: p.players ?? [] });
+      if (m.status === "rejected" && p.status === "rejected") throw p.reason ?? m.reason;
+      setData({ matches: m.status === "fulfilled" ? m.value.matches ?? [] : [], players: p.status === "fulfilled" ? p.value.players ?? [] : [] });
       setState({ loading: false, refreshing: false, error: null });
     } catch (e) {
       setState({ loading: false, refreshing: false, error: e.message });

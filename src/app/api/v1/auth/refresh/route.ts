@@ -7,6 +7,6 @@ export async function OPTIONS() { return preflight(); }
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const refreshed = await refreshMobileSession(String(body.refreshToken ?? ""));
-  if (!refreshed) return json({ error: "Sessionen er udløbet. Log ind igen." }, 401);
+  if (!refreshed) return json({ error: "Your session has expired. Please sign in again." }, 401);
   return json(refreshed);
 }

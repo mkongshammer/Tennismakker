@@ -58,7 +58,7 @@ export function preflight() {
 export async function requireUser(req: Request) {
   const user = await userFromRequest(req);
   if (!user) {
-    return { response: apiError("Log ind for at fortsætte.", 401) } as const;
+    return { response: apiError("Please sign in again.", 401) } as const;
   }
   if (!regionAllowsCountry(user.country)) {
     return { response: regionalApiError(user.country) } as const;
