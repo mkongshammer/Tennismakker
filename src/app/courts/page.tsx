@@ -160,6 +160,14 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
             )}
           </div>
           <div className="grid gap-4">
+            <Link href={`/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`} className="card-interactive card-flat flex items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-court-tint text-court-dark"><Icon name="heart" size={24} /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-bold">Vote your club onto RacketBuddy</span>
+                <span className="block text-sm text-slate">Tell us where you play. When enough players ask, we let the club know.</span>
+              </span>
+              <Icon name="chevron" className="text-slate" />
+            </Link>
             <Link href={`/coaches${filters.q ? `?q=${encodeURIComponent(filters.q)}` : ""}`} className="card-interactive card-flat flex items-center gap-4">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#edf3e6] text-grass"><Icon name="coach" size={24} /></span>
               <span className="min-w-0 flex-1">

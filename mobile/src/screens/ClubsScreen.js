@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
-import { api } from "../lib/api";
+import { api, apiBaseUrl } from "../lib/api";
 import { AppHeading, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, SPORT_LABELS, sportColor } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
@@ -66,7 +66,7 @@ export default function ClubsScreen({ navigation }) {
 
         }
         ListEmptyComponent={
-        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /></View>
+        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /><Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${apiBaseUrl()}/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`)} style={{ marginTop: 18, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(59,132,232,.4)", backgroundColor: colors.surface }}><Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{tr("Vote your club onto RacketBuddy")}</Text><Text style={{ marginTop: 4, color: colors.slate }}>{tr("Tell us where you play. When enough players ask, we let the club know.")}</Text></Pressable></View>
         }
         renderItem={({ item }) =>
         <Pressable

@@ -4,6 +4,7 @@
 // confirmation) for one sport in one place. "Confirmed" is the number sales
 // should trust; "pending" is sign-ups whose e-mail link has not been clicked.
 import { marketInterestSummary, pruneInterest } from "../../lib/market-interest";
+import { voteSummary } from "../../lib/club-votes";
 import { stateName } from "../../lib/us-places";
 import { sportLabel } from "../../lib/sports";
 import { formatDate } from "../../lib/international";
@@ -13,6 +14,7 @@ export async function Demand() {
   // old unconfirmed addresses never linger just because no cron ran.
   await pruneInterest();
   const rows = await marketInterestSummary();
+  const votes = await voteSummary().catch(() => []);
   const byState = new Map<string, typeof rows>();
   for (const r of rows) {
     const key = r.state ?? "—";
@@ -24,6 +26,20 @@ export async function Demand() {
 
   return (
     <section className="space-y-6">
+      <div className="card space-y-3">
+        <h2 className="display text-xl">Klubber spillerne stemmer ind</h2>
+        <p className="text-sm text-slate">Fra racketbuddy.app/vote. Kun bekræftede stemmer tæller. Klubber på salgslisten får automatisk en mail ved 3, 10, 25, 50 og 100 stemmer. &quot;Ikke på listen&quot; skal findes manuelt.</p>
+        {votes.length === 0 ? <p className="text-sm text-slate">Ingen stemmer endnu.</p> : (
+          <ul className="divide-y divide-slate/10 text-sm">
+            {votes.slice(0, 50).map((v) => (
+              <li key={`${v.club}|${v.city}`} className="flex flex-wrap justify-between gap-2 py-2">
+                <span><span className="font-semibold">{v.club}</span> <span className="text-slate">· {[v.city, v.state].filter(Boolean).join(", ")}{v.known ? "" : " · ikke på listen"}</span></span>
+                <span className="data">{v.confirmed} bekræftet{v.pending ? ` · ${v.pending} afventer` : ""}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       <div className="grid gap-3 sm:grid-cols-3">
         <Tile label="Confirmed and waiting" value={totals.confirmed} note="Count on these." />
         <Tile label="Awaiting e-mail confirmation" value={totals.pending} note="Deleted after 30 days if never confirmed." />

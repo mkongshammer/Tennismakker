@@ -1825,6 +1825,8 @@ export async function approveClub(formData: FormData) {
 
   // Players who asked to be told when courts open near this club get their one e-mail.
   await notifyInterestForClub(id);
+  // Players who voted this club onto RacketBuddy get their one e-mail too.
+  await (await import("./club-votes")).notifyVotersForClub(id).catch((e) => console.error("[club-votes] notify", e));
 
   revalidatePath("/superadmin", "layout");
   revalidatePath("/courts");

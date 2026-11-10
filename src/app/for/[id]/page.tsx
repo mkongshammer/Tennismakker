@@ -11,6 +11,7 @@ import { sportColor, sportLabel } from "../../../lib/sports";
 import { US_STATES } from "../../../../shared/us-address.mjs";
 import { Icon, type IconName } from "../../../components/ui";
 import { ViewBeacon } from "./ViewBeacon";
+import { voteCount } from "../../../lib/club-votes";
 
 export const dynamic = "force-dynamic";
 
@@ -50,9 +51,10 @@ export default async function Page({ params }: Props) {
   const sports = previewSports(lead.sport);
   const code = stateCode(lead.state);
   const place = [lead.city, code || lead.state].filter(Boolean).join(", ");
-  const [price, demand] = await Promise.all([
+  const [price, demand, votes] = await Promise.all([
     priceCopy(),
     code ? db.marketInterest.count({ where: { state: code, kind: "COURTS" } }).catch(() => 0) : Promise.resolve(0),
+    voteCount(id).catch(() => 0),
   ]);
   const courts = sports.length > 1 ? Math.min(4, sports.length + 2) : 4;
   const grid = demoCalendar(id, courts, HOURS);
@@ -122,6 +124,13 @@ export default async function Page({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {votes > 0 && (
+        <section className="card flex items-start gap-4 border-court/40">
+          <Icon name="heart" className="mt-0.5 shrink-0 text-court-light" />
+          <p><span className="font-bold">{votes} {votes === 1 ? "player has" : "players have"} voted to book {first} on RacketBuddy.</span> <span className="text-slate">Each one confirmed their email. They get a message the day you go live.</span></p>
+        </section>
+      )}
 
       {demand > 0 && (
         <section className="card flex items-start gap-4">

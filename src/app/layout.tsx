@@ -57,6 +57,7 @@ const FOOTER_LINKS = {
     { href: "/courts", label: "Reserve a court" },
     { href: "/coaches", label: "Find a coach" },
     { href: "/players", label: "Find a hitting partner" },
+    { href: "/vote", label: "Vote your club in" },
     { href: "/app", label: "Get the app" },
   ],
   Clubs: [

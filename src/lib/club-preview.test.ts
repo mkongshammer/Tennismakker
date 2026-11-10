@@ -29,3 +29,14 @@ test("preview sentence goes before the sign-off, once", () => {
   assert.ok(addPreviewLine("Hi,\n\nBody.\n\nMagnus\nRacketBuddy")!.includes(`${PREVIEW_LINE}\n\nMagnus`));
   assert.equal(addPreviewLine("no sign-off"), null);
 });
+
+import { customClubKey, stateCode, voteToken, VOTE_THRESHOLDS } from "./club-votes";
+test("vote keys and tokens", () => {
+  assert.equal(stateCode("Texas"), "TX");
+  assert.equal(stateCode("tx"), "TX");
+  assert.equal(customClubKey("The Riverside Tennis Club", "Austin", "TX"), customClubKey("Riverside", "austin ", "Texas"));
+  assert.match(customClubKey("A B C", "X", "TX"), /^x[0-9a-f]{15}$/);
+  assert.equal(voteToken("vote:a:b"), voteToken("vote:a:b"));
+  assert.notEqual(voteToken("vote:a:b"), voteToken("vote:a:c"));
+  assert.deepEqual(VOTE_THRESHOLDS.slice(0, 2), [3, 10]);
+});
