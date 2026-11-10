@@ -37,15 +37,15 @@ const FEATURE_EN: Record<string, { label: string; body: string }> = {
 
 const STEPS = ["Price", "Facility", "Courts", "Account"] as const;
 
-export function SignupForm({ priceBook, locale = "en-US" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM" }) {
+export function SignupForm({ priceBook, locale = "en-US", initialName = "", initialCity = "", initialState = "" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM"; initialName?: string; initialCity?: string; initialState?: string }) {
   const [sports, setSports] = useState<Sport[]>(["TENNIS"]);
   const [counts, setCounts] = useState<Record<string, number>>({ TENNIS: 2 });
   const [state, action] = useFormState(registerClub, null);
   const [step, setStep] = useState(0);
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [usState, setUsState] = useState("");
-  const [timeZone, setTimeZone] = useState("America/New_York");
+  const [name, setName] = useState(initialName);
+  const [city, setCity] = useState(initialCity);
+  const [usState, setUsState] = useState(initialState);
+  const [timeZone, setTimeZone] = useState(initialState ? usStateTimeZone(initialState) : "America/New_York");
   const [priceHour, setPriceHour] = useState(30);
   const panels = useRef<Array<HTMLDivElement | null>>([]);
 

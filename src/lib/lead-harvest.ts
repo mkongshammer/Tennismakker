@@ -287,6 +287,8 @@ export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200)
   const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId(kind);
   if (!key || !campaign) return { pushed: 0, skipped: "instantly-not-configured" };
   const waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt).slice(0, limit);
+  const { appUrl } = await (await import("./settings")).getSettings();
+  const { previewUrl } = await import("./club-preview");
   let pushed = 0;
   for (const { key: rowKey, lead } of waiting) {
     const res = await fetch("https://api.instantly.ai/api/v2/leads", {
@@ -295,7 +297,7 @@ export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200)
       body: JSON.stringify({
         campaign, email: lead.email, first_name: lead.firstName || "there", company_name: lead.clubName, website: lead.website,
         skip_if_in_workspace: true, skip_if_in_campaign: true,
-        custom_variables: { city: lead.city || "your area", state: lead.state, sport: lead.sport },
+        custom_variables: { city: lead.city || "your area", state: lead.state, sport: lead.sport, ...(kind === "club" ? { clubPage: previewUrl(appUrl, lead.email) } : {}) },
       }),
       signal: AbortSignal.timeout(15_000),
     });

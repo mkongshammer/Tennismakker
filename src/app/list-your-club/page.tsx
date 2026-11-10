@@ -12,8 +12,9 @@ export const metadata: Metadata = {
   description: "Set up court booking, payments and a public club page in minutes. One plan with everything included, no setup fee, no contract, no commission on court bookings.",
 };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
-  const [{ locale }] = await Promise.all([getPreferences(), searchParams]);
+export default async function Page({ searchParams }: { searchParams: Promise<{ plan?: string; club?: string; city?: string; state?: string }> }) {
+  const [{ locale }, query] = await Promise.all([getPreferences(), searchParams]);
+  const pre = (v: string | undefined, max: number) => String(v ?? "").slice(0, max);
   const price = await priceCopy();
   return (
     <div className="space-y-8">
@@ -29,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
         </ul>
         {price.badge && <p className="mt-4 rounded-2xl border border-court/30 bg-court/10 px-4 py-3 text-sm"><span className="font-bold">Founding-club price:</span> {price.short}, locked in for as long as you stay. Only for the first {price.founding.total} clubs ({price.founding.left} spots left), then {`$${price.regularMonthly}`}/month or {`$${price.regularAnnual}`}/year.</p>}
       </header>
-      <SignupForm priceBook={await effectiveClubPriceBook()} locale={locale} initialCountry="US" />
+      <SignupForm priceBook={await effectiveClubPriceBook()} locale={locale} initialCountry="US" initialName={pre(query.club, 150)} initialCity={pre(query.city, 100)} initialState={/^[A-Z]{2}$/.test(query.state ?? "") ? query.state : ""} />
     </div>
   );
 }

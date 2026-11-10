@@ -53,6 +53,9 @@ export async function runJobOnce(job: CronJob) {
     await sendHatfieldFollowup().then((r) => { if (!("done" in r)) console.log("[oneoff] hatfield", JSON.stringify(r)); }).catch((e) => console.error("[oneoff] hatfield", e));
     const { mailLeadNumbersOnce } = await import("./campaign-autostart");
     await mailLeadNumbersOnce().catch((e) => console.error("[lead-numbers]", e));
+    // Personal club previews into the running campaign. Runs in the background (it pages through every lead).
+    const { runClubPreviewRollout } = await import("./club-preview-rollout");
+    void runClubPreviewRollout().then((r) => { if (!("done" in r) && !("skipped" in r)) console.log("[club-preview-rollout]", JSON.stringify(r)); });
     const { mailCampaignNumbersOnce } = await import("./campaign-autostart");
     await mailCampaignNumbersOnce().catch((e) => console.error("[campaign-numbers]", e));
   }
