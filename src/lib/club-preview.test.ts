@@ -40,3 +40,12 @@ test("vote keys and tokens", () => {
   assert.notEqual(voteToken("vote:a:b"), voteToken("vote:a:c"));
   assert.deepEqual(VOTE_THRESHOLDS.slice(0, 2), [3, 10]);
 });
+
+import { previewFollowupMail } from "./club-preview";
+test("follow-up mail is personal and has one link", () => {
+  const m = previewFollowupMail({ clubName: "Aquidneck Club", firstName: "" }, "https://racketbuddy.app/for/0123456789abcdef");
+  assert.equal(m.subject, "Aquidneck Club on RacketBuddy");
+  assert.ok(m.body.startsWith("Hi,\n\n"));
+  assert.equal(m.body.match(/https?:\/\//g)?.length, 1);
+  assert.ok(m.body.includes("no thanks"));
+});
