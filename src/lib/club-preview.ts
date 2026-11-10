@@ -109,9 +109,11 @@ export async function sendDuePreviewFollowups(now = new Date()) {
   const rows = await db.platformSetting.findMany({ where: { key: { startsWith: FOLLOWUP_PREFIX } } }).catch(() => []);
   let sent = 0;
   for (const row of rows) {
-    const state = JSON.parse(row.value) as { due: string; sentAt?: string; skipped?: string };
-    if (state.sentAt || state.skipped || new Date(state.due) > now) continue;
     const id = row.key.slice(FOLLOWUP_PREFIX.length);
+    if (!validPreviewId(id)) continue; // the backfill flag lives under the same prefix
+    let state: { due: string; sentAt?: string; skipped?: string };
+    try { state = JSON.parse(row.value); } catch { continue; }
+    if (state.sentAt || state.skipped || new Date(state.due) > now) continue;
     const lead = await leadForPreview(id);
     const mark = (patch: Record<string, string>) => db.platformSetting.update({ where: { key: row.key }, data: { value: JSON.stringify({ ...state, ...patch }) } });
     if (!lead) { await mark({ skipped: "no lead" }); continue; }
@@ -130,7 +132,7 @@ export async function sendDuePreviewFollowups(now = new Date()) {
 
 /** One-off: clubs that opened their page before follow-ups existed. Hatfield's open was the owner checking the page. */
 export async function backfillPreviewFollowups() {
-  const flag = "sales:preview-followup:backfill-2026-11-10";
+  const flag = "sales:preview-followup-backfill:2026-11-10";
   if (await db.platformSetting.findUnique({ where: { key: flag } }).catch(() => null)) return 0;
   await db.platformSetting.create({ data: { key: flag, value: new Date().toISOString() } });
   const rows = await db.platformSetting.findMany({ where: { key: { startsWith: "sales:preview-view:" } } });
