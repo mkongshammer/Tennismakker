@@ -64,8 +64,11 @@ export default async function Page({ params }: Props) {
   const first = lead.clubName;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10 pb-20 sm:pb-0">
       <ViewBeacon id={id} />
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate/15 bg-ink-deep/95 px-4 py-3 backdrop-blur sm:hidden" style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
+        <Link href={claim} data-track-click="claim (phone bar)" className="btn-court w-full justify-center">Claim {first} · ${price.monthly}/mo <Icon name="arrow" /></Link>
+      </div>
       <PageTracker id={id} />
 
       <section className="grid items-center gap-8 lg:grid-cols-[1.05fr_1fr]">
@@ -74,6 +77,10 @@ export default async function Page({ params }: Props) {
           <h1 className="display mt-3 text-display-md sm:text-display-lg">{first}, on RacketBuddy.</h1>
           <p className="lead mt-4 max-w-xl">
             This is what your members and guests would see{place ? ` in ${place}` : ""}: open courts, prices and booking in one tap, paid up front. It’s a private preview. Nothing is public until you claim it.
+          </p>
+          <p className="mt-4 inline-flex flex-wrap items-baseline gap-x-2 rounded-2xl border border-court/30 bg-court/10 px-4 py-2 text-sm">
+            <span className="font-bold">${price.monthly}/month, everything included.</span>
+            <span className="text-slate">{price.founding.open ? `Founding price, locked in for as long as you stay · ${price.founding.left} of ${price.founding.total} spots left` : `or $${price.annual}/year`}</span>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link href={claim} data-track-click="claim (top)" className="btn-court btn-lg">Claim {first} <Icon name="arrow" /></Link>
@@ -141,20 +148,6 @@ export default async function Page({ params }: Props) {
         </section>
       )}
 
-      <section data-track="features">
-        <h2 className="display text-2xl sm:text-3xl">Everything {first} runs on, in one place</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="card">
-              <Icon name={f.icon} className="text-court-light" />
-              <p className="mt-3 font-bold">{f.title}</p>
-              <p className="mt-1 text-sm text-slate">{f.body}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-4 text-sm text-slate">Plus a member app for iPhone and Android, your own club website, member emails, pro shop and gift cards, staff schedule and reports for QuickBooks.</p>
-      </section>
-
       <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
         <div data-track="switch" className="card">
           <h2 className="display text-2xl">Switching takes an afternoon</h2>
@@ -178,6 +171,19 @@ export default async function Page({ params }: Props) {
           <p className="mt-3 text-sm text-slate">No setup fee, no contract, no commission on court bookings. Cancel any month.</p>
           <Link href={claim} data-track-click="claim (price)" className="btn-court mt-5 justify-center">Claim {first} <Icon name="arrow" /></Link>
         </div>
+      </section>
+
+      <section data-track="features" className="card">
+        <h2 className="display text-xl sm:text-2xl">Everything {first} runs on, in one place</h2>
+        <ul className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          {FEATURES.map((f) => (
+            <li key={f.title} className="flex gap-3">
+              <Icon name={f.icon} className="mt-0.5 shrink-0 text-court-light" />
+              <span><span className="font-semibold">{f.title}.</span> <span className="text-sm text-slate">{f.body}</span></span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-sm text-slate">Plus a member app for iPhone and Android, your own club website, member emails, pro shop and gift cards, staff schedule and QuickBooks reports.</p>
       </section>
 
       <p data-track="contact" className="text-center text-sm text-slate">

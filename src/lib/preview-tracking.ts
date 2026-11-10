@@ -8,7 +8,7 @@
 import { db } from "./db";
 import { leadForPreview, validPreviewId } from "./club-preview";
 
-export const PREVIEW_SECTIONS = ["hero", "calendar", "votes", "demand", "features", "switch", "pricing", "contact"] as const;
+export const PREVIEW_SECTIONS = ["hero", "calendar", "votes", "demand", "switch", "pricing", "features", "contact"] as const;
 export const SECTION_LABELS: Record<string, string> = {
   hero: "Toppen", calendar: "Bookingkalender", votes: "Spillerstemmer", demand: "Efterspørgsel", features: "Funktioner", switch: "Sådan skifter I", pricing: "Pris", contact: "Kontakt (bunden)",
 };
