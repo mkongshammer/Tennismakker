@@ -26,9 +26,30 @@ export function isWarm(state: string) {
 }
 
 /** Warm states first in winter; otherwise the list order is kept. Stable. */
+// Florida and Texas get the most attention (owner, 11 Nov 2026), but every
+// other state keeps getting mails too: of every 5 clubs added, 3 are from
+// FL/TX, 1 from another warm state and 1 from anywhere else (in summer: 3
+// FL/TX and 2 from anywhere else). A group that runs out is filled by the next.
+export const FOCUS_STATES = new Set(["FL", "TX"]);
+export function isFocus(state: string) {
+  return FOCUS_STATES.has(stateCode(state));
+}
 export function queueOrder<T extends { lead: Pick<Lead, "state"> }>(rows: T[], now = new Date()): T[] {
-  if (!isWinter(now)) return rows;
-  return [...rows.filter((r) => isWarm(r.lead.state)), ...rows.filter((r) => !isWarm(r.lead.state))];
+  const winter = isWinter(now);
+  const focus = rows.filter((r) => isFocus(r.lead.state));
+  const warm = winter ? rows.filter((r) => !isFocus(r.lead.state) && isWarm(r.lead.state)) : [];
+  const rest = rows.filter((r) => !isFocus(r.lead.state) && !(winter && isWarm(r.lead.state)));
+  const pattern: T[][] = winter ? [focus, focus, focus, warm, rest] : [focus, focus, focus, rest, rest];
+  const out: T[] = [];
+  const queues = [focus, warm, rest].map((q) => [...q]);
+  const take = (q: T[]) => { const src = queues[[focus, warm, rest].indexOf(q)]; return src.shift(); };
+  while (out.length < rows.length) {
+    for (const q of pattern) {
+      const next = take(q) ?? take(focus) ?? take(warm) ?? take(rest);
+      if (next) out.push(next);
+    }
+  }
+  return out;
 }
 
 async function api(path: string, init: RequestInit = {}) {
@@ -52,7 +73,8 @@ export async function clubsToAdd(campaign: string) {
   return Math.max(0, BUFFER - left);
 }
 
-const DONE = "sales:campaign-rebalance-warm:done";
+// Second pass (11 Nov 2026 evening): Florida and Texas first.
+const DONE = "sales:campaign-rebalance-fltx:done";
 let running = false;
 
 export async function rebalanceCampaignOnce(now = new Date()) {
@@ -73,7 +95,7 @@ export async function rebalanceCampaignOnce(now = new Date()) {
         const row = await db.platformSetting.findUnique({ where: { key: `sales:lead:${hash(l.email)}` } }).catch(() => null);
         const lead = row ? (JSON.parse(row.value) as Lead) : null;
         const state = lead?.state ?? String(l.payload?.state ?? "");
-        if (isWarm(state)) { warmWaiting++; continue; }
+        if (!lead) { warmWaiting++; continue; } // can't be added back: leave it in the queue
         if (lead) toRemove.push({ id: l.id, email: l.email }); // only clubs we can add back later
       }
       if (!data.next_starting_after || !(data.items ?? []).length) break;
@@ -106,11 +128,15 @@ export async function rebalanceCampaignOnce(now = new Date()) {
       }
       await new Promise((res) => setTimeout(res, 500));
     }
-    await db.platformSetting.create({ data: { key: DONE, value: JSON.stringify({ at: now.toISOString(), removed, warmWaiting, failed }) } }).catch(() => {});
+    // Put the queue straight back in the new order (3 FL/TX : 1 warm : 1 other), so sending never pauses.
+    await new Promise((res) => setTimeout(res, 90_000)); // Instantly deletes in the background; let it finish first
+    const { pushLeadsToInstantly } = await import("./lead-harvest");
+    const refill = await pushLeadsToInstantly("club", BUFFER, { skipBufferCheck: true }).catch((e) => ({ pushed: 0, error: String(e) }));
+    await db.platformSetting.create({ data: { key: DONE, value: JSON.stringify({ at: now.toISOString(), removed, warmWaiting, failed, refill }) } }).catch(() => {});
     const { tellOwner } = await import("./founding-offer");
     await tellOwner(
-      "RacketBuddy: kampagnen skriver nu til de varme stater først",
-      `Det er vinter, så kampagnen skriver nu først til klubber i de varme stater (Florida, Texas, Arizona, Californien, Nevada, Georgia, South Carolina m.fl.), hvor der er højsæson.\n\n${warmWaiting} klubber i de varme stater står nu forrest i køen. ${removed} klubber i de kolde stater, som ikke var skrevet til endnu, er sat bagerst og kommer med igen bagefter${failed ? ` (${failed} kunne ikke flyttes og bliver i køen)` : ""}. Klubber, der allerede har fået en mail, får deres opfølgninger som normalt.\n\nKampagnen sender stadig 100 om dagen.`,
+      "RacketBuddy: kampagnen fokuserer nu på Florida og Texas",
+      `Kampagnen skriver nu mest til Florida og Texas: af hver 5 nye klubber er 3 fra Florida/Texas, 1 fra en anden varm stat og 1 fra resten af USA.\n\nKøen er lagt om: ${removed} klubber, som ikke var skrevet til endnu, blev taget ud, og ${"pushed" in refill ? refill.pushed : 0} er lagt ind igen i den nye fordeling (resten kommer løbende)${failed ? `. ${failed} kunne ikke flyttes og bliver i køen` : ""}. Klubber, der allerede har fået en mail, får deres opfølgninger som normalt.\n\nKampagnen sender stadig 100 om dagen.`,
     ).catch(() => null);
     return { removed, warmWaiting, failed };
   } catch (e) {

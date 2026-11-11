@@ -283,14 +283,14 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
  * INSTANTLY_CAMPAIGN_ID for clubs, INSTANTLY_COACH_CAMPAIGN_ID for coaches).
  * Instantly skips anyone already in the workspace, so nobody is mailed twice.
  */
-export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200) {
+export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200, opts: { skipBufferCheck?: boolean } = {}) {
   const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId(kind);
   if (!key || !campaign) return { pushed: 0, skipped: "instantly-not-configured" };
   let waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt);
   if (kind === "club") {
     // Keep ~300 not-yet-contacted clubs in Instantly, warm states first in winter (see campaign-queue.ts).
     const { queueOrder, clubsToAdd } = await import("./campaign-queue");
-    waiting = queueOrder(waiting).slice(0, Math.min(limit, await clubsToAdd(campaign)));
+    waiting = queueOrder(waiting).slice(0, opts.skipBufferCheck ? limit : Math.min(limit, await clubsToAdd(campaign)));
   } else waiting = waiting.slice(0, limit);
   const { appUrl } = await (await import("./settings")).getSettings();
   const { previewUrl } = await import("./club-preview");

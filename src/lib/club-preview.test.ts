@@ -89,13 +89,18 @@ test("club set-up from an e-mail reply", () => {
 });
 
 import { queueOrder, isWinter, isWarm } from "./campaign-queue";
-test("winter queue puts warm states first", () => {
-  const rows = [{ lead: { state: "Connecticut" } }, { lead: { state: "Florida" } }, { lead: { state: "NY" } }, { lead: { state: "TX" } }];
+test("queue: 3 of 5 from Florida/Texas, the rest still get mails", () => {
+  const mk = (st: string, n: number) => Array.from({ length: n }, (_, i) => ({ lead: { state: st }, i }));
+  const rows = [...mk("Connecticut", 4), ...mk("Florida", 4), ...mk("Arizona", 2), ...mk("TX", 2)];
   const jan = new Date("2027-01-10T12:00:00Z"), jul = new Date("2027-07-10T12:00:00Z");
   assert.equal(isWinter(jan), true);
   assert.equal(isWinter(jul), false);
-  assert.deepEqual(queueOrder(rows, jan).map((r) => r.lead.state), ["Florida", "TX", "Connecticut", "NY"]);
-  assert.deepEqual(queueOrder(rows, jul).map((r) => r.lead.state), ["Connecticut", "Florida", "NY", "TX"]);
+  const w = queueOrder(rows, jan).map((r) => r.lead.state);
+  assert.deepEqual(w.slice(0, 5), ["Florida", "Florida", "Florida", "Arizona", "Connecticut"]);
+  assert.equal(w.length, rows.length);
+  assert.equal(new Set(queueOrder(rows, jan)).size, rows.length);
+  const s = queueOrder(rows, jul).map((r) => r.lead.state);
+  assert.deepEqual(s.slice(0, 5), ["Florida", "Florida", "Florida", "Connecticut", "Connecticut"]);
   assert.equal(isWarm("Arizona"), true);
   assert.equal(isWarm("Maine"), false);
 });
