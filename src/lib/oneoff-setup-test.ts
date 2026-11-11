@@ -44,3 +44,13 @@ export async function runSetupTestOnce() {
   await tellOwner("RacketBuddy: TEST af automatisk klubopsætning", report);
   return { ran: true };
 }
+
+/** Removes the test club again (so it never shows up in lists, votes or counts). */
+export async function cleanupSetupTestOnce() {
+  const flag = "oneoff:setup-test-cleanup:2026-11-11";
+  if (await db.platformSetting.findUnique({ where: { key: flag } }).catch(() => null)) return;
+  const { previewId } = await import("./club-preview");
+  const id = previewId(TEST_EMAIL);
+  await db.platformSetting.deleteMany({ where: { OR: [{ key: `sales:lead:${hash(TEST_EMAIL)}` }, { key: `sales:prepared-setup:${id}` }, { key: `sales:preview-view:${id}` }, { key: `sales:preview-followup:${id}` }, { key: { startsWith: `sales:preview-visit:${id}:` } }] } });
+  await db.platformSetting.create({ data: { key: flag, value: new Date().toISOString() } });
+}
