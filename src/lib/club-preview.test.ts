@@ -72,3 +72,18 @@ test("soft no's wait 3 months, then one check-in with an opt-out", () => {
   assert.ok(m.subject.includes("Robbinsville"));
   assert.ok(m.body.includes("won't follow up again") && m.body.includes("no thanks"));
 });
+
+import { cleanSetup, setupReady, missingForSetup, setupDoneMail, courtsText, hoursText } from "./club-setup";
+test("club set-up from an e-mail reply", () => {
+  const s = cleanSetup({ courts: [{ sport: "tennis", count: 6 }, { sport: "PICKLEBALL", count: 4 }, { sport: "GOLF", count: 2 }], openHour: 6, closeHour: 23, guestPrice: 40, zip: "02871" });
+  assert.deepEqual(s.courts, [{ sport: "TENNIS", count: 6 }, { sport: "PICKLEBALL", count: 4 }]);
+  assert.equal(setupReady(s), true);
+  assert.equal(courtsText(s.courts), "6 tennis courts and 4 pickleball courts");
+  assert.equal(hoursText(s), "6am–11pm");
+  const partial = cleanSetup({ courts: [{ sport: "TENNIS", count: 3 }], guestPrice: null, openHour: 22, closeHour: 7 });
+  assert.equal(partial.openHour, null); // close before open is rejected
+  assert.equal(setupReady(partial), false);
+  assert.deepEqual(missingForSetup(partial), ["what a non-member pays per court-hour", "your opening hours"]);
+  const mail = setupDoneMail({ clubName: "Aquidneck Club", setup: { ...s, updatedAt: "" }, page: "https://racketbuddy.app/for/x", claim: "https://racketbuddy.app/list-your-club?ref=x" });
+  assert.ok(mail.includes("$40/hour") && mail.includes("https://racketbuddy.app/for/x") && mail.includes("list-your-club"));
+});

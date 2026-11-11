@@ -18,6 +18,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const price = await priceCopy();
   // From a personal club page: prefill the club's e-mail too (looked up by the page id, never put in the URL).
   const lead = query.ref ? await (await import("../../lib/club-preview")).leadForPreview(String(query.ref)).catch(() => null) : null;
+  // Set up from the club's own e-mail reply: courts, price, hours and address are ready too.
+  const prepared = lead && query.ref ? await (await import("../../lib/club-setup")).preparedSetup(String(query.ref)).catch(() => null) : null;
   return (
     <div className="space-y-8">
       <header className="max-w-2xl">
@@ -32,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
         </ul>
         {price.badge && <p className="mt-4 rounded-2xl border border-court/30 bg-court/10 px-4 py-3 text-sm"><span className="font-bold">Founding-club price:</span> {price.short}, locked in for as long as you stay. Only for the first {price.founding.total} clubs ({price.founding.left} spots left), then {`$${price.regularMonthly}`}/month or {`$${price.regularAnnual}`}/year.</p>}
       </header>
-      <SignupForm priceBook={await effectiveClubPriceBook()} locale={locale} initialCountry="US" initialName={pre(query.club, 150)} initialCity={pre(query.city, 100)} initialState={/^[A-Z]{2}$/.test(query.state ?? "") ? query.state : ""} initialEmail={lead?.email ?? ""} />
+      <SignupForm priceBook={await effectiveClubPriceBook()} locale={locale} initialCountry="US" initialName={pre(query.club, 150)} initialCity={pre(query.city, 100)} initialState={/^[A-Z]{2}$/.test(query.state ?? "") ? query.state : ""} initialEmail={lead?.email ?? ""} prepared={prepared && prepared.courts.length && prepared.guestPrice ? { courts: prepared.courts, priceHour: prepared.guestPrice, openHour: prepared.openHour, closeHour: prepared.closeHour, street: prepared.street ?? "", zip: prepared.zip ?? "", contact: prepared.contactName ?? "" } : null} />
     </div>
   );
 }

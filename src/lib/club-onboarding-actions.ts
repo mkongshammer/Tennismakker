@@ -17,6 +17,8 @@ import {formatUSAddress,normalizeUSPostalCode,normalizeUSState,validUSPostalCode
 import {geocode} from './geocode';
 import {COURT_OPTIONS} from './club-sports';
 import {SPORTS,sportLabel,type Sport} from './sports';
+// Opening hours from a set-up prepared from the club's own e-mail reply (hidden fields); defaults otherwise.
+function openingHours(form:FormData){const o=Number(form.get('openHour')),c=Number(form.get('closeHour'));return Number.isInteger(o)&&Number.isInteger(c)&&o>=0&&c<=23&&c>o&&form.has('openHour')?{openHour:o,closeHour:c}:{};}
 export async function registerClub(_prev:unknown,form:FormData){
  let userId:string,clubId:string,clubName:string,contactEmail:string;
  const ip=clientIp(await headers());
@@ -47,7 +49,7 @@ export async function registerClub(_prev:unknown,form:FormData){
   const coords=address?await geocode(address,city,country):null;
   ({userId,clubId}=await db.$transaction(async tx=>{
    if(await tx.user.findUnique({where:{email}}))throw Error('E-mailen er allerede registreret. Log ind eller brug en anden e-mail.');
-   const club=await tx.club.create({data:{name,city,priceHour,country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:'CUSTOM',customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:0,billingModel:'SUBSCRIPTION',subscriptionKr:price,subscriptionInterval:billing,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
+   const club=await tx.club.create({data:{name,city,priceHour,...openingHours(form),country,currency,timeZone,address:address||null,latitude:coords?.latitude,longitude:coords?.longitude,slug:`${name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,50)}-${crypto.randomBytes(5).toString('hex')}`,contactEmail:email,sports:sports.join(','),solutionMode:'CUSTOM',customFeatures:JSON.stringify(features),signupManaged:true,signupSetupKr:0,billingModel:'SUBSCRIPTION',subscriptionKr:price,subscriptionInterval:billing,billingCurrency:prices.currency,status:'PENDING',integrationType:'NATIVE'}});
    for(const {sport,count} of counts){const opt=COURT_OPTIONS[sport];await tx.court.createMany({data:Array.from({length:count},(_,i)=>({clubId:club.id,name:`${sportLabel(sport,locale as any)} ${locale==="da"?opt.noun:sport==="BORDTENNIS"?"table":"court"} ${i+1}`,sport,surface:opt.surfaces[0],indoor:opt.indoor}))});}
    return {userId:(await tx.user.create({data:{email,name:contact,passwordHash,country,locale,countryChosen:true,role:'CLUB_ADMIN',clubId:club.id,termsAcceptedAt:new Date()}})).id,clubId:club.id};
   }));

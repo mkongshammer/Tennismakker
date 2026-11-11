@@ -100,7 +100,7 @@ export function previewFollowupMail(lead: Pick<Lead, "clubName" | "firstName">, 
   const hi = lead.firstName ? `Hi ${lead.firstName},` : "Hi,";
   return {
     subject: `${lead.clubName} on RacketBuddy`,
-    body: `${hi}\n\nA quick follow-up on the page I put together for ${lead.clubName}. If it helps, I'm happy to set it up with your real courts, hours and prices, so you can see your own club working before you decide anything. It takes me about 10 minutes and costs nothing.\n\nJust reply with a yes, or with a good time for a 10-minute call. You can also claim it yourself here:\n${page}\n\nMagnus\nRacketBuddy\n\nPTMove LLC (RacketBuddy), 8 The Green, Ste D, Dover, DE 19901\nNot interested? Just reply "no thanks" and you won't hear from me again.`,
+    body: `${hi}\n\nA quick follow-up on the page I put together for ${lead.clubName}. If it helps, I'm happy to set it up with your real courts, hours and prices, so you can see your own club working before you decide anything. It costs nothing.\n\nJust reply with how many courts you have (per sport), your opening hours and what a non-member pays per court-hour, and I'll send you the link. You can also claim it yourself here:\n${page}\n\nMagnus\nRacketBuddy\n\nPTMove LLC (RacketBuddy), 8 The Green, Ste D, Dover, DE 19901\nNot interested? Just reply "no thanks" and you won't hear from me again.`,
   };
 }
 

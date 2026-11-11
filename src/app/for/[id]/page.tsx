@@ -13,6 +13,7 @@ import { Icon, type IconName } from "../../../components/ui";
 import { ViewBeacon } from "./ViewBeacon";
 import { PageTracker } from "./PageTracker";
 import { voteCount } from "../../../lib/club-votes";
+import { preparedSetup, setupReady, hoursText, DEFAULT_OPEN, DEFAULT_CLOSE } from "../../../lib/club-setup";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,10 @@ export default async function Page({ params }: Props) {
   const lead = await leadForPreview(id);
   if (!lead) notFound();
 
-  const sports = previewSports(lead.sport);
+  // Set up from the club's own reply? Then show their real courts, hours and price.
+  const setup = await preparedSetup(id).catch(() => null);
+  const real = setup && setupReady(setup) ? setup : null;
+  const sports = real ? real.courts.map((c) => c.sport) : previewSports(lead.sport);
   const code = stateCode(lead.state);
   const place = [lead.city, code || lead.state].filter(Boolean).join(", ");
   const [price, demand, votes] = await Promise.all([
@@ -57,9 +61,13 @@ export default async function Page({ params }: Props) {
     code ? db.marketInterest.count({ where: { state: code, kind: "COURTS" } }).catch(() => 0) : Promise.resolve(0),
     voteCount(id).catch(() => 0),
   ]);
-  const courts = sports.length > 1 ? Math.min(4, sports.length + 2) : 4;
-  const grid = demoCalendar(id, courts, HOURS);
-  const courtSport = (i: number) => sports[i % sports.length];
+  const realCourts = real ? real.courts.flatMap((c) => Array.from({ length: c.count }, (_, i) => ({ sport: c.sport, n: i + 1 }))).slice(0, 8) : null;
+  const courts = realCourts ? realCourts.length : sports.length > 1 ? Math.min(4, sports.length + 2) : 4;
+  const open = real?.openHour ?? DEFAULT_OPEN, close = real?.closeHour ?? DEFAULT_CLOSE;
+  const hours = real ? [open, open + 1, open + 2, 12, 17, 18, 19, Math.min(close - 1, 20)].filter((h, i, a) => h >= open && h < close && a.indexOf(h) === i).sort((a, b) => a - b) : HOURS;
+  const grid = demoCalendar(id, courts, hours);
+  const courtSport = (i: number) => realCourts ? realCourts[i].sport : sports[i % sports.length];
+  const courtName = (i: number) => realCourts ? `${sports.length > 1 ? `${sportLabel(realCourts[i].sport, "en-US")} ` : "Court "}${realCourts[i].n}` : `Court ${i + 1}`;
   const claim = `/list-your-club?${new URLSearchParams({ club: lead.clubName, city: lead.city, state: code, ref: id })}`;
   const first = lead.clubName;
 
@@ -110,7 +118,7 @@ export default async function Page({ params }: Props) {
               <thead>
                 <tr>
                   <th className="w-20 text-left font-semibold text-slate"> </th>
-                  {HOURS.map((h) => <th key={h} className="data font-semibold text-slate">{hourLabel(h)}</th>)}
+                  {hours.map((h) => <th key={h} className="data font-semibold text-slate">{hourLabel(h)}</th>)}
                 </tr>
               </thead>
               <tbody>
@@ -118,18 +126,18 @@ export default async function Page({ params }: Props) {
                   <tr key={i}>
                     <td className="whitespace-nowrap pr-1 font-semibold">
                       <span className="mr-1.5 inline-block h-2 w-2 rounded-full align-middle" style={{ backgroundColor: sportColor(courtSport(i)) }} />
-                      Court {i + 1}
+                      {courtName(i)}
                     </td>
                     {row.map((booked, j) => (
                       <td key={j} className={`h-9 min-w-[2.6rem] rounded-lg text-center align-middle data ${booked ? "bg-slate/10 text-slate" : "border border-court/40 bg-court/10 font-semibold text-court-light"}`}>
-                        {booked ? "—" : "Open"}
+                        {booked ? "—" : real ? `$${real.guestPrice}` : "Open"}
                       </td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-slate">Example day. Your real courts, hours and prices are set when you claim the club.</p>
+            <p className="mt-2 text-xs text-slate">{real ? `Your ${courts > 1 ? `${real.courts.reduce((n, c) => n + c.count, 0)} courts` : "court"}, open ${hoursText(real)}, $${real.guestPrice}/hour for guests. The bookings shown are examples.` : "Example day. Your real courts, hours and prices are set when you claim the club."}</p>
           </div>
         </div>
       </section>

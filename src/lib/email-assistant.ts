@@ -25,6 +25,8 @@ export type Decision = {
   category: string;
   summary: string;
   reply: string;
+  /** Details for setting a club up automatically (sales only). */
+  setup?: { wants_setup: boolean; courts: { sport: string; count: number }[]; open_hour: number | null; close_hour: number | null; guest_price: number | null; street: string | null; zip: string | null; contact_name: string | null };
 };
 export type MailLog = {
   at: string; channel: Channel; from: string; subject: string; text: string;
@@ -99,7 +101,8 @@ action:
 - "ignore" for "not interested", "remove me", "unsubscribe", out-of-office and automatic replies (reply = ""). If they say they're the wrong person but name the right one, reply briefly thanking them (interest "wrong_person").
 interest for a no:
 - "unsubscribe" when they ask not to be emailed: "no thanks" (our e-mails tell people to reply exactly that to opt out), "stop", "remove me", "take me off your list", "unsubscribe", "don't contact us", or any angry no. They are never contacted again.
-- "not_interested" for a polite no with no request to stop, e.g. "not interested at this time", "we're happy with our current system", "not right now". They are checked back with once after 3 months.`;
+- "not_interested" for a polite no with no request to stop, e.g. "not interested at this time", "we're happy with our current system", "not right now". They are checked back with once after 3 months.
+Setting the club up for them (setup): Magnus's follow-up e-mail offered to set the club up with its real courts, hours and prices. If the sender says yes to that, asks you to set it up, or simply gives court counts / prices / hours, set setup.wants_setup = true and fill in what they gave: courts (sport and count per sport; sports are TENNIS, PICKLEBALL, PADEL, SQUASH, BADMINTON, BORDTENNIS = table tennis), open_hour and close_hour as whole hours 0–24 (e.g. 7am–10pm = 7 and 22), guest_price = what a non-member pays per court per hour in USD, and street, zip and contact_name if they mention them. Use null for anything they didn't give; never guess numbers. action "reply", interest "interested". In reply, if the court counts or the guest price are missing, ask for exactly what's missing (how many courts per sport, the non-member price per court-hour, and opening hours if missing) in 2–3 friendly sentences and say you'll set it up as soon as you have it. If courts and price are both given, reply with just "OK" (the system writes the confirmation with the links). Otherwise setup.wants_setup = false with empty courts and nulls.`;
 
 const SCHEMA = {
   type: "object",
@@ -109,8 +112,23 @@ const SCHEMA = {
     category: { type: "string" },
     summary: { type: "string" },
     reply: { type: "string" },
+    setup: {
+      type: "object",
+      properties: {
+        wants_setup: { type: "boolean" },
+        courts: { type: "array", items: { type: "object", properties: { sport: { type: "string", enum: ["TENNIS", "PICKLEBALL", "PADEL", "SQUASH", "BADMINTON", "BORDTENNIS"] }, count: { type: "integer" } }, required: ["sport", "count"], additionalProperties: false } },
+        open_hour: { type: ["integer", "null"] },
+        close_hour: { type: ["integer", "null"] },
+        guest_price: { type: ["number", "null"] },
+        street: { type: ["string", "null"] },
+        zip: { type: ["string", "null"] },
+        contact_name: { type: ["string", "null"] },
+      },
+      required: ["wants_setup", "courts", "open_hour", "close_hour", "guest_price", "street", "zip", "contact_name"],
+      additionalProperties: false,
+    },
   },
-  required: ["action", "interest", "category", "summary", "reply"],
+  required: ["action", "interest", "category", "summary", "reply", "setup"],
   additionalProperties: false,
 };
 
@@ -123,7 +141,7 @@ export async function decide(channel: Channel, mail: { from: string; subject: st
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${config.apiKey}` },
     body: JSON.stringify({
-      model: config.smartModel, instructions, reasoning: { effort: "low" }, max_output_tokens: 900,
+      model: config.smartModel, instructions, reasoning: { effort: "low" }, max_output_tokens: 1200,
       text: { format: { type: "json_schema", name: "racketbuddy_mail_decision", strict: true, schema: SCHEMA } },
       input: `From: ${mail.from.slice(0, 200)}\nSubject: ${mail.subject.slice(0, 200)}\n\n${mail.text.slice(0, 4000)}`,
     }),
@@ -133,7 +151,7 @@ export async function decide(channel: Channel, mail: { from: string; subject: st
   if (!res.ok) throw Error(payload.error?.message || `Model returned ${res.status}`);
   const text = payload.output_text || payload.output?.flatMap((o) => (o.type === "message" ? (o.content ?? []).map((c) => c.text ?? "") : [])).join("") || "{}";
   const d = JSON.parse(text) as Decision;
-  if (d.action !== "ignore" && !d.reply.trim()) d.action = "escalate";
+  if (d.action !== "ignore" && !d.reply.trim() && !d.setup?.wants_setup) d.action = "escalate";
   return d;
 }
 
@@ -235,9 +253,13 @@ export async function handleSupportMail(mail: ReceivedMail) {
     await writeLog(id, { ...base, reason: "gmail-forwarding-confirmation" });
     return { skipped: "gmail-forwarding-confirmation" };
   }
-  // Only mail actually addressed to support@ (never the owner's other mail, should more be forwarded).
+  // Only mail actually addressed to support@ (never the owner's other mail, should more be forwarded),
+  // except a club from the sales list answering Magnus's personal follow-up at magnus@.
   const recipients = [...(mail.to ?? []), ...((mail as { cc?: string[] }).cc ?? []), String(mail.headers?.["to"] ?? ""), String(mail.headers?.["cc"] ?? ""), String(mail.headers?.["delivered-to"] ?? "")].join(" ").toLowerCase();
-  if (!recipients.includes(SUPPORT_EMAIL)) { await writeLog(id, { ...base, reason: "not-to-support" }); return { skipped: "not-to-support" }; }
+  if (!recipients.includes(SUPPORT_EMAIL)) {
+    if (recipients.includes(OWNER_INBOX) && !ignoreReason(mail.from, subject, mail.headers) && text && (await findClubLead(addr))) return handleOwnerInboxSalesReply(mail, { id, from, addr, subject, text, base });
+    await writeLog(id, { ...base, reason: "not-to-support" }); return { skipped: "not-to-support" };
+  }
   const why = ignoreReason(mail.from, subject, mail.headers);
   if (why) { await writeLog(id, { ...base, reason: why }); return { skipped: why }; }
   if (!text) { await writeLog(id, { ...base, reason: "empty" }); return { skipped: "empty" }; }
@@ -251,6 +273,43 @@ export async function handleSupportMail(mail: ReceivedMail) {
   if (d.action !== "ignore" && d.reply.trim()) sent = await sendSupportReply(addr, subject, d.reply.trim(), mail.message_id);
   if (d.action === "escalate" || (d.action === "reply" && !sent)) await escalate("support", { from, subject, text }, d, sent);
   await writeLog(id, { ...base, action: d.action, interest: d.interest, category: d.category, summary: d.summary, reply: d.reply, sent });
+  return { action: d.action, sent };
+}
+
+/** A club answering Magnus's personal mail (sent through Resend from magnus@): answered as Magnus, from magnus@, in the same thread. */
+async function handleOwnerInboxSalesReply(mail: ReceivedMail, m: { id: string; from: string; addr: string; subject: string; text: string; base: MailLog }) {
+  let d: Decision;
+  try { d = await decide("sales", { from: m.from, subject: m.subject, text: m.text, context: await leadContext(m.addr) }); }
+  catch (e) { d = { action: "escalate", interest: "other", category: "ai-error", summary: `AI'en fejlede (${e instanceof Error ? e.message : e}).`, reply: "" }; }
+  d = await applySetup(m.addr, d).catch(() => d);
+  if (d.action !== "ignore" && !(await underSenderLimit(m.addr))) d = { ...d, action: "escalate", summary: `${d.summary} (Mange svar i samme tråd, så AI'en stopper her.)`, reply: "" };
+  let sent = false;
+  if (d.action !== "ignore" && d.reply.trim()) {
+    const { emailApiKey: key } = await getSettings();
+    if (key) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          from: `Magnus Kongshammer <${OWNER_INBOX}>`, to: [m.addr], reply_to: OWNER_INBOX,
+          subject: /^re:/i.test(m.subject) ? m.subject : `Re: ${m.subject || "RacketBuddy"}`, text: d.reply.trim(),
+          ...(mail.message_id ? { headers: { "In-Reply-To": mail.message_id, References: mail.message_id } } : {}),
+        }),
+        signal: AbortSignal.timeout(20_000),
+      });
+      sent = res.ok;
+      if (!res.ok) console.error("[owner-inbox-reply] rejected", res.status, (await res.text()).slice(0, 200));
+    }
+  }
+  if (d.interest === "unsubscribe") {
+    const h = (await import("./sales-autopilot")).hash(m.addr);
+    await db.platformSetting.upsert({ where: { key: `sales:suppressed:${h}` }, create: { key: `sales:suppressed:${h}`, value: new Date().toISOString() }, update: {} }).catch(() => null);
+    if (process.env.INSTANTLY_API_KEY) await instantly("/block-lists-entries", { method: "POST", body: JSON.stringify({ bl_value: m.addr }) }).catch(() => null);
+  } else if (d.interest === "not_interested") {
+    await (await import("./sales-noes")).recordSoftNo(m.addr, "", new Date().toISOString()).catch(() => null);
+  }
+  if (d.action === "escalate" || (d.action === "reply" && !sent)) await escalate("sales", { from: m.from, subject: m.subject, text: m.text }, d, sent);
+  await writeLog(m.id, { ...m.base, channel: "sales", action: d.action, interest: d.interest, category: d.category, summary: d.summary, reply: d.reply, sent });
   return { action: d.action, sent };
 }
 
@@ -276,6 +335,38 @@ async function leadContext(email: string) {
   return "";
 }
 
+async function findClubLead(email: string) {
+  const { allLeads } = await import("./lead-harvest");
+  return (await allLeads("club")).find((r) => r.lead.email === email.toLowerCase())?.lead ?? null;
+}
+
+/**
+ * When a club asked us to set it up: store the details on its preview page and,
+ * once courts and a price are known, replace the AI's reply with the fixed
+ * confirmation that carries the page and claim links. Returns the decision to use.
+ */
+export async function applySetup(from: string, d: Decision): Promise<Decision> {
+  if (!d.setup?.wants_setup) return d;
+  const lead = await findClubLead(from);
+  if (!lead) return d;
+  const { previewId, previewUrl } = await import("./club-preview");
+  const { savePreparedSetup, setupReady, setupDoneMail, claimUrl, missingForSetup } = await import("./club-setup");
+  const { stateCode } = await import("./club-votes");
+  const id = previewId(lead.email);
+  const s = d.setup;
+  const setup = await savePreparedSetup(id, { courts: s.courts, openHour: s.open_hour, closeHour: s.close_hour, guestPrice: s.guest_price, street: s.street, zip: s.zip, contactName: s.contact_name });
+  if (!setupReady(setup)) {
+    if (d.reply.trim() && d.reply.trim() !== "OK") return { ...d, action: "reply", interest: "interested" };
+    const missing = missingForSetup(setup);
+    return { ...d, action: "reply", interest: "interested", reply: `Happy to. To set ${lead.clubName} up properly I just need ${missing.join(", ").replace(/, ([^,]*)$/, " and $1")}. As soon as I have that, I'll send you the link.\n\nMagnus` };
+  }
+  const { appUrl } = await getSettings();
+  const reply = setupDoneMail({ firstName: lead.firstName, clubName: lead.clubName, setup, page: previewUrl(appUrl, lead.email), claim: claimUrl(appUrl, id, lead, stateCode(lead.state)) });
+  const { tellOwner } = await import("./founding-offer");
+  await tellOwner(`RacketBuddy: ${lead.clubName} bad om opsætning, og den er lavet`, `${lead.clubName} (${[lead.city, lead.state].filter(Boolean).join(", ")}) svarede ja til at få klubben sat op. Deres side viser nu deres rigtige baner og priser, og de har fået et link til at gøre krav på klubben og betale.\n\nKontakt: ${lead.email}`).catch(() => null);
+  return { ...d, action: "reply", interest: "interested", category: "setup", reply };
+}
+
 /** Reads new replies in Instantly and answers them. Runs with the regular cron (US only). */
 export async function runInstantlyReplies(now = new Date()) {
   if (!process.env.INSTANTLY_API_KEY) return { ran: false, reason: "no-instantly-key" };
@@ -299,6 +390,7 @@ export async function runInstantlyReplies(now = new Date()) {
     let d: Decision;
     try { d = await decide("sales", { from, subject, text, context: await leadContext(from) }); }
     catch (err) { d = { action: "escalate", interest: "other", category: "ai-error", summary: `AI'en fejlede (${err instanceof Error ? err.message : err}).`, reply: "" }; }
+    d = await applySetup(from, d).catch(() => d);
     if (d.action !== "ignore" && !(await underSenderLimit(from))) d = { ...d, action: "escalate", summary: `${d.summary} (Mange svar i samme tråd, så AI'en stopper her.)`, reply: "" };
 
     let sent = false;

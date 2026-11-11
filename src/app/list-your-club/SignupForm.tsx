@@ -44,15 +44,19 @@ const QUICK_STEPS = ["Your club", "Plan and login"] as const;
 const PANELS_FULL = [[0], [1], [2], [3]];
 const PANELS_QUICK = [[1, 2], [3]];
 
-export function SignupForm({ priceBook, locale = "en-US", initialName = "", initialCity = "", initialState = "", initialEmail = "" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM"; initialName?: string; initialCity?: string; initialState?: string; initialEmail?: string }) {
+/** Club details we already have from the club's e-mail reply (see lib/club-setup.ts). */
+type Prepared = { courts: { sport: Sport; count: number }[]; priceHour: number; openHour: number | null; closeHour: number | null; street: string; zip: string; contact: string };
+
+export function SignupForm({ priceBook, locale = "en-US", initialName = "", initialCity = "", initialState = "", initialEmail = "", prepared = null }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM"; initialName?: string; initialCity?: string; initialState?: string; initialEmail?: string; prepared?: Prepared | null }) {
   const quick = Boolean(initialName);
   const steps: readonly string[] = quick ? QUICK_STEPS : STEPS;
   const panelsFor = (i: number) => (quick ? PANELS_QUICK : PANELS_FULL)[i] ?? [];
   const shows = (panel: number) => panelsFor(step).includes(panel);
-  const [sports, setSports] = useState<Sport[]>(["TENNIS"]);
-  const [counts, setCounts] = useState<Record<string, number>>({ TENNIS: 2 });
+  const [sports, setSports] = useState<Sport[]>(prepared?.courts.length ? prepared.courts.map((c) => c.sport) : ["TENNIS"]);
+  const [counts, setCounts] = useState<Record<string, number>>(prepared?.courts.length ? Object.fromEntries(prepared.courts.map((c) => [c.sport, c.count])) : { TENNIS: 2 });
   const [state, action] = useFormState(registerClub, null);
-  const [step, setStep] = useState(0);
+  // Everything known already (address too)? Open straight on plan + login; the club details stay one tap back.
+  const [step, setStep] = useState(prepared && prepared.street && /^\d{5}/.test(prepared.zip) && prepared.contact && initialName && initialCity && initialState ? 1 : 0);
   // Arrived from a personal club page? Report how far the signup gets, on the same visit.
   useEffect(() => {
     try {
@@ -64,7 +68,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
   const [city, setCity] = useState(initialCity);
   const [usState, setUsState] = useState(initialState);
   const [timeZone, setTimeZone] = useState(initialState ? usStateTimeZone(initialState) : "America/New_York");
-  const [priceHour, setPriceHour] = useState(30);
+  const [priceHour, setPriceHour] = useState(prepared?.priceHour ?? 30);
   const panels = useRef<Array<HTMLDivElement | null>>([]);
 
   const prices = pricesForCountry(priceBook, "US");
@@ -106,6 +110,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
       <input type="hidden" name="quote" value={price} />
       <input type="hidden" name="billing" value={billing} />
       <input type="hidden" name="mode" value="CUSTOM" />
+      {prepared?.openHour != null && prepared?.closeHour != null && <><input type="hidden" name="openHour" value={prepared.openHour} /><input type="hidden" name="closeHour" value={prepared.closeHour} /></>}
 
       <div className="min-w-0 space-y-5">
         <ol className="flex flex-wrap gap-2" aria-label="Steps">
@@ -162,7 +167,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="sm:col-span-2"><span className="label">Club name</span><input className="input" name="name" autoComplete="organization" required maxLength={150} value={name} onChange={(e) => setName(e.target.value)} placeholder="Brookline Racquet Club" /></label>
-            <label className="sm:col-span-2"><span className="label">Street address</span><input className="input" name="address" autoComplete="street-address" enterKeyHint="next" required maxLength={150} placeholder="123 Main St" /></label>
+            <label className="sm:col-span-2"><span className="label">Street address</span><input className="input" name="address" autoComplete="street-address" enterKeyHint="next" required maxLength={150} placeholder="123 Main St" defaultValue={prepared?.street ?? ""} /></label>
             <label><span className="label">City</span><input className="input" name="city" autoComplete="address-level2" required maxLength={100} placeholder="Boston" value={city} onChange={(e) => setCity(e.target.value)} /></label>
             <label><span className="label">State</span>
               <Select className="input" name="state" autoComplete="address-level1" required value={usState} onChange={(e) => { setUsState(e.target.value); if (e.target.value) setTimeZone(usStateTimeZone(e.target.value)); }}>
@@ -170,14 +175,14 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
                 {US_STATES.map((s) => <option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}
               </Select>
             </label>
-            <label><span className="label">ZIP code</span><input className="input" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108" /></label>
+            <label><span className="label">ZIP code</span><input className="input" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108" defaultValue={prepared?.zip ?? ""} /></label>
             <label><span className="label">Time zone</span>
               <Select className="input" name="timeZone" value={timeZone} onChange={(e) => setTimeZone(e.target.value)}>
                 {usTimeZoneOptions(timeZone).map((z) => <option key={z.value} value={z.value}>{z.label}</option>)}
               </Select>
               <span className="hint">Set from your state. Change it if your club sits in a different zone.</span>
             </label>
-            <label className="sm:col-span-2"><span className="label">Your name</span><input className="input" name="contact" autoComplete="name" required maxLength={150} placeholder="Who runs the club day to day" /></label>
+            <label className="sm:col-span-2"><span className="label">Your name</span><input className="input" name="contact" autoComplete="name" required maxLength={150} placeholder="Who runs the club day to day" defaultValue={prepared?.contact ?? ""} /></label>
           </div>
           {!quick && <div className="flex justify-between"><button type="button" onClick={() => setStep(0)} className="btn-ghost">Back</button><button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>}
         </div>
