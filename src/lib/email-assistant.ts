@@ -348,7 +348,8 @@ async function findClubLead(email: string) {
 export async function applySetup(from: string, d: Decision): Promise<Decision> {
   if (!d.setup?.wants_setup) return d;
   const lead = await findClubLead(from);
-  if (!lead) return d;
+  // Not a club on our list (e.g. a coach): never send the bare "OK" placeholder; a person answers.
+  if (!lead) return d.reply.trim() && d.reply.trim() !== "OK" ? d : { ...d, action: "escalate", summary: `${d.summary} (Vil have opsat en klub, men afsenderen er ikke på klublisten.)`, reply: "" };
   const { previewId, previewUrl } = await import("./club-preview");
   const { savePreparedSetup, setupReady, setupDoneMail, claimUrl, missingForSetup } = await import("./club-setup");
   const { stateCode } = await import("./club-votes");
