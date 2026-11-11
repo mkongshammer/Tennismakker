@@ -204,6 +204,17 @@ async function escalate(channel: Channel, mail: { from: string; subject: string;
   for (const to of await ownerAddresses()) await sendMail({ to, subject: `[Skal besvares] ${mail.subject}`.slice(0, 180), body, replyTo: addressOf(mail.from) });
 }
 
+/** For the owner's information: every club reply the AI handled itself (owner, 11 Nov 2026). Nothing changes in how it's handled. */
+async function copyToOwner(mail: { from: string; subject: string; text: string }, d: Decision, sent: boolean) {
+  const what = d.interest === "unsubscribe" ? "Sagt nej tak / stop: bliver aldrig kontaktet igen."
+    : d.interest === "not_interested" ? "Høfligt nej: hører intet i 3 måneder, så én kort opfølgning."
+    : d.category === "setup" ? "Ville have klubben sat op: det er gjort, og de har fået links."
+    : d.action === "reply" ? (sent ? "AI'en har svaret dem." : "AI'en ville svare, men afsendelsen fejlede.")
+    : "Ingen handling (fx autosvar eller fravær).";
+  const body = [`Til orientering. ${what}`, `Kort sagt: ${d.summary}`, ...(d.action === "reply" && sent && d.reply.trim() ? ["", "AI'ens svar:", d.reply.trim()] : []), "", "----", `Fra: ${mail.from}`, `Emne: ${mail.subject}`, "", mail.text.slice(0, 3000)].join("\n");
+  await sendMail({ to: OWNER_INBOX, subject: `[Svar fra klub] ${mail.subject}`.slice(0, 180), body, replyTo: addressOf(mail.from) }).catch(() => null);
+}
+
 // ---------------------------------------------------------------- support
 
 async function sendSupportReply(to: string, subject: string, text: string, messageId?: string) {
@@ -309,6 +320,7 @@ async function handleOwnerInboxSalesReply(mail: ReceivedMail, m: { id: string; f
     await (await import("./sales-noes")).recordSoftNo(m.addr, "", new Date().toISOString()).catch(() => null);
   }
   if (d.action === "escalate" || (d.action === "reply" && !sent)) await escalate("sales", { from: m.from, subject: m.subject, text: m.text }, d, sent);
+  else await copyToOwner({ from: m.from, subject: m.subject, text: m.text }, d, sent);
   await writeLog(m.id, { ...m.base, channel: "sales", action: d.action, interest: d.interest, category: d.category, summary: d.summary, reply: d.reply, sent });
   return { action: d.action, sent };
 }
@@ -413,7 +425,7 @@ export async function runInstantlyReplies(now = new Date()) {
       await (await import("./sales-noes")).recordSoftNo(from, "", now.toISOString()).catch(() => null);
     }
     if (d.action === "escalate" || (d.action === "reply" && !sent)) { await escalate("sales", { from, subject, text }, d, sent); escalated++; }
-    else if (d.action === "reply") replied++; else ignored++;
+    else { await copyToOwner({ from, subject, text }, d, sent); if (d.action === "reply") replied++; else ignored++; }
     await markRead();
     await writeLog(id, { ...base, action: d.action, interest: d.interest, category: d.category, summary: d.summary, reply: d.reply, sent });
   }
