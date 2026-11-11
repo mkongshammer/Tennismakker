@@ -7,7 +7,7 @@ test('configuration is never mistaken for verified tax registration, email deliv
  const {salesReadiness}=loadIsolatedModule('src/lib/sales-readiness.ts',{
   './db':{db:{club:{count:async()=>0,findMany:async()=>[],findFirst:async()=>null},coachProfile:{count:async()=>0},platformSetting:{findUnique:async()=>null}}},
   './stripe':{stripe:async()=>client},'./settings':{getSettings:async()=>({paymentProvider:'stripe',stripeSecretKey:'sk_live_offline',emailApiKey:'offline',emailFrom:'receipts@example.invalid'})},
-  './webhook-setup':{inspectWebhook:async()=>({status:'ok'})},'./club-onboarding':{clubSignupPriceBook:async()=>({EUR:{standard:27,custom:1999},USD:{standard:50,custom:null}})},
+  './webhook-setup':{inspectWebhook:async()=>({status:'ok'})},'./price-copy':{priceCopy:async()=>({monthly:50,annual:500,regularMonthly:99,regularAnnual:999,founding:{open:true,left:25,total:25}})},
  });
  const result=await salesReadiness(),status=(id:string)=>result.find((c:any)=>c.id===id)?.status;
  assert.equal(status('stripe'),'verified');assert.equal(status('tax'),'owner');assert.equal(status('webhook'),'test');assert.equal(status('purchase'),'test');assert.equal(status('mail'),'configured');assert.equal(status('portal'),'configured');

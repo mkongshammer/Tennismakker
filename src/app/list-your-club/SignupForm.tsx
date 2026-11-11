@@ -36,8 +36,19 @@ const FEATURE_EN: Record<string, { label: string; body: string }> = {
 };
 
 const STEPS = ["Price", "Facility", "Courts", "Account"] as const;
+// Clubs arriving from their personal club page already have name, city and
+// state filled in, so they get a 2-step version: club details (address,
+// courts, price) on one screen, then plan and login on the next.
+const QUICK_STEPS = ["Your club", "Plan and login"] as const;
+// Which of the four panels each step shows.
+const PANELS_FULL = [[0], [1], [2], [3]];
+const PANELS_QUICK = [[1, 2], [3]];
 
-export function SignupForm({ priceBook, locale = "en-US", initialName = "", initialCity = "", initialState = "" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM"; initialName?: string; initialCity?: string; initialState?: string }) {
+export function SignupForm({ priceBook, locale = "en-US", initialName = "", initialCity = "", initialState = "", initialEmail = "" }: { priceBook: PriceBook; locale?: Locale; initialCountry?: string; initialMode?: "STANDARD" | "CUSTOM"; initialName?: string; initialCity?: string; initialState?: string; initialEmail?: string }) {
+  const quick = Boolean(initialName);
+  const steps: readonly string[] = quick ? QUICK_STEPS : STEPS;
+  const panelsFor = (i: number) => (quick ? PANELS_QUICK : PANELS_FULL)[i] ?? [];
+  const shows = (panel: number) => panelsFor(step).includes(panel);
   const [sports, setSports] = useState<Sport[]>(["TENNIS"]);
   const [counts, setCounts] = useState<Record<string, number>>({ TENNIS: 2 });
   const [state, action] = useFormState(registerClub, null);
@@ -46,9 +57,9 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
   useEffect(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem("rb_preview_visit") ?? "null") as { id: string; visit: string } | null;
-      if (saved?.id) navigator.sendBeacon?.("/api/club-preview/track", new Blob([JSON.stringify({ id: saved.id, visit: saved.visit, kind: "signup", step })], { type: "application/json" }));
+      if (saved?.id) navigator.sendBeacon?.("/api/club-preview/track", new Blob([JSON.stringify({ id: saved.id, visit: saved.visit, kind: "signup", step: quick ? (step === 0 ? 1 : 3) : step })], { type: "application/json" }));
     } catch { /* tracking is optional */ }
-  }, [step]);
+  }, [step, quick]);
   const [name, setName] = useState(initialName);
   const [city, setCity] = useState(initialCity);
   const [usState, setUsState] = useState(initialState);
@@ -66,21 +77,23 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
   const courtTotal = useMemo(() => sports.reduce((s, sport) => s + (counts[sport] ?? 1), 0), [sports, counts]);
 
   const validateStep = (index: number) => {
-    const panel = panels.current[index];
-    if (!panel) return true;
-    const fields = Array.from(panel.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select"));
-    for (const field of fields) {
-      if (!field.checkValidity()) {
-        field.reportValidity();
-        return false;
+    for (const panelIndex of panelsFor(index)) {
+      const panel = panels.current[panelIndex];
+      if (!panel) continue;
+      const fields = Array.from(panel.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input, select"));
+      for (const field of fields) {
+        if (!field.checkValidity()) {
+          field.reportValidity();
+          return false;
+        }
       }
+      if (panelIndex === 2 && sports.length === 0) return false;
     }
-    if (index === 2 && sports.length === 0) return false;
     return true;
   };
   const next = () => {
     if (!validateStep(step)) return;
-    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    setStep((s) => Math.min(steps.length - 1, s + 1));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -96,7 +109,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
 
       <div className="min-w-0 space-y-5">
         <ol className="flex flex-wrap gap-2" aria-label="Steps">
-          {STEPS.map((label, i) => (
+          {steps.map((label, i) => (
             <li key={label}>
               <button type="button" onClick={() => { if (i < step || validateStep(step)) setStep(i); }} aria-current={i === step ? "step" : undefined} className={`pill min-h-9 text-xs ${i === step ? "is-active" : i < step ? "border-success/40 text-success-ink" : ""}`}>
                 {i < step ? <Icon name="check" size={14} /> : <span className="data">{i + 1}</span>} {label}
@@ -106,7 +119,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
         </ol>
 
         {/* Step 1: the plan — there is exactly one */}
-        <div ref={(el) => { panels.current[0] = el; }} hidden={step !== 0} className="card-flat space-y-5">
+        <div ref={(el) => { panels.current[0] = el; }} hidden={!shows(0)} className="card-flat space-y-5">
           <div>
             <h2 className="display text-display-md">One plan. The whole system.</h2>
             <p className="mt-1 text-sm text-slate">Every club gets everything. No setup fee, no contract — you pay from the day you start and can cancel any month.</p>
@@ -142,10 +155,10 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
         </div>
 
         {/* Step 2: facility */}
-        <div ref={(el) => { panels.current[1] = el; }} hidden={step !== 1} className="card-flat space-y-4">
+        <div ref={(el) => { panels.current[1] = el; }} hidden={!shows(1)} className="card-flat space-y-4">
           <div>
-            <h2 className="display text-display-md">Your facility</h2>
-            <p className="mt-1 text-sm text-slate">Your browser can autofill a saved address. Everything stays editable in the admin afterwards.</p>
+            <h2 className="display text-display-md">{quick ? `Set up ${name || "your club"}` : "Your facility"}</h2>
+            <p className="mt-1 text-sm text-slate">{quick ? "We filled in what we know. Add the address, your courts and a guest price, then create your login. Everything stays editable afterwards." : "Your browser can autofill a saved address. Everything stays editable in the admin afterwards."}</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="sm:col-span-2"><span className="label">Club name</span><input className="input" name="name" autoComplete="organization" required maxLength={150} value={name} onChange={(e) => setName(e.target.value)} placeholder="Brookline Racquet Club" /></label>
@@ -166,11 +179,11 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
             </label>
             <label className="sm:col-span-2"><span className="label">Your name</span><input className="input" name="contact" autoComplete="name" required maxLength={150} placeholder="Who runs the club day to day" /></label>
           </div>
-          <div className="flex justify-between"><button type="button" onClick={() => setStep(0)} className="btn-ghost">Back</button><button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>
+          {!quick && <div className="flex justify-between"><button type="button" onClick={() => setStep(0)} className="btn-ghost">Back</button><button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>}
         </div>
 
         {/* Step 3: courts */}
-        <div ref={(el) => { panels.current[2] = el; }} hidden={step !== 2} className="card-flat space-y-4">
+        <div ref={(el) => { panels.current[2] = el; }} hidden={!shows(2)} className="card-flat space-y-4">
           <div>
             <h2 className="display text-display-md">Courts and pricing</h2>
             <p className="mt-1 text-sm text-slate">Pick your sports and how many courts you have. Names, surfaces, indoor/outdoor and per-court prices can be adjusted afterwards.</p>
@@ -197,16 +210,27 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
           </div>
           {sports.length === 0 && <p className="field-error">Choose at least one sport.</p>}
           <label className="block max-w-xs"><span className="label">Guest price per hour (USD)</span><input className="input" name="priceHour" type="number" min="0" max="10000" required value={priceHour} onChange={(e) => setPriceHour(Math.max(0, Number(e.target.value) || 0))} /><span className="hint">What a non-member pays for one court-hour. Member pricing and peak rules come later.</span></label>
-          <div className="flex justify-between"><button type="button" onClick={() => setStep(1)} className="btn-ghost">Back</button><button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>
+          <div className={`flex ${quick ? "justify-end" : "justify-between"}`}>{!quick && <button type="button" onClick={() => setStep(1)} className="btn-ghost">Back</button>}<button type="button" onClick={next} className="btn-court">Continue <Icon name="arrow" /></button></div>
         </div>
 
         {/* Step 4: account */}
-        <div ref={(el) => { panels.current[3] = el; }} hidden={step !== 3} className="card-flat space-y-4">
+        <div ref={(el) => { panels.current[3] = el; }} hidden={!shows(3)} className="card-flat space-y-4">
           <div>
-            <h2 className="display text-display-md">Create your club login</h2>
+            <h2 className="display text-display-md">{quick ? "Your plan and login" : "Create your club login"}</h2>
             <p className="mt-1 text-sm text-slate">The same login works on the website and under Club login in the app. You can add more administrators later.</p>
           </div>
-          <label className="block"><span className="label">Email</span><input className="input" name="email" type="email" autoComplete="email" required /></label>
+          {quick && (
+            <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Billing">
+              {([["MONTH", prices.standard, "/ month", "Cancel any month"], ["YEAR", prices.annual, "/ year", `Save ${money(saving)}`]] as const).map(([id, amount, unit, note]) => (
+                <button key={id} type="button" role="radio" aria-checked={billing === id} onClick={() => setBilling(id)} className={`flex items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 text-left ${billing === id ? "border-court bg-court-tint/40" : "border-slate/15 bg-chalk hover:border-slate/30"}`}>
+                  <span><span className="font-bold">{money(amount)}</span><span className="text-slate"> {unit}</span><span className="block text-xs text-slate">{note}</span></span>
+                  {billing === id && <Icon name="check" size={20} className="shrink-0 text-court" />}
+                </button>
+              ))}
+              <p className="text-xs text-slate sm:col-span-2">Everything included. No setup fee, no contract, no commission on court bookings.</p>
+            </div>
+          )}
+          <label className="block"><span className="label">Email</span><input className="input" name="email" type="email" autoComplete="email" required defaultValue={initialEmail} /></label>
           <label className="block"><span className="label">Password</span><input className="input" name="password" type="password" autoComplete="new-password" minLength={10} maxLength={72} required /><span className="hint">At least 10 characters.</span></label>
           <label className="flex items-start gap-3 text-sm">
             <input className="mt-1" type="checkbox" name="terms" required />
@@ -217,7 +241,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
           </label>
           {state?.error && <p role="alert" className="field-error">{phrase(state.error, locale)}</p>}
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-            <button type="button" onClick={() => setStep(2)} className="btn-ghost">Back</button>
+            <button type="button" onClick={() => setStep(quick ? 0 : 2)} className="btn-ghost">Back</button>
             <SubmitButton className="btn-court" pendingText="Creating your club…">Create club and continue to payment</SubmitButton>
           </div>
         </div>
