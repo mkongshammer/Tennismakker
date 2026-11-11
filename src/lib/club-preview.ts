@@ -70,10 +70,11 @@ export async function recordPreviewView(id: string, now = new Date()): Promise<b
   await db.platformSetting.upsert({ where: { key }, create: { key, value: JSON.stringify(next) }, update: { value: JSON.stringify(next) } });
   if (prev) return false;
   await schedulePreviewFollowup(id, now);
+  const phone = await clubPhone(lead).catch(() => null);
   const { tellOwner } = await import("./founding-offer");
   await tellOwner(
     `RacketBuddy: ${lead.clubName} åbnede deres klubside`,
-    `${lead.clubName} (${[lead.city, lead.state].filter(Boolean).join(", ")}) har lige kigget på deres personlige RacketBuddy-side.\n\nKontakt: ${lead.email}\n\nDe har ikke tilmeldt sig endnu. Om ca. 30 minutter får de automatisk en kort, personlig mail fra magnus@racketbuddy.app, hvor du tilbyder at sætte klubben op med deres rigtige baner og priser. Svar går til dig.`,
+    `${lead.clubName} (${[lead.city, lead.state].filter(Boolean).join(", ")}) har lige kigget på deres personlige RacketBuddy-side.\n\nRing: ${phone ?? "intet nummer fundet på Google"}\nMail: ${lead.email}${lead.website ? `\nWebsite: ${lead.website}` : ""}\n\nDe har ikke tilmeldt sig endnu. Om ca. 30 minutter får de automatisk en kort, personlig mail fra magnus@racketbuddy.app, hvor du tilbyder at sætte klubben op med deres rigtige baner og priser. Svar går til dig.`,
   ).catch((e) => console.error("[club-preview] owner alert", e));
   return true;
 }
@@ -159,4 +160,30 @@ export async function previewFollowups(): Promise<FollowupStatus[]> {
     out.push({ id, club: lead?.clubName ?? "?", city: lead?.city ?? "", state: lead?.state ?? "", email: lead?.email ?? "", ...st });
   }
   return out.sort((a, b) => (b.sentAt ?? b.due).localeCompare(a.sentAt ?? a.due));
+}
+
+/** The club's phone number from Google Maps, for the "opened their page" alert. One Places call per club, cached. */
+export async function clubPhone(lead: Pick<Lead, "clubName" | "city" | "state" | "website" | "email">): Promise<string | null> {
+  const cacheKey = `sales:club-phone:${hash(lead.email)}`;
+  const cached = await db.platformSetting.findUnique({ where: { key: cacheKey } }).catch(() => null);
+  if (cached) return cached.value || null;
+  const key = process.env.GOOGLE_PLACES_API_KEY;
+  if (!key) return null;
+  const { takeAiBudget } = await import("./ai-budget");
+  if (!(await takeAiBudget("placesSearch").catch(() => false))) return null;
+  const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: { "content-type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": "places.displayName,places.websiteUri,places.nationalPhoneNumber,places.internationalPhoneNumber" },
+    body: JSON.stringify({ textQuery: [lead.clubName, lead.city, lead.state].filter(Boolean).join(" "), pageSize: 5, regionCode: "US" }),
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) return null;
+  const data = (await res.json().catch(() => ({}))) as { places?: Array<{ websiteUri?: string; nationalPhoneNumber?: string; internationalPhoneNumber?: string }> };
+  const host = (u?: string) => { try { return new URL(String(u)).hostname.replace(/^www\./, ""); } catch { return ""; } };
+  const want = host(lead.website) || lead.email.split("@")[1] || "";
+  const places = (data.places ?? []).filter((p) => p.internationalPhoneNumber || p.nationalPhoneNumber);
+  const best = places.find((p) => want && host(p.websiteUri) === want) ?? places[0];
+  const phone = best ? (best.internationalPhoneNumber ?? best.nationalPhoneNumber ?? "") : "";
+  await db.platformSetting.create({ data: { key: cacheKey, value: phone } }).catch(() => {});
+  return phone || null;
 }
