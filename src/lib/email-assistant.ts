@@ -96,7 +96,10 @@ const SALES_RULES = `You answer replies to RacketBuddy's cold e-mails to US racq
 action:
 - "reply" to questions and interest you can answer from the facts.
 - "escalate" when they ask for a phone call or meeting after you've already said none is needed, ask for a custom price, contract, integration or feature not in the facts, are upset, or anything you can't answer. reply = a short note that you'll get back to them personally.
-- "ignore" for "not interested", "remove me", "unsubscribe", out-of-office and automatic replies (reply = ""). If they say they're the wrong person but name the right one, reply briefly thanking them (interest "wrong_person").`;
+- "ignore" for "not interested", "remove me", "unsubscribe", out-of-office and automatic replies (reply = ""). If they say they're the wrong person but name the right one, reply briefly thanking them (interest "wrong_person").
+interest for a no:
+- "unsubscribe" when they ask not to be emailed: "no thanks" (our e-mails tell people to reply exactly that to opt out), "stop", "remove me", "take me off your list", "unsubscribe", "don't contact us", or any angry no. They are never contacted again.
+- "not_interested" for a polite no with no request to stop, e.g. "not interested at this time", "we're happy with our current system", "not right now". They are checked back with once after 3 months.`;
 
 const SCHEMA = {
   type: "object",
@@ -308,10 +311,13 @@ export async function runInstantlyReplies(now = new Date()) {
     }
     const interest = INTEREST[d.interest];
     if (interest !== undefined && from) await instantly("/leads/update-interest-status", { method: "POST", body: JSON.stringify({ lead_email: from, interest_value: interest, ...(e.campaign_id ? { campaign_id: e.campaign_id } : {}) }) }).catch(() => null);
-    if (d.interest === "unsubscribe" || d.interest === "not_interested") {
-      // Never contacted again: our own suppression list and Instantly's blocklist.
+    if (d.interest === "unsubscribe") {
+      // "No thanks" / stop / unsubscribe: never contacted again (our suppression list and Instantly's blocklist).
       await db.platformSetting.upsert({ where: { key: `sales:suppressed:${(await import("./sales-autopilot")).hash(from)}` }, create: { key: `sales:suppressed:${(await import("./sales-autopilot")).hash(from)}`, value: now.toISOString() }, update: {} }).catch(() => null);
-      if (d.interest === "unsubscribe") await instantly("/block-lists-entries", { method: "POST", body: JSON.stringify({ bl_value: from }) }).catch(() => null);
+      await instantly("/block-lists-entries", { method: "POST", body: JSON.stringify({ bl_value: from }) }).catch(() => null);
+    } else if (d.interest === "not_interested") {
+      // A polite "not right now": left alone for 3 months, then one check-in (see sales-noes.ts).
+      await (await import("./sales-noes")).recordSoftNo(from, "", now.toISOString()).catch(() => null);
     }
     if (d.action === "escalate" || (d.action === "reply" && !sent)) { await escalate("sales", { from, subject, text }, d, sent); escalated++; }
     else if (d.action === "reply") replied++; else ignored++;

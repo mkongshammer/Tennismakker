@@ -65,5 +65,10 @@ test("funnel and stop point", () => {
   assert.equal(stoppedAt(v2), "Tilmelding: Facility");
 });
 
-import { NO_PAUSE_DAYS } from "./sales-noes";
-test("no's are left alone for a year", () => { assert.equal(NO_PAUSE_DAYS, 365); });
+import { NO_PAUSE_DAYS, checkInMail } from "./sales-noes";
+test("soft no's wait 3 months, then one check-in with an opt-out", () => {
+  assert.equal(NO_PAUSE_DAYS, 90);
+  const m = checkInMail("Robbinsville Pickle House", "https://racketbuddy.app/for/0123456789abcdef");
+  assert.ok(m.subject.includes("Robbinsville"));
+  assert.ok(m.body.includes("won't follow up again") && m.body.includes("no thanks"));
+});
