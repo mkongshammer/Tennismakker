@@ -162,6 +162,7 @@ async function afterConfirmed(clubKey: string, v: Vote) {
   if (!lead) return;
   // Never mail a club that asked us to stop.
   if (await db.platformSetting.findUnique({ where: { key: `sales:suppressed:${hash(lead.email)}` } }).catch(() => null)) return;
+  if (await (await import("./sales-noes")).saidNoRecently(lead.email)) return; // said no: leave them alone for a year
   const { appUrl } = await getSettings();
   const page = previewUrl(appUrl, lead.email);
   const near = lead.city ? ` near ${lead.city}` : "";

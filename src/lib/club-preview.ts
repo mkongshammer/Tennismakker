@@ -118,6 +118,7 @@ export async function sendDuePreviewFollowups(now = new Date()) {
     const mark = (patch: Record<string, string>) => db.platformSetting.update({ where: { key: row.key }, data: { value: JSON.stringify({ ...state, ...patch }) } });
     if (!lead) { await mark({ skipped: "no lead" }); continue; }
     if (await db.platformSetting.findUnique({ where: { key: `sales:suppressed:${hash(lead.email)}` } }).catch(() => null)) { await mark({ skipped: "suppressed" }); continue; }
+    if (await (await import("./sales-noes")).saidNoRecently(lead.email)) { await mark({ skipped: "said no" }); continue; }
     const signedUp = await db.club.findFirst({ where: { OR: [{ contactEmail: { equals: lead.email, mode: "insensitive" } }, { name: { equals: lead.clubName, mode: "insensitive" }, city: { equals: lead.city, mode: "insensitive" } }] }, select: { id: true } }).catch(() => null);
     if (signedUp) { await mark({ skipped: "signed up" }); continue; }
     const { appUrl } = await (await import("./settings")).getSettings();

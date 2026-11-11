@@ -13,7 +13,7 @@ export async function PreviewLive() {
   const live = visits.filter((v) => now - new Date(v.last).getTime() < LIVE_MS);
   const f = funnel(visits);
   const followups = await previewFollowups().catch(() => []);
-  const skipReason: Record<string, string> = { suppressed: "har bedt om ikke at blive kontaktet", "signed up": "har allerede tilmeldt sig", "no lead": "klubben findes ikke på listen", "send failed": "afsendelsen fejlede" };
+  const skipReason: Record<string, string> = { suppressed: "har bedt om ikke at blive kontaktet", "signed up": "har allerede tilmeldt sig", "no lead": "klubben findes ikke på listen", "send failed": "afsendelsen fejlede", "said no": "har sagt nej (venter et år)" };
 
   return (
     <div className="space-y-6">
