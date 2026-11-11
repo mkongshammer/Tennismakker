@@ -22,6 +22,18 @@ on:
         description: "What's new (for a new version)"
         required: false
         default: "A cleaner start screen and design improvements."
+      app_name:
+        description: "App Store name (max 30), blank = unchanged"
+        required: false
+        default: ""
+      subtitle:
+        description: "Subtitle (max 30), blank = unchanged"
+        required: false
+        default: ""
+      keywords:
+        description: "Keywords, comma-separated (max 100), blank = unchanged"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -38,6 +50,9 @@ jobs:
       REPLACE: ${{ inputs.replace }}
       APP_VERSION: ${{ inputs.version }}
       WHATS_NEW: ${{ inputs.notes }}
+      APP_NAME: ${{ inputs.app_name }}
+      SUBTITLE: ${{ inputs.subtitle }}
+      KEYWORDS: ${{ inputs.keywords }}
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -71,6 +86,19 @@ jobs:
             const locs = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations`).catch(() => ({ data: [] }));
             for (const l of locs.data) if (want !== '1.0.0' && !l.attributes.whatsNew) await call('PATCH', `/v1/appStoreVersionLocalizations/${l.id}`, { data: { type: 'appStoreVersionLocalizations', id: l.id, attributes: { whatsNew: process.env.WHATS_NEW || 'Design improvements.' } } }).then(() => note(`WHATS NEW set (${l.attributes.locale})`)).catch((e) => note(`whatsNew ${l.attributes.locale}: ${e.message.slice(0, 160)}`));
             note(`VERSION ${v.id} state ${v.attributes.appStoreState}`);
+            // Store search: keywords on the version, name and subtitle on the editable app info.
+            if (process.env.KEYWORDS) for (const l of locs.data) await call('PATCH', `/v1/appStoreVersionLocalizations/${l.id}`, { data: { type: 'appStoreVersionLocalizations', id: l.id, attributes: { keywords: process.env.KEYWORDS.slice(0, 100) } } }).then(() => note(`KEYWORDS set (${l.attributes.locale})`)).catch((e) => note(`keywords ${l.attributes.locale}: ${e.message.slice(0, 200)}`));
+            if (process.env.APP_NAME || process.env.SUBTITLE) {
+              const infos = await call('GET', `/v1/apps/${app}/appInfos`);
+              const info = infos.data.find((i) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'WAITING_FOR_REVIEW'].includes(i.attributes.appStoreState || i.attributes.state)) || infos.data[0];
+              const ils = await call('GET', `/v1/appInfos/${info.id}/appInfoLocalizations`);
+              for (const l of ils.data) {
+                const attributes = {};
+                if (process.env.APP_NAME) attributes.name = process.env.APP_NAME.slice(0, 30);
+                if (process.env.SUBTITLE) attributes.subtitle = process.env.SUBTITLE.slice(0, 30);
+                await call('PATCH', `/v1/appInfoLocalizations/${l.id}`, { data: { type: 'appInfoLocalizations', id: l.id, attributes } }).then(() => note(`NAME/SUBTITLE set (${l.attributes.locale}) on app info ${info.attributes.appStoreState || info.attributes.state}`)).catch((e) => note(`name/subtitle ${l.attributes.locale}: ${e.message.slice(0, 200)}`));
+              }
+            }
             const builds = await call('GET', `/v1/builds?filter[app]=${app}&filter[version]=${process.env.BUILD_NUMBER}&filter[preReleaseVersion.version]=${want}&limit=1`);
             const b = builds.data[0];
             if (!b) throw Error(`Build ${process.env.BUILD_NUMBER} not found`);
