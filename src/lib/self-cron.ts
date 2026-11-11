@@ -56,6 +56,9 @@ export async function runJobOnce(job: CronJob) {
     // Personal club previews into the running campaign. Runs in the background (it pages through every lead).
     const { runClubPreviewRollout } = await import("./club-preview-rollout");
     void runClubPreviewRollout().then((r) => { if (!("done" in r) && !("skipped" in r)) console.log("[club-preview-rollout]", JSON.stringify(r)); });
+    // Winter: warm states first in the campaign queue (runs once, in the background).
+    const { rebalanceCampaignOnce } = await import("./campaign-queue");
+    void rebalanceCampaignOnce().then((r) => { if (!("done" in r) && !("skipped" in r)) console.log("[campaign-rebalance]", JSON.stringify(r)); });
     const { backfillPreviewFollowups, sendDuePreviewFollowups } = await import("./club-preview");
     await backfillPreviewFollowups().catch((e) => console.error("[preview-followup] backfill", e));
     await sendDuePreviewFollowups().then((n) => { if (n) console.log(`[preview-followup] sent ${n}`); }).catch((e) => console.error("[preview-followup]", e));

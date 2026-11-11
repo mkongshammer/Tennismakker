@@ -286,7 +286,12 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
 export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200) {
   const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId(kind);
   if (!key || !campaign) return { pushed: 0, skipped: "instantly-not-configured" };
-  const waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt).slice(0, limit);
+  let waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt);
+  if (kind === "club") {
+    // Keep ~300 not-yet-contacted clubs in Instantly, warm states first in winter (see campaign-queue.ts).
+    const { queueOrder, clubsToAdd } = await import("./campaign-queue");
+    waiting = queueOrder(waiting).slice(0, Math.min(limit, await clubsToAdd(campaign)));
+  } else waiting = waiting.slice(0, limit);
   const { appUrl } = await (await import("./settings")).getSettings();
   const { previewUrl } = await import("./club-preview");
   let pushed = 0;

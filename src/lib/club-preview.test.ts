@@ -87,3 +87,15 @@ test("club set-up from an e-mail reply", () => {
   const mail = setupDoneMail({ clubName: "Aquidneck Club", setup: { ...s, updatedAt: "" }, page: "https://racketbuddy.app/for/x", claim: "https://racketbuddy.app/list-your-club?ref=x" });
   assert.ok(mail.includes("$40/hour") && mail.includes("https://racketbuddy.app/for/x") && mail.includes("list-your-club"));
 });
+
+import { queueOrder, isWinter, isWarm } from "./campaign-queue";
+test("winter queue puts warm states first", () => {
+  const rows = [{ lead: { state: "Connecticut" } }, { lead: { state: "Florida" } }, { lead: { state: "NY" } }, { lead: { state: "TX" } }];
+  const jan = new Date("2027-01-10T12:00:00Z"), jul = new Date("2027-07-10T12:00:00Z");
+  assert.equal(isWinter(jan), true);
+  assert.equal(isWinter(jul), false);
+  assert.deepEqual(queueOrder(rows, jan).map((r) => r.lead.state), ["Florida", "TX", "Connecticut", "NY"]);
+  assert.deepEqual(queueOrder(rows, jul).map((r) => r.lead.state), ["Connecticut", "Florida", "NY", "TX"]);
+  assert.equal(isWarm("Arizona"), true);
+  assert.equal(isWarm("Maine"), false);
+});

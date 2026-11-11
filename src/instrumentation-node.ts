@@ -1,3 +1,6 @@
+// Keep the latest server errors in the database (see lib/error-log.ts).
+import("./lib/error-log").then((m) => m.installErrorLog()).catch(() => {});
+
 // Keeps the Stripe webhook listening on every event the current code needs,
 // so a deploy that adds an event never waits for someone to click "repair".
 setTimeout(async () => {

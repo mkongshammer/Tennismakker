@@ -112,7 +112,9 @@ export async function runDailySalesDigest(now = new Date(), force = false) {
   const { mailUsage } = await import("./mail-quota");
   const mu = await mailUsage(now).catch(() => null);
   if (mu && mu.monthlyLimit) mailLines.push(`Resend: ${mu.month} af ${mu.monthlyLimit} mails brugt denne måned${mu.dailyLimit ? `, ${mu.today} af ${mu.dailyLimit} i dag` : ""}`);
-  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...mailLines, ...(mailLines.length ? [""] : []), "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
+  const errs = await (await import("./error-log")).errorSummary(now.getTime()).catch(() => []);
+  const errLines = errs.length ? ["SERVERFEJL (sidste døgn, til Claude)", ...errs.map(([m, n]) => `${n}× ${m}`), ""] : [];
+  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...mailLines, ...(mailLines.length ? [""] : []), ...errLines, "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
   const subject = `RacketBuddy salg: ${club.contactedToday} klubber + ${coach.contactedToday} trænere kontaktet, ${club.newToday + coach.newToday} nye på listen`;
   let ok = false;
   for (const to of recipients) ok = (await sendMail({ to, subject, body })) || ok;

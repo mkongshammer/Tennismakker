@@ -6,6 +6,7 @@ export const SUPERADMIN_PAGES = [
   { id: 'opret-klub', label: 'Opret klub', description: 'Opret en klub og udlever administratorens login.', group: 'Daglig drift' },
   { id: 'aktivitet', label: 'Aktivitet', description: 'Se platformens seneste aktivitet.', group: 'Daglig drift' },
   { id: 'klubsider', label: 'Klubsider live', description: 'Hvem der er på deres personlige klubside lige nu, hvad de læser, og hvor de stopper.', group: 'Daglig drift' },
+  { id: 'fejllog', label: 'Fejllog', description: 'De seneste fejl og advarsler fra serveren.', group: 'Daglig drift' },
   { id: 'efterspoergsel', label: 'Efterspørgsel (USA)', description: 'Hvor spillere beder om baner og trænere, vi ikke har endnu — pr. stat, by/ZIP og sportsgren.', group: 'Daglig drift' },
   { id: 'traenere', label: 'Trænerbilleder', description: 'Gennemgå trænernes profilbilleder.', group: 'Daglig drift' },
   { id: 'oekonomi', label: 'Økonomi', description: 'Følg indtægter og økonomi.', group: 'Daglig drift' },
