@@ -59,6 +59,8 @@ export async function runJobOnce(job: CronJob) {
     // Winter: warm states first in the campaign queue (runs once, in the background).
     const { rebalanceCampaignOnce } = await import("./campaign-queue");
     void rebalanceCampaignOnce().then((r) => { if (!("done" in r) && !("skipped" in r)) console.log("[campaign-rebalance]", JSON.stringify(r)); });
+    const { runSetupTestOnce } = await import("./oneoff-setup-test");
+    void runSetupTestOnce().catch((e) => console.error("[setup-test]", e));
     const { backfillPreviewFollowups, sendDuePreviewFollowups } = await import("./club-preview");
     await backfillPreviewFollowups().catch((e) => console.error("[preview-followup] backfill", e));
     await sendDuePreviewFollowups().then((n) => { if (n) console.log(`[preview-followup] sent ${n}`); }).catch((e) => console.error("[preview-followup]", e));
