@@ -1,0 +1,46 @@
+name: App Store metadata read
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      ASC_APP_ID: "6820186123"
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Attach build and submit
+        run: |
+          node - <<'NODE'
+          const crypto = require('crypto');
+          const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
+          const now = Math.floor(Date.now() / 1000);
+          const head = b64({ alg: 'ES256', kid: process.env.ASC_KEY_ID, typ: 'JWT' });
+          const body = b64({ iss: process.env.ASC_ISSUER_ID, iat: now, exp: now + 1200, aud: 'appstoreconnect-v1' });
+          const sig = crypto.sign('sha256', Buffer.from(`${head}.${body}`), { key: process.env.ASC_PRIVATE_KEY, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+          const jwt = `${head}.${body}.${sig}`;
+          const app = process.env.ASC_APP_ID;
+          const call = async (method, p) => { const r = await fetch(`https://api.appstoreconnect.apple.com${p}`, { method, headers: { Authorization: `Bearer ${jwt}` } }); const j = await r.json(); if (!r.ok) throw Error(`${p} ${r.status}`); return j; };
+          const note = (s) => console.log(`::notice::${String(s).replace(/\n/g, ' ')}`);
+          (async () => {
+            const infos = await call('GET', `/v1/apps/${app}/appInfos`);
+            for (const i of infos.data) {
+              const ls = await call('GET', `/v1/appInfos/${i.id}/appInfoLocalizations`);
+              for (const l of ls.data) note(`APPINFO ${i.attributes.appStoreState || i.attributes.state} ${l.attributes.locale} name="${l.attributes.name}" subtitle="${l.attributes.subtitle ?? ''}"`);
+            }
+            const versions = await call('GET', `/v1/apps/${app}/appStoreVersions?filter[platform]=IOS&limit=10`);
+            for (const v of versions.data) {
+              const ls = await call('GET', `/v1/appStoreVersions/${v.id}/appStoreVersionLocalizations`);
+              for (const l of ls.data) note(`VERSION ${v.attributes.versionString} ${v.attributes.appStoreState} ${l.attributes.locale} keywords="${l.attributes.keywords ?? ''}" promo="${(l.attributes.promotionalText ?? '').slice(0, 80)}"`);
+            }
+          })().catch((e) => { console.log(`::error::${e.message}`); process.exit(1); });
+          NODE
