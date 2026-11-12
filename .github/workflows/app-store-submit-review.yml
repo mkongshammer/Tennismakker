@@ -27,7 +27,7 @@ on:
         required: false
         default: ""
       subtitle:
-        description: "Subtitle (max 30), blank = unchanged"
+        description: "Subtitle (max 30), blank = unchanged, - = remove"
         required: false
         default: ""
       keywords:
@@ -97,7 +97,7 @@ jobs:
               for (const l of ils.data) {
                 const attributes = {};
                   if (process.env.APP_NAME) attributes.name = process.env.APP_NAME.slice(0, 30);
-                if (process.env.SUBTITLE) attributes.subtitle = process.env.SUBTITLE.slice(0, 30);
+                if (process.env.SUBTITLE) attributes.subtitle = process.env.SUBTITLE === '-' ? null : process.env.SUBTITLE.slice(0, 30);
                 await call('PATCH', `/v1/appInfoLocalizations/${l.id}`, { data: { type: 'appInfoLocalizations', id: l.id, attributes } }).then(() => note(`NAME/SUBTITLE set (${l.attributes.locale}) on app info ${info.attributes.appStoreState || info.attributes.state}`)).catch((e) => note(`name/subtitle ${l.attributes.locale}: ${e.message.slice(0, 200)}`));
               }
             }
