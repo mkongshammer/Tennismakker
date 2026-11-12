@@ -88,17 +88,21 @@ jobs:
             note(`VERSION ${v.id} state ${v.attributes.appStoreState}`);
             // Store search: keywords on the version, name and subtitle on the editable app info.
             if (process.env.KEYWORDS) for (const l of locs.data) await call('PATCH', `/v1/appStoreVersionLocalizations/${l.id}`, { data: { type: 'appStoreVersionLocalizations', id: l.id, attributes: { keywords: process.env.KEYWORDS.slice(0, 100) } } }).then(() => note(`KEYWORDS set (${l.attributes.locale})`)).catch((e) => note(`keywords ${l.attributes.locale}: ${e.message.slice(0, 200)}`));
-            if (process.env.APP_NAME || process.env.SUBTITLE) {
+            // Name and subtitle can only change while the version is editable (also re-run after a cancelled review).
+            const applyNameSubtitle = async () => {
+              if (process.env.APP_NAME || process.env.SUBTITLE) {
               const infos = await call('GET', `/v1/apps/${app}/appInfos`);
               const info = infos.data.find((i) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPER_REJECTED', 'REJECTED', 'WAITING_FOR_REVIEW'].includes(i.attributes.appStoreState || i.attributes.state)) || infos.data[0];
               const ils = await call('GET', `/v1/appInfos/${info.id}/appInfoLocalizations`);
               for (const l of ils.data) {
                 const attributes = {};
-                if (process.env.APP_NAME) attributes.name = process.env.APP_NAME.slice(0, 30);
+                  if (process.env.APP_NAME) attributes.name = process.env.APP_NAME.slice(0, 30);
                 if (process.env.SUBTITLE) attributes.subtitle = process.env.SUBTITLE.slice(0, 30);
                 await call('PATCH', `/v1/appInfoLocalizations/${l.id}`, { data: { type: 'appInfoLocalizations', id: l.id, attributes } }).then(() => note(`NAME/SUBTITLE set (${l.attributes.locale}) on app info ${info.attributes.appStoreState || info.attributes.state}`)).catch((e) => note(`name/subtitle ${l.attributes.locale}: ${e.message.slice(0, 200)}`));
               }
             }
+            };
+            await applyNameSubtitle();
             const builds = await call('GET', `/v1/builds?filter[app]=${app}&filter[version]=${process.env.BUILD_NUMBER}&filter[preReleaseVersion.version]=${want}&limit=1`);
             const b = builds.data[0];
             if (!b) throw Error(`Build ${process.env.BUILD_NUMBER} not found`);
@@ -132,6 +136,7 @@ jobs:
               }
               await call('PATCH', `/v1/appStoreVersions/${v.id}/relationships/build`, { data: { type: 'builds', id: b.id } });
               note(`RE-ATTACHED build ${b.attributes.version}`);
+              await applyNameSubtitle();
             }
             if (!sub) sub = (await call('POST', '/v1/reviewSubmissions', { data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: app } } } } })).data;
             await call('POST', '/v1/reviewSubmissionItems', { data: { type: 'reviewSubmissionItems', relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: sub.id } }, appStoreVersion: { data: { type: 'appStoreVersions', id: v.id } } } } }).catch((e) => { if (!/already|ENTITY_ERROR.RELATIONSHIP.INVALID/i.test(e.message)) throw e; note(`item: ${e.message}`); });
