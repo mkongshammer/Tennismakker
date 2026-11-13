@@ -59,6 +59,8 @@ export async function runJobOnce(job: CronJob) {
     // Winter: warm states first in the campaign queue (runs once, in the background).
     const { rebalanceCampaignOnce } = await import("./campaign-queue");
     void rebalanceCampaignOnce().then((r) => { if (!("done" in r) && !("skipped" in r)) console.log("[campaign-rebalance]", JSON.stringify(r)); });
+    const { deleteMagnusAccountsOnce } = await import("./oneoff-delete-accounts");
+    void deleteMagnusAccountsOnce().catch((e) => console.error("[delete-accounts]", e));
     const { raiseDailyLimitOnce } = await import("./oneoff-daily-limit");
     void raiseDailyLimitOnce().catch((e) => console.error("[daily-limit]", e));
     const { suppressNoThanksOnce } = await import("./oneoff-suppress-nothanks");
