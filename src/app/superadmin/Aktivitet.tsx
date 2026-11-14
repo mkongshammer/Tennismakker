@@ -1,4 +1,5 @@
 import { db } from "../../lib/db";
+import { notErased } from "../../lib/erasure";
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("da-DK", {
@@ -12,7 +13,7 @@ function formatDate(value: Date) {
 
 export async function Aktivitet() {
   const [memberCount, messages] = await Promise.all([
-    db.user.count({ where: { role: { in: ["PLAYER", "COACH"] } } }),
+    db.user.count({ where: { role: { in: ["PLAYER", "COACH"] }, ...notErased } }),
     db.message.findMany({
       orderBy: { createdAt: "desc" },
       select: {

@@ -1,4 +1,5 @@
 import {phrase} from "../../lib/phrases";
+import { notErased } from "../../lib/erasure";
 import { Select } from "../../components/ui/Select";
 
 import {UiText} from "../../components/InternationalProvider";
@@ -56,6 +57,7 @@ export default async function SpillerePage({ searchParams }: Props) {
       where: {
         id: { not: user.id },
         role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
         country: "US",
       },
       select: {

@@ -1,4 +1,5 @@
 import { db } from "../../../../lib/db";
+import { notErased } from "../../../../lib/erasure";
 import { json, preflight, requireUser } from "../../../../lib/api/helpers";
 import { blockedUserIds } from "../../../../lib/moderation";
 
@@ -29,6 +30,7 @@ async function listGET(req: Request) {
     where: {
       id: { notIn: [auth.user.id, ...blocked] },
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       country: "US",
       ...(sport ? { sports: { contains: sport, mode: "insensitive" } } : {}),
     },

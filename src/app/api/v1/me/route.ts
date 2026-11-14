@@ -2,6 +2,7 @@ import { AREA_ERROR, canonicalArea } from "../../../../lib/us-area";
 import { profileLocation } from "../../../../lib/profile-location";
 import {walletBlocksDeletion} from "../../../../lib/wallet";
 import { json, preflight, publicUser, requireUser } from "../../../../lib/api/helpers";
+import { DELETED_NAME } from "../../../../lib/erasure";
 import { db } from "../../../../lib/db";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,7 @@ export async function DELETE(req: Request) {
     where: { id: auth.user.id },
     data: {
       email: deletedEmail,
-      name: "Slettet bruger",
+      name: DELETED_NAME,
       phone: null,
       area: null,
       bio: null,

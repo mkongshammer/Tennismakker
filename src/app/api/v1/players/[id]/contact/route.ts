@@ -1,4 +1,5 @@
 import { db } from "../../../../../../lib/db";
+import { notErased } from "../../../../../../lib/erasure";
 import { apiError, json, preflight, requireUser } from "../../../../../../lib/api/helpers";
 import { isBlockedBetween } from "../../../../../../lib/moderation";
 import { coachChatGate } from "../../../../../../lib/coach-messaging";
@@ -22,6 +23,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     where: {
       id: otherId,
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       country: auth.user.country,
     },
     select: { id: true, name: true, level: true, area: true, sports: true },

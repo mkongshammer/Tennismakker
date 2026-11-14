@@ -18,6 +18,11 @@ import {walletBlocksDeletion} from "./wallet";
 import crypto from "crypto";
 import { db } from "./db";
 
+/** Name an erased account keeps (US product, so English). Old rows said "Slettet bruger". */
+export const DELETED_NAME = "Deleted user";
+/** Where-clause piece: leaves out erased accounts. Both erasure paths give them an @…invalid address. */
+export const notErased = { email: { not: { endsWith: ".invalid" } } } as const;
+
 export async function eraseAccount(userId: string): Promise<void> {
   if(await walletBlocksDeletion(userId)) throw Error("Kontakt klubben for at afvikle din wallet før kontosletning.");
   await db.pushDevice.deleteMany({where:{userId:userId}});
@@ -51,7 +56,7 @@ export async function eraseAccount(userId: string): Promise<void> {
     where: { id: userId },
     data: {
       email: anonymous,
-      name: "Slettet bruger",
+      name: DELETED_NAME,
       passwordHash: crypto.randomBytes(32).toString("hex"),
       area: null,
       role: "PLAYER",

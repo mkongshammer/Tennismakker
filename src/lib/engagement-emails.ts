@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { notErased } from "./erasure";
 import { db } from "./db";
 import { sendMail } from "./email";
 import { getSettings } from "./settings";
@@ -197,6 +198,7 @@ export async function runEngagementEmails() {
   const users = await db.user.findMany({
     where: {
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       createdAt: { lte: eligibleBefore },
     },
     select: { id: true, email: true, name: true, role: true, createdAt: true },

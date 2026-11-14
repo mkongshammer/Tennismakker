@@ -9,6 +9,7 @@
 // samtalen og beskederne fungerer præcis som ved et almindeligt opslag.
 
 import { db } from "./db";
+import { notErased } from "./erasure";
 import { blockedUserIds, isBlockedBetween } from "./moderation";
 
 export const LEVEL_SPREAD = 1; // vis spillere inden for ±1 niveau
@@ -34,6 +35,7 @@ export async function nextCandidates(userId: string, take = 10) {
     where: {
       id: { notIn: skip },
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       country: "US",
       level: { gte: me.level - LEVEL_SPREAD, lte: me.level + LEVEL_SPREAD },
       ...(me.area ? { area: { contains: me.area.split(" ")[0], mode: "insensitive" } } : {}),

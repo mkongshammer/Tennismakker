@@ -2,6 +2,7 @@
 // time (so a bad address never stops the rest) and keep a record of what
 // went out. Replies go to the club, not to us.
 import { db } from "./db";
+import { notErased } from "./erasure";
 import { sendMail } from "./email";
 
 export type Audience = "ALL" | "PAID";
@@ -12,6 +13,7 @@ export async function broadcastRecipients(clubId: string, audience: Audience) {
     where: {
       clubId,
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       email: { not: { endsWith: "@deleted.racketbuddy.invalid" } },
       ...(audience === "PAID" ? { memberships: { some: { status: "PAID", type: { clubId, fromDate: { lte: now }, toDate: { gte: now } } } } } : {}),
     },

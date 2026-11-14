@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { notErased } from "../../lib/erasure";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { coachChatGate } from "../../lib/coach-messaging";
@@ -16,6 +17,7 @@ export async function contactPlayer(formData: FormData) {
     where: {
       id: otherId,
       role: { in: ["PLAYER", "COACH"] },
+      ...notErased,
       country: user.country,
     },
     select: { id: true, name: true, level: true, area: true, sports: true },
