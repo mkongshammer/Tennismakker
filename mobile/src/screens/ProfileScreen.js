@@ -96,7 +96,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
       const result = await api.openDoor(booking.id);
       Alert.alert(
         "Døråbning sendt",
-        `${result.label ?? "Døren"}: åbnekommandoen gælder i ${result.unlockSeconds ?? 5} sekunder. Kontrollér at døren åbner.`
+        `${result.label ?? tr("Døren")}: åbnekommandoen gælder i ${result.unlockSeconds ?? 5} sekunder. Kontrollér at døren åbner.`
       );
     } catch (e) {
       Alert.alert("Kunne ikke åbne døren", e.message ?? "Prøv igen eller kontakt klubben.");

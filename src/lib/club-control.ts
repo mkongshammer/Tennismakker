@@ -1,3 +1,4 @@
+import { messageLocale } from "./mail-locale";
 import { db } from "./db";
 import {
   accessWindow,
@@ -357,7 +358,7 @@ export async function unlockDoorForBooking(
   if (!canOpenDoor(booking, control, now)) {
     const window = accessWindow(booking, control);
     throw new ClubControlError(
-      `Døren kan åbnes fra ${window.availableFrom.toLocaleString("da-DK")} til ${window.availableUntil.toLocaleString("da-DK")}.`,
+      `Døren kan åbnes fra ${window.availableFrom.toLocaleString(messageLocale(null) === "da" ? "da-DK" : "en-US")} til ${window.availableUntil.toLocaleString(messageLocale(null) === "da" ? "da-DK" : "en-US")}.`,
       403
     );
   }

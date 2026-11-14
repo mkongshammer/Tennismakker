@@ -6,6 +6,7 @@ import { safeReturnPath } from "./return-path";
 import { profileLocation } from "./profile-location";
 import {websitePrice} from "./platform-pricing";
 import {phrase} from "./phrases";
+import { messageLocale } from "./mail-locale";
 import {clubSignupPrices} from "./club-onboarding";
 import { marketFor, validSalesCurrency, validCurrency, validTimeZone,isUsTimeZone,wallTime,formatDate,formatMoney } from "./international";
 import {approvePaidSignup,rejectPaidSignup} from "./club-onboarding";
@@ -889,7 +890,7 @@ async function requireBlockedFirst(clubId: string, formData: FormData): Promise<
   if (login) return null;
 
   if (formData.get("blockedFirst") === "on") return null;
-  return `Spær tiderne i ${club!.externalSystem ?? "jeres eget bookingsystem"} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.`;
+  return `Spær tiderne i ${club!.externalSystem ?? phrase("jeres eget bookingsystem", messageLocale(null) as "da" | "en-US")} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.`;
 }
 
 
@@ -913,7 +914,7 @@ async function requireActiveSubscription(clubId: string): Promise<string | null>
   if (!club) return "Klubben findes ikke.";
   if (subscriptionIsActive(club)) return null;
 
-  return `Abonnementet er ikke aktivt. Start det under "Jeres aftale" (${formatMoney(club.subscriptionKr,club.billingCurrency,"da")}/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.`;
+  return `Abonnementet er ikke aktivt. Start det under "Jeres aftale" (${formatMoney(club.subscriptionKr,club.billingCurrency,messageLocale(null)==="da"?"da":"en")}/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.`;
 }
 
 export async function releaseGuestSlots(_prev: unknown, formData: FormData) {
@@ -1031,10 +1032,18 @@ export async function submitClubLead(_prev: unknown, formData: FormData) {
     data: { clubName, city, contactName, email, phone: phone || null, message: message || null },
   });
 
+  const englishMail = (await import("./mail-locale")).messageLocale(null) !== "da";
   await sendMail({
     to: email,
-    subject: `Vi har jeres henvendelse — ${clubName}`,
-    body: [
+    subject: englishMail ? `We've received your request — ${clubName}` : `Vi har jeres henvendelse — ${clubName}`,
+    body: englishMail ? [
+      `Hi ${contactName},`,
+      ``,
+      `Thanks for your interest in RacketBuddy. We'll get back to you and set up`,
+      `your club as soon as we've talked.`,
+      ``,
+      `RacketBuddy`,
+    ].join("\n") : [
       `Hej ${contactName}`,
       ``,
       `Tak for interessen i RacketBuddy. Vi vender tilbage og sætter jeres`,
@@ -1158,10 +1167,23 @@ export async function createClubAsAdmin(_prev: unknown, formData: FormData) {
     }).catch(() => null);
   }
 
+  const englishMail = (await import("./mail-locale")).messageLocale(null) !== "da";
   if (!showLogin) await sendMail({
     to: adminEmail,
-    subject: `${clubName} er oprettet på RacketBuddy`,
-    body: [
+    subject: englishMail ? `${clubName} is set up on RacketBuddy` : `${clubName} er oprettet på RacketBuddy`,
+    body: englishMail ? [
+      `Hi ${adminName},`,
+      ``,
+      `${clubName} is set up. Sign in and see your page here:`,
+      ``,
+      `${(await getSettings()).appUrl}/login`,
+      `Email: ${adminEmail}`,
+      `Temporary password: ${tempPassword}`,
+      ``,
+      `Change the password under your profile once you're signed in.`,
+      ``,
+      `RacketBuddy`,
+    ].join("\n") : [
       `Hej ${adminName}`,
       ``,
       `${clubName} er oprettet. Log ind og se jeres side her:`,

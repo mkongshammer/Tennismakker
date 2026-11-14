@@ -1,3 +1,5 @@
+import { translatePhrase as phrase } from "../../shared/phrase-translation.mjs";
+import { messageLocale } from './mail-locale';
 import {refundDecision,type CancellationContext} from './cancellation-policy';
 import {subscriptionIsActive} from './billing';
 import {db} from './db';
@@ -14,7 +16,7 @@ export async function startWalletTopup(userId:string,clubId:string,paidOre:numbe
  const creditOre=walletCredit(paidOre,JSON.parse(club.walletTiers));
  const row=await db.walletTopup.create({data:{userId,clubId,paidOre,creditOre,currency:club.currency,destination:club.stripeAccountId}});
  const region=dataRegionForCountry(club.country);
- const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:'payment',payment_method_types:['card'],client_reference_id:row.id,metadata:{walletTopupId:row.id,region},payment_intent_data:{application_fee_amount:club.billingModel==='SUBSCRIPTION'&&subscriptionIsActive(club)?0:Math.round(paidOre*settings.commissionPct),transfer_data:{destination:row.destination},metadata:{walletTopupId:row.id,region}},line_items:[{quantity:1,price_data:{currency:row.currency.toLowerCase(),unit_amount:paidOre,product_data:{name:`Bookingkredit · ${club.name}`,description:`${(creditOre/100).toFixed(2)} ${row.currency} til banebooking i denne klub`}}}],success_url:`${settings.appUrl}/wallet?session={CHECKOUT_SESSION_ID}`,cancel_url:`${settings.appUrl}/wallet`},{idempotencyKey:`wallet-topup:${row.id}`});
+ const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:'payment',payment_method_types:['card'],client_reference_id:row.id,metadata:{walletTopupId:row.id,region},payment_intent_data:{application_fee_amount:club.billingModel==='SUBSCRIPTION'&&subscriptionIsActive(club)?0:Math.round(paidOre*settings.commissionPct),transfer_data:{destination:row.destination},metadata:{walletTopupId:row.id,region}},line_items:[{quantity:1,price_data:{currency:row.currency.toLowerCase(),unit_amount:paidOre,product_data:{name:`Bookingkredit · ${club.name}`,description:phrase('{amount} {currency} til banebooking i denne klub',messageLocale(null),{amount:(creditOre/100).toFixed(2),currency:row.currency})}}}],success_url:`${settings.appUrl}/wallet?session={CHECKOUT_SESSION_ID}`,cancel_url:`${settings.appUrl}/wallet`},{idempotencyKey:`wallet-topup:${row.id}`});
  await db.walletTopup.update({where:{id:row.id},data:{sessionId:session.id}});
  if(!session.url)throw Error('Betalingssiden kunne ikke åbnes.');return session.url;
 }

@@ -1,3 +1,5 @@
+import { translatePhrase as phrase } from "../../shared/phrase-translation.mjs";
+import { messageLocale } from "./mail-locale";
 import { validateOrderCheckout, type CheckoutEvidence } from "./payment-validation";
 import { db } from "./db";
 import { stripe } from "./stripe";
@@ -39,7 +41,7 @@ export async function startPackageCheckout(userId:string,packageId:string):Promi
   const platformCountry=await platformAccountCountry();
   const sameCountry=Boolean(platformCountry&&account.country&&platformCountry===account.country);
   const region=dataRegionForCountry(pack.coachProfile.country);
-  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",line_items:[{price_data:{currency:pack.coachProfile.currency.toLowerCase(),product_data:{name:`${pack.name} hos ${pack.coachProfile.user.name}`,description:`${pack.sessions} timer, betalt på én gang`},unit_amount:pack.priceKr*100},quantity:1}],payment_intent_data:{application_fee_amount:fee*100,transfer_data:{destination:account.id},...(sameCountry?{}:{}),metadata:{purchaseId:purchase.id,region}},metadata:{purchaseId:purchase.id,region},success_url:`${settings.appUrl}/profile?pakke=ok`,cancel_url:`${settings.appUrl}/coaches/${pack.coachProfileId}?fejl=afbrudt`});
+  const session=await (await stripe()).checkout.sessions.create({adaptive_pricing:{enabled:false},mode:"payment",line_items:[{price_data:{currency:pack.coachProfile.currency.toLowerCase(),product_data:{name:phrase("{pack} hos {coach}",messageLocale(null),{pack:pack.name,coach:pack.coachProfile.user.name}),description:phrase("{n} timer, betalt på én gang",messageLocale(null),{n:pack.sessions})},unit_amount:pack.priceKr*100},quantity:1}],payment_intent_data:{application_fee_amount:fee*100,transfer_data:{destination:account.id},...(sameCountry?{}:{}),metadata:{purchaseId:purchase.id,region}},metadata:{purchaseId:purchase.id,region},success_url:`${settings.appUrl}/profile?pakke=ok`,cancel_url:`${settings.appUrl}/coaches/${pack.coachProfileId}?fejl=afbrudt`});
   if(!session.url)throw new Error("Stripe returnerede ingen betalingsside.");
   return session.url;
 }

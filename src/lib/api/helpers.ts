@@ -5,12 +5,20 @@
 // platformen over HTTP med et Bearer-token.
 
 import { NextResponse } from "next/server";
+import { translatePhrase as phrase } from "../../../shared/phrase-translation.mjs";
+import { messageLocale } from "../mail-locale";
 import { userFromRequest } from "../session";
 import { regionAllowsCountry, regionMismatch } from "../region";
 
 const ALLOWED_HEADERS = "Content-Type, Authorization, X-RacketBuddy-Country";
 
 export function json(data: unknown, status = 200) {
+  // Messages are written in Danish in the code and translated at the edge; the
+  // app shows whatever comes back, so a US user must never see the Danish source.
+  if (data && typeof data === "object" && typeof (data as { error?: unknown }).error === "string") {
+    const locale = messageLocale(null);
+    if (locale !== "da") data = { ...(data as object), error: phrase((data as { error: string }).error, locale) };
+  }
   return NextResponse.json(data, {
     status,
     headers: {
@@ -75,8 +83,8 @@ export function publicUser(user: any) {
     role: user.role,
     level: user.level,
     area: user.area,
-    country: user.country ?? "DK",
-    locale: user.locale ?? "da",
+    country: user.country ?? (messageLocale(null) === "da" ? "DK" : "US"),
+    locale: user.locale ?? messageLocale(null),
     countryChosen: Boolean(user.countryChosen),
     clubId: user.clubId ?? null,
     isCoach: Boolean(user.coachProfile),

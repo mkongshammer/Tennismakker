@@ -14732,5 +14732,95 @@
     "no": "Import, synkronisering og koblinger til andre systemer avhenger av deres tilgangsrettigheter og tekniske muligheter. Klubben må ha rett til å importere opplysningene. RacketBuddy lover ikke direkte API-tilgang til ethvert eksternt system.",
     "fr": "Les importations, la synchronisation et les connexions à d’autres systèmes dépendent de leurs autorisations d’accès et de leurs capacités techniques. Le club doit avoir le droit d’importer les données. RacketBuddy ne promet pas un accès API direct à chaque système externe.",
     "es": "Las importaciones, la sincronización y las conexiones con otros sistemas dependen de sus permisos de acceso y de sus capacidades técnicas. El club debe tener derecho a importar los datos. RacketBuddy no promete acceso directo por API a todos los sistemas externos."
+  },
+  "{pack} hos {coach}": {
+    "en": "{pack} with {coach}",
+    "fr": "{pack} avec {coach}",
+    "es": "{pack} con {coach}"
+  },
+  "{n} timer, betalt på én gang": {
+    "en": "{n} sessions, paid up front",
+    "fr": "{n} séances, payées d’avance",
+    "es": "{n} sesiones, pagadas por adelantado"
+  },
+  "{amount} {currency} til banebooking i denne klub": {
+    "en": "{amount} {currency} of court-booking credit at this club",
+    "fr": "{amount} {currency} de crédit de réservation dans ce club",
+    "es": "{amount} {currency} de crédito para reservar pistas en este club"
+  },
+  "Sæsonhold i {club}": {
+    "en": "Season team at {club}",
+    "fr": "Équipe de saison à {club}",
+    "es": "Equipo de temporada en {club}"
+  },
+  "Der er plads til {n} billeder. Slet et først.": {
+    "en": "There's room for {n} photos. Delete one first.",
+    "fr": "Il y a de la place pour {n} photos. Supprimez-en une d’abord.",
+    "es": "Hay espacio para {n} fotos. Elimina una primero."
+  },
+  "Forbindelsen blev ikke gemt: {reason}": {
+    "en": "The connection wasn't saved: {reason}",
+    "fr": "La connexion n’a pas été enregistrée : {reason}",
+    "es": "La conexión no se guardó: {reason}"
+  },
+  "{name} er tilføjet med {n} relækanaler.": {
+    "en": "{name} was added with {n} relay channels.",
+    "fr": "{name} a été ajouté avec {n} canaux de relais.",
+    "es": "{name} se añadió con {n} canales de relé."
+  },
+  "{name} er tilføjet med {n} relækanal.": {
+    "en": "{name} was added with {n} relay channel.",
+    "fr": "{name} a été ajouté avec {n} canal de relais.",
+    "es": "{name} se añadió con {n} canal de relé."
+  },
+  "Vi kunne ikke åbne siden (svarede {status}). Tjek adressen, eller spring over — I kan sætte det op i hånden.": {
+    "en": "We couldn't open the site (it answered {status}). Check the address, or skip this — you can set it up by hand.",
+    "fr": "Impossible d’ouvrir le site (réponse {status}). Vérifiez l’adresse ou passez : vous pouvez configurer à la main.",
+    "es": "No pudimos abrir el sitio (respondió {status}). Revisa la dirección u omite este paso: puedes configurarlo a mano."
+  },
+  "Vi kan se, at I bruger {system}.": {
+    "en": "We can see you're using {system}.",
+    "fr": "Nous voyons que vous utilisez {system}.",
+    "es": "Vemos que usáis {system}."
+  },
+  "Række {n}: forkert antal kolonner.": {
+    "en": "Row {n}: wrong number of columns.",
+    "fr": "Ligne {n} : nombre de colonnes incorrect.",
+    "es": "Fila {n}: número de columnas incorrecto."
+  },
+  "Antal timer skal være mellem {min} og {max}.": {
+    "en": "The number of sessions must be between {min} and {max}.",
+    "fr": "Le nombre de séances doit être compris entre {min} et {max}.",
+    "es": "El número de sesiones debe estar entre {min} y {max}."
+  },
+  "Prisen skal være mellem 50 og 100.000 {currency}.": {
+    "en": "The price must be between 50 and 100,000 {currency}.",
+    "fr": "Le prix doit être compris entre 50 et 100 000 {currency}.",
+    "es": "El precio debe estar entre 50 y 100.000 {currency}."
+  },
+  "{label}: åbnekommandoen gælder i {n} sekunder. Kontrollér at døren åbner.": {
+    "en": "{label}: the unlock command is active for {n} seconds. Check that the door opens.",
+    "fr": "{label} : la commande d’ouverture est active pendant {n} secondes. Vérifiez que la porte s’ouvre.",
+    "es": "{label}: la orden de apertura dura {n} segundos. Comprueba que la puerta se abre."
+  },
+  "{who} har ikke fuldført opsætningen af udbetalinger endnu. Prøv igen senere, eller vælg en anden tid.": {
+    "en": "{who} hasn't finished setting up payouts yet. Try again later, or choose another time.",
+    "fr": "{who} n’a pas encore terminé la configuration des versements. Réessayez plus tard ou choisissez un autre créneau.",
+    "es": "{who} aún no ha terminado de configurar los pagos. Inténtalo más tarde o elige otra hora."
+  },
+  "Tak — vi vender tilbage til {name} snarest. Henvendelsesnummer {id}.": {
+    "en": "Thanks — we'll get back to {name} shortly. Reference number {id}.",
+    "fr": "Merci : nous recontacterons {name} très vite. Numéro de référence {id}.",
+    "es": "Gracias: nos pondremos en contacto con {name} muy pronto. Número de referencia {id}."
+  },
+  "Spær tiderne i {system} først, og sæt så flueben. Ellers kan et medlem nå at booke samme time dér.": {
+    "en": "Block the times in {system} first, then tick the box. Otherwise a member could book the same hour there.",
+    "fr": "Bloquez d’abord les créneaux dans {system}, puis cochez la case. Sinon un membre pourrait réserver la même heure là-bas.",
+    "es": "Bloquea primero las horas en {system} y luego marca la casilla. Si no, un socio podría reservar la misma hora allí."
+  },
+  "Abonnementet er ikke aktivt. Start det under \"Jeres aftale\" ({price}/md), så kan I frigive tider igen. Allerede betalte bookinger står ved magt.": {
+    "en": "The subscription isn't active. Start it under \"Your plan\" ({price}/mo) to release times again. Bookings already paid for still stand.",
+    "fr": "L’abonnement n’est pas actif. Démarrez-le sous « Votre formule » ({price}/mois) pour libérer à nouveau des créneaux. Les réservations déjà payées restent valables.",
+    "es": "La suscripción no está activa. Actívala en «Vuestro plan» ({price}/mes) para volver a liberar horas. Las reservas ya pagadas siguen en pie."
   }
 }

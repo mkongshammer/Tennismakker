@@ -187,7 +187,7 @@ export async function addControlDevice(
 
   revalidatePath("/admin", "layout");
   return {
-    ok: `${name} er tilføjet med ${channelCount} relækanal${channelCount === 1 ? "" : "er"}.`,
+    ok: channelCount === 1 ? `${name} er tilføjet med ${channelCount} relækanal.` : `${name} er tilføjet med ${channelCount} relækanaler.`,
   };
 }
 
