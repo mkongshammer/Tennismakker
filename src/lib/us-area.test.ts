@@ -38,3 +38,12 @@ test("abbreviations expand the way the dataset spells places", () => {
   assert.equal(expandPlaceAbbreviations("Boston"), "Boston");
   assert.equal(expandPlaceAbbreviations("Stamford"), "Stamford");
 });
+
+test("a city named after a state is taken as the city, so no state has to be typed", async () => {
+  // These used to be read as the whole state and refused, which forced people
+  // to type "New York, NY" before their profile would save.
+  assert.equal(await canonicalArea("US", "New York"), "New York, NY");
+  assert.equal(await canonicalArea("US", "Washington"), "Washington, DC");
+  // Half a name still isn't a place.
+  assert.equal(await canonicalArea("US", "Bos"), null);
+});

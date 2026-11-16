@@ -57,7 +57,7 @@ export default function SwipeScreen({ navigation }) {
     lock.current = true; setBusyId(id);
     try {
       const r = await action();
-      if (r?.threadId) navigation.navigate("BeskederTab", { screen: "Samtale", params: { id: r.threadId, name: r.otherName } });
+      if (r?.threadId) navigation.navigate("BeskederTab", { screen: "Samtale", params: { id: r.threadId, name: r.otherName }, initial: false });
       else state.refresh();
     } catch (e) {
       Alert.alert(tr("Kunne ikke åbne beskeder"), e.message);
@@ -160,7 +160,7 @@ export default function SwipeScreen({ navigation }) {
                     </View>
                     {p.isMine
                       ? <Text style={styles.meta}>{tr("Dit opslag")}</Text>
-                      : <Button title={tr("I'm in")} onPress={() => run(p.id, () => api.acceptMatch(p.id))} loading={busyId === p.id} disabled={busyId !== null} />}
+                      : <Button title={tr("I'm in")} size="small" onPress={() => run(p.id, () => api.acceptMatch(p.id))} loading={busyId === p.id} disabled={busyId !== null} />}
                   </View>
                 </Card>
               ))}
@@ -194,7 +194,7 @@ export default function SwipeScreen({ navigation }) {
           ) : null}
           {item.bio ? <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text> : null}
           <View style={{ marginTop: "auto", paddingTop: 12 }}>
-            <Button title={tr("Message")} onPress={() => run(item.id, () => api.contactPlayer(item.id))} loading={busyId === item.id} disabled={busyId !== null} />
+            <Button title={tr("Message")} size="small" onPress={() => run(item.id, () => api.contactPlayer(item.id))} loading={busyId === item.id} disabled={busyId !== null} />
           </View>
         </Card>
       )} />

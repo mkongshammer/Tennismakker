@@ -11,7 +11,8 @@ import {
 import { colors } from "./theme";
 
 // Quiet variants keep account actions subordinate to booking actions.
-export function Button({ title, onPress, variant = "court", disabled, loading }) {useInternational();
+export function Button({ title, onPress, variant = "court", disabled, loading, size }) {useInternational();
+  const small = size === "small"; // tight spots: a card in a two-column grid
   const quiet = variant === "quiet" || variant === "dangerQuiet";
   // "ink" is the optic button: the one thing on the screen you should press.
   const bg = quiet ? "transparent" : variant === "ink" ? colors.optic : colors.court;
@@ -25,11 +26,12 @@ export function Button({ title, onPress, variant = "court", disabled, loading })
       accessibilityState={{ disabled: disabled || loading, busy: loading }}
       style={({ pressed }) => [
       styles.button,
+      small && styles.buttonSmall,
       { backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.88 : 1, transform: [{ scale: pressed ? 0.985 : 1 }] }]
       }>
 
-      {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: 12 }} size="small" color={foreground} />}
-      <Text style={[styles.buttonText, { color: foreground, fontWeight: quiet ? "600" : "700" }]}>{tr(title)}</Text>
+      {loading && <ActivityIndicator accessible={false} style={{ position: "absolute", left: small ? 8 : 12 }} size="small" color={foreground} />}
+      <Text style={[styles.buttonText, small && styles.buttonTextSmall, { color: foreground, fontWeight: quiet ? "600" : "700" }]}>{tr(title)}</Text>
     </Pressable>);
 
 }
@@ -124,7 +126,9 @@ const styles = StyleSheet.create({
     gap: 8,
     justifyContent: "center"
   },
+  buttonSmall: { borderRadius: 12, paddingVertical: 9, paddingHorizontal: 14, minHeight: 40 },
   buttonText: { color: colors.chalk, fontWeight: "700", fontSize: 16, textAlign: "center" },
+  buttonTextSmall: { fontSize: 14 },
   card: {
     backgroundColor: colors.surface,
     borderRadius: 20,

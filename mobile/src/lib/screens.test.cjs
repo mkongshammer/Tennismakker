@@ -19,7 +19,7 @@ function loadSource(relative, mocks) {
   const module = { exports: {} };
   new Function('require', 'module', 'exports', code)(name => {
     if (name in mocks) return name.endsWith("/ui")?{Button:"Button",...mocks[name]}:mocks[name];
-    if (name.endsWith('/international')) return {tr:x=>x,useInternational:()=>({country:'DK',locale:'da',t:x=>x}),money:(n,c='DKK')=>`${n} ${c}`};
+    if (name.endsWith('/international')) return {tr:x=>x,useInternational:()=>({country:'DK',locale:'da',t:x=>x}),getInternational:()=>({country:'US',locale:'en-US'}),money:(n,c='DKK')=>`${n} ${c}`};
     if (name.endsWith('/PreferencesPicker')) return {PreferencesPicker:'PreferencesPicker'};
     if (name.endsWith('/ProfilePreferences')) return {ProfilePreferences:'ProfilePreferences'};
     if (name.endsWith('/phrase-translation.mjs')) return phrases;
@@ -320,4 +320,33 @@ test('country onboarding never asks: the app serves the US marketplace only',asy
  await act(async()=>{tree=create(React.createElement(CountryOnboarding));});
  assert.equal(calls,0,'no geolocation request is made');assert.equal(tree.toJSON(),null,'nothing is rendered');
  await act(()=>tree.unmount());
+});
+
+test('opening a chat from a player keeps the conversation list underneath, so there is a way back', async () => {
+  const navigations = []; let tree;
+  const data = {
+    players: [{ id: 'p1', name: 'Nora Kim', level: 4, area: 'Austin, TX', sports: ['TENNIS'], bio: null, isCoach: false }],
+    posts: [{ id: 'm1', message: 'Doubles Saturday?', area: 'Austin, TX', level: 4, sport: 'TENNIS', matchType: 'DOUBLE', createdAt: new Date().toISOString(), requesterId: 'p9', requesterName: 'Leo Martin', isMine: false }],
+  };
+  const { default: Players, ago } = loadSource('../screens/SwipeScreen.js', {
+    'react': React,
+    'react-native': { FlatList: 'FlatList', Pressable: 'Pressable', RefreshControl: 'RefreshControl', ScrollView: 'ScrollView', StyleSheet: { create: x => x }, Text: 'Text', TextInput: 'TextInput', View: 'View' },
+    '../lib/api': { api: { contactPlayer: async () => ({ threadId: 't1', otherName: 'Nora Kim' }), acceptMatch: async () => ({}), players: async () => ({ players: data.players }), matches: async () => ({ matches: data.posts }) } },
+    '../lib/feedback': { feedback: { alert: () => {} } },
+    '../lib/useScreenData': { useScreenData: () => ({ data, loading: false, refreshing: false, error: null, refresh: async () => {} }) },
+    '../lib/ui': { Badge: 'Badge', Button: 'Button', Card: 'Card', Empty: 'Empty', ErrorMessage: 'ErrorMessage', Loading: 'Loading' },
+    '../lib/PlayerAvatar': { PlayerAvatar: 'PlayerAvatar', CardBand: 'CardBand', firstName: n => String(n).split(' ')[0] },
+    '../lib/theme': { colors: {}, pageContent: {}, LEVELS: {}, SPORT_LABELS: {}, SPORTS: ['TENNIS'], MATCH_TYPES: {}, sportColor: () => '#000' },
+  });
+  const navigation = { navigate: (...args) => navigations.push(args) };
+  await act(async () => { tree = create(React.createElement(Players, { navigation })); });
+  const card = tree.root.findByType('FlatList').props.renderItem({ item: data.players[0] });
+  let cardTree;
+  await act(async () => { cardTree = create(card); });
+  await act(async () => { cardTree.root.findAllByType('Button').at(-1).props.onPress(); });
+  assert.deepEqual(navigations[0][0], 'BeskederTab');
+  assert.equal(navigations[0][1].screen, 'Samtale');
+  assert.equal(navigations[0][1].initial, false, 'the thread list must stay under the conversation');
+  assert.equal(ago(new Date(Date.now() - 120000).toISOString(), 'en-US'), '2 minutes ago');
+  await act(() => tree.unmount());
 });

@@ -4,7 +4,7 @@
     "slug": "racketbuddy",
     "version": "1.0.3",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "scheme": "racketbuddy",
     "newArchEnabled": false,
     "icon": "./assets/icon.png",

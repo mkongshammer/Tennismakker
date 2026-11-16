@@ -13,7 +13,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/lib/auth";
 import { AppLockGate, AppLockProvider } from "./src/lib/AppLock";
 import { Loading, ErrorMessage } from "./src/lib/ui";
-import { colors } from "./src/lib/theme";
+import { colors, isLight } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
 import { LiveUpdates } from "./src/lib/LiveUpdates";
@@ -180,7 +180,7 @@ function Root() {useInternational();
           headerTintColor: colors.text,
           headerShadowVisible: false,
           headerTitleStyle: { fontWeight: "700" },
-          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} hitSlop={12} style={{ paddingHorizontal: 6, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: colors.courtText, fontWeight: "700", fontSize: 17 }}>{tr("Luk")}</Text></Pressable>
+          headerRight: () => <Pressable accessibilityRole="button" accessibilityLabel={tr("Luk min profil")} hitSlop={12} style={{ paddingHorizontal: 6, justifyContent: "center", alignItems: "center" }} onPress={() => navigationRef.goBack()}><Text style={{ color: isLight ? colors.court : colors.courtText, fontWeight: "700", fontSize: 17 }}>{tr("Luk")}</Text></Pressable>
         }} />
 
     </RootStack.Navigator>);
@@ -212,4 +212,5 @@ export default function App() {useInternational();
 
 }
 
-function SessionStatusBar() {useInternational();return <StatusBar style="light" />;}
+// Dark icons on the light theme's white bar, light icons on the night theme.
+function SessionStatusBar() {useInternational();return <StatusBar style={isLight ? "dark" : "light"} />;}

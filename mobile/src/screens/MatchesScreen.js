@@ -70,7 +70,7 @@ export default function MatchesScreen({ navigation }) {
     setBusyId(id);
     try {
       const { threadId, otherName } = await fn();
-      navigation.navigate("BeskederTab", { screen: "Samtale", params: { id: threadId, name: otherName } });
+      navigation.navigate("BeskederTab", { screen: "Samtale", params: { id: threadId, name: otherName }, initial: false });
       load();
     } catch (e) {
       Alert.alert(tr("Something went wrong"), e.message);
