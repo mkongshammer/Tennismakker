@@ -20,7 +20,6 @@ const SLIDES = [
   { file: "courts", eyebrow: "Book a court", title: "Every open court\nnear you.", accent: "court" },
   { file: "club", eyebrow: "One tap", title: "Pick a time.\nPay in the app.", accent: "ball-low" },
   { file: "coaches", eyebrow: "Get better", title: "Book a coach for\nyour next step.", accent: "court" },
-  { file: "profile", eyebrow: "All in one place", title: "Your games,\nyour club, your app.", accent: "ball" },
 ];
 
 const asData = (f) => `data:image/png;base64,${fs.readFileSync(f).toString("base64")}`;
