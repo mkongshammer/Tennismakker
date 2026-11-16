@@ -15,7 +15,7 @@ export default function CoachesScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
-        <FlatList
+        <FlatList automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"
         contentContainerStyle={pageContent}
         data={loading ? [] : state.coaches.filter(coach => coach.country === 'US')}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}

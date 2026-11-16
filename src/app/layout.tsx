@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { SiteAssistant } from "../components/SiteAssistant";
 import { StoreBadges } from "../components/landing/StoreBadges";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import "./globals.css";
 import { InternationalProvider } from "../components/InternationalProvider";
 import { getCurrentUser } from "../lib/session";
@@ -80,6 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const [user, prefs, lang] = await Promise.all([getCurrentUser(), getPreferences(), getSiteLanguage()]);
   const unread = user ? await unreadCount(user.id) : 0;
   const requestHeaders = await headers();
+  const lightTheme = (await cookies()).get("rb_theme")?.value === "light";
 
   let needsSportsOnboarding = false;
   if (user && ["PLAYER", "COACH"].includes(user.role)) {
@@ -99,7 +100,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const onOwnDomain = !isOwnHost(requestHeaders.get("host") ?? "");
 
   return (
-    <html lang={lang === "es" ? "es-US" : "en-US"} className={lang === "es" ? "rb-es-pending" : undefined}>
+    <html lang={lang === "es" ? "es-US" : "en-US"} className={[lang === "es" ? "rb-es-pending" : "", lightTheme ? "light" : ""].filter(Boolean).join(" ") || undefined}>
       <head>
         {lang === "es" && <style dangerouslySetInnerHTML={{ __html: "html.rb-es-pending body{opacity:0}" }} />}
         {lang === "es" && <script dangerouslySetInnerHTML={{ __html: "setTimeout(function(){document.documentElement.classList.remove('rb-es-pending')},1500)" }} />}

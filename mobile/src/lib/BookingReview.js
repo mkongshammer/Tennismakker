@@ -11,7 +11,7 @@ export function BookingReview({ visible, title, details, priceKr, currency = "DK
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => {if (!busy) onClose();}}>
       <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.content}>
+        <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" contentContainerStyle={styles.content}>
           <View style={styles.handle} accessible={false} />
           <Text style={styles.eyebrow}>{tr("DIT N\xC6STE SPIL")}</Text>
           <Text accessibilityRole="header" style={styles.heading}>{tr("Tjek din tid")}</Text>

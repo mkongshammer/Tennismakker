@@ -161,7 +161,7 @@ export default function MatchesScreen({ navigation }) {
   );
 
   return (
-    <FlatList
+    <FlatList automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"
       style={{ backgroundColor: colors.mist }}
       contentContainerStyle={pageContent}
       data={players}

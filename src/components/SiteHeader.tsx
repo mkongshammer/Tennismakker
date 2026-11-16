@@ -15,6 +15,7 @@ import { isPublicPage } from "../lib/public-pages";
 import type { Locale } from "../lib/sports";
 import { Icon } from "./ui";
 import { LanguageForm } from "./LanguageForm";
+import { ThemeToggle } from "./ThemeToggle";
 
 type Props = {
   user: { name: string; role: string } | null;
@@ -117,6 +118,7 @@ export function SiteHeader({ user, locale, lang = "en" }: Props) {
               {lang === "es" ? "EN" : "ES"}
             </button>
           </LanguageForm>
+          <ThemeToggle />
           {user ? (
             <>
               <Link

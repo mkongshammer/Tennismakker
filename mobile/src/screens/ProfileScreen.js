@@ -134,7 +134,7 @@ export default function ProfileScreen({ navigation }) {useInternational();
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 20, paddingBottom: 36, width: "100%", maxWidth: 600, alignSelf: "center" }}
+    <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" style={{ backgroundColor: colors.mist }} contentContainerStyle={{ padding: 20, paddingBottom: 36, width: "100%", maxWidth: 600, alignSelf: "center" }}
     refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       <Card style={styles.profileCard}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 16 }}><Avatar name={user?.name} size={60} tone="dark" /><View style={{ flex: 1 }}><Text style={styles.profileEyebrow}>{tr("DIN RACKETBUDDY")}</Text><Text style={styles.name}>{user?.name}</Text></View></View>

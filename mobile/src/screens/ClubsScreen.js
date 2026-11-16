@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, TextInput, View } from "react-native";
 import { useInternational, money, tr } from "../lib/international";
 import { api, apiBaseUrl } from "../lib/api";
@@ -30,6 +30,8 @@ export default function ClubsScreen({ navigation }) {
   const { country } = useInternational();
   const [sport, setSport] = useSport();
   const [query, setQuery] = useState("");
+  const list = useRef(null);
+  const searchY = useRef(0);
   // The server resolves a city, state or ZIP and returns distance; the
   // request waits for a short pause in typing so every keystroke does not
   // hit the API.
@@ -44,7 +46,7 @@ export default function ClubsScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
-        <FlatList
+        <FlatList ref={list} automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"
         contentContainerStyle={pageContent}
         data={state.loading ? [] : clubs}
         ListHeaderComponent={<>
@@ -55,7 +57,7 @@ export default function ClubsScreen({ navigation }) {
             </View>
             <Text style={styles.label}>{tr("Hvad spiller du?")}</Text>
             <SportPicker value={sport} onChange={setSport} />
-            <View style={styles.search}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("City, state or ZIP")} placeholder={tr("City, state or ZIP")} autoComplete="postal-code" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
+            <View style={styles.search} onLayout={(e) => { searchY.current = e.nativeEvent.layout.y; }}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("City, state or ZIP")} placeholder={tr("City, state or ZIP")} autoComplete="postal-code" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)} style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
             <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}

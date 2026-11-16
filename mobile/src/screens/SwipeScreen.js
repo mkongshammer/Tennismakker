@@ -34,7 +34,7 @@ export default function SwipeScreen({ navigation }) {useInternational();
   if (state.error && !state.data) return <ErrorMessage message={state.error} onRetry={load} />;
 
   return (
-    <FlatList
+    <FlatList automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive"
       style={{ backgroundColor: colors.mist }}
       contentContainerStyle={pageContent}
       data={state.data.players}

@@ -59,7 +59,7 @@ export default function CoachScreen({ route }) {useInternational();
 
   return (
     <>
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
+    <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {notice && <Card><Text accessibilityLiveRegion="polite">{tr(notice)}</Text></Card>}

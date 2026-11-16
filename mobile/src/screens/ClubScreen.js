@@ -109,7 +109,7 @@ export default function ClubScreen({ route }) {useInternational();
 
   return (
     <>
-    <ScrollView style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
+    <ScrollView automaticallyAdjustKeyboardInsets keyboardShouldPersistTaps="handled" keyboardDismissMode="interactive" style={{ backgroundColor: colors.mist }} contentContainerStyle={pageContent}
       refreshControl={<RefreshControl refreshing={state.refreshing} onRefresh={load} />}>
       {state.error && <ErrorMessage message={state.error} onRetry={load} />}
       {notice && <Text style={{ padding: 14, marginBottom: 12, backgroundColor: colors.surface, lineHeight: 21 }} accessibilityLiveRegion="polite">{tr(notice)}</Text>}
