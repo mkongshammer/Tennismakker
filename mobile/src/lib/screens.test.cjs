@@ -20,6 +20,7 @@ function loadSource(relative, mocks) {
   new Function('require', 'module', 'exports', code)(name => {
     if (name in mocks) return name.endsWith("/ui")?{Button:"Button",...mocks[name]}:mocks[name];
     if (name.endsWith('/international')) return {tr:x=>x,useInternational:()=>({country:'DK',locale:'da',t:x=>x}),getInternational:()=>({country:'US',locale:'en-US'}),money:(n,c='DKK')=>`${n} ${c}`};
+    if (name.endsWith('/PlaceField')) return {PlaceField:'PlaceField',shouldSuggest:()=>false};
     if (name.endsWith('/PreferencesPicker')) return {PreferencesPicker:'PreferencesPicker'};
     if (name.endsWith('/ProfilePreferences')) return {ProfilePreferences:'ProfilePreferences'};
     if (name.endsWith('/phrase-translation.mjs')) return phrases;
@@ -248,7 +249,7 @@ test('club discovery searches the server by place, shows distance, and captures 
     assert.deepEqual(navigations,[['Klub',{slug:'austin',name:'Austin Tennis Center'}]]);
     function ViewList() {return React.createElement(React.Fragment,null, list().props.ListHeaderComponent);}
     let header; await act(async()=>{header=create(React.createElement(ViewList));});
-    const search=()=>header.root.findByType('TextInput');
+    const search=()=>header.root.findByType('PlaceField');
     await act(async()=>{search().props.onChangeText('Denver');});
     await act(async()=>{await new Promise(r=>setTimeout(r,450));});
     assert.deepEqual(fetchers.at(-1)(),{sport:'TENNIS',country:'DK',q:'Denver'},'a pause in typing sends the place to the API');
@@ -349,4 +350,17 @@ test('opening a chat from a player keeps the conversation list underneath, so th
   assert.equal(navigations[0][1].initial, false, 'the thread list must stay under the conversation');
   assert.equal(ago(new Date(Date.now() - 120000).toISOString(), 'en-US'), '2 minutes ago');
   await act(() => tree.unmount());
+});
+
+test('the city field only asks for suggestions once there is something to complete', () => {
+  const { shouldSuggest } = loadSource('./PlaceField.js', {
+    'react': React,
+    'react-native': { Keyboard: { dismiss() {} }, Pressable: 'Pressable', StyleSheet: { create: x => x }, Text: 'Text', TextInput: 'TextInput', View: 'View' },
+    './api': { api: { places: async () => ({ places: [] }) } },
+    './theme': { colors: {} },
+  });
+  assert.equal(shouldSuggest('Bo', ''), true);
+  assert.equal(shouldSuggest('B', ''), false, 'one letter would match half the country');
+  assert.equal(shouldSuggest('  ', ''), false);
+  assert.equal(shouldSuggest('Boston, MA', 'Boston, MA'), false, 'a picked city must not reopen the list');
 });

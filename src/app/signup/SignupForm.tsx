@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../components/ui/PlaceInput";
 import {UiText} from "../../components/InternationalProvider";
 import { Select } from "../../components/ui/Select";
 import { usTimeZoneOptions } from "../../lib/international";
@@ -97,7 +98,7 @@ export function SignupForm({
             <input className="input" id="streetAddress" name="streetAddress" autoComplete="street-address" maxLength={150} placeholder="123 Main St"/>
             <p className="mt-1 text-xs text-slate">Used only to help your device autofill the form. Your street address is not stored or shown on your profile.</p>
           </div>
-          <div><label className="label" htmlFor="area">City</label><input className="input" id="area" name="area" autoComplete="address-level2" required minLength={2} maxLength={100} placeholder="Boston"/></div>
+          <div><label className="label" htmlFor="area">City</label><PlaceInput id="area" name="area" required placeholder="Boston"/></div>
           <div><label className="label" htmlFor="state">State</label><Select className="input" id="state" name="state" autoComplete="address-level1" required value={usState} onChange={e=>{setUsState(e.target.value);if(e.target.value)setTimeZone(usStateTimeZone(e.target.value));}}><option value="" disabled>Select state</option>{US_STATES.map(s=><option key={s.code} value={s.code}>{s.name} ({s.code})</option>)}</Select></div>
           <div><label className="label" htmlFor="postalCode">ZIP code</label><input className="input" id="postalCode" name="postalCode" autoComplete="postal-code" inputMode="numeric" required maxLength={10} pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02108"/></div>
           <div className="self-end pb-3 text-xs text-slate">Your public location is limited to city and state. ZIP and street address stay private.</div>

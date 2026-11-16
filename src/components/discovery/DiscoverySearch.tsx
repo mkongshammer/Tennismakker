@@ -8,6 +8,7 @@ import { SPORTS, sportColor, sportLabel, type Sport } from "../../lib/sports";
 import { discoveryHref, discoveryDayOptions, DEFAULT_RADIUS_MILES, type DiscoveryFilters } from "../../lib/discovery-filters";
 import { Icon } from "../ui";
 import { PillMenu } from "../ui/PillMenu";
+import { usePlaceSuggest } from "../ui/PlaceInput";
 
 const PRICE_STEPS = [25, 40, 60, 100] as const;
 
@@ -23,6 +24,8 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
   const [q, setQ] = useState(filters.q);
   const [sport, setSport] = useState<Sport>(filters.sport);
 
+  const suggest = usePlaceSuggest(q, setQ);
+
   // Any change to the search resets paging; page 3 of a different query is meaningless.
   const go = (next: Partial<DiscoveryFilters>) => start(() => router.push(discoveryHref({ ...filters, q, sport, page: 1, ...next }, action)));
 
@@ -37,15 +40,15 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
       }}
     >
       <div className="flex gap-2">
-        <label className="relative flex min-h-14 min-w-0 flex-1 items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
+        <div ref={suggest.root} className="relative min-w-0 flex-1">
+        <label className="relative flex min-h-14 w-full items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
           <span className="sr-only">Where do you want to play?</span>
           <Icon name="pin" className="mr-3 shrink-0 text-slate" />
           <input
+            {...suggest.inputProps}
             name="q"
             value={q}
-            onChange={(e) => setQ(e.target.value)}
             placeholder={placeholder}
-            autoComplete="postal-code"
             enterKeyHint="search"
             maxLength={120}
             className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:font-medium placeholder:text-slate-light"
@@ -56,6 +59,8 @@ export function DiscoverySearch({ filters, compact = false, action = "/courts", 
             </button>
           )}
         </label>
+        {suggest.dropdown}
+        </div>
         <button type="submit" className="btn-court min-h-14 w-14 shrink-0 rounded-2xl px-0 sm:w-auto sm:min-w-36 sm:px-5" aria-busy={pending} aria-label={pending ? "Searching" : "Search"}>
           <Icon name="search" />
           <span className="hidden sm:inline">{pending ? "Searching…" : "Search"}</span>

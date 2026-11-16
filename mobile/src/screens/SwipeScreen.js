@@ -12,6 +12,7 @@ import { api } from "../lib/api";
 import { Badge, Button, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent, LEVELS, SPORT_LABELS, SPORTS, MATCH_TYPES, sportColor } from "../lib/theme";
 import { PlayerAvatar, CardBand, firstName } from "../lib/PlayerAvatar";
+import { PlaceField } from "../lib/PlaceField";
 
 /** Pure: "2 minutes ago" in the player's own language. */
 export function ago(iso, locale = "en-US", now = Date.now()) {
@@ -111,29 +112,16 @@ export default function SwipeScreen({ navigation }) {
               </Pressable>
             ))}
           </ScrollView>
-          <View style={styles.search} onLayout={(e) => { searchY.current = e.nativeEvent.layout.y; }}>
-            <View style={styles.searchField}>
-            <TextInput
-              accessibilityLabel={tr("City or state")}
-              placeholder={tr("City or state")}
-              placeholderTextColor={colors.slateLight}
-              value={region}
-              onChangeText={setRegion}
-              onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)}
-              onSubmitEditing={() => setQuery(region.trim())}
-              returnKeyType="search"
-              autoCorrect={false}
-              style={styles.searchInput} />
-            {region.length > 0 ? (
-              <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd søgning")} onPress={() => { setRegion(""); setQuery(""); }} style={styles.clear}>
-                <Text style={{ color: colors.slate, fontSize: 20 }}>×</Text>
-              </Pressable>
-            ) : null}
-            </View>
-            <Pressable accessibilityRole="button" accessibilityLabel={tr("Search")} onPress={() => setQuery(region.trim())} style={styles.searchGo}>
-              <Text style={styles.searchGoText}>{tr("Search")}</Text>
-            </Pressable>
-          </View>
+          <PlaceField
+            onLayoutY={(y) => { searchY.current = y; }}
+            accessibilityLabel={tr("City or state")}
+            placeholder={tr("City or state")}
+            value={region}
+            onChangeText={setRegion}
+            onPick={(label) => setQuery(label)}
+            onSubmitEditing={() => setQuery(region.trim())}
+            onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)}
+            right={<Pressable accessibilityRole="button" accessibilityLabel={tr("Search")} onPress={() => setQuery(region.trim())} style={styles.searchGo}><Text style={styles.searchGoText}>{tr("Search")}</Text></Pressable>} />
 
           {/* The newest posts */}
           {posts.length > 0 ? (

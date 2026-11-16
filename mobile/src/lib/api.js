@@ -175,6 +175,7 @@ export const api = {
   matches:(params={})=>{const country=getInternational().country;const q=new URLSearchParams({land:country});if(params.area)q.set("omraade",params.area);if(params.level)q.set("niveau",String(params.level));const qs=q.toString();return request(`/matches${qs?`?${qs}`:""}`,{country});},
   createMatch:payload=>request("/matches",{method:"POST",body:payload}),
   acceptMatch:id=>request(`/matches/${id}/accept`,{method:"POST"}),
+  places:q=>request(`/places?q=${encodeURIComponent(q)}`),
   players:(params={})=>{const country=getInternational().country;const q=new URLSearchParams({land:country});if(params.area)q.set("omraade",params.area);if(params.sport)q.set("sport",params.sport);const qs=q.toString();return request(`/players${qs?`?${qs}`:""}`,{country});},
   contactPlayer:id=>request(`/players/${id}/contact`,{method:"POST"}),
   swipeQueue:()=>request("/swipe"),

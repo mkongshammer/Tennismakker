@@ -1,3 +1,4 @@
+import { PlaceInput } from "../../components/ui/PlaceInput";
 import { notErased } from "../../lib/erasure";
 
 import {UiText} from "../../components/InternationalProvider";
@@ -172,7 +173,7 @@ export default async function SpillerePage({ searchParams }: Props) {
         <form method="get" className="flex min-w-0 flex-1 items-center gap-2 sm:max-w-xs sm:flex-none sm:ml-auto">
           {selectedSport && <input type="hidden" name="sport" value={selectedSport} />}
           <label className="sr-only" htmlFor="players-region">City or state</label>
-          <input id="players-region" name="region" defaultValue={selectedRegion} placeholder="City or state" maxLength={100} className="input h-10 min-w-0 flex-1 rounded-full px-4 py-0 text-sm" />
+          <PlaceInput id="players-region" name="region" defaultValue={selectedRegion} placeholder="City or state" className="input h-10 min-w-0 flex-1 rounded-full px-4 py-0 text-sm" />
           <button type="submit" className="btn-ghost btn-sm shrink-0" aria-label="Search"><Icon name="search" size={18} /></button>
           {selectedRegion && <Link href={pageHref(1, selectedSport, "")} className="btn-ghost btn-sm shrink-0" aria-label="Clear city"><Icon name="x" size={18} /></Link>}
         </form>

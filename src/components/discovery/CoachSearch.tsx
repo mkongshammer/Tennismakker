@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { SPORTS, sportColor, sportLabel, type Sport } from "../../lib/sports";
 import { Icon } from "../ui";
+import { usePlaceSuggest } from "../ui/PlaceInput";
 
 export function CoachSearch({ q: initial, sport: initialSport }: { q: string; sport: Sport }) {
   const router = useRouter();
@@ -20,6 +21,8 @@ export function CoachSearch({ q: initial, sport: initialSport }: { q: string; sp
       router.push(`/coaches${params.toString() ? `?${params}` : ""}`);
     });
 
+  const suggest = usePlaceSuggest(q, setQ);
+
   return (
     <form
       role="search"
@@ -31,16 +34,19 @@ export function CoachSearch({ q: initial, sport: initialSport }: { q: string; sp
       }}
     >
       <div className="flex flex-col gap-2 sm:flex-row">
-        <label className="relative flex min-h-14 flex-1 items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
+        <div ref={suggest.root} className="relative min-w-0 flex-1">
+        <label className="relative flex min-h-14 w-full items-center rounded-2xl bg-mist px-4 focus-within:shadow-ring">
           <span className="sr-only">Where do you want lessons?</span>
           <Icon name="pin" className="mr-3 shrink-0 text-slate" />
-          <input name="q" value={q} onChange={(e) => setQ(e.target.value)} placeholder="City, state or ZIP" maxLength={120} enterKeyHint="search" className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:font-medium placeholder:text-slate-light" />
+          <input {...suggest.inputProps} name="q" value={q} placeholder="City, state or ZIP" maxLength={120} enterKeyHint="search" className="min-w-0 flex-1 bg-transparent text-base font-semibold text-ink outline-none placeholder:font-medium placeholder:text-slate-light" />
           {q && (
             <button type="button" aria-label="Clear location" onClick={() => setQ("")} className="ml-2 flex h-8 w-8 items-center justify-center rounded-full text-slate hover:bg-chalk">
               <Icon name="x" size={16} />
             </button>
           )}
         </label>
+        {suggest.dropdown}
+        </div>
         <button type="submit" className="btn-court min-h-14 rounded-2xl sm:min-w-36" aria-busy={pending}>
           <Icon name="search" /> {pending ? "Searching…" : "Search"}
         </button>

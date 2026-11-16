@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../components/ui/PlaceInput";
 // Club self-service signup.
 //
 // One form, four steps, one submit. Every input stays mounted (hidden
@@ -168,7 +169,7 @@ export function SignupForm({ priceBook, locale = "en-US", initialName = "", init
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="sm:col-span-2"><span className="label">Club name</span><input className="input" name="name" autoComplete="organization" required maxLength={150} value={name} onChange={(e) => setName(e.target.value)} placeholder="Brookline Racquet Club" /></label>
             <label className="sm:col-span-2"><span className="label">Street address</span><input className="input" name="address" autoComplete="street-address" enterKeyHint="next" required maxLength={150} placeholder="123 Main St" defaultValue={prepared?.street ?? ""} /></label>
-            <label><span className="label">City</span><input className="input" name="city" autoComplete="address-level2" required maxLength={100} placeholder="Boston" value={city} onChange={(e) => setCity(e.target.value)} /></label>
+            <label><span className="label">City</span><PlaceInput name="city" required placeholder="Boston" value={city} onValueChange={setCity} onPick={({ city: c, state: st }) => { setCity(c); if (st) setUsState(st); }} /></label>
             <label><span className="label">State</span>
               <Select className="input" name="state" autoComplete="address-level1" required value={usState} onChange={(e) => { setUsState(e.target.value); if (e.target.value) setTimeZone(usStateTimeZone(e.target.value)); }}>
                 <option value="" disabled>Select state</option>

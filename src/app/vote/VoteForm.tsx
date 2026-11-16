@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../../components/ui/PlaceInput";
 // Pick your club (from our list, with search) or type it in, add your email, vote.
 import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
@@ -80,7 +81,7 @@ export function VoteForm({ email = "", initialQuery = "" }: { email?: string; in
       {manual && (
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="sm:col-span-2"><span className="label">Club name</span><input className="input" name="name" required maxLength={120} defaultValue={q} /></label>
-          <label><span className="label">City</span><input className="input" name="city" required maxLength={80} /></label>
+          <label><span className="label">City</span><PlaceInput name="city" required placeholder="e.g. Austin, TX" /></label>
           <label><span className="label">State</span>
             <Select className="input" name="state" required defaultValue="">
               <option value="" disabled>Choose</option>

@@ -4,6 +4,7 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { useAuth } from "../lib/auth";
 import { api } from "../lib/api";
 import { AppHeading, Button } from "../lib/ui";
+import { PlaceField } from "../lib/PlaceField";
 import { colors, pageContent, LEVELS, MATCH_TYPES } from "../lib/theme";
 import { DK_REGIONS } from "../lib/regions";
 
@@ -105,7 +106,7 @@ export default function NewMatchScreen({ navigation }) {useInternational();
             <Text style={[styles.chipText, area === region && styles.chipTextActive]}>{tr(region)}</Text>
           </Pressable>
           )}
-      </View> : <TextInput accessibilityLabel={tr("By / omr\xE5de")} style={styles.input} value={area} onChangeText={setArea} editable={!busy} maxLength={100} />}
+      </View> : <PlaceField accessibilityLabel={tr("By / omr\xE5de")} placeholder={tr("City, state or ZIP")} inputStyle={styles.input} value={area} onChangeText={setArea} returnKeyType="done" />}
 
       {error && <Text accessibilityRole="alert" style={styles.error}>{tr(error)}</Text>}
       <View style={{ marginTop: 20 }}>

@@ -1,3 +1,4 @@
+import { PlaceInput } from "../../components/ui/PlaceInput";
 import {phrase} from "../../lib/phrases";
 import { Select } from "../../components/ui/Select";
 
@@ -105,7 +106,7 @@ export default async function MakkerePage({
             {DK_REGIONS.map((region) => (
               <option key={region} value={region}>{region}</option>
             ))}
-          </Select>:<input className="input" id="region" name="region" defaultValue={selectedRegion} maxLength={100}/>}
+          </Select>:<PlaceInput className="input" id="region" name="region" defaultValue={selectedRegion} placeholder="City or state"/>}
         </div>
         <div>
           <label className="label" htmlFor="niveau"><UiText text="Niveau"/></label>

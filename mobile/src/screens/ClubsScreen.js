@@ -3,6 +3,7 @@ import { FlatList, Image, Linking, Pressable, RefreshControl, StyleSheet, Text, 
 import { useInternational, money, tr } from "../lib/international";
 import { api, apiBaseUrl } from "../lib/api";
 import { AppHeading, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
+import { PlaceField } from "../lib/PlaceField";
 import { colors, pageContent, SPORT_LABELS, sportColor } from "../lib/theme";
 import { SportPicker, useSport } from "../lib/SportPicker";
 import { CourtGraphic } from "../lib/CourtGraphic";
@@ -57,7 +58,16 @@ export default function ClubsScreen({ navigation }) {
             </View>
             <Text style={styles.label}>{tr("Hvad spiller du?")}</Text>
             <SportPicker value={sport} onChange={setSport} />
-            <View style={styles.search} onLayout={(e) => { searchY.current = e.nativeEvent.layout.y; }}><Text accessible={false} style={styles.searchIcon}>⌕</Text><TextInput accessibilityLabel={tr("City, state or ZIP")} placeholder={tr("City, state or ZIP")} autoComplete="postal-code" placeholderTextColor={colors.slateLight} value={query} onChangeText={setQuery} autoCorrect={false} returnKeyType="search" onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)} style={styles.searchInput} />{!!query && <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable>}</View>
+            <PlaceField
+              style={{ marginBottom: 2 }}
+              onLayoutY={(y) => { searchY.current = y; }}
+              inputStyle={styles.searchInput}
+              accessibilityLabel={tr("City, state or ZIP")}
+              placeholder={tr("City, state or ZIP")}
+              value={query}
+              onChangeText={setQuery}
+              onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)}
+              right={query ? <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable> : null} />
             <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}
@@ -133,7 +143,7 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, color: colors.text, fontWeight: "700", marginBottom: 12 },
   search: { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 14, minHeight: 54 },
   searchIcon: { color: colors.slate, fontSize: 26, marginRight: 10 },
-  searchInput: { flex: 1, minWidth: 0, color: colors.text, fontSize: 15, paddingVertical: 16 },
+  searchInput: { flex: 1, minWidth: 0, minHeight: 54, borderRadius: 16, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, paddingHorizontal: 14, color: colors.text, fontSize: 15 },
   clear: { minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center" },
   resultRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 24, marginBottom: 14 },
   resultTitle: { fontSize: 19, fontWeight: "800", color: colors.text, flexShrink: 1 },

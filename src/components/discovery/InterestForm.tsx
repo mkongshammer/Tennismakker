@@ -1,4 +1,5 @@
 "use client";
+import { PlaceInput } from "../ui/PlaceInput";
 
 import { useFormState } from "react-dom";
 import { registerMarketInterest, type MarketInterestState } from "../../lib/market-interest-actions";
@@ -24,7 +25,7 @@ export function InterestForm({ q, sport, kind = "COURTS", label }: { q: string; 
         <label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label>
       </div>
       <label className="label" htmlFor="interest-q">Where should we look?</label>
-      <input id="interest-q" name="q" defaultValue={q} placeholder="City, state or ZIP" className="input" maxLength={120} required />
+      <PlaceInput id="interest-q" name="q" defaultValue={q} placeholder="City, state or ZIP" className="input" required />
       <label className="label mt-3" htmlFor="interest-email">Email me when {kind === "COURTS" ? "courts" : "coaches"} open up{label ? ` near ${label}` : ""}</label>
       <div className="flex flex-col gap-2 sm:flex-row">
         <input id="interest-email" name="email" type="email" autoComplete="email" placeholder="you@example.com" className="input" required />
