@@ -54,6 +54,8 @@ async function listGET(req: Request) {
       matchType: r.matchType,
       createdAt: r.createdAt.toISOString(),
       requesterName: r.requester?.name ?? "",
+      requesterId: r.requesterId ?? null,
+      sport: r.sport ?? null,
       isMine: me ? r.requesterId === me.id : false,
     })),
   });
