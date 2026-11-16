@@ -40,6 +40,7 @@ export default function ClubsScreen({ navigation }) {
   const needle = search;
   const clubs = state.clubs.filter((c) => c.country === 'US');
   const place = data?.place ?? null;
+  const places = data?.places ?? [];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
@@ -58,6 +59,17 @@ export default function ClubsScreen({ navigation }) {
             <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}
+        ListFooterComponent={!state.loading && places.length > 0 ? <View style={{ marginTop: clubs.length ? 28 : 16 }}>
+            <Text style={styles.resultTitle}>{clubs.length ? tr("More places to play") : tr("Places to play")}{place ? ` · ${place.label}` : ""}</Text>
+            <Text style={[styles.meta, { marginBottom: 12 }]}>{tr("These clubs aren’t bookable on RacketBuddy yet. Open one to see its website or to ask for online booking.")}</Text>
+            {places.map((p) => <Pressable key={p.slug} accessibilityRole="link" accessibilityLabel={p.name} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, marginBottom: 10 })} onPress={() => Linking.openURL(p.url).catch(() => {})}>
+                <Card style={{ padding: 16 }}>
+                  <Text style={styles.placeName}>{p.name}</Text>
+                  <Text style={styles.meta}>{p.city}, {p.state}{p.distanceMiles != null && p.distanceMiles >= 1 ? ` · ${distanceLabel(p.distanceMiles)}` : ""} · {p.sports.map((sp) => tr(SPORT_LABELS[sp] ?? sp)).join(", ")}</Text>
+                  <View style={styles.placeFoot}><Text style={styles.newBadge}>{p.votes > 0 ? `${p.votes} ${p.votes === 1 ? tr("player wants to book") : tr("players want to book")}` : tr("Not bookable here yet")}</Text><Text style={styles.actionText}>{tr("Ask for booking")} ↗</Text></View>
+                </Card>
+              </Pressable>)}
+          </View> : null}
         keyExtractor={(c) => c.id}
         refreshControl={
         <RefreshControl
@@ -66,7 +78,7 @@ export default function ClubsScreen({ navigation }) {
 
         }
         ListEmptyComponent={
-        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{tr("We only list clubs that are live and bookable. Leave your email and we’ll tell you when one opens near you.")}</Empty><NotifyMe sport={sport} q={search} /><Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${apiBaseUrl()}/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`)} style={{ marginTop: 18, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(59,132,232,.4)", backgroundColor: colors.surface }}><Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{tr("Vote your club onto RacketBuddy")}</Text><Text style={{ marginTop: 4, color: colors.slate }}>{tr("Tell us where you play. When enough players ask, we let the club know.")}</Text></Pressable></View>
+        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={places.length ? tr("No club here takes bookings yet") : place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{places.length ? tr("The places below aren’t bookable on RacketBuddy yet. Leave your email and we’ll tell you when the first one is.") : tr("Leave your email and we’ll tell you when a club opens near you.")}</Empty><NotifyMe sport={sport} q={search} /><Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${apiBaseUrl()}/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`)} style={{ marginTop: 18, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(59,132,232,.4)", backgroundColor: colors.surface }}><Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{tr("Vote your club onto RacketBuddy")}</Text><Text style={{ marginTop: 4, color: colors.slate }}>{tr("Tell us where you play. When enough players ask, we let the club know.")}</Text></Pressable></View>
         }
         renderItem={({ item }) =>
         <Pressable
@@ -127,5 +139,7 @@ const styles = StyleSheet.create({
   cardFoot: { flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderColor: colors.border },
   cardAction: { flexDirection: "row", alignItems: "center", gap: 10 },
   actionText: { color: colors.courtText, fontWeight: "700", fontSize: 14 },
-  arrow: { color: colors.courtText, fontSize: 22 }
+  arrow: { color: colors.courtText, fontSize: 22 },
+  placeName: { fontWeight: "800", fontSize: 16, lineHeight: 21, color: colors.text },
+  placeFoot: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 8, marginTop: 10 }
 });

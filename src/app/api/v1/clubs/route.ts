@@ -1,5 +1,6 @@
 import { json, preflight } from "../../../../lib/api/helpers";
 import { discoverClubs, parseDiscoveryFilters } from "../../../../lib/discovery";
+import { placesNear } from "../../../../lib/places";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -18,6 +19,10 @@ export async function GET(req: Request) {
   const query = Object.fromEntries(url.searchParams.entries());
   const filters = parseDiscoveryFilters(query);
   const result = await discoverClubs(filters);
+  // Clubs we know about that can't be booked here yet (first page, no availability filters).
+  const places = result.place && filters.page === 1 && !filters.date && !filters.indoor && filters.maxPrice == null
+    ? await placesNear(result.place, filters.sport, filters.radiusMiles, 20).catch(() => ({ listings: [], total: 0 }))
+    : { listings: [], total: 0 };
 
   return json({
     place: result.place ? { label: result.place.label, latitude: result.place.latitude, longitude: result.place.longitude, kind: result.place.kind, state: result.place.state, alternatives: result.place.alternatives ?? [] } : null,
@@ -27,6 +32,8 @@ export async function GET(req: Request) {
     page: result.page,
     pageSize: result.pageSize,
     hasMore: result.page * result.pageSize < result.total,
+    placesTotal: places.total,
+    places: places.listings.map((p) => ({ slug: p.slug, name: p.name, city: p.city, state: p.state, sports: p.sports, distanceMiles: p.distanceMiles, votes: p.votes, url: `${origin}/places/${p.slug}` })),
     clubs: result.clubs.map((c) => ({
       id: c.id,
       slug: c.slug,
