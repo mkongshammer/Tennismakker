@@ -13,11 +13,12 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "./src/lib/auth";
 import { AppLockGate, AppLockProvider } from "./src/lib/AppLock";
 import { Loading, ErrorMessage } from "./src/lib/ui";
-import { colors } from "./src/lib/theme";
+import { colors, isLight } from "./src/lib/theme";
 import { navigationRef } from "./src/lib/navigationRef";
 import { ProfileButton } from "./src/lib/ProfileButton";
 import { LiveUpdates } from "./src/lib/LiveUpdates";
 import { AppHeader } from "./src/lib/AppHeader";
+import WebScreen from "./src/screens/WebScreen";
 import { BootOverlay, SPLASH_BACKGROUND } from "./src/lib/Boot";
 import { IconCourt, IconCoach, IconPlayers, IconMessages } from "./src/lib/icons";
 
@@ -49,6 +50,7 @@ const screenOptions = {
 function ClubsStack() {useInternational();
   return (
     <ClubStack.Navigator screenOptions={screenOptions}>
+      <ClubStack.Screen name="Web" component={WebScreen} options={({ route }) => ({ title: route.params?.title ?? "RacketBuddy" })} />
       <ClubStack.Screen name="Klubber" component={ClubsScreen} options={{ title: tr("Book bane") }} />
       <ClubStack.Screen
         name="Klub"
@@ -62,6 +64,7 @@ function ClubsStack() {useInternational();
 function CoachesStack() {useInternational();
   return (
     <CoachStack.Navigator screenOptions={screenOptions}>
+      <CoachStack.Screen name="Web" component={WebScreen} options={({ route }) => ({ title: route.params?.title ?? "RacketBuddy" })} />
       <CoachStack.Screen name="Traenere" component={CoachesScreen} options={{ title: tr("Find tr\xE6ner") }} />
       <CoachStack.Screen
         name="Traener"
@@ -75,6 +78,7 @@ function CoachesStack() {useInternational();
 function MatchesStack() {useInternational();
   return (
     <MatchStack.Navigator screenOptions={screenOptions}>
+      <MatchStack.Screen name="Web" component={WebScreen} options={({ route }) => ({ title: route.params?.title ?? "RacketBuddy" })} />
       <MatchStack.Screen name="Spillere" component={SwipeScreen} options={{ title: tr("Find medspiller") }} />
       <MatchStack.Screen name="Makkere" component={MatchesScreen} options={{ title: tr("Opslag") }} />
       <MatchStack.Screen name="NytOpslag" component={NewMatchScreen} options={{ title: tr("Opret opslag") }} />
@@ -85,6 +89,7 @@ function MatchesStack() {useInternational();
 function MessagesStack() {useInternational();
   return (
     <ChatStack.Navigator screenOptions={screenOptions}>
+      <ChatStack.Screen name="Web" component={WebScreen} options={({ route }) => ({ title: route.params?.title ?? "RacketBuddy" })} />
       <ChatStack.Screen name="Beskeder" component={ThreadsScreen} options={{ title: tr("Beskeder") }} />
       <ChatStack.Screen
         name="Samtale"
@@ -170,6 +175,7 @@ function Root() {useInternational();
     <RootStack.Navigator initialRouteName="MainTabs">
       <RootStack.Screen name="WalletPortal" component={AppPortal} initialParams={{ destination: "/wallet" }} options={{ title: tr("Min klubwallet") }} />
       <RootStack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
+      <RootStack.Screen name="Web" component={WebScreen} options={({ route }) => ({ title: route.params?.title ?? "RacketBuddy" })} />
       <RootStack.Screen
         name="Profil"
         component={ProfileScreen}
@@ -212,4 +218,4 @@ export default function App() {useInternational();
 
 }
 
-function SessionStatusBar() {useInternational();return <StatusBar style="light" />;}
+function SessionStatusBar() {useInternational();return <StatusBar style={isLight ? "dark" : "light"} />;}

@@ -64,7 +64,7 @@ export default function ClubsScreen({ navigation }) {
         ListFooterComponent={!state.loading && places.length > 0 ? <View style={{ marginTop: clubs.length ? 28 : 16 }}>
             <Text style={styles.resultTitle}>{clubs.length ? tr("More places to play") : tr("Places to play")}{place ? ` · ${place.label}` : ""}</Text>
             <Text style={[styles.meta, { marginBottom: 12 }]}>{tr("These clubs aren’t bookable on RacketBuddy yet. Open one to see its website or to ask for online booking.")}</Text>
-            {places.map((p) => <Pressable key={p.slug} accessibilityRole="link" accessibilityLabel={p.name} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, marginBottom: 10 })} onPress={() => Linking.openURL(p.url).catch(() => {})}>
+            {places.map((p) => <Pressable key={p.slug} accessibilityRole="link" accessibilityLabel={p.name} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, marginBottom: 10 })} onPress={() => navigation.navigate("Web", { url: p.url, title: p.name })}>
                 <Card style={{ padding: 16 }}>
                   <Text style={styles.placeName}>{p.name}</Text>
                   <Text style={styles.meta}>{p.city}, {p.state}{p.distanceMiles != null && p.distanceMiles >= 1 ? ` · ${distanceLabel(p.distanceMiles)}` : ""} · {p.sports.map((sp) => tr(SPORT_LABELS[sp] ?? sp)).join(", ")}</Text>

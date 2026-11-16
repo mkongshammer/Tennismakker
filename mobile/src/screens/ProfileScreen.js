@@ -9,7 +9,7 @@ import { useAuth } from "../lib/auth";
 import { useAppLock } from "../lib/AppLock";
 import { PlayAgain } from "../lib/PlayAgain";
 import { Avatar, Badge, Button, Card, ErrorMessage, Loading } from "../lib/ui";
-import { colors, LEVELS } from "../lib/theme";
+import { colors, LEVELS, isLight, setTheme } from "../lib/theme";
 import { dateMedium, dateTimeLong } from "../lib/dates";
 
 import { NotificationSettings } from "../lib/NotificationSettings";
@@ -244,6 +244,12 @@ export default function ProfileScreen({ navigation }) {useInternational();
       {user.clubId && <Button title={tr("Min klubwallet")} onPress={() => navigation.navigate("WalletPortal", { destination: "/wallet" })} />}
       <ProfilePreferences />
       <NotificationSettings />
+      <Text style={styles.section}>{tr("Appearance")}</Text>
+      <Card>
+        <Text style={{ color: colors.text, fontWeight: "800", fontSize: 16 }}>{isLight ? tr("Light theme") : tr("Night theme")}</Text>
+        <Text style={{ color: colors.slate, lineHeight: 21, marginTop: 6, marginBottom: 14 }}>{tr("Switching restarts the app for a second so every screen changes.")}</Text>
+        <Button title={isLight ? tr("Switch to night theme") : tr("Switch to light theme")} variant="quiet" onPress={() => setTheme(isLight ? "night" : "light")} />
+      </Card>
       {Platform.OS !== "web" && <>
         <Text style={styles.section}>{tr("Sikkerhed")}</Text>
         <Card>
@@ -260,10 +266,16 @@ export default function ProfileScreen({ navigation }) {useInternational();
             onPress={toggleAppLock} />
         </Card>
       </>}
+      <Text style={styles.section}>{tr("More on RacketBuddy")}</Text>
+      <Card>
+        {[["/vote", tr("Vote your club onto RacketBuddy")], ["/courts", tr("Places to play near you")], ["/pricing", tr("Pricing for clubs")], ["/list-your-club", tr("List your club")]].map(([path, title]) => (
+          <Text key={path} accessibilityRole="link" style={styles.link} onPress={() => navigation.navigate("Web", { url: path, title })}>{title}</Text>
+        ))}
+      </Card>
       <Text style={styles.section}>{tr("Konto og vilk\xE5r")}</Text>
       <Card>
-        <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(PRIVACY_URL)}>{tr("Privatlivspolitik")}</Text>
-        <Text accessibilityRole="link" style={styles.link} onPress={() => openLink(TERMS_URL)}>{tr("Vilk\xE5r")}</Text>
+        <Text accessibilityRole="link" style={styles.link} onPress={() => navigation.navigate("Web", { url: "/privacy", title: tr("Privatlivspolitik") })}>{tr("Privatlivspolitik")}</Text>
+        <Text accessibilityRole="link" style={styles.link} onPress={() => navigation.navigate("Web", { url: "/terms", title: tr("Vilk\xE5r") })}>{tr("Vilk\xE5r")}</Text>
       </Card>
 
       <View style={{ gap: 4, marginTop: 8 }}>

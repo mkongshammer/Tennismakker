@@ -321,3 +321,24 @@ test('country onboarding never asks: the app serves the US marketplace only',asy
  assert.equal(calls,0,'no geolocation request is made');assert.equal(tree.toJSON(),null,'nothing is rendered');
  await act(()=>tree.unmount());
 });
+
+test("in-app pages carry the app's theme, and only our own links stay in the app", () => {
+  const { appUrl, staysInApp } = loadSource('../screens/WebScreen.js', {
+    'react': React,
+    'react-native': { Linking: { openURL: () => Promise.resolve() }, StyleSheet: { create: x => x, absoluteFillObject: {} }, View: 'View' },
+    'react-native-webview': { WebView: 'WebView' },
+    '../lib/api': { checkoutUrl: p => new URL(p, 'https://racketbuddy.app').href },
+    '../lib/theme': { colors: { mist: '#000' }, themeName: 'night' },
+    '../lib/ui': { Loading: 'Loading', ErrorMessage: 'ErrorMessage' },
+  });
+  const light = appUrl("/places/x-austin-tx-12345", "light");
+  assert.ok(light.startsWith("https://"), light);
+  assert.match(light, /rb_theme=light/);
+  assert.match(appUrl("/vote", "night"), /rb_theme=night/);
+  assert.match(appUrl("/vote", "whatever"), /rb_theme=night/); // anything but light means night
+  const base = appUrl("/courts", "night");
+  assert.equal(staysInApp("https://racketbuddy.app/clubs/abc", base), true);
+  assert.equal(staysInApp("https://example.com/", base), false);
+  assert.equal(staysInApp("mailto:hello@racketbuddy.app", base), false);
+  assert.equal(staysInApp("not a url", base), false);
+});

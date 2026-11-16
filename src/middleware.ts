@@ -64,12 +64,29 @@ function canonicalRedirect(req: NextRequest, host: string) {
   return NextResponse.redirect(target, 308);
 }
 
+/**
+ * The app opens our pages in a WebView and asks for its own theme with
+ * ?rb_theme=light|night. We remember the choice in the same cookie the
+ * website's own switch uses and send the visitor on without the parameter,
+ * so the page is rendered in that theme from the first paint and the URL
+ * stays clean and shareable.
+ */
+function themeRedirect(req: NextRequest) {
+  const theme = req.nextUrl.searchParams.get("rb_theme");
+  if (theme !== "light" && theme !== "night") return null;
+  const target = req.nextUrl.clone();
+  target.searchParams.delete("rb_theme");
+  const res = NextResponse.redirect(target, 307);
+  res.cookies.set("rb_theme", theme, { path: "/", maxAge: 31_536_000, sameSite: "lax" });
+  return res;
+}
+
 export function middleware(req: NextRequest) {
   // Behind the regional gateway the Host header names the upstream service;
   // the visitor's hostname arrives in X-Forwarded-Host.
   const host = req.headers.get("x-forwarded-host")?.split(",")[0].trim() || req.headers.get("host") || "";
   if (isOwnHost(host)) {
-    return canonicalRedirect(req, host) ?? regionalRedirect(req) ?? NextResponse.next();
+    return themeRedirect(req) ?? canonicalRedirect(req, host) ?? regionalRedirect(req) ?? NextResponse.next();
   }
 
   const clean = host.split(":")[0].toLowerCase();

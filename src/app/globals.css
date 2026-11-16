@@ -223,6 +223,28 @@ h3 {
   border-radius: 6px;
 }
 
+/* Text fields are the exception. A field matches :focus-visible the moment
+   you click into it (it takes the keyboard), so the hard rectangle appeared
+   on every tap, outside the field's own rounded shape. They show focus as a
+   ring on the field instead — still obvious when tabbing, calm when typing. */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+textarea:focus,
+select:focus {
+  box-shadow: 0 0 0 3px rgba(27, 98, 196, 0.3);
+}
+/* …unless the field sits in something that already shows the focus. The
+   search bar rings the whole pill, so a ring on the input inside it would be
+   the rectangle again. The :not()s only lift this above the rule above. */
+.focus-within\:shadow-ring:focus-within input:focus:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.discovery-filter input:focus:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]) {
+  box-shadow: none;
+}
+
 /* Selects: one chevron, inset from the edge with room to breathe, the same
    in every browser. The native arrow sat flush against the border and
    differed between Chrome, Safari and Firefox. :not([multiple]) lifts the

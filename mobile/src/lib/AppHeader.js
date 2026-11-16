@@ -6,7 +6,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProfileButton } from "./ProfileButton";
-import { colors } from "./theme";
+import { colors, isLight, setTheme } from "./theme";
 import { tr, useInternational } from "./international";
 
 export function AppHeader({ navigation, options, route, back }) {
@@ -25,7 +25,12 @@ export function AppHeader({ navigation, options, route, back }) {
           ) : null}
         </View>
         <Text accessibilityRole="header" style={styles.title} numberOfLines={1}>{title}</Text>
-        <View style={[styles.side, { alignItems: "flex-end" }]}><ProfileButton /></View>
+        <View style={[styles.side, { flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 6 }]}>
+          <Pressable accessibilityRole="button" accessibilityLabel={isLight ? tr("Switch to night theme") : tr("Switch to light theme")} hitSlop={8} onPress={() => setTheme(isLight ? "night" : "light")} style={styles.theme}>
+            <Text style={styles.themeIcon}>{isLight ? "☾" : "☀"}</Text>
+          </Pressable>
+          <ProfileButton />
+        </View>
       </View>
     </View>
   );
@@ -36,6 +41,8 @@ const styles = StyleSheet.create({
   row: { height: 52, flexDirection: "row", alignItems: "center", paddingHorizontal: 16 },
   side: { width: 96, justifyContent: "center" },
   title: { flex: 1, textAlign: "center", color: colors.text, fontWeight: "700", fontSize: 17 },
+  theme: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
+  themeIcon: { color: colors.text, fontSize: 17, lineHeight: 20 },
   back: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 44 },
   chevron: { color: colors.courtText, fontSize: 30, lineHeight: 32, marginTop: -3 },
   backText: { color: colors.courtText, fontSize: 16, fontWeight: "600", flexShrink: 1 },
