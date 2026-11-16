@@ -42,9 +42,9 @@ jobs:
       - name: Upload screenshots
         run: |
           node - <<'NODE'
-          const crypto = require('crypto');
-          const fs = require('fs');
-          const path = require('path');
+          const crypto = await import('node:crypto').then((m) => m.default);
+          const fs = await import('node:fs').then((m) => m.default);
+          const path = await import('node:path').then((m) => m.default);
 
           const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
           const now = Math.floor(Date.now() / 1000);
