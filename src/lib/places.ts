@@ -60,9 +60,17 @@ export function publicWebsite(raw: string | null | undefined) {
   } catch { return null; }
 }
 
+/** Pure: the sports played there. A name that says "Badminton Academy" or "Pickleball Club" beats a generic tag from the map data. */
+export function listingSports(name: string, tag: string | null | undefined): Sport[] {
+  const fromName = /badminton|pickleball|padel|squash|table tennis|ping pong/i.test(name) ? previewSports(name) : [];
+  if (fromName.length && !/\b(tennis|racquet|racket)\b/i.test(name.replace(/table tennis/gi, ""))) return fromName;
+  return [...new Set([...previewSports(tag), ...fromName])];
+}
+
 /** Pure: a name fit to show. Scraped names are sometimes a page title or an address. */
-export function presentableName(raw: string) {
+export function presentableName(raw: string): string | null {
   const name = raw.replace(/\s+/g, " ").replace(/\s*[|–—-]\s*(home|welcome|official site|official website)$/i, "").trim();
+  if (name.length >= 3 && !/[a-z]/.test(name)) return presentableName(name.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase())); // ALL CAPS
   if (name.length < 3 || name.length > 70 || /https?:|@|\d{5}/.test(name) || !/[a-z]/i.test(name)) return null;
   return name;
 }
@@ -106,7 +114,7 @@ async function build(): Promise<Index> {
     if (hide.has(slug)) continue;
     seen.add(dupe);
     const c = await coordsFor(city, state);
-    rows.push({ slug, name, city, state, sports: previewSports(lead.sport), website: publicWebsite(lead.website), latitude: c?.latitude ?? null, longitude: c?.longitude ?? null, clubKey: previewId(lead.email) });
+    rows.push({ slug, name, city, state, sports: listingSports(name, lead.sport), website: publicWebsite(lead.website), latitude: c?.latitude ?? null, longitude: c?.longitude ?? null, clubKey: previewId(lead.email) });
   }
   return { at: Date.now(), rows, bySlug: new Map(rows.map((r) => [r.slug, r])) };
 }

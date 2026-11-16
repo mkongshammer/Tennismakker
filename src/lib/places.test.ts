@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { listingSlug, publicWebsite, presentableName, slugify } from "./places";
+import { listingSlug, publicWebsite, presentableName, slugify, listingSports } from "./places";
 import { previewId } from "./club-preview";
 
 test("a listing's public slug is readable, stable and never contains the private preview id", () => {
@@ -27,4 +27,12 @@ test("scraped names that are not names are left out", () => {
   assert.equal(presentableName("12 Main St, Dover, DE 19901"), null);
   assert.equal(presentableName("TC"), null);
   assert.equal(slugify("Padel& Syosset"), "padel-and-syosset");
+});
+
+test("the club's name decides the sport when it names one", () => {
+  assert.deepEqual(listingSports("Austin Badminton Academy - Pflugerville", "tennis"), ["BADMINTON"]);
+  assert.deepEqual(listingSports("Cedar Park Pickleball Club", ""), ["PICKLEBALL"]);
+  assert.deepEqual(listingSports("Barton Creek Tennis & Pickleball", "tennis"), ["TENNIS", "PICKLEBALL"]);
+  assert.deepEqual(listingSports("Westwood Country Club", "tennis"), ["TENNIS"]);
+  assert.equal(presentableName("TRAVISSO AMENITY CENTER"), "Travisso Amenity Center");
 });
