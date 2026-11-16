@@ -211,13 +211,13 @@ const styles = StyleSheet.create({
   name: { fontWeight: "900", fontSize: 20, flexShrink: 1, color: colors.text },
   price: { fontWeight: "800", color: colors.courtText, fontSize: 17 },
   rating: { marginTop: 6, fontSize: 13, fontWeight: "700", color: colors.text },
-  headline: { marginTop: 8, lineHeight: 20 },
+  headline: { marginTop: 8, lineHeight: 20, color: colors.text },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
   section: { fontSize: 20, fontWeight: "900", marginVertical: 14, color: colors.text },
   sectionHint: { color: colors.slate, marginTop: -10, marginBottom: 10, fontSize: 13 },
   packageName: { fontWeight: "800", flexShrink: 1, color: colors.text },
-  packageDesc: { marginTop: 8, lineHeight: 19 },
+  packageDesc: { marginTop: 8, lineHeight: 19, color: colors.text },
   dayLabel: { fontWeight: "800", marginBottom: 8, textTransform: "capitalize", color: colors.text },
   slotTime: { fontSize: 20, fontWeight: "800", color: colors.text },
-  comment: { marginTop: 6, lineHeight: 19 }
+  comment: { marginTop: 6, lineHeight: 19, color: colors.text }
 });

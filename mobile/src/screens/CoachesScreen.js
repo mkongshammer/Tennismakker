@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   name: { fontWeight: "800", fontSize: 17, flexShrink: 1, color: colors.text },
   price: { fontWeight: "800", color: colors.courtText, fontSize: 16 },
   rating: { marginTop: 4, fontSize: 12, fontWeight: "700", color: colors.text },
-  headline: { marginTop: 6, lineHeight: 20 },
+  headline: { marginTop: 6, lineHeight: 20, color: colors.text },
   meta: { color: colors.slate, marginTop: 4, fontSize: 13 },
   tags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
   tag: { backgroundColor: colors.mist, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
