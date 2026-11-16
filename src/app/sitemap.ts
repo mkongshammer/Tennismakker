@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { db } from "../lib/db";
 import { getSettings } from "../lib/settings";
 import { SPORTS } from "../lib/sports";
+import { allListingSlugs, topCities } from "../lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     db.club.findMany({ where: { status: "APPROVED", country: "US" }, select: { slug: true, createdAt: true } }),
     db.coachProfile.findMany({ where: { country: "US" }, select: { id: true } }),
   ]);
+  const [places, cities] = await Promise.all([allListingSlugs().catch(() => []), topCities(null, 200).catch(() => [])]);
   const now = new Date();
   return [
     { url: `${appUrl}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
@@ -25,6 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${appUrl}/terms/us`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: `${appUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     ...clubs.map((c) => ({ url: `${appUrl}/clubs/${c.slug}`, lastModified: c.createdAt, changeFrequency: "daily" as const, priority: 0.8 })),
+    ...cities.map((c) => ({ url: `${appUrl}/courts?q=${encodeURIComponent(c.label)}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 })),
+    ...places.map((slug) => ({ url: `${appUrl}/places/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...coaches.map((c) => ({ url: `${appUrl}/coaches/${c.id}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.6 })),
   ];
 }

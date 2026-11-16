@@ -1,3 +1,4 @@
+import { sportLabel } from "../../lib/sports";
 import {phrase} from "../../lib/phrases";
 import { notErased } from "../../lib/erasure";
 import { Select } from "../../components/ui/Select";
@@ -155,7 +156,7 @@ export default async function SpillerePage({ searchParams }: Props) {
         <>
           <div className="space-y-3">
             {players.map((player) => {
-              const sports = splitSports(player.sports).join(" · ");
+              const sports = splitSports(player.sports).map((sp) => sportLabel(sp, prefs.locale)).join(" · ");
               const initials = player.name
                 .split(" ")
                 .map((n) => n[0])

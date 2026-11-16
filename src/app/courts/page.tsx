@@ -2,7 +2,8 @@
 //
 // Search by city, state or ZIP; filter by sport, price, indoor and
 // availability today; see distance and what is open. When a place has no
-// supply yet the page says so plainly and captures the intent, instead of
+// bookable supply yet the page says so plainly, shows the places we know
+// about (not bookable here yet) and captures the intent, instead of
 // padding the list with clubs from another state.
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -14,6 +15,8 @@ import { DiscoverySearch } from "../../components/discovery/DiscoverySearch";
 import { ClubResults } from "../../components/discovery/ClubResults";
 import { InterestForm } from "../../components/discovery/InterestForm";
 import { EmptyState, Icon } from "../../components/ui";
+import { PlaceList } from "../../components/discovery/PlaceList";
+import { placesNear, topCities, placesTotal } from "../../lib/places";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +40,11 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
   const filters = parseDiscoveryFilters(query, prefs.sport);
   if (filters.sport !== prefs.sport) await setPreferenceCookies({ sport: filters.sport }).catch(() => {});
   const result = await discoverClubs(filters);
+  // Places we know about that can't be booked here yet. Shown below the bookable clubs, never mixed in.
+  const places = result.place && filters.page === 1 && !filters.date && !filters.indoor && filters.maxPrice == null
+    ? await placesNear(result.place, filters.sport, filters.radiusMiles, 24).catch(() => ({ listings: [], total: 0 }))
+    : { listings: [], total: 0 };
+  const browse = !result.place && !filters.q ? await Promise.all([topCities(filters.sport, 24), placesTotal()]).catch(() => null) : null;
   const sportName = sportLabel(filters.sport, "en-US");
   const sportLower = sportName.toLowerCase();
   const place = result.place;
@@ -60,13 +68,26 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
           openCounts.length ? `${totalOpen} ${totalOpen === 1 ? "time" : "times"} open ${dayPhrase}${result.total > result.clubs.length ? " on this page" : ""}` : null,
         ].filter(Boolean).join(" · ");
 
+  const placesSection = places.listings.length > 0 ? (
+    <section aria-labelledby="places-heading">
+          <h2 id="places-heading" className="display text-title">
+            {result.clubs.length > 0 ? `More places to play ${stateSearch ? "in" : "near"} ${place!.label}` : `Places to play ${sportLower} ${stateSearch ? "in" : "near"} ${place!.label}`}
+          </h2>
+          <p className="mb-3 mt-1 text-sm text-slate">These clubs aren’t bookable on RacketBuddy yet. Open one to see its website or to ask for online booking.</p>
+          <PlaceList places={places.listings} />
+          {places.total > places.listings.length && (
+            <p className="mt-3 text-center text-sm text-slate">Showing the {places.listings.length} nearest of {places.total}. Search a city or ZIP code to narrow it down.</p>
+          )}
+        </section>
+  ) : null;
+
   return (
     <div className="space-y-6">
       <DiscoverySearch filters={filters} radiusApplies={!stateSearch} />
 
       <header className="min-w-0">
         <h1 className="display text-title sm:text-display-md">{headline}</h1>
-        <p className="mt-1 text-sm text-slate sm:text-base">{summary ?? "Search a city, state or ZIP code to see courts, prices and what is open today."}</p>
+        <p className="mt-1 text-sm text-slate sm:text-base">{summary ?? (places.total > 0 ? `${places.total} ${places.total === 1 ? "place" : "places"} to play. None can be booked on RacketBuddy yet.` : "Search a city, state or ZIP code to see courts, prices and what is open today.")}</p>
       </header>
 
       {place?.alternatives?.length ? (
@@ -87,6 +108,8 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
           Open times {dayPhrase} were checked for the {TODAY_FILTER_CANDIDATES} best-matching clubs. Narrow the search to a city or ZIP to check a smaller area completely.
         </p>
       )}
+
+      {result.clubs.length === 0 && placesSection}
 
       {result.clubs.length > 0 ? (
         <>
@@ -144,10 +167,15 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
               <Icon name="bell" size={26} />
             </span>
             <h2 className="display text-display-md">
-              {place ? `No ${sportLower} clubs on RacketBuddy ${stateSearch ? "in" : "near"} ${place.label} yet.` : `No ${sportLower} clubs on RacketBuddy yet.`}
+              {places.total > 0
+                ? `Get told when the first one takes bookings.`
+                : place ? `No ${sportLower} clubs on RacketBuddy ${stateSearch ? "in" : "near"} ${place.label} yet.` : `Where do you want to play ${sportLower}?`}
             </h2>
             <p className="mt-3 max-w-lg text-slate">
-              We only list clubs that are live and bookable — no placeholders. Leave your email and we’ll let you know when a club {stateSearch ? "in" : "near"} {place?.label ?? "your area"} opens its courts.
+              {places.total > 0
+                ? `No ${sportLower} club ${stateSearch ? "in" : "near"} ${place!.label} takes bookings on RacketBuddy yet. Leave your email and we’ll tell you when the first one does.`
+                : place ? `We don’t know of a ${sportLower} club ${stateSearch ? "in" : "near"} ${place.label} yet. Leave your email and we’ll let you know when one opens its courts.`
+                : "Search a city, state or ZIP code above. Or leave your email and we’ll let you know when a club near you opens its courts."}
             </p>
             <div className="mt-6 w-full">
               <InterestForm q={filters.q} sport={filters.sport} label={place?.label} />
@@ -193,6 +221,24 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
               <Icon name="chevron" className="text-white/70" />
             </Link>
           </div>
+        </section>
+      )}
+
+      {result.clubs.length > 0 && placesSection}
+
+      {browse && browse[0].length > 0 && (
+        <section aria-labelledby="browse-heading">
+          <h2 id="browse-heading" className="display text-title">Browse {sportLower} by city</h2>
+          <p className="mb-3 mt-1 text-sm text-slate">{browse[1].toLocaleString("en-US")} clubs across the United States, and counting.</p>
+          <ul className="flex flex-wrap gap-2">
+            {browse[0].map((c) => (
+              <li key={c.label}>
+                <Link href={discoveryHref({ q: c.label, sport: filters.sport })} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-slate/15 px-4 text-sm font-semibold hover:border-court">
+                  {c.label} <span className="text-slate">{c.count}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

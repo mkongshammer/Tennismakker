@@ -4,7 +4,7 @@ import { Select } from "../../components/ui/Select";
 import {UiText} from "../../components/InternationalProvider";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { da } from "date-fns/locale";
+import { da, es, fr, de, sv, nb } from "date-fns/locale";
 import { db } from "../../lib/db";
 import { getCurrentUser } from "../../lib/session";
 import { respondToMatchPost } from "./actions";
@@ -142,7 +142,7 @@ export default async function MakkerePage({
               </div>
               <p className="mt-1">{r.message}</p>
               <p className="mt-1 text-sm text-slate">
-                {regionForArea(r.area) ?? r.area} · {formatDistanceToNow(r.createdAt, { addSuffix: true, locale: da })}
+                {regionForArea(r.area) ?? r.area} · {formatDistanceToNow(r.createdAt, { addSuffix: true, locale: ({ da, es, fr, de, sv, no: nb } as Record<string, typeof da>)[prefs.locale] })}
               </p>
             </div>
             {user && user.id !== r.requesterId ? (

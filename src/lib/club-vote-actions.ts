@@ -22,3 +22,22 @@ export async function voteForClub(_prev: VoteState, form: FormData): Promise<Vot
   });
   return r.ok ? { ok: r.message } : { error: r.error };
 }
+
+/** Vote from a place page. The page only knows the public slug; the vote key is looked up here. */
+export async function voteForPlace(_prev: VoteState, form: FormData): Promise<VoteState> {
+  if (String(form.get("website") ?? "").trim()) return { ok: "Thanks, your vote is in." }; // honeypot
+  const { voteKeyForSlug, forgetVoteCounts } = await import("./places");
+  const clubId = await voteKeyForSlug(String(form.get("slug") ?? ""));
+  if (!clubId) return { error: "We couldn’t find that club. Try again from the search." };
+  const user = await getCurrentUser();
+  const r = await castVote({
+    clubId,
+    email: String(form.get("email") ?? user?.email ?? ""),
+    sport: String(form.get("sport") ?? "TENNIS"),
+    userId: user?.id ?? null,
+    userEmail: user?.email ?? null,
+    ip: clientIp(await headers()),
+  });
+  forgetVoteCounts();
+  return r.ok ? { ok: r.message } : { error: r.error };
+}
