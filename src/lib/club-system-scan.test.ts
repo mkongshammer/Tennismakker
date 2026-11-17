@@ -53,3 +53,11 @@ test("alle tre mails har afmelding, adresse og kun variabler vi faktisk sender",
     for (const m of (step.subject ?? "").matchAll(/\{\{(\w+)\}\}/g)) assert.ok(allowed.has(m[1]), `ukendt variabel i emnefeltet: ${m[1]}`);
   }
 });
+
+test("ventetiden står på det trin der skal vente bagefter, ikke før", () => {
+  // Instantly's `delay` is the wait AFTER a step. Writing the wait on the step
+  // it precedes sent mail 1 and mail 2 the same day.
+  assert.equal(NOSYSTEM_SEQUENCE[0].delay, 3, "mail 2 kommer 3 dage efter mail 1");
+  assert.equal(NOSYSTEM_SEQUENCE[1].delay, 4, "mail 3 kommer 4 dage efter mail 2");
+  assert.ok(NOSYSTEM_SEQUENCE.slice(0, -1).every((s) => s.delay > 0), "ingen mail må følge umiddelbart efter den forrige");
+});

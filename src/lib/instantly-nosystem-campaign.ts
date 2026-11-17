@@ -40,9 +40,12 @@ export const INCLUDED = [
   "We move your members and bookings over from a spreadsheet for you",
 ];
 
+// `delay` on a step is the wait AFTER that step, before the next one — not
+// the wait before it. Getting that backwards sent mail 1 and mail 2 on the
+// same day to 29 clubs on 17 Nov. The last step's delay is never used.
 export const NOSYSTEM_SEQUENCE = [
   {
-    delay: 0,
+    delay: 3,
     subject: "court bookings at {{companyName}}",
     body: `Hi {{firstName}},
 
@@ -66,7 +69,7 @@ RacketBuddy
 ${FOOT}`,
   },
   {
-    delay: 3,
+    delay: 4,
     subject: "",
     body: `Hi {{firstName}},
 
@@ -85,7 +88,7 @@ Magnus
 ${FOOT}`,
   },
   {
-    delay: 4,
+    delay: 0,
     subject: "",
     body: `Hi {{firstName}},
 
