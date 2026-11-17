@@ -58,7 +58,26 @@ export async function tellOwner(subject: string, body: string) {
   const to = (process.env.SALES_DIGEST_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   if (!to.length) to.push(...(await db.user.findMany({ where: { role: "SUPERADMIN" }, select: { email: true } })).map((u) => u.email));
   if (!to.map((a) => a.toLowerCase()).includes("magnus@racketbuddy.app")) to.push("magnus@racketbuddy.app"); // owner's work inbox always gets a copy
-  for (const t of to) await sendMail({ to: t, subject, body });
+  const delivered: string[] = [], refused: string[] = [];
+  for (const t of to) ((await sendMail({ to: t, subject, body })) ? delivered : refused).push(t);
+  // sendMail answers false and says nothing further, so a message that never
+  // arrives leaves no trace anywhere we can read. Several did on 17 Nov. Every
+  // message is now kept, and the morning mail — the one channel known to work
+  // — lists what was sent in the last day and whether it got through.
+  await db.platformSetting.create({
+    data: { key: `ops:owner-mail:${new Date().toISOString()}:${Math.random().toString(36).slice(2, 7)}`, value: JSON.stringify({ at: new Date().toISOString(), subject, body: body.slice(0, 4000), delivered, refused }) },
+  }).catch(() => {});
+  return { delivered, refused };
+}
+
+export type OwnerMessage = { at: string; subject: string; body: string; delivered: string[]; refused: string[] };
+
+/** What we tried to tell the owner since `since`, newest first. */
+export async function ownerMessagesSince(since: Date): Promise<OwnerMessage[]> {
+  const rows = await db.platformSetting.findMany({ where: { key: { startsWith: "ops:owner-mail:" } }, orderBy: { key: "desc" }, take: 60 }).catch(() => []);
+  return rows
+    .map((r) => { try { return JSON.parse(r.value) as OwnerMessage; } catch { return null; } })
+    .filter((m): m is OwnerMessage => Boolean(m) && Date.parse(m!.at) >= since.getTime());
 }
 
 async function once(key: string) {
