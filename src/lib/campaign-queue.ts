@@ -16,6 +16,8 @@ import type { Lead } from "./lead-harvest";
 
 export const WARM_STATES = new Set(["FL", "TX", "AZ", "CA", "NV", "GA", "SC", "LA", "AL", "MS", "HI", "NM"]);
 export const BUFFER = 300;
+/** The no-online-booking campaign is smaller and sends fewer a day, so it needs a shorter queue. */
+export const NOSYSTEM_BUFFER = 150;
 
 export function isWinter(now = new Date()) {
   const m = now.getUTCMonth(); // 0 = Jan
@@ -67,10 +69,10 @@ export async function notYetContacted(campaign: string): Promise<number | null> 
 }
 
 /** How many clubs to add now so the buffer stays at about BUFFER. */
-export async function clubsToAdd(campaign: string) {
+export async function clubsToAdd(campaign: string, buffer = BUFFER) {
   const left = await notYetContacted(campaign);
-  if (left === null) return 50; // can't tell: add a modest batch
-  return Math.max(0, BUFFER - left);
+  if (left === null) return Math.min(50, buffer); // can't tell: add a modest batch
+  return Math.max(0, buffer - left);
 }
 
 // Second pass (11 Nov 2026 evening): Florida and Texas first.

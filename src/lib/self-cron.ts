@@ -73,6 +73,12 @@ export async function runJobOnce(job: CronJob) {
     void listMagnusAccountsOnce().catch((e) => console.error("[list-accounts]", e));
     const { cleanupSetupTestOnce } = await import("./oneoff-setup-test");
     void cleanupSetupTestOnce().catch((e) => console.error("[setup-test-cleanup]", e));
+    // Which booking system each club already uses: a small batch a minute, in
+    // the background. It decides which of the two club campaigns a club gets.
+    const { scanClubSystemsOnce } = await import("./club-system-scan");
+    void scanClubSystemsOnce().then((r) => { if (!("done" in r)) console.log("[club-system-scan]", JSON.stringify(r)); }).catch((e) => console.error("[club-system-scan]", e));
+    const { setupNoSystemCampaignOnce } = await import("./oneoff-nosystem-setup");
+    void setupNoSystemCampaignOnce().then((r) => { if (!("done" in r)) console.log("[nosystem-setup]", JSON.stringify(r)); }).catch((e) => console.error("[nosystem-setup]", e));
     const { backfillPreviewFollowups, sendDuePreviewFollowups } = await import("./club-preview");
     await backfillPreviewFollowups().catch((e) => console.error("[preview-followup] backfill", e));
     await sendDuePreviewFollowups().then((n) => { if (n) console.log(`[preview-followup] sent ${n}`); }).catch((e) => console.error("[preview-followup]", e));

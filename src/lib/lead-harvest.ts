@@ -284,34 +284,65 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
  * Instantly skips anyone already in the workspace, so nobody is mailed twice.
  */
 export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200, opts: { skipBufferCheck?: boolean } = {}) {
-  const key = process.env.INSTANTLY_API_KEY, campaign = await campaignId(kind);
-  if (!key || !campaign) return { pushed: 0, skipped: "instantly-not-configured" };
-  let waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt);
-  if (kind === "club") {
-    // Keep ~300 not-yet-contacted clubs in Instantly, warm states first in winter (see campaign-queue.ts).
-    const { queueOrder, clubsToAdd } = await import("./campaign-queue");
-    waiting = queueOrder(waiting).slice(0, opts.skipBufferCheck ? limit : Math.min(limit, await clubsToAdd(campaign)));
-  } else waiting = waiting.slice(0, limit);
+  const key = process.env.INSTANTLY_API_KEY;
+  if (!key) return { pushed: 0, skipped: "instantly-not-configured" };
+  const waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt);
   const { appUrl } = await (await import("./settings")).getSettings();
   const { previewUrl } = await import("./club-preview");
-  let pushed = 0;
-  for (const { key: rowKey, lead } of waiting) {
-    const res = await fetch("https://api.instantly.ai/api/v2/leads", {
-      method: "POST",
-      headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-      body: JSON.stringify({
-        campaign, email: lead.email, first_name: lead.firstName || "there", company_name: lead.clubName, website: lead.website,
-        skip_if_in_workspace: true, skip_if_in_campaign: true,
-        custom_variables: { city: lead.city || "your area", state: lead.state, sport: lead.sport, ...(kind === "club" ? { clubPage: previewUrl(appUrl, lead.email) } : {}) },
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) { console.error("[instantly] lead rejected", res.status, (await res.text()).slice(0, 200)); if (res.status === 401 || res.status === 403) break; continue; }
-    await db.platformSetting.update({ where: { key: rowKey }, data: { value: JSON.stringify({ ...lead, pushedAt: new Date().toISOString() }) } });
-    pushed++;
-    await new Promise((r) => setTimeout(r, 250));
+
+  const send = async (campaign: string, rows: typeof waiting) => {
+    let pushed = 0;
+    for (const { key: rowKey, lead } of rows) {
+      const res = await fetch("https://api.instantly.ai/api/v2/leads", {
+        method: "POST",
+        headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+        body: JSON.stringify({
+          campaign, email: lead.email, first_name: lead.firstName || "there", company_name: lead.clubName, website: lead.website,
+          skip_if_in_workspace: true, skip_if_in_campaign: true,
+          custom_variables: { city: lead.city || "your area", state: lead.state, sport: lead.sport, ...(kind === "club" ? { clubPage: previewUrl(appUrl, lead.email) } : {}) },
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!res.ok) { console.error("[instantly] lead rejected", res.status, (await res.text()).slice(0, 200)); if (res.status === 401 || res.status === 403) break; continue; }
+      await db.platformSetting.update({ where: { key: rowKey }, data: { value: JSON.stringify({ ...lead, pushedAt: new Date().toISOString() }) } });
+      pushed++;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    return pushed;
+  };
+
+  if (kind !== "club") {
+    const campaign = await campaignId(kind);
+    if (!campaign) return { pushed: 0, skipped: "instantly-not-configured" };
+    return { pushed: await send(campaign, waiting.slice(0, limit)) };
   }
-  return { pushed };
+
+  const main = process.env.INSTANTLY_CAMPAIGN_ID;
+  if (!main) return { pushed: 0, skipped: "instantly-not-configured" };
+  // The clubs that take bookings by hand get their own campaign and their own
+  // first e-mail (see instantly-nosystem-campaign.ts). A club whose website
+  // hasn't been looked at yet waits a short while for the scan rather than
+  // going into the wrong campaign — but never longer than that, so sending
+  // can't stall if the scan is failing.
+  const { queueOrder, clubsToAdd, NOSYSTEM_BUFFER } = await import("./campaign-queue");
+  const { takesBookingsByHand } = await import("./club-system");
+  const { noSystemCampaignId } = await import("./instantly-nosystem-campaign");
+  const byHandCampaign = await noSystemCampaignId().catch(() => undefined);
+  const SCAN_GRACE = 2 * 3_600_000;
+  const ready = waiting.filter((r) => {
+    const l = r.lead as Lead & { system?: string };
+    if (l.system) return true;
+    return Date.now() - Date.parse(l.createdAt) > SCAN_GRACE;
+  });
+  const byHand = byHandCampaign ? ready.filter((r) => takesBookingsByHand((r.lead as Lead & { system?: string }).system)) : [];
+  const rest = ready.filter((r) => !byHand.includes(r));
+
+  const mainRows = queueOrder(rest).slice(0, opts.skipBufferCheck ? limit : Math.min(limit, await clubsToAdd(main)));
+  const pushed = await send(main, mainRows);
+  if (!byHandCampaign || !byHand.length) return { pushed };
+  const byHandRows = queueOrder(byHand).slice(0, opts.skipBufferCheck ? limit : Math.min(limit, await clubsToAdd(byHandCampaign, NOSYSTEM_BUFFER)));
+  const pushedByHand = await send(byHandCampaign, byHandRows);
+  return { pushed: pushed + pushedByHand, pushedNoSystem: pushedByHand };
 }
 
 export function leadsCsv(leads: Lead[]) {

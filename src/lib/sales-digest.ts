@@ -8,12 +8,16 @@ import { deploymentRegion } from "./region";
 
 const SNAP_KEY = "sales:digest:snapshot:v2";
 type Nums = { leads: number; pushed: number; contacted: number; sent: number; replies: number; bounced: number; opportunities: number };
-type Snapshot = { at: string; club: Nums; coach: Nums };
+type Snapshot = { at: string; club: Nums; coach: Nums; nosystem?: Nums };
 
 const campaignOf = async (k: LeadKind) => (k === "club" ? process.env.INSTANTLY_CAMPAIGN_ID : (await import("./instantly-coach-campaign")).coachCampaignId());
 
 async function analytics(kind: LeadKind) {
-  const key = process.env.INSTANTLY_API_KEY, id = await campaignOf(kind);
+  return analyticsFor(await campaignOf(kind));
+}
+
+async function analyticsFor(id: string | undefined) {
+  const key = process.env.INSTANTLY_API_KEY;
   if (!key || !id) return null;
   const res = await fetch(`https://api.instantly.ai/api/v2/campaigns/analytics?id=${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) });
   if (!res.ok) throw Error(`Instantly ${res.status}`);
@@ -90,6 +94,32 @@ async function section(kind: LeadKind, now: Date, prev: Nums | undefined) {
   return { nums, lines, contactedToday: d("contacted"), newToday: d("leads") };
 }
 
+/**
+ * The split of the club list by whether the club already books online, and how
+ * the two campaigns compare. This is the number the segmentation stands or
+ * falls on, so it goes in the mail every morning.
+ */
+async function segmentSection(now: Date, prev: Nums | undefined) {
+  const { systemBreakdown } = await import("./club-system-scan");
+  const b = await systemBreakdown().catch(() => null);
+  if (!b) return null;
+  const { noSystemCampaignId } = await import("./instantly-nosystem-campaign");
+  const id = await noSystemCampaignId().catch(() => undefined);
+  const a = await analyticsFor(id).catch(() => null);
+  const nums: Nums = { leads: b.byHand, pushed: 0, contacted: a?.contacted ?? prev?.contacted ?? 0, sent: a?.sent ?? prev?.sent ?? 0, replies: a?.replies ?? prev?.replies ?? 0, bounced: a?.bounced ?? prev?.bounced ?? 0, opportunities: a?.opportunities ?? prev?.opportunities ?? 0 };
+  const d = (k: keyof Nums) => Math.max(0, nums[k] - (prev?.[k] ?? 0));
+  const pct = (n: number, of: number) => (of ? `${((n / of) * 100).toFixed(1)}%` : "–");
+  const status = !id ? "ikke oprettet endnu" : a?.status === 1 ? "kører" : a?.status === 0 ? "kladde, ikke startet" : a?.status === 2 ? "på pause" : "ukendt status";
+  const lines = [
+    `SEGMENTER (hvad klubben har i forvejen · kampagnen til dem uden booking: ${status})`,
+    `Hjemmesider gennemgået: ${b.checked} af ${b.total}${b.notChecked ? `, ${b.notChecked} mangler` : ""}${b.unknown ? `, ${b.unknown} kunne ikke hentes` : ""}`,
+    `Ingen online booking: ${b.byHand} klubber (${pct(b.byHand, b.checked)} af de gennemgåede), heraf ${b.byHandWaiting} ikke skrevet til endnu`,
+    b.systems.length ? `Systemer: ${b.systems.filter(([k]) => !["none", "unknown", "not-checked"].includes(k)).slice(0, 8).map(([k, n]) => `${k} ${n}`).join(" · ") || "ingen fundet endnu"}` : "",
+  ].filter(Boolean);
+  if (id) lines.push(`Uden booking: kontaktet ${nums.contacted} (+${d("contacted")} siden i går), svar ${nums.replies} (${pct(nums.replies, nums.contacted)})${nums.opportunities ? ` · muligheder ${nums.opportunities}` : ""}`);
+  return { nums, lines };
+}
+
 export async function runDailySalesDigest(now = new Date(), force = false) {
   if (deploymentRegion() !== "US") return { sent: false, reason: "not-us" };
   const { date, hour } = copenhagen(now);
@@ -102,6 +132,7 @@ export async function runDailySalesDigest(now = new Date(), force = false) {
   const prev: Snapshot | null = prevRow ? JSON.parse(prevRow.value) : null;
   const club = await section("club", now, prev?.club);
   const coach = await section("coach", now, prev?.coach);
+  const segments = await segmentSection(now, prev?.nosystem).catch(() => null);
   const { mailStats } = await import("./email-assistant");
   const m = await mailStats(new Date(now.getTime() - 86_400_000)).catch(() => null);
   const mailLines = m ? [
@@ -114,11 +145,11 @@ export async function runDailySalesDigest(now = new Date(), force = false) {
   if (mu && mu.monthlyLimit) mailLines.push(`Resend: ${mu.month} af ${mu.monthlyLimit} mails brugt denne måned${mu.dailyLimit ? `, ${mu.today} af ${mu.dailyLimit} i dag` : ""}`);
   const errs = await (await import("./error-log")).errorSummary(now.getTime()).catch(() => []);
   const errLines = errs.length ? ["SERVERFEJL (sidste døgn, til Claude)", ...errs.map(([m, n]) => `${n}× ${m}`), ""] : [];
-  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...mailLines, ...(mailLines.length ? [""] : []), ...errLines, "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
+  const body = ["Godmorgen Magnus,", "", ...club.lines, "", ...coach.lines, "", ...(segments ? [...segments.lines, ""] : []), ...mailLines, ...(mailLines.length ? [""] : []), ...errLines, "Detaljer: https://racketbuddy.app/superadmin/salg · Mails: https://racketbuddy.app/superadmin/mails"].join("\n");
   const subject = `RacketBuddy salg: ${club.contactedToday} klubber + ${coach.contactedToday} trænere kontaktet, ${club.newToday + coach.newToday} nye på listen`;
   let ok = false;
   for (const to of recipients) ok = (await sendMail({ to, subject, body })) || ok;
-  const snap: Snapshot = { at: now.toISOString(), club: club.nums, coach: coach.nums };
+  const snap: Snapshot = { at: now.toISOString(), club: club.nums, coach: coach.nums, ...(segments ? { nosystem: segments.nums } : {}) };
   await db.platformSetting.upsert({ where: { key: SNAP_KEY }, create: { key: SNAP_KEY, value: JSON.stringify(snap) }, update: { value: JSON.stringify(snap) } });
   if (ok) await db.platformSetting.upsert({ where: { key: dayKey }, create: { key: dayKey, value: now.toISOString() }, update: { value: now.toISOString() } });
   return { sent: ok, recipients: recipients.length };
