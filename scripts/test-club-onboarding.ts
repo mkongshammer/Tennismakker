@@ -69,4 +69,16 @@ async function main(){
   console.log(`PASS ${count} onboarding scenarios; Stripe is simulated, no real charges.`);
  }finally{await db.$disconnect();await server.stop();await new Promise<void>(r=>setImmediate(r));await new Promise<void>(r=>setImmediate(r));await pg.close();}
 }
-main().catch(e=>{console.error(e);process.exitCode=1;});
+// The suite runs against PGlite over a local socket. On the CI runner that
+// socket is sometimes closed under us mid-run (P1017, "Server has closed the
+// connection"), which failed the whole job even though every scenario passes
+// — the workflow has been red since 12 Nov for this and nothing else. A
+// dropped socket is not a test result, so it is retried once on a fresh
+// database. A real failure is an assertion, never one of these codes, so it
+// still fails the first time.
+const droppedConnection=(e:any)=>['P1001','P1002','P1017'].includes(e?.code)||/closed the connection|Connection terminated|ECONNRESET/i.test(String(e?.message??e));
+main().catch(async e=>{
+ if(!droppedConnection(e)){console.error(e);process.exitCode=1;return;}
+ console.warn('PGlite dropped the connection mid-run; running the suite again on a fresh database.');
+ await main().catch(e2=>{console.error(e2);process.exitCode=1;});
+});
