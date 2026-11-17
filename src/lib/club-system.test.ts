@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import test from "node:test";
-import { bookingLink, classifyBookingSystem, detectClubSystem, takesBookingsByHand } from "./club-system";
+import { bookingLink, classifyBookingSystem, detectClubSystem, notAClub, takesBookingsByHand } from "./club-system";
 
 test("klassificering genkender de store amerikanske systemer", () => {
   assert.equal(classifyBookingSystem('<a href="https://app.courtreserve.com/Online/Portal/Index/1234">Book</a>')?.key, "courtreserve");
@@ -49,4 +49,25 @@ test("systemet bag en 'book a court'-knap bliver fundet", async () => {
   };
   const found = await detectClubSystem("club.example", async (u) => pages[u] ?? (() => { throw new Error("http-404"); })());
   assert.equal(found.system, "courtreserve");
+});
+
+test("et medlemslogin betyder 'system vi ikke kan se', ikke 'ingen booking'", async () => {
+  const pages: Record<string, string> = {
+    "https://cc.example/": '<h1>Canyon Crest</h1><a href="/member-login/">Member Login</a>',
+  };
+  const found = await detectClubSystem("cc.example", async (u) => pages[u] ?? (() => { throw new Error("http-404"); })());
+  assert.equal(found.system, "login");
+  assert.equal(takesBookingsByHand(found.system), false);
+});
+
+test("systemerne fra stikprøven bliver nu genkendt", () => {
+  assert.equal(classifyBookingSystem('<a href="http://gtp.romeosoft.com/scripts/public.pl">Court reservations</a>')?.key, "romeosoft");
+  assert.equal(classifyBookingSystem('<a href="https://sc.cps.golf/BarclayBillingV3/">Member billing</a>')?.key, "cpsgolf");
+});
+
+test("rækker der ikke er klubber bliver sorteret fra", () => {
+  assert.equal(notAClub("Premier Pickleball & Sport Court Construction / Resurfacing"), true);
+  assert.equal(notAClub("The Charter Club of Marco Beach Condominium Association, Inc."), true);
+  assert.equal(notAClub("Raintree Swim & Racquet Club"), false);
+  assert.equal(notAClub("Sutter Lawn Tennis Club"), false);
 });

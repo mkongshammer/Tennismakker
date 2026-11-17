@@ -79,8 +79,8 @@ export async function runJobOnce(job: CronJob) {
     void scanClubSystemsOnce().then((r) => { if (!("done" in r)) console.log("[club-system-scan]", JSON.stringify(r)); }).catch((e) => console.error("[club-system-scan]", e));
     const { setupNoSystemCampaignOnce } = await import("./oneoff-nosystem-setup");
     void setupNoSystemCampaignOnce().then((r) => { if (!("done" in r)) console.log("[nosystem-setup]", JSON.stringify(r)); }).catch((e) => console.error("[nosystem-setup]", e));
-    const { sampleNoSystemOnce } = await import("./oneoff-nosystem-sample");
-    void sampleNoSystemOnce().then((r) => { if (!("done" in r)) console.log("[nosystem-sample]", JSON.stringify(r)); }).catch((e) => console.error("[nosystem-sample]", e));
+    const { recheckNoSystemOnce } = await import("./oneoff-nosystem-recheck");
+    void recheckNoSystemOnce().then((r) => { if (!("done" in r)) console.log("[nosystem-recheck]", JSON.stringify(r)); }).catch((e) => console.error("[nosystem-recheck]", e));
     // Leads into their campaign every minute, instead of only at the end of a
     // harvest round: a harvest that fails or finds nothing must not stop the
     // clubs we already have from being written to. Capped by the buffers.

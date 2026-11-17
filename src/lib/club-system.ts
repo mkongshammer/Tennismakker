@@ -59,6 +59,12 @@ const SIGNATURES: Signature[] = [
   { key: "teamsnap", name: "TeamSnap", kind: "management", patterns: [/teamsnap\.com/i] },
   { key: "membersplash", name: "Member Splash", kind: "management", patterns: [/membersplash\.com/i] },
   { key: "clubexpress", name: "ClubExpress", kind: "management", patterns: [/clubexpress\.com/i] },
+  // Found by reading a sample of the clubs we had called "no booking" on
+  // 17 Nov: both of these were sitting in plain sight on the page.
+  { key: "romeosoft", name: "RomeoSoft court reservations", kind: "booking", patterns: [/romeosoft\.com/i] },
+  { key: "cpsgolf", name: "CPS Golf / club billing", kind: "management", patterns: [/cps\.golf/i, /clubprophetsystems\.com/i] },
+  { key: "foreup", name: "foreUP", kind: "management", patterns: [/foreupsoftware\.com/i] },
+  { key: "memberdeck", name: "MemberDeck", kind: "management", patterns: [/memberdeck\.com/i] },
 
   // Parks and recreation departments (public courts)
   { key: "activenet", name: "ACTIVE Net", kind: "municipal", patterns: [/anc\.apm\.activecommunities\.com/i, /activecommunities\.com/i, /activenet/i] },
@@ -186,7 +192,37 @@ export async function detectClubSystem(website: string, fetchPage: (url: string)
     } catch { /* the homepage is the answer then */ }
   }
   if (onHome) return found(onHome, "home"); // a calendar and nothing more
+  // Nothing we can name, but a members' door: there is a system behind it.
+  if (hasMemberLogin(home)) return { system: "login", name: "Behind a member login", kind: "management", via: "home" };
   return { system: "none" };
+}
+
+/**
+ * A member login is a system we cannot see. Reading a sample of the group on
+ * 17 Nov, 6 of 25 clubs had one — country clubs mostly — and those are exactly
+ * the clubs that answer "we are all set". Treating them as "no booking" would
+ * poison both the message and the measurement, so they get their own answer.
+ */
+export const MEMBER_LOGIN = /member\s*(login|portal|area|sign[\s-]?in)|my\s*account|club\s*portal|resident\s*login/i;
+
+export function hasMemberLogin(html: string) {
+  const text = String(html ?? "");
+  for (const m of text.matchAll(/<a\b[^>]*href=["']([^"']{2,300})["'][^>]*>([\s\S]{0,120}?)<\/a>/gi)) {
+    const label = m[2].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    if (MEMBER_LOGIN.test(label) || MEMBER_LOGIN.test(m[1])) return true;
+  }
+  return false;
+}
+
+/**
+ * Some rows on the list are not clubs at all — the same sample turned up a
+ * court resurfacing contractor and a condominium association. Writing to them
+ * about their members wastes a send and makes us look careless.
+ */
+const NOT_A_CLUB = /\b(construction|resurfacing|sealcoating|paving|contracting|condominium|homeowners?\s*association|property\s*owners|\bHOA\b|realty|real\s*estate|supply|equipment|apparel|stringing)\b/i;
+
+export function notAClub(name: string) {
+  return NOT_A_CLUB.test(String(name ?? ""));
 }
 
 /** True for the clubs that get the new first e-mail: nothing online, or a calendar only. */

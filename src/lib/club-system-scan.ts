@@ -9,7 +9,7 @@
 // Every club is looked at once. A site we couldn't reach is retried, at most
 // three times, and then left as unknown.
 import { db } from "./db";
-import { detectClubSystem, takesBookingsByHand } from "./club-system";
+import { detectClubSystem, notAClub, takesBookingsByHand } from "./club-system";
 import { allLeads, type Lead } from "./lead-harvest";
 
 export type ScannedLead = Lead & { system?: string; systemName?: string; systemAt?: string; systemTries?: number };
@@ -54,7 +54,9 @@ export async function scanClubSystemsOnce(limit = SCAN_BATCH) {
   if (!batch.length) return { scanned: 0, done: true };
   let none = 0, found = 0, unknown = 0;
   await Promise.all(batch.map(async ({ key, lead }) => {
-    const res = await detectClubSystem(lead.website).catch(() => ({ system: "unknown" as const }));
+    const res = notAClub(lead.clubName)
+      ? { system: "not-a-club" as const }
+      : await detectClubSystem(lead.website).catch(() => ({ system: "unknown" as const }));
     if (res.system === "none") none++;
     else if (res.system === "unknown") unknown++;
     else found++;
