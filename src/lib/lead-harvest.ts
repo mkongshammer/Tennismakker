@@ -283,9 +283,23 @@ export async function harvestLeads(now = new Date(), maxCalls?: number) {
  * INSTANTLY_CAMPAIGN_ID for clubs, INSTANTLY_COACH_CAMPAIGN_ID for coaches).
  * Instantly skips anyone already in the workspace, so nobody is mailed twice.
  */
+// One push at a time: the minute job and the harvest both call this, and two
+// runs at once would offer the same club to Instantly twice.
+const pushing: Partial<Record<LeadKind, boolean>> = {};
+
 export async function pushLeadsToInstantly(kind: LeadKind = "club", limit = 200, opts: { skipBufferCheck?: boolean } = {}) {
   const key = process.env.INSTANTLY_API_KEY;
   if (!key) return { pushed: 0, skipped: "instantly-not-configured" };
+  if (pushing[kind]) return { pushed: 0, skipped: "already-pushing" };
+  pushing[kind] = true;
+  try {
+    return await pushLeads(kind, limit, opts, key);
+  } finally {
+    pushing[kind] = false;
+  }
+}
+
+async function pushLeads(kind: LeadKind, limit: number, opts: { skipBufferCheck?: boolean }, key: string) {
   const waiting = (await allLeads(kind)).filter((r) => !r.lead.pushedAt && !r.lead.exportedAt);
   const { appUrl } = await (await import("./settings")).getSettings();
   const { previewUrl } = await import("./club-preview");
