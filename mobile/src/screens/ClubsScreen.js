@@ -44,6 +44,18 @@ export default function ClubsScreen({ navigation }) {
   const clubs = state.clubs.filter((c) => c.country === 'US');
   const place = data?.place ?? null;
   const places = data?.places ?? [];
+  // Two numbers, always both: how many a player can book right now, and how
+  // many clubs we know of that can't be booked yet. Showing only the first
+  // made a city full of clubs read as "0 clubs".
+  const bookable = data?.total ?? clubs.length;
+  const notYet = data?.placesTotal ?? places.length;
+  const known = data?.placesAll ?? 0;
+  const countLabel = place
+    ? `${bookable} ${tr("bookable")}${notYet ? ` · ${notYet} ${tr("not yet")}` : ""}`
+    : known
+      ? `${known.toLocaleString("en-US")} ${tr("clubs")} · ${bookable} ${tr("bookable")}`
+      : `${bookable} ${bookable === 1 ? tr("klub") : tr("klubber")}`;
+  const split = !state.loading && clubs.length > 0 && places.length > 0;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.mist }}>
@@ -68,12 +80,15 @@ export default function ClubsScreen({ navigation }) {
               onChangeText={setQuery}
               onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)}
               right={query ? <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable> : null} />
-            <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text>{!loading && <Text style={styles.meta}>{clubs.length} {clubs.length === 1 ? tr("klub") : tr("klubber")}</Text>}</View>
+            <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text></View>
+            {!loading && <Text style={[styles.meta, { marginTop: 2 }]}>{countLabel}</Text>}
+            {!state.loading && !place && known > 0 ? <Text style={[styles.meta, { marginBottom: 4 }]}>{tr("We know every racquet club in the US. Not all of them take bookings here yet — search a city to see both.")}</Text> : null}
+            {split ? <Text style={styles.sectionHead}>{tr("Book now")} · {bookable}</Text> : null}
             {error && <ErrorMessage message={error} onRetry={refresh} />}
           </>}
         ListFooterComponent={!state.loading && places.length > 0 ? <View style={{ marginTop: clubs.length ? 28 : 16 }}>
-            <Text style={styles.resultTitle}>{clubs.length ? tr("More places to play") : tr("Places to play")}{place ? ` · ${place.label}` : ""}</Text>
-            <Text style={[styles.meta, { marginBottom: 12 }]}>{tr("These clubs aren’t bookable on RacketBuddy yet. Open one to see its website or to ask for online booking.")}</Text>
+            <Text style={styles.sectionHead}>{tr("Not bookable yet")} · {notYet}</Text>
+            <Text style={[styles.meta, { marginBottom: 12 }]}>{tr("We know these clubs, but they don’t take bookings on RacketBuddy yet. Open one to see its website or to ask for online booking.")}</Text>
             {places.map((p) => <Pressable key={p.slug} accessibilityRole="link" accessibilityLabel={p.name} style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1, marginBottom: 10 })} onPress={() => Linking.openURL(p.url).catch(() => {})}>
                 <Card style={{ padding: 16 }}>
                   <Text style={styles.placeName}>{p.name}</Text>
@@ -90,7 +105,7 @@ export default function ClubsScreen({ navigation }) {
 
         }
         ListEmptyComponent={
-        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={places.length ? tr("No club here takes bookings yet") : place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{places.length ? tr("The places below aren’t bookable on RacketBuddy yet. Leave your email and we’ll tell you when the first one is.") : tr("Leave your email and we’ll tell you when a club opens near you.")}</Empty><NotifyMe sport={sport} q={search} /><Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${apiBaseUrl()}/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`)} style={{ marginTop: 18, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(59,132,232,.4)", backgroundColor: colors.surface }}><Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{tr("Vote your club onto RacketBuddy")}</Text><Text style={{ marginTop: 4, color: colors.slate }}>{tr("Tell us where you play. When enough players ask, we let the club know.")}</Text></Pressable></View>
+        state.loading ? <Loading inline label={tr("Finder klubber\u2026")} /> : error && !data ? null : data?.placeUnresolved ? <Empty title={tr("We couldn’t place that")} icon="⌕" action={tr("Ryd s\xF8gning")} onAction={() => setQuery("")}>{tr("Try a city and state (Austin, TX), a ZIP code, or a club name.")}</Empty> : <View><Empty title={places.length ? tr("No club here takes bookings yet") : place ? `${tr("No clubs near")} ${place.label} ${tr("yet")}` : tr("Flere baner p\xE5 vej")} icon="○">{places.length ? `${tr("We know")} ${notYet} ${notYet === 1 ? tr("club here") : tr("clubs here")} — ${tr("they’re listed below, but none of them takes bookings on RacketBuddy yet. Leave your email and we’ll tell you when the first one does.")}` : tr("Leave your email and we’ll tell you when a club opens near you.")}</Empty><NotifyMe sport={sport} q={search} /><Pressable accessibilityRole="link" onPress={() => Linking.openURL(`${apiBaseUrl()}/vote${place?.label ? `?q=${encodeURIComponent(place.label.split(",")[0])}` : ""}`)} style={{ marginTop: 18, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: "rgba(59,132,232,.4)", backgroundColor: colors.surface }}><Text style={{ fontWeight: "700", fontSize: 16, color: colors.text }}>{tr("Vote your club onto RacketBuddy")}</Text><Text style={{ marginTop: 4, color: colors.slate }}>{tr("Tell us where you play. When enough players ask, we let the club know.")}</Text></Pressable></View>
         }
         renderItem={({ item }) =>
         <Pressable
@@ -147,6 +162,7 @@ const styles = StyleSheet.create({
   clear: { minHeight: 44, minWidth: 44, justifyContent: "center", alignItems: "center" },
   resultRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 24, marginBottom: 14 },
   resultTitle: { fontSize: 19, fontWeight: "800", color: colors.text, flexShrink: 1 },
+  sectionHead: { fontSize: 13, fontWeight: "800", color: colors.slate, letterSpacing: 1, textTransform: "uppercase", marginTop: 14, marginBottom: 8 },
   clubBody: { flexDirection: "row", gap: 16, padding: 20, alignItems: "center" },
   cardFoot: { flexDirection: "row", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "center", padding: 16, paddingHorizontal: 20, borderTopWidth: 1, borderColor: colors.border },
   cardAction: { flexDirection: "row", alignItems: "center", gap: 10 },

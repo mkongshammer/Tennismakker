@@ -64,7 +64,9 @@ export default async function CourtsPage({ searchParams }: { searchParams: Promi
     result.total === 0
       ? null
       : [
-          `${result.total} ${result.total === 1 ? "club" : "clubs"}${place && !stateSearch ? ` within ${filters.radiusMiles} mi` : ""}`,
+          `${result.total} bookable${place && !stateSearch ? ` within ${filters.radiusMiles} mi` : ""}`,
+          // Both numbers, so a city full of clubs never reads as a short list.
+          places.total > 0 ? `${places.total} more we know of` : null,
           openCounts.length ? `${totalOpen} ${totalOpen === 1 ? "time" : "times"} open ${dayPhrase}${result.total > result.clubs.length ? " on this page" : ""}` : null,
         ].filter(Boolean).join(" · ");
 

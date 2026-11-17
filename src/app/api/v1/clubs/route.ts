@@ -1,6 +1,6 @@
 import { json, preflight } from "../../../../lib/api/helpers";
 import { discoverClubs, parseDiscoveryFilters } from "../../../../lib/discovery";
-import { placesNear } from "../../../../lib/places";
+import { placesNear, placesTotal } from "../../../../lib/places";
 
 export const dynamic = "force-dynamic";
 export async function OPTIONS() { return preflight(); }
@@ -33,6 +33,9 @@ export async function GET(req: Request) {
     pageSize: result.pageSize,
     hasMore: result.page * result.pageSize < result.total,
     placesTotal: places.total,
+    // Everything we know about, searched or not: it is what lets the app say
+    // how big the map is before anyone has typed a city.
+    placesAll: await placesTotal().catch(() => 0),
     places: places.listings.map((p) => ({ slug: p.slug, name: p.name, city: p.city, state: p.state, sports: p.sports, distanceMiles: p.distanceMiles, votes: p.votes, url: `${origin}/places/${p.slug}` })),
     clubs: result.clubs.map((c) => ({
       id: c.id,

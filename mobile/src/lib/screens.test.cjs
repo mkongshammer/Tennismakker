@@ -262,6 +262,43 @@ test('club discovery searches the server by place, shows distance, and captures 
   }finally{await act(()=>tree.unmount());}
 });
 
+test('a city with clubs that cannot be booked never reads as zero clubs', async () => {
+  let tree;
+  const clubs = [{ id: 'c1', slug: 'austin', name: 'Austin Tennis Center', city: 'Austin', state: 'TX', country: 'US', courtCount: 4, indoorCount: 0, priceHour: 22, currency: 'USD', slotsToday: 2, bookable: true }];
+  const places = [{ slug: 'p1', name: 'Westwood Courts', city: 'Austin', state: 'TX', sports: ['TENNIS'], votes: 0, url: 'https://x/places/p1' }];
+  let response = { clubs, places, total: 1, placesTotal: 23, placesAll: 2399, place: { label: 'Austin, TX' }, placeUnresolved: false };
+  const { default: Clubs } = loadSource('../screens/ClubsScreen.js', {
+    'react-native': { FlatList:'FlatList', Image:'Image', Linking:{openURL(){}}, Pressable:'Pressable', RefreshControl:'RefreshControl', StyleSheet:{create:x=>x}, Text:'Text', TextInput:'TextInput', View:'View' },
+    '../lib/api': {api:{clubs:()=>({})}},
+    '../lib/ui': Object.fromEntries(['AppHeading','Card','Empty','ErrorMessage','Loading'].map(x=>[x,x])),
+    '../lib/theme': {colors:{}, pageContent:{}, SPORT_LABELS:{TENNIS:'Tennis'},sportColor:()=> '#1B62C4'},
+    '../lib/SportPicker': {SportPicker:'SportPicker',useSport:()=>['TENNIS',()=>{}]},
+    '../lib/CourtGraphic': {CourtGraphic:'CourtGraphic'}, '../lib/CourtScene': {CourtScene:'CourtScene'},
+    '../lib/NotifyMe': {NotifyMe:'NotifyMe'},
+    '../lib/useScreenData': {useScreenData:()=>({data:response,loading:false,refreshing:false,refresh(){}})},
+  });
+  await act(async()=>{tree=create(React.createElement(Clubs,{navigation:{navigate(){}}}));});
+  try {
+    const list = () => tree.root.findByType('FlatList');
+    const render = async (node) => { let t; await act(async()=>{t=create(node);}); const s=JSON.stringify(t.toJSON()); await act(()=>t.unmount()); return s; };
+    const head = await render(React.createElement(()=>React.createElement(React.Fragment,null,list().props.ListHeaderComponent)));
+    assert.match(head, /1 bookable/, 'the bookable count is shown');
+    assert.match(head, /23 not yet/, 'so is the number we know of but cannot book');
+    assert.match(head, /Book now/, 'the bookable list is labelled when both groups are on screen');
+    const foot = await render(list().props.ListFooterComponent);
+    assert.match(foot, /Not bookable yet/);
+    assert.match(foot, /23/, 'the footer says how many');
+
+    // The case the owner hit: a city where nothing is bookable yet.
+    response = { ...response, clubs: [], total: 0 };
+    await act(async()=>tree.update(React.createElement(Clubs,{navigation:{navigate(){}}})));
+    const empty = await render(list().props.ListEmptyComponent);
+    assert.match(empty, /We know/);
+    assert.match(empty, /23 clubs here/, 'an empty city still says how many clubs we know there');
+    assert.doesNotMatch(await render(React.createElement(()=>React.createElement(React.Fragment,null,list().props.ListHeaderComponent))), /\b0 klubber\b/, 'never "0 clubs" when we have clubs to show');
+  } finally { await act(()=>tree.unmount()); }
+});
+
 test('country and language persist without converting venue prices, and sport labels refresh', async () => {
   const storage = new Map();
   const actualDates = loadSource('./dates.js', {'../../../shared/international.mjs': require('../../../shared/international.mjs')});
