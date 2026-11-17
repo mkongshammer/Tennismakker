@@ -50,11 +50,13 @@ export default function ClubsScreen({ navigation }) {
   const bookable = data?.total ?? clubs.length;
   const notYet = data?.placesTotal ?? places.length;
   const known = data?.placesAll ?? 0;
+  // Before a city is typed, "0 bookable" says nothing useful and reads as if
+  // the product were empty — so the count only speaks for a real search.
   const countLabel = place
     ? `${bookable} ${tr("bookable")}${notYet ? ` · ${notYet} ${tr("not yet")}` : ""}`
     : known
-      ? `${known.toLocaleString("en-US")} ${tr("clubs")} · ${bookable} ${tr("bookable")}`
-      : `${bookable} ${bookable === 1 ? tr("klub") : tr("klubber")}`;
+      ? `${known.toLocaleString("en-US")} ${tr("clubs across the US")}`
+      : "";
   const split = !state.loading && clubs.length > 0 && places.length > 0;
 
   return (
@@ -81,7 +83,7 @@ export default function ClubsScreen({ navigation }) {
               onFocus={() => setTimeout(() => list.current?.scrollToOffset({ offset: Math.max(0, searchY.current - 12), animated: true }), 150)}
               right={query ? <Pressable accessibilityRole="button" accessibilityLabel={tr("Ryd s\xF8gning")} onPress={() => setQuery("")} style={styles.clear}><Text style={{ color: colors.slate, fontSize: 22 }}>×</Text></Pressable> : null} />
             <View style={styles.resultRow}><Text style={styles.resultTitle}>{tr(SPORT_LABELS[sport])} {tr("klubber")}{place ? ` · ${place.label}` : ""}</Text></View>
-            {!loading && <Text style={[styles.meta, { marginTop: 2 }]}>{countLabel}</Text>}
+            {!loading && countLabel ? <Text style={[styles.meta, { marginTop: 2 }]}>{countLabel}</Text> : null}
             {!state.loading && !place && known > 0 ? <Text style={[styles.meta, { marginBottom: 4 }]}>{tr("We know every racquet club in the US. Not all of them take bookings here yet — search a city to see both.")}</Text> : null}
             {split ? <Text style={styles.sectionHead}>{tr("Book now")} · {bookable}</Text> : null}
             {error && <ErrorMessage message={error} onRetry={refresh} />}

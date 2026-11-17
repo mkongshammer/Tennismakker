@@ -296,6 +296,14 @@ test('a city with clubs that cannot be booked never reads as zero clubs', async 
     assert.match(empty, /We know/);
     assert.match(empty, /23 clubs here/, 'an empty city still says how many clubs we know there');
     assert.doesNotMatch(await render(React.createElement(()=>React.createElement(React.Fragment,null,list().props.ListHeaderComponent))), /\b0 klubber\b/, 'never "0 clubs" when we have clubs to show');
+
+    // Before a city is typed there is nothing to count as bookable, so we say
+    // only how big the map is.
+    response = { ...response, place: null, places: [], placesTotal: 0 };
+    await act(async()=>tree.update(React.createElement(Clubs,{navigation:{navigate(){}}})));
+    const landing = await render(React.createElement(()=>React.createElement(React.Fragment,null,list().props.ListHeaderComponent)));
+    assert.match(landing, /2,399 clubs across the US/);
+    assert.doesNotMatch(landing, /bookable/, 'no "0 bookable" before a search');
   } finally { await act(()=>tree.unmount()); }
 });
 
