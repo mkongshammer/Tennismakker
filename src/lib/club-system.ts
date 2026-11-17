@@ -137,7 +137,15 @@ export type SystemDetection = {
 const get = async (url: string) => {
   const res = await fetch(url, {
     redirect: "follow",
-    headers: { "user-agent": "RacketBuddyBot/1.0 (+https://racketbuddy.app)", accept: "text/html,*/*" },
+    // A plain browser's headers. A great many club sites sit behind a CDN that
+    // answers a bot user-agent with 403, and a club we can't read looks like a
+    // club with no booking system — which is exactly the mistake that would
+    // put it in the wrong campaign.
+    headers: {
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "accept-language": "en-US,en;q=0.9",
+    },
     signal: AbortSignal.timeout(12_000),
   });
   if (!res.ok) throw new Error(`http-${res.status}`);

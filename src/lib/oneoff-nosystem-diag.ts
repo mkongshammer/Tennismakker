@@ -7,7 +7,7 @@
 // found any club without online booking yet.
 import { db } from "./db";
 
-const FLAG = "oneoff:nosystem-diag:2026-11-17";
+const FLAG = "oneoff:nosystem-diag:2026-11-17b";
 
 export async function nosystemDiagOnce() {
   if (await db.platformSetting.findUnique({ where: { key: FLAG } }).catch(() => null)) return { done: true };
