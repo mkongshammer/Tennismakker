@@ -17,7 +17,7 @@
 // is the one written for clubs that already have a system.
 import { db } from "./db";
 
-const FLAG = "oneoff:nosystem-prune:2026-11-18";
+const FLAG = "oneoff:nosystem-prune:2026-11-18b";
 const api = "https://api.instantly.ai/api/v2";
 
 type InstantlyLead = { id: string; email: string; timestamp_last_contact?: string | null; email_open_count?: number; email_reply_count?: number; email_click_count?: number };
@@ -76,22 +76,27 @@ export async function pruneNoSystemCampaignOnce() {
     // with the clubs.
     if (drop.length > inCampaign.length * 0.8) throw Error(`Stopper: ${drop.length} af ${inCampaign.length} så ud til at skulle fjernes. Det er for mange til at være rigtigt.`);
 
+    // One club per call. The bulk form takes a list of ids and reads an empty
+    // list as "every lead in the campaign", so it is the wrong tool for a job
+    // whose whole point is to remove a chosen few. This endpoint cannot do
+    // that even if the list were somehow empty: with no id there is no call.
     let removed = 0;
-    for (let i = 0; i < drop.length; i += 100) {
-      const ids = drop.slice(i, i + 100).map((l) => l.id).filter(Boolean);
-      if (!ids.length) continue; // an empty list would mean the whole campaign
-      const res = await fetch(`${api}/leads`, { method: "DELETE", headers: h, body: JSON.stringify({ ids }), signal: AbortSignal.timeout(30_000) });
-      if (!res.ok) throw Error(`Sletning afvist ${res.status}: ${(await res.text()).slice(0, 200)}`);
-      removed += ids.length;
-      await new Promise((r) => setTimeout(r, 400));
+    const failed: string[] = [];
+    for (const l of drop) {
+      if (!l.id) continue;
+      const res = await fetch(`${api}/leads/${l.id}`, { method: "DELETE", headers: { authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(15_000) });
+      if (res.ok) removed++;
+      else failed.push(`${l.email}: ${res.status}`);
+      await new Promise((r) => setTimeout(r, 150));
     }
+    const dropped = new Set(drop.filter((l) => !failed.some((f) => f.startsWith(`${l.email}:`))).map((l) => (l.email ?? "").toLowerCase()));
 
     // Hand them back to the ordinary campaign, which is written for clubs
     // that already have a system.
     let handedBack = 0;
     for (const l of drop) {
       const mine = ours.get((l.email ?? "").toLowerCase());
-      if (!mine) continue;
+      if (!mine || !dropped.has((l.email ?? "").toLowerCase())) continue; // only the ones actually out of the campaign
       const { pushedAt: _p, ...rest } = mine.lead;
       await db.platformSetting.update({ where: { key: mine.key }, data: { value: JSON.stringify(rest) } }).catch(() => {});
       handedBack++;
@@ -105,6 +110,7 @@ export async function pruneNoSystemCampaignOnce() {
         `${handedBack} af dem er givet tilbage til den almindelige klubkampagne, som er skrevet til klubber der allerede har et system.`,
         "",
         `Tilbage i kampagnen: ${inCampaign.length - removed} klubber. Dagens mails går til dem.`,
+        ...(failed.length ? ["", `${failed.length} kunne ikke fjernes: ${failed.slice(0, 10).join(" · ")}`] : []),
       ].join("\n"),
     ).catch(() => null);
     return { inCampaign: inCampaign.length, contacted: contacted.length, removed, handedBack };
