@@ -15,12 +15,29 @@ import * as features from '../src/lib/club-features';
 import * as sports from '../src/lib/sports';
 import * as courtSports from '../src/lib/club-sports';
 async function main(){
- const pg=await PGlite.create();await pg.exec(execFileSync(process.execPath,['node_modules/prisma/build/index.js','migrate','diff','--from-empty','--to-schema-datamodel','prisma/schema.prisma','--script'],{encoding:'utf8'}));
- const server=new PGLiteSocketServer({db:pg,host:'127.0.0.1',port:0});await server.start();
- const db=new PrismaClient({datasources:{db:{url:`postgresql://postgres:postgres@${server.getServerConn()}/postgres?connection_limit=1&sslmode=disable`}}});
+ // The schema, as SQL, straight from the Prisma file.
+ const schema=execFileSync(process.execPath,['node_modules/prisma/build/index.js','migrate','diff','--from-empty','--to-schema-datamodel','prisma/schema.prisma','--script'],{encoding:'utf8'});
+ // Against a real Postgres when CI gives us one. PGlite speaks to Prisma over
+ // a socket server that holds a single connection, and on the runner that
+ // connection is dropped part-way through — it failed the job every day from
+ // 12 to 18 Nov while every scenario passed. Locally PGlite stays: it needs
+ // nothing installed.
+ const external=process.env.TEST_DATABASE_URL;
+ let pg:PGlite|undefined,server:PGLiteSocketServer|undefined,url:string;
+ if(external){
+  // Prisma's own tool builds the schema, so this needs no database client of
+  // its own and nothing new in package.json.
+  execFileSync(process.execPath,['node_modules/prisma/build/index.js','db','push','--force-reset','--skip-generate'],{env:{...process.env,DATABASE_URL:external},stdio:'inherit'});
+  url=external;
+ }else{
+  pg=await PGlite.create();await pg.exec(schema);
+  server=new PGLiteSocketServer({db:pg,host:'127.0.0.1',port:0});await server.start();
+  url=`postgresql://postgres:postgres@${server.getServerConn()}/postgres?connection_limit=1&sslmode=disable`;
+ }
+ const db=new PrismaClient({datasources:{db:{url}}});
  let count=0;const pass=(s:string)=>{count++;console.log('PASS '+s);};let creates=0,customerCreates=0,cancellations=0,webhookReady=true,taxReady=true,session:any,sub:any,signedIn:string|null=null;
  const settings={appUrl:'https://example.invalid',stripeSecretKey:'test-only',stripeWebhookSecret:'test-only'};
- const client={tax:{settings:{retrieve:async()=>({status:taxReady?'active':'pending'})}},customers:{create:async(_args:any,opts:any)=>{assert.ok(opts.idempotencyKey);customerCreates++;return{id:'cus_local'};}},checkout:{sessions:{retrieve:async()=>session,create:async(args:any,opts:any)=>{creates++;assert.ok(opts.idempotencyKey);assert.equal(args.mode,'subscription');assert.equal(args.adaptive_pricing.enabled,false);const c=(await pg.query<any>('SELECT * FROM "Club" WHERE id=$1',[args.client_reference_id])).rows[0];const monthly=args.line_items.at(-1).price_data;assert.equal(monthly.unit_amount,c.subscriptionKr*100);assert.equal(monthly.currency,c.billingCurrency.toLowerCase());assert.equal(monthly.recurring.interval,'month');if(c.signupSetupKr){assert.equal(args.line_items[0].price_data.unit_amount,c.signupSetupKr*100);assert.equal(args.line_items[0].price_data.recurring,undefined);}assert.equal(args.automatic_tax.enabled,c.billingCurrency==='EUR');assert.equal(args.tax_id_collection.enabled,true);session={id:'cs_local',url:'https://checkout.stripe.com/synthetic',status:'open',mode:'subscription',customer:'cus_local',client_reference_id:args.client_reference_id,subscription:null};return session;}}},subscriptions:{retrieve:async()=>sub,cancel:async(id:string)=>{assert.equal(id,'sub_local');cancellations++;sub.status='canceled';return sub;}}};
+ const client={tax:{settings:{retrieve:async()=>({status:taxReady?'active':'pending'})}},customers:{create:async(_args:any,opts:any)=>{assert.ok(opts.idempotencyKey);customerCreates++;return{id:'cus_local'};}},checkout:{sessions:{retrieve:async()=>session,create:async(args:any,opts:any)=>{creates++;assert.ok(opts.idempotencyKey);assert.equal(args.mode,'subscription');assert.equal(args.adaptive_pricing.enabled,false);const c=await db.club.findUniqueOrThrow({where:{id:args.client_reference_id}});const monthly=args.line_items.at(-1).price_data;assert.equal(monthly.unit_amount,c.subscriptionKr*100);assert.equal(monthly.currency,c.billingCurrency.toLowerCase());assert.equal(monthly.recurring.interval,'month');if(c.signupSetupKr){assert.equal(args.line_items[0].price_data.unit_amount,c.signupSetupKr*100);assert.equal(args.line_items[0].price_data.recurring,undefined);}assert.equal(args.automatic_tax.enabled,c.billingCurrency==='EUR');assert.equal(args.tax_id_collection.enabled,true);session={id:'cs_local',url:'https://checkout.stripe.com/synthetic',status:'open',mode:'subscription',customer:'cus_local',client_reference_id:args.client_reference_id,subscription:null};return session;}}},subscriptions:{retrieve:async()=>sub,cancel:async(id:string)=>{assert.equal(id,'sub_local');cancellations++;sub.status='canceled';return sub;}}};
  const guardCalls:string[]=[];let signupCapReached=false;
  const guard={clientIp:()=> 'unknown',signupAllowed:async()=>!signupCapReached,recordSignup:async()=>{guardCalls.push('record');},sendVerificationEmail:async()=>{guardCalls.push('verify');},alertOwnerAboutSignup:async(_id:string,stage:string)=>{guardCalls.push('alert:'+stage);}};
  const service=loadIsolatedModule('src/lib/club-onboarding.ts',{'./club-signup-guard':guard,'./regional-config':{regionalSharedConfig:async()=>null},'./region':region,'./webhook-setup':{inspectWebhook:async()=>({status:webhookReady?'ok':'fejl'})},'./db':{db},'./stripe':{stripe:async()=>client},'./settings':{getSettings:async()=>settings}});
@@ -67,7 +84,7 @@ async function main(){
   pass('Only US clubs can register; every other market is refused before any row is written, and a tampered currency is rejected');
   const legacy=await db.club.create({data:{name:'Legacy contract',slug:'legacy-contract',city:'Test',signupManaged:true,subscriptionKr:199,signupSetupKr:14995}});assert.equal(legacy.billingCurrency,'DKK');await service.startOnboardingCheckout(legacy.id);pass('Existing DKK contract defaults are retained without relabelling money');
   console.log(`PASS ${count} onboarding scenarios; Stripe is simulated, no real charges.`);
- }finally{await db.$disconnect();await server.stop();await new Promise<void>(r=>setImmediate(r));await new Promise<void>(r=>setImmediate(r));await pg.close();}
+ }finally{await db.$disconnect();await server?.stop();await new Promise<void>(r=>setImmediate(r));await new Promise<void>(r=>setImmediate(r));await pg?.close();}
 }
 // The suite runs against PGlite over a local socket. On the CI runner that
 // socket is sometimes closed under us mid-run (P1017, "Server has closed the
