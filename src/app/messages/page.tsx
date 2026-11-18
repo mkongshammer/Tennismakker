@@ -8,6 +8,7 @@ import { listThreads } from "../../lib/messages";
 import { userProfilePhotoId } from "../../lib/profile-images";
 import { imageUrl } from "../../lib/imageUrl";
 import { Icon } from "../../components/ui";
+import { clearConversation } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +53,7 @@ export default async function BeskederPage() {
       ) : (
         <ul className="divide-y divide-slate/10 overflow-hidden rounded-3xl border border-slate/15 bg-chalk">
           {threads.map((thread: any, i: number) => (
-            <li key={thread.id}>
+            <li key={thread.id} className="group/row relative">
               <Link href={`/messages/${thread.id}`} className="flex items-center gap-4 px-4 py-4 transition hover:bg-mist sm:px-5">
                 <span className="relative shrink-0">
                   {photos[i] ? (
@@ -75,6 +76,18 @@ export default async function BeskederPage() {
                 {thread.unread && <span className="sr-only">{t("msg.new")}</span>}
                 <Icon name="chevron" size={18} className="shrink-0 text-slate-light" />
               </Link>
+              {/* Clearing sits outside the link, because a form inside one is
+                  not valid markup — and it stays reachable by keyboard. */}
+              <form action={clearConversation} className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 transition focus-within:opacity-100 group-hover/row:opacity-100">
+                <input type="hidden" name="id" value={thread.id} />
+                <button
+                  type="submit"
+                  className="rounded-full px-2.5 py-1 text-xs font-bold text-slate hover:bg-chalk hover:text-ink"
+                  title={en ? `Clear your copy of the conversation with ${thread.otherName}` : `Ryd din kopi af samtalen med ${thread.otherName}`}
+                >
+                  {en ? "Clear" : "Ryd"}
+                </button>
+              </form>
             </li>
           ))}
         </ul>

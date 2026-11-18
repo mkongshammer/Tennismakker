@@ -69,6 +69,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     return json({ ok: true, blocked: false });
   }
 
+  // Clears the conversation for whoever asked, and for nobody else.
+  if (action === "clear" || action === "restore") {
+    const { clearThread, restoreThread } = await import("../../../../../lib/thread-clearing");
+    if (action === "restore") { await restoreThread(auth.user.id, id); return json({ ok: true, cleared: false }); }
+    const at = await clearThread(auth.user.id, id);
+    return json({ ok: true, cleared: true, clearedAt: at.toISOString() });
+  }
+
   if (action === "report") {
     const reason = String(payload.reason ?? "OTHER").trim().toUpperCase();
     if (!REPORT_REASONS.includes(reason as any)) return apiError("Vælg en gyldig årsag.");

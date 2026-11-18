@@ -19,7 +19,7 @@ import { mergeMessages } from "../lib/messages.mjs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function ChatScreen({ route }) {useInternational();
+export default function ChatScreen({ route, navigation }) {useInternational();
   const { id } = route.params;
   const state = useScreenData(useCallback(() => api.thread(id), [id]), { pollMs: 8000 });
   const load = state.refresh;
@@ -69,6 +69,27 @@ export default function ChatScreen({ route }) {useInternational();
     } finally {
       setModerating(null);
     }
+  };
+
+  // Clears this conversation for the person asking, and only for them.
+  const clearConversation = () => {
+    Alert.alert(
+      "Clear conversation",
+      `This conversation disappears from your messages. ${state.data?.otherName ?? "They"} keeps their own copy, and if they write again it comes back with only the new messages.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: async () => {
+            setModerating("clear");
+            try { await moderationApi.clearThread(id); navigation.goBack(); }
+            catch (e) { Alert.alert("Could not clear conversation", e.message ?? "Please try again."); }
+            finally { setModerating(null); }
+          },
+        },
+      ],
+    );
   };
 
   const reportConversation = () => {
@@ -142,6 +163,7 @@ export default function ChatScreen({ route }) {useInternational();
           {!!state.data.otherName && <Text style={styles.otherName}>{state.data.otherName}</Text>}
         </View>
         <View style={styles.moderationActions}>
+          <Button title="Clear" variant="quiet" onPress={clearConversation} loading={moderating === "clear"} />
           <Button title="Report" variant="quiet" onPress={reportConversation} loading={moderating === "report"} />
           <Button
             title={state.data.blockedByMe ? "Unblock" : "Block"}

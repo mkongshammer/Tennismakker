@@ -2,6 +2,8 @@ import { tr, useInternational } from "../lib/international";import React, { useC
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useScreenData } from "../lib/useScreenData";
 import { api } from "../lib/api";
+import { moderationApi } from "../lib/moderationApi";
+import { feedback as Alert } from "../lib/feedback";
 import { AppHeading, Avatar, Card, Empty, ErrorMessage, Loading } from "../lib/ui";
 import { colors, pageContent } from "../lib/theme";
 import { dayShort, time } from "../lib/dates";
@@ -16,6 +18,27 @@ export default function ThreadsScreen({ navigation }) {useInternational();
   const when = (iso) => {
     const d = new Date(iso);
     return d.toDateString() === new Date().toDateString() ? time(d) : dayShort(d);
+  };
+
+  // Press and hold a conversation to clear it. It goes from this list and
+  // from your copy of the chat; the other player keeps theirs, and if they
+  // write again the conversation comes back with only what is new.
+  const clearConversation = (item) => {
+    Alert.alert(
+      tr("Ryd samtalen"),
+      tr("Samtalen med {name} forsvinder fra din liste. {name} beholder sin egen, og skriver de igen, dukker samtalen op med det nye.").replace(/\{name\}/g, item.otherName),
+      [
+        { text: tr("Fortryd"), style: "cancel" },
+        {
+          text: tr("Ryd"),
+          style: "destructive",
+          onPress: async () => {
+            try { await moderationApi.clearThread(item.id); load(); }
+            catch (e) { Alert.alert(tr("Samtalen kunne ikke ryddes"), e.message ?? tr("Prøv igen.")); }
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -40,7 +63,12 @@ export default function ThreadsScreen({ navigation }) {useInternational();
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Samtale med ${item.otherName}${item.unread ? tr(", ny besked") : ""}`}
+        accessibilityHint={tr("Hold inde for at rydde samtalen")}
+        accessibilityActions={[{ name: "clear", label: tr("Ryd samtalen") }]}
+        onAccessibilityAction={(e) => { if (e.nativeEvent.actionName === "clear") clearConversation(item); }}
         style={({ pressed }) => ({ opacity: pressed ? 0.75 : 1 })}
+        onLongPress={() => clearConversation(item)}
+        delayLongPress={400}
         onPress={() =>
         navigation.navigate("Samtale", { id: item.id, name: item.otherName })
         }>

@@ -48,6 +48,8 @@ export function isDirectSubject(subject: string | null | undefined) {
 }
 
 export async function listThreads(userId: string) {
+  const { clearedThreads, visibleAfter } = await import("./thread-clearing");
+  const cleared = await clearedThreads(userId);
   const requests = await db.matchRequest.findMany({
     where: {
       acceptedById: { not: null },
@@ -62,7 +64,11 @@ export async function listThreads(userId: string) {
 
   const threads = requests.map((r: any) => {
     const other = r.requesterId === userId ? r.acceptedBy : r.requester;
-    const last = r.messages[0] ?? null;
+    // A conversation this user has cleared is gone from their list until the
+    // other player writes again; then it comes back with only what is new.
+    const clearedWhen = cleared.get(r.id) ?? null;
+    const last = r.messages[0] && visibleAfter(r.messages[0].createdAt, clearedWhen) ? r.messages[0] : null;
+    if (clearedWhen && !last) return null;
     return {
       id: r.id,
       subject: r.message,
@@ -76,8 +82,9 @@ export async function listThreads(userId: string) {
     };
   });
 
-  threads.sort((a: any, b: any) => b.lastAt.getTime() - a.lastAt.getTime());
-  return threads;
+  const visible = threads.filter(Boolean) as NonNullable<(typeof threads)[number]>[];
+  visible.sort((a: any, b: any) => b.lastAt.getTime() - a.lastAt.getTime());
+  return visible;
 }
 
 /**
@@ -90,8 +97,10 @@ export async function listThreads(userId: string) {
  * så det stadig vises kronologisk, men altid er de nyeste.
  */
 export async function readMessages(matchRequestId: string, userId: string) {
+  const { clearedAt } = await import("./thread-clearing");
+  const cleared = await clearedAt(userId, matchRequestId);
   const latest = await db.message.findMany({
-    where: { matchRequestId },
+    where: { matchRequestId, ...(cleared ? { createdAt: { gt: cleared } } : {}) },
     include: { sender: true },
     orderBy: { createdAt: "desc" },
     take: 200,
@@ -108,15 +117,19 @@ export async function readMessages(matchRequestId: string, userId: string) {
 
 /** Antal ulæste beskeder på tværs af alle brugerens samtaler. */
 export async function unreadCount(userId: string): Promise<number> {
-  return db.message.count({
-    where: {
-      readAt: null,
-      senderId: { not: userId },
-      matchRequest: {
-        OR: [{ requesterId: userId }, { acceptedById: userId }],
-      },
-    },
-  });
+  const mine = { OR: [{ requesterId: userId }, { acceptedById: userId }] };
+  const unread = { readAt: null, senderId: { not: userId } };
+  const { clearedThreads } = await import("./thread-clearing");
+  const cleared = await clearedThreads(userId);
+  // Clearing a conversation settles everything said in it so far, so an old
+  // unread message there must not keep the badge lit.
+  if (!cleared.size) return db.message.count({ where: { ...unread, matchRequest: mine } });
+  const ids = [...cleared.keys()];
+  const counts = await Promise.all([
+    db.message.count({ where: { ...unread, matchRequestId: { notIn: ids }, matchRequest: mine } }),
+    ...ids.map((id) => db.message.count({ where: { ...unread, matchRequestId: id, createdAt: { gt: cleared.get(id)! } } })),
+  ]);
+  return counts.reduce((a, b) => a + b, 0);
 }
 
 export const MAX_MESSAGE_LENGTH = 2000;

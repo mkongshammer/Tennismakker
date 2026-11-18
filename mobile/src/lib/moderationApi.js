@@ -20,4 +20,7 @@ export const moderationApi = {
     postAction(threadId, { action: "report", reason, messageId }),
   blockThreadUser: (threadId) => postAction(threadId, { action: "block" }),
   unblockThreadUser: (threadId) => postAction(threadId, { action: "unblock" }),
+  /** Clears the conversation for this user only; the other player keeps theirs. */
+  clearThread: (threadId) => postAction(threadId, { action: "clear" }),
+  restoreThread: (threadId) => postAction(threadId, { action: "restore" }),
 };
